@@ -7,10 +7,9 @@ const process = {
     try {
       const board = new Board(req);
       const response = await board.boardAll();
-
       return res.json(response);
     } catch (err) {
-      return res.json(response);
+      return res.json(err);
     }
   },
 };

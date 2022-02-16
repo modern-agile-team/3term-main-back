@@ -7,8 +7,8 @@ class BoardStorage {
 
     try {
       conn = await maria.getConnection();
+      const query = `SELECT * FROM boards`;
 
-      const query = `SELECT * FROM boards;`;
       return await conn.query(query);
     } catch (err) {
       throw {
