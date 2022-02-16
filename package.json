@@ -1,0 +1,27 @@
+{
+  "name": "3term-main-back",
+  "version": "1.0.0",
+  "description": "3기 메인 프로젝트 저장소입니다.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node ./app/bin/www.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/modern-agile-team/3term-main-back.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/modern-agile-team/3term-main-back/issues"
+  },
+  "homepage": "https://github.com/modern-agile-team/3term-main-back#readme",
+  "dependencies": {
+    "dotenv": "^16.0.0",
+    "env": "^0.0.2",
+    "express": "^4.17.2",
+    "nodemon": "^2.0.15"
+  }
+}
