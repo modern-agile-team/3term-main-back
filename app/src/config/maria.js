@@ -1,4 +1,5 @@
-const maria = require("maria");
+"use strict";
+const maria = require("mariadb");
 
 const { DB_HOST, DB_USER, DB_PSWORD, DB_DATABASE } = process.env;
 
