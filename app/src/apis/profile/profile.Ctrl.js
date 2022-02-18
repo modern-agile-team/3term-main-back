@@ -7,6 +7,7 @@ const process = {
     try {
       const profile = new Profile(req);
       const response = await profile.oneLookUp();
+
       return res.json(response);
     } catch (err) {
       return res.json(err);

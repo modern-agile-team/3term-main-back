@@ -11,7 +11,9 @@ class Profile {
 
   async oneLookUp() {
     try {
-      return await ProfileStorage.findProfile();
+      const userNo = this.params;
+
+      return await ProfileStorage.findProfile(userNo);
     } catch (err) {
       throw { msg: err.msg };
     }
