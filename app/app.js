@@ -12,8 +12,10 @@ app.use(express.urlencoded({ extended: true }));
 
 // API 경로지정
 const board = require("./src/apis/board");
+const profile = require("./src/apis/profile");
 
 // API 연결
 app.use("/board", board);
+app.use("/profile", profile);
 
 module.exports = app;
