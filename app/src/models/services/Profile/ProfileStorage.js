@@ -11,7 +11,7 @@ class ProfileStorage {
         SELECT nickname, 
           (SELECT name FROM schools WHERE no = school_no) AS school, 
           (SELECT name FROM majors WHERE no = major_no) AS major, 
-          (SELECT COUNT(*) FROM boards WHERE user_no = users.no) AS boards,
+          (SELECT COUNT(*) FROM boards WHERE user_no = users.no) AS cntBoard,
           thumb, photo_url, DATE_FORMAT(in_date, "%Y-%m-%d") AS inDate 
         FROM users 
         WHERE no = ?`;
