@@ -10,7 +10,7 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// API 경로 지정
+// API 경로지정
 const board = require("./src/apis/board");
 const profile = require("./src/apis/profile");
 
