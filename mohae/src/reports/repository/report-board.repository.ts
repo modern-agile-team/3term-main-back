@@ -7,21 +7,15 @@ export class ReportedBoardRepository extends Repository<ReportBoard> {
   async createBoardReport(
     createReportBoardDto: CreateReportBoardDto,
   ): Promise<ReportBoard> {
-    const {
-      board_no,
-      report_user_no,
-      first_no,
-      second_no,
-      third_no,
-      description,
-    } = createReportBoardDto;
+    const { boardNo, reportUserNo, firstNo, secondNo, thirdNo, description } =
+      createReportBoardDto;
 
     const reportedBoard = this.create({
-      board_no,
-      report_user_no,
-      first_no,
-      second_no,
-      third_no,
+      board_no: boardNo,
+      report_user_no: reportUserNo,
+      first_no: firstNo,
+      second_no: secondNo,
+      third_no: thirdNo,
       description,
     });
 
