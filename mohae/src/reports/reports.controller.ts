@@ -1,4 +1,13 @@
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  ParseIntPipe,
+  Post,
+  UsePipes,
+  ValidationPipe,
+} from '@nestjs/common';
 import {
   CreateReportBoardDto,
   CreateReportUserDto,
@@ -17,6 +26,7 @@ export class ReportsController {
   }
 
   @Post('board')
+  @UsePipes(ValidationPipe)
   createBoardReport(
     @Body() createReportBoardDto: CreateReportBoardDto,
   ): Promise<ReportBoard> {
@@ -24,6 +34,7 @@ export class ReportsController {
   }
 
   @Post('user')
+  @UsePipes(ValidationPipe)
   createUserReport(
     @Body() createReportUserDto: CreateReportUserDto,
   ): Promise<ReportUser> {
