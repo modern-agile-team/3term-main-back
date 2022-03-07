@@ -1,7 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CreateReportBoardDto } from './dto/create-report-board.dto';
-import { ReportBoard } from './entity/report.entity';
+import { CreateReportUserDto } from './dto/create-report-user.dto';
+import { ReportBoard, ReportUser } from './entity/report.entity';
 import { ReportedBoardRepository } from './repository/report-board.repository';
 import { ReportedUserRepository } from './repository/report-user.repository';
 
@@ -23,5 +24,11 @@ export class ReportsService {
     createReportBoardDto: CreateReportBoardDto,
   ): Promise<ReportBoard> {
     return this.reportedBoardRepository.createBoardReport(createReportBoardDto);
+  }
+
+  createUserReport(
+    createReportUserDto: CreateReportUserDto,
+  ): Promise<ReportUser> {
+    return this.reportedUserRepository.createUserReport(createReportUserDto);
   }
 }

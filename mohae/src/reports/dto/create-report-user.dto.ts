@@ -2,19 +2,19 @@ import { IsNumber, IsString } from 'class-validator';
 
 export class CreateReportUserDto {
   @IsNumber()
-  user_no: number;
+  userNo: number;
 
   @IsNumber()
-  report_user_no: number;
+  reportUserNo: number;
 
   @IsNumber()
-  first_no: number;
+  firstNo: number;
 
   @IsNumber()
-  second_no: number;
+  secondNo: number;
 
   @IsNumber()
-  third_no: number;
+  thirdNo: number;
 
   @IsString()
   description: string;

@@ -1,6 +1,7 @@
 import { Body, Controller, Get, Param, Post } from '@nestjs/common';
 import { CreateReportBoardDto } from './dto/create-report-board.dto';
-import { ReportBoard } from './entity/report.entity';
+import { CreateReportUserDto } from './dto/create-report-user.dto';
+import { ReportBoard, ReportUser } from './entity/report.entity';
 import { ReportsService } from './reports.service';
 
 @Controller('reports')
@@ -18,5 +19,12 @@ export class ReportsController {
     @Body() createReportBoardDto: CreateReportBoardDto,
   ): Promise<ReportBoard> {
     return this.reportsService.createBoardReport(createReportBoardDto);
+  }
+
+  @Post('user')
+  createUserReport(
+    @Body() createReportUserDto: CreateReportUserDto,
+  ): Promise<ReportUser> {
+    return this.reportsService.createUserReport(createReportUserDto);
   }
 }

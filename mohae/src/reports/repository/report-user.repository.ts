@@ -4,24 +4,18 @@ import { ReportUser } from '../entity/report.entity';
 
 @EntityRepository(ReportUser)
 export class ReportedUserRepository extends Repository<ReportUser> {
-  async createBoardReport(
+  async createUserReport(
     createReportUserDto: CreateReportUserDto,
   ): Promise<ReportUser> {
-    const {
-      user_no,
-      report_user_no,
-      first_no,
-      second_no,
-      third_no,
-      description,
-    } = createReportUserDto;
+    const { userNo, reportUserNo, firstNo, secondNo, thirdNo, description } =
+      createReportUserDto;
 
     const reportedBoard = this.create({
-      user_no,
-      report_user_no,
-      first_no,
-      second_no,
-      third_no,
+      user_no: userNo,
+      report_user_no: reportUserNo,
+      first_no: firstNo,
+      second_no: secondNo,
+      third_no: thirdNo,
       description,
     });
 
