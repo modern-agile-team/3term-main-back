@@ -16,10 +16,9 @@
   Cloud 
 </h3>
 <p align="left">
-  <img src="https://img.shields.io/badge/AWS-Lamdba-red?logo=amazon-aws" />
-  <img src="https://img.shields.io/badge/AWS-Severless-red?logo=amazon-aws" />
+  <img src="https://img.shields.io/badge/AWS-EC2-red?logo=amazon-aws" />
+  <img src="https://img.shields.io/badge/AWS-RDS-red?logo=amazon-aws" />
   <img src= "https://img.shields.io/badge/AWS-S3-red?logo=amazon-aws"/>
-  <img src= "https://img.shields.io/badge/AWS-CloudFront-red?logo=amazon-aws"/>
 </p>
 
 <h3 align="left">  
