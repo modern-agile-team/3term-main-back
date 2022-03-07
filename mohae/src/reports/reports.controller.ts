@@ -1,6 +1,8 @@
 import { Body, Controller, Get, Param, Post } from '@nestjs/common';
-import { CreateReportBoardDto } from './dto/create-report-board.dto';
-import { CreateReportUserDto } from './dto/create-report-user.dto';
+import {
+  CreateReportBoardDto,
+  CreateReportUserDto,
+} from './dto/create-report.dto';
 import { ReportBoard, ReportUser } from './entity/report.entity';
 import { ReportsService } from './reports.service';
 

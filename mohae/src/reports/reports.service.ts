@@ -1,10 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { CreateReportBoardDto } from './dto/create-report-board.dto';
-import { CreateReportUserDto } from './dto/create-report-user.dto';
+import {
+  CreateReportBoardDto,
+  CreateReportUserDto,
+} from './dto/create-report.dto';
 import { ReportBoard, ReportUser } from './entity/report.entity';
-import { ReportedBoardRepository } from './repository/report-board.repository';
-import { ReportedUserRepository } from './repository/report-user.repository';
+import {
+  ReportedBoardRepository,
+  ReportedUserRepository,
+} from './repository/report.repository';
 
 @Injectable()
 export class ReportsService {
