@@ -5,9 +5,14 @@ export class Faq extends BaseEntity {
   @PrimaryGeneratedColumn()
   no: number;
 
-  @Column()
+  @Column({
+    type: 'varchar',
+    length: 30,
+  })
   title: string;
 
-  @Column()
+  @Column({
+    type: 'mediumtext',
+  })
   description: string;
 }

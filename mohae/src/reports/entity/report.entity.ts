@@ -4,19 +4,29 @@ export abstract class ReportContent extends BaseEntity {
   @PrimaryGeneratedColumn()
   no: number;
 
-  @Column()
+  @Column({
+    type: 'int',
+  })
   report_user_no: number;
 
-  @Column()
+  @Column({
+    type: 'int',
+  })
   first_no: number;
 
-  @Column()
+  @Column({
+    type: 'int',
+  })
   second_no: number;
 
-  @Column()
+  @Column({
+    type: 'int',
+  })
   third_no: number;
 
-  @Column()
+  @Column({
+    type: 'mediumtext',
+  })
   description: string;
 }
 
@@ -25,7 +35,9 @@ export class ReportBoard extends ReportContent {
   @PrimaryGeneratedColumn()
   no: number;
 
-  @Column()
+  @Column({
+    type: 'int',
+  })
   board_no: number;
 }
 
@@ -34,6 +46,8 @@ export class ReportUser extends ReportContent {
   @PrimaryGeneratedColumn()
   no: number;
 
-  @Column()
+  @Column({
+    type: 'int',
+  })
   user_no: number;
 }
