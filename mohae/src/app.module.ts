@@ -4,9 +4,10 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { typeORMConfig } from './configs/typeorm.config';
 import { ReportsModule } from './reports/reports.module';
+import { FaqsModule } from './faqs/faqs.module';
 
 @Module({
-  imports: [TypeOrmModule.forRoot(typeORMConfig), ReportsModule],
+  imports: [TypeOrmModule.forRoot(typeORMConfig), ReportsModule, FaqsModule],
   controllers: [AppController],
   providers: [AppService],
 })
