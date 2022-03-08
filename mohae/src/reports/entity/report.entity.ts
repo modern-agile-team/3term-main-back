@@ -1,49 +1,53 @@
 import { BaseEntity, Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
-@Entity('reported_boards')
-export class ReportBoard extends BaseEntity {
+export abstract class ReportContent extends BaseEntity {
   @PrimaryGeneratedColumn()
   no: number;
 
-  @Column()
-  board_no: number;
-
-  @Column()
+  @Column({
+    type: 'int',
+  })
   report_user_no: number;
 
-  @Column()
+  @Column({
+    type: 'int',
+  })
   first_no: number;
 
-  @Column()
+  @Column({
+    type: 'int',
+  })
   second_no: number;
 
-  @Column()
+  @Column({
+    type: 'int',
+  })
   third_no: number;
 
-  @Column()
+  @Column({
+    type: 'mediumtext',
+  })
   description: string;
 }
 
-@Entity('reported_users')
-export class ReportUser extends BaseEntity {
+@Entity('reported_boards')
+export class ReportBoard extends ReportContent {
   @PrimaryGeneratedColumn()
   no: number;
 
-  @Column()
+  @Column({
+    type: 'int',
+  })
+  board_no: number;
+}
+
+@Entity('reported_users')
+export class ReportUser extends ReportContent {
+  @PrimaryGeneratedColumn()
+  no: number;
+
+  @Column({
+    type: 'int',
+  })
   user_no: number;
-
-  @Column()
-  report_user_no: number;
-
-  @Column()
-  first_no: number;
-
-  @Column()
-  second_no: number;
-
-  @Column()
-  third_no: number;
-
-  @Column()
-  description: string;
 }
