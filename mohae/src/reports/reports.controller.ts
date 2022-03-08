@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Get,
+  Logger,
   Param,
   ParseIntPipe,
   Post,
@@ -17,6 +18,7 @@ import { ReportsService } from './reports.service';
 
 @Controller('reports')
 export class ReportsController {
+  private logger = new Logger('ReportsController');
   constructor(private reportsService: ReportsService) {}
 
   // 데이터 입력 테스트를 위한 조회 기능
@@ -30,6 +32,11 @@ export class ReportsController {
   createBoardReport(
     @Body() createReportBoardDto: CreateReportBoardDto,
   ): Promise<ReportBoard> {
+    this.logger.verbose(
+      `Board report has been received. Reported board Payload: ${JSON.stringify(
+        createReportBoardDto,
+      )}`,
+    );
     return this.reportsService.createBoardReport(createReportBoardDto);
   }
 
@@ -38,6 +45,11 @@ export class ReportsController {
   createUserReport(
     @Body() createReportUserDto: CreateReportUserDto,
   ): Promise<ReportUser> {
+    this.logger.verbose(
+      `User report has been received. Reported user Payload: ${JSON.stringify(
+        createReportUserDto,
+      )}`,
+    );
     return this.reportsService.createUserReport(createReportUserDto);
   }
 }
