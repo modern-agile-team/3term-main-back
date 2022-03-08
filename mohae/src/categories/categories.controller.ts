@@ -1,4 +1,4 @@
-import { Controller, Get, Logger } from '@nestjs/common';
+import { Controller, Get, Logger, Param, ParseIntPipe } from '@nestjs/common';
 import { CategoriesService } from './categories.service';
 import { Category } from './entity/category.entity';
 
@@ -11,5 +11,10 @@ export class CategoriesController {
   findAllCategories(): Promise<Category[]> {
     this.logger.verbose(`카테고리 전체 조회 시도`);
     return this.categoryService.findAllCategories();
+  }
+
+  @Get('/:no')
+  findOneCategory(@Param('no', ParseIntPipe) no: number): Promise<Category> {
+    return this.categoryService.findOneCategory(no);
   }
 }
