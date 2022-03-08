@@ -15,6 +15,7 @@ export class CategoriesController {
 
   @Get('/:no')
   findOneCategory(@Param('no', ParseIntPipe) no: number): Promise<Category> {
+    this.logger.verbose(`카테고리 선택 조회 시도. 카테고리 번호 : ${no}`);
     return this.categoryService.findOneCategory(no);
   }
 }
