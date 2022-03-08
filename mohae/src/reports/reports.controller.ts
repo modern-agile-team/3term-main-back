@@ -4,7 +4,6 @@ import {
   Get,
   Logger,
   Param,
-  ParseIntPipe,
   Post,
   UsePipes,
   ValidationPipe,
