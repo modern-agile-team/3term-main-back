@@ -12,6 +12,10 @@ export const typeORMConfig: TypeOrmModuleOptions = {
   username: DB_USER || dbConfig.username,
   password: DB_PSWORD || dbConfig.password,
   database: DB_DATABASE || dbConfig.database,
+<<<<<<< HEAD
   entities: [__dirname + '/../**/*.entity.{js,ts}'],
+=======
+  entities: [],
+>>>>>>> cb50d5df1c24fb0d5587411120777e2bdcffab98
   synchronize: dbConfig.synchronize,
 };
