@@ -6,6 +6,7 @@ import { typeORMConfig } from './configs/typeorm.config';
 import { ReportsModule } from './reports/reports.module';
 import { FaqsModule } from './faqs/faqs.module';
 import { CategoriesModule } from './categories/categories.module';
+import { BoardsModule } from './boards/boards.module';
 
 @Module({
   imports: [
@@ -13,6 +14,7 @@ import { CategoriesModule } from './categories/categories.module';
     ReportsModule,
     FaqsModule,
     CategoriesModule,
+    BoardsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
