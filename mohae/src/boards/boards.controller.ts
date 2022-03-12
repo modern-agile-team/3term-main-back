@@ -7,7 +7,9 @@ import {
   Delete,
   UsePipes,
   ValidationPipe,
+  Patch,
 } from '@nestjs/common';
+import { BoardUpdate } from './board.model';
 import { BoardsService } from './boards.service';
 import { CreateBoardDto } from './dto/board.dto';
 import { Board } from './entity/board.entity';
@@ -35,5 +37,17 @@ export class BoardsController {
   @Delete('/:no')
   deleteBoard(@Param('no') no: number): Promise<void> {
     return this.boardService.delete(no);
+  }
+
+  @Patch('/:no')
+  updateBoard(
+    @Param('no') no: number,
+    @Body() data: BoardUpdate,
+  ): Promise<Board> {
+    this.boardService.update(no, data);
+    return Object.assign({
+      statusCode: 201,
+      msg: '게시글 수정이 완료되었습니다.',
+    });
   }
 }

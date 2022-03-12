@@ -1,7 +1,9 @@
+import { ReportBoard } from 'src/reports/entity/report.entity';
 import {
   BaseEntity,
   Column,
   Entity,
+  OneToMany,
   PrimaryGeneratedColumn,
   Timestamp,
 } from 'typeorm';
@@ -11,6 +13,7 @@ export class Board extends BaseEntity {
   @PrimaryGeneratedColumn({
     type: 'int',
   })
+  @OneToMany(() => ReportBoard, (report) => report.board_no, { eager: false })
   no: number;
 
   @Column({

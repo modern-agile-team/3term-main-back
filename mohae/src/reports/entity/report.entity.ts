@@ -1,4 +1,11 @@
-import { BaseEntity, Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Board } from 'src/boards/entity/board.entity';
+import {
+  BaseEntity,
+  Column,
+  Entity,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 
 export abstract class ReportContent extends BaseEntity {
   @PrimaryGeneratedColumn()
@@ -35,9 +42,7 @@ export class ReportBoard extends ReportContent {
   @PrimaryGeneratedColumn()
   no: number;
 
-  @Column({
-    type: 'int',
-  })
+  @ManyToOne((type) => Board, (board) => board.no, { eager: true })
   board_no: number;
 }
 

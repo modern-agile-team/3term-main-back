@@ -21,9 +21,9 @@ export class ReportsController {
   constructor(private reportsService: ReportsService) {}
 
   // 데이터 입력 테스트를 위한 조회 기능
-  @Get('/:id')
-  findOne(@Param('id') id: number): Promise<ReportBoard> {
-    return this.reportsService.findOne(id);
+  @Get('/:no')
+  findOne(@Param('no') no: number): Promise<ReportBoard> {
+    return this.reportsService.findOne(no);
   }
 
   @Post('board')
