@@ -1,8 +1,10 @@
+import { Category } from 'src/categories/entity/category.entity';
 import { ReportBoard } from 'src/reports/entity/report.entity';
 import {
   BaseEntity,
   Column,
   Entity,
+  ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
   Timestamp,
@@ -56,4 +58,7 @@ export class Board extends BaseEntity {
     type: 'boolean',
   })
   target: boolean;
+
+  @ManyToOne((type) => Category, (category) => category.no, { eager: true })
+  category_no: number;
 }
