@@ -20,8 +20,8 @@ export class ReportsService {
     private reportedUserRepository: ReportedUserRepository,
   ) {}
 
-  findOne(id: number): Promise<ReportBoard> {
-    return this.reportedBoardRepository.findOne(id);
+  async findOne(no: number): Promise<ReportBoard> {
+    return await this.reportedBoardRepository.findOne(no);
   }
 
   createBoardReport(
