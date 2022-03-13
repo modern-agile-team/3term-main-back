@@ -7,6 +7,9 @@ import { ReportsModule } from './reports/reports.module';
 import { FaqsModule } from './faqs/faqs.module';
 import { CategoriesModule } from './categories/categories.module';
 import { BoardsModule } from './boards/boards.module';
+import { CitiesModule } from './cities/cities.module';
+import { WardsModule } from './wards/wards.module';
+import { AreasModule } from './areas/areas.module';
 
 @Module({
   imports: [
@@ -15,6 +18,9 @@ import { BoardsModule } from './boards/boards.module';
     FaqsModule,
     CategoriesModule,
     BoardsModule,
+    CitiesModule,
+    WardsModule,
+    AreasModule,
   ],
   controllers: [AppController],
   providers: [AppService],
