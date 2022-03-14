@@ -12,6 +12,7 @@ import { WardsModule } from './wards/wards.module';
 import { AreasModule } from './areas/areas.module';
 import { ReviewsModule } from './reviews/reviews.module';
 import { SchoolsModule } from './schools/schools.module';
+import { MajorsModule } from './majors/majors.module';
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { SchoolsModule } from './schools/schools.module';
     AreasModule,
     ReviewsModule,
     SchoolsModule,
+    MajorsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
