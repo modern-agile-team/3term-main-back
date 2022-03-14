@@ -14,7 +14,7 @@ export class ReportedBoardRepository extends Repository<ReportBoard> {
       createReportBoardDto;
 
     const reportedBoard = this.create({
-      board_no: boardNo,
+      board: boardNo,
       report_user_no: reportUserNo,
       first_no: firstNo,
       second_no: secondNo,
