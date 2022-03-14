@@ -10,7 +10,9 @@ export class AuthController {
     return this.authService.signUp(createUserDto);
   }
   @Post('/signin')
-  signIn(@Body() signInDto: SignInDto) {
-    return this.authService.signIn(signInDto);
+  async signIn(@Body() signInDto: SignInDto): Promise<{ accessToken: string }> {
+    const result = await this.authService.signIn(signInDto);
+    console.log(result);
+    return result;
   }
 }
