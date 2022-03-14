@@ -1,7 +1,10 @@
+import { ReportContent, ReportedUser } from 'src/reports/entity/report.entity';
+import { Review } from 'src/reviews/entity/review.entity';
 import {
   BaseEntity,
   Column,
   Entity,
+  OneToMany,
   PrimaryGeneratedColumn,
   Timestamp,
   Unique,
@@ -9,9 +12,14 @@ import {
 
 @Entity('users')
 @Unique(['email', 'nickname'])
-export class Users extends BaseEntity {
-  @PrimaryGeneratedColumn({
-    type: 'int',
+export class User extends BaseEntity {
+  @PrimaryGeneratedColumn()
+  @OneToMany((type) => Review, (review) => review.reviewer, { eager: false })
+  @OneToMany((type) => ReportedUser, (report) => report.reportedUser, {
+    eager: false,
+  })
+  @OneToMany((type) => ReportedUser, (reportUser) => reportUser.reportUser, {
+    eager: false,
   })
   no: number;
 

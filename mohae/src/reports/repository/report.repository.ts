@@ -3,19 +3,25 @@ import {
   CreateReportBoardDto,
   CreateReportUserDto,
 } from '../dto/create-report.dto';
-import { ReportBoard, ReportUser } from '../entity/report.entity';
+import { ReportedBoard, ReportedUser } from '../entity/report.entity';
 
-@EntityRepository(ReportBoard)
-export class ReportedBoardRepository extends Repository<ReportBoard> {
+@EntityRepository(ReportedBoard)
+export class ReportedBoardRepository extends Repository<ReportedBoard> {
   async createBoardReport(
     createReportBoardDto: CreateReportBoardDto,
-  ): Promise<ReportBoard> {
-    const { boardNo, reportUserNo, firstNo, secondNo, thirdNo, description } =
-      createReportBoardDto;
+  ): Promise<ReportedBoard> {
+    const {
+      reportedBoardNo,
+      reportUserNo,
+      firstNo,
+      secondNo,
+      thirdNo,
+      description,
+    } = createReportBoardDto;
 
     const reportedBoard = this.create({
-      board: boardNo,
-      report_user_no: reportUserNo,
+      reportedBoard: reportedBoardNo,
+      reportUser: reportUserNo,
       first_no: firstNo,
       second_no: secondNo,
       third_no: thirdNo,
@@ -27,17 +33,23 @@ export class ReportedBoardRepository extends Repository<ReportBoard> {
   }
 }
 
-@EntityRepository(ReportUser)
-export class ReportedUserRepository extends Repository<ReportUser> {
+@EntityRepository(ReportedUser)
+export class ReportedUserRepository extends Repository<ReportedUser> {
   async createUserReport(
     createReportUserDto: CreateReportUserDto,
-  ): Promise<ReportUser> {
-    const { userNo, reportUserNo, firstNo, secondNo, thirdNo, description } =
-      createReportUserDto;
+  ): Promise<ReportedUser> {
+    const {
+      reportedUserNo,
+      reportUserNo,
+      firstNo,
+      secondNo,
+      thirdNo,
+      description,
+    } = createReportUserDto;
 
     const reportedBoard = this.create({
-      user_no: userNo,
-      report_user_no: reportUserNo,
+      reportedUser: reportedUserNo,
+      reportUser: reportUserNo,
       first_no: firstNo,
       second_no: secondNo,
       third_no: thirdNo,
