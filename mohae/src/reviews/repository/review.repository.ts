@@ -1,4 +1,3 @@
-import { Board } from 'src/boards/entity/board.entity';
 import { EntityRepository, Repository } from 'typeorm';
 import { CreateReviewDto } from '../dto/create-review.dto';
 import { Review } from '../entity/review.entity';
@@ -9,7 +8,7 @@ export class ReviewRepository extends Repository<Review> {
     const { boardNo, reviewerNo, description, rating } = createReviewDto;
     const createdReview = this.create({
       board: boardNo,
-      reviewer_no: reviewerNo,
+      reviewer: reviewerNo,
       description,
       rating,
     });

@@ -14,8 +14,7 @@ import {
 
 @Entity('boards')
 export class Board extends BaseEntity {
-  @PrimaryGeneratedColumn({
-  })
+  @PrimaryGeneratedColumn()
   @OneToMany((type) => Review, (review) => review.board, { eager: false })
   @OneToMany((type) => ReportBoard, (report) => report.board, { eager: false })
   no: number;

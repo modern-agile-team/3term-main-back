@@ -1,3 +1,4 @@
+import { User } from 'src/auth/entity/user.entity';
 import { Board } from 'src/boards/entity/board.entity';
 import {
   BaseEntity,
@@ -15,10 +16,8 @@ export class Review extends BaseEntity {
   @ManyToOne((type) => Board, (board) => board.no, { eager: true })
   board: number;
 
-  @Column({
-    type: 'int',
-  })
-  reviewer_no: number;
+  @ManyToOne((type) => User, (user) => user.no, { eager: true })
+  reviewer: number;
 
   @Column({
     type: 'mediumtext',
