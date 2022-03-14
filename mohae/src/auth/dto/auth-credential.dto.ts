@@ -17,3 +17,8 @@ export class CreateUserDto {
 
   photo_url: string;
 }
+
+export class SignInDto {
+  email: string;
+  password: string;
+}
