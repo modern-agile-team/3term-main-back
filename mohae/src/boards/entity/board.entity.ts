@@ -6,10 +6,8 @@ import {
   BaseEntity,
   Column,
   Entity,
-  JoinColumn,
   ManyToOne,
   OneToMany,
-  OneToOne,
   PrimaryGeneratedColumn,
   Timestamp,
 } from 'typeorm';
@@ -17,7 +15,6 @@ import {
 @Entity('boards')
 export class Board extends BaseEntity {
   @PrimaryGeneratedColumn({
-    type: 'int',
   })
   @OneToMany((type) => Review, (review) => review.board, { eager: false })
   @OneToMany((type) => ReportBoard, (report) => report.board, { eager: false })
@@ -65,8 +62,8 @@ export class Board extends BaseEntity {
   target: boolean;
 
   @ManyToOne((type) => Category, (category) => category.no, { eager: true })
-  category_no: number;
+  category: number;
 
   @ManyToOne((type) => Areas, (area) => area.no, { eager: true })
-  area_no: number;
+  area: number;
 }
