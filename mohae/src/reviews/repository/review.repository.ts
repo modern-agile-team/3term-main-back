@@ -15,7 +15,6 @@ export class ReviewRepository extends Repository<Review> {
     });
 
     await createdReview.save();
-    console.log(await createdReview.save());
     return createdReview;
   }
 }

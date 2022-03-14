@@ -11,8 +11,12 @@ export class ReviewsService {
     private reviewRepository: ReviewRepository,
   ) {}
 
-  async findAll() {
+  async findAll(): Promise<Review[]> {
     return await this.reviewRepository.find();
+  }
+
+  async findOne(no: number): Promise<Review> {
+    return await this.reviewRepository.findOne(no);
   }
 
   async createReview(createReviewDto: CreateReviewDto): Promise<Review> {
