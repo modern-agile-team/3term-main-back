@@ -13,6 +13,7 @@ import { AreasModule } from './areas/areas.module';
 import { ReviewsModule } from './reviews/reviews.module';
 import { SchoolsModule } from './schools/schools.module';
 import { MajorsModule } from './majors/majors.module';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { MajorsModule } from './majors/majors.module';
     ReviewsModule,
     SchoolsModule,
     MajorsModule,
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService],
