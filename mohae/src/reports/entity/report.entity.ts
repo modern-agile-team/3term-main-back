@@ -1,3 +1,4 @@
+import { User } from 'src/auth/entity/user.entity';
 import { Board } from 'src/boards/entity/board.entity';
 import {
   BaseEntity,
@@ -11,10 +12,8 @@ export abstract class ReportContent extends BaseEntity {
   @PrimaryGeneratedColumn()
   no: number;
 
-  @Column({
-    type: 'int',
-  })
-  report_user_no: number;
+  @ManyToOne((type) => User, (user) => user.no, { eager: true })
+  reportUser: number;
 
   @Column({
     type: 'int',
@@ -38,15 +37,13 @@ export abstract class ReportContent extends BaseEntity {
 }
 
 @Entity('reported_boards')
-export class ReportBoard extends ReportContent {
+export class ReportedBoard extends ReportContent {
   @ManyToOne((type) => Board, (board) => board.no, { eager: true })
-  board: number;
+  reportedBoard: number;
 }
 
 @Entity('reported_users')
-export class ReportUser extends ReportContent {
-  @Column({
-    type: 'int',
-  })
-  user_no: number;
+export class ReportedUser extends ReportContent {
+  @ManyToOne((type) => User, (user) => user.no, { eager: true })
+  reportedUser: number;
 }

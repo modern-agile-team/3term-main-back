@@ -4,7 +4,7 @@ import {
   CreateReportBoardDto,
   CreateReportUserDto,
 } from './dto/create-report.dto';
-import { ReportBoard, ReportUser } from './entity/report.entity';
+import { ReportedBoard, ReportedUser } from './entity/report.entity';
 import {
   ReportedBoardRepository,
   ReportedUserRepository,
@@ -20,19 +20,23 @@ export class ReportsService {
     private reportedUserRepository: ReportedUserRepository,
   ) {}
 
-  async findOne(no: number): Promise<ReportBoard> {
+  async findOneBoard(no: number): Promise<ReportedBoard> {
     return await this.reportedBoardRepository.findOne(no);
+  }
+
+  async findOneUser(no: number): Promise<ReportedUser> {
+    return await this.reportedUserRepository.findOne(no);
   }
 
   createBoardReport(
     createReportBoardDto: CreateReportBoardDto,
-  ): Promise<ReportBoard> {
+  ): Promise<ReportedBoard> {
     return this.reportedBoardRepository.createBoardReport(createReportBoardDto);
   }
 
   createUserReport(
     createReportUserDto: CreateReportUserDto,
-  ): Promise<ReportUser> {
+  ): Promise<ReportedUser> {
     return this.reportedUserRepository.createUserReport(createReportUserDto);
   }
 }

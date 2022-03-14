@@ -19,10 +19,10 @@ export abstract class PublicReportDto {
 
 export class CreateReportBoardDto extends PublicReportDto {
   @IsNumber()
-  boardNo: number;
+  reportedBoardNo: number;
 }
 
 export class CreateReportUserDto extends PublicReportDto {
   @IsNumber()
-  userNo: number;
+  reportedUserNo: number;
 }
