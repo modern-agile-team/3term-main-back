@@ -16,7 +16,7 @@ export class Review extends BaseEntity {
     type: 'int',
   })
   @ManyToOne((type) => Board, (board) => board.no, { eager: true })
-  board: Board;
+  board_no: number;
 
   @Column({
     type: 'int',

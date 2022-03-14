@@ -20,7 +20,7 @@ export class Board extends BaseEntity {
     type: 'int',
   })
   @OneToMany(() => ReportBoard, (report) => report.board_no, { eager: false })
-  @OneToMany(() => Review, (review) => review.board, { eager: false })
+  @OneToMany(() => Review, (review) => review.board_no, { eager: false })
   no: number;
 
   @Column({
