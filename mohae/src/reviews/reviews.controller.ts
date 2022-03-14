@@ -1,4 +1,5 @@
 import { Body, Controller, Get, Param, Post } from '@nestjs/common';
+import { Board } from 'src/boards/entity/board.entity';
 import { CreateReviewDto } from './dto/create-review.dto';
 import { Review } from './entity/review.entity';
 import { ReviewsService } from './reviews.service';
@@ -18,7 +19,7 @@ export class ReviewsController {
   }
 
   @Post()
-  createReview(@Body() createReviewDto: CreateReviewDto): Promise<Review> {
-    return this.reviewService.createReview(createReviewDto);
+  createReview(@Body() createReviewDto: CreateReviewDto, board: Board) {
+    this.reviewService.createReview(createReviewDto, board);
   }
 }

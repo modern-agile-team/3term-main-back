@@ -2,10 +2,10 @@ import { IsNumber, IsString } from 'class-validator';
 
 export class CreateReviewDto {
   @IsNumber()
-  boardNo: number;
+  board_no: number;
 
   @IsNumber()
-  reviewerNo: number;
+  reviewer_no: number;
 
   @IsString()
   description: string;
