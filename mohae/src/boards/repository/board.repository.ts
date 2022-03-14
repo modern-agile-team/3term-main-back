@@ -5,7 +5,7 @@ import { Board } from '../entity/board.entity';
 @EntityRepository(Board)
 export class BoardRepository extends Repository<Board> {
   async createBoard(createBoardDto: CreateBoardDto): Promise<Board> {
-    const { thumb, hit, price, title, description, summary, target } =
+    const { thumb, hit, price, title, description, summary, target, category, area } =
       createBoardDto;
 
     const createdboard = this.create({
@@ -16,6 +16,8 @@ export class BoardRepository extends Repository<Board> {
       description,
       summary,
       target,
+      category,
+      area
     });
 
     await createdboard.save();

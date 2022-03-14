@@ -21,4 +21,10 @@ export class CreateBoardDto {
 
   @IsBoolean()
   target: boolean;
+
+  @IsNumber()
+  category: number
+
+  @IsNumber()
+  area: number
 }
