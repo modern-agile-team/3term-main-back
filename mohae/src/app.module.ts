@@ -11,6 +11,7 @@ import { CitiesModule } from './cities/cities.module';
 import { WardsModule } from './wards/wards.module';
 import { AreasModule } from './areas/areas.module';
 import { ReviewsModule } from './reviews/reviews.module';
+import { SchoolsModule } from './schools/schools.module';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { ReviewsModule } from './reviews/reviews.module';
     WardsModule,
     AreasModule,
     ReviewsModule,
+    SchoolsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
