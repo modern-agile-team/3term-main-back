@@ -39,18 +39,12 @@ export abstract class ReportContent extends BaseEntity {
 
 @Entity('reported_boards')
 export class ReportBoard extends ReportContent {
-  @PrimaryGeneratedColumn()
-  no: number;
-
   @ManyToOne((type) => Board, (board) => board.no, { eager: true })
   board: number;
 }
 
 @Entity('reported_users')
 export class ReportUser extends ReportContent {
-  @PrimaryGeneratedColumn()
-  no: number;
-
   @Column({
     type: 'int',
   })
