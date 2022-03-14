@@ -12,12 +12,8 @@ export class Review extends BaseEntity {
   @PrimaryGeneratedColumn()
   no: number;
 
-  @Column({
-    type: 'int',
-    nullable: true,
-  })
   @ManyToOne((type) => Board, (board) => board.no, { eager: true })
-  board: Board;
+  board: number;
 
   @Column({
     type: 'int',

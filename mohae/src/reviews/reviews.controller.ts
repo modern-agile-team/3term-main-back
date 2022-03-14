@@ -19,7 +19,7 @@ export class ReviewsController {
   }
 
   @Post()
-  createReview(@Body() createReviewDto: CreateReviewDto, board: Board) {
-    this.reviewService.createReview(createReviewDto, board);
+  createReview(@Body() createReviewDto: CreateReviewDto) {
+    this.reviewService.createReview(createReviewDto);
   }
 }

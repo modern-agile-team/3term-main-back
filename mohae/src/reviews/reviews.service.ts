@@ -20,7 +20,7 @@ export class ReviewsService {
     return await this.reviewRepository.findOne(no);
   }
 
-  async createReview(createReviewDto: CreateReviewDto, board: Board) {
-    await this.reviewRepository.createReview(createReviewDto, board);
+  async createReview(createReviewDto: CreateReviewDto) {
+    await this.reviewRepository.createReview(createReviewDto);
   }
 }
