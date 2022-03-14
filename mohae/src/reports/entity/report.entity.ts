@@ -43,7 +43,7 @@ export class ReportBoard extends ReportContent {
   no: number;
 
   @ManyToOne((type) => Board, (board) => board.no, { eager: true })
-  board_no: number;
+  board: number;
 }
 
 @Entity('reported_users')

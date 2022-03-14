@@ -19,7 +19,7 @@ export class Board extends BaseEntity {
   @PrimaryGeneratedColumn({
     type: 'int',
   })
-  @OneToMany(() => ReportBoard, (report) => report.board_no, { eager: false })
+  @OneToMany(() => ReportBoard, (report) => report.board, { eager: false })
   @OneToMany(() => Review, (review) => review.board, { eager: false })
   no: number;
 

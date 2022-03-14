@@ -1,24 +1,15 @@
-import { IsBoolean, IsNumber, IsString } from 'class-validator';
+import { IsNumber, IsString } from 'class-validator';
 
 export class CreateReviewDto {
   @IsNumber()
-  thumb: number;
+  boardNo: number;
 
   @IsNumber()
-  hit: number;
-
-  @IsNumber()
-  price: number;
-
-  @IsString()
-  title: string;
+  reviewerNo: number;
 
   @IsString()
   description: string;
 
-  @IsString()
-  summary: string;
-
-  @IsBoolean()
-  target: boolean;
+  @IsNumber()
+  rating: number;
 }
