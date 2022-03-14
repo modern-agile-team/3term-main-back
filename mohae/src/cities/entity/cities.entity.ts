@@ -12,7 +12,6 @@ import {
 @Entity('cities')
 export class Cities extends BaseEntity {
   @PrimaryGeneratedColumn({
-    type: 'int',
   })
   @OneToMany((type) => Areas, (area) => area.city, { eager: false })
   no: number;

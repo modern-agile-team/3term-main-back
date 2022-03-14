@@ -10,9 +10,8 @@ import {
 @Entity('category')
 export class Category extends BaseEntity {
   @PrimaryGeneratedColumn({
-    type: 'int',
   })
-  @OneToMany((type) => Board, (board) => board.category_no, { eager: false })
+  @OneToMany((type) => Board, (board) => board.category, { eager: false })
   no: number;
 
   @Column({

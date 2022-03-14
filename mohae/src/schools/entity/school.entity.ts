@@ -3,7 +3,6 @@ import { BaseEntity, Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 @Entity('schools')
 export class School extends BaseEntity {
   @PrimaryGeneratedColumn({
-    type: 'int',
   })
   no: number;
 
