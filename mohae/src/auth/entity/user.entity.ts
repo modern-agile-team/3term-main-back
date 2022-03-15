@@ -1,5 +1,5 @@
-import { ReportedUser } from 'src/reports/entity/report.entity';
-import { Review } from 'src/reviews/entity/review.entity';
+import { Major } from 'src/majors/entity/major.entity';
+import { School } from 'src/schools/entity/school.entity';
 import {
   BaseEntity,
   Column,
@@ -14,13 +14,6 @@ import {
 @Unique(['email', 'nickname'])
 export class User extends BaseEntity {
   @PrimaryGeneratedColumn()
-  @OneToMany((type) => Review, (review) => review.reviewer, { eager: false })
-  @OneToMany((type) => ReportedUser, (report) => report.reportedUser, {
-    eager: false,
-  })
-  @OneToMany((type) => ReportedUser, (reportUser) => reportUser.reportUser, {
-    eager: false,
-  })
   no: number;
 
   @Column({
@@ -41,14 +34,12 @@ export class User extends BaseEntity {
   in_date: Timestamp;
 
   // FK
-  @Column({
-    type: 'int',
+  @OneToMany((type) => School, (school) => school.no, {
+    eager: true,
   })
   school_no: number;
   // FK
-  @Column({
-    type: 'int',
-  })
+  @OneToMany((type) => Major, (major) => major.no, { eager: true })
   major_no: number;
 
   @Column({
@@ -70,9 +61,9 @@ export class User extends BaseEntity {
   nickname: string;
 
   @Column({
-    type: 'tinyint',
+    type: 'boolean',
   })
-  manager: number;
+  manager: boolean;
 
   @Column({
     type: 'varchar',
