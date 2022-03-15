@@ -1,12 +1,6 @@
 import { IsBoolean, IsNumber, IsString } from 'class-validator';
 
-export class CreateBoardDto {
-  @IsNumber()
-  thumb: number;
-
-  @IsNumber()
-  hit: number;
-
+export abstract class BoardContent {
   @IsNumber()
   price: number;
 
@@ -17,14 +11,17 @@ export class CreateBoardDto {
   description: string;
 
   @IsString()
-  summary: string;
+  summary?: string;
 
   @IsBoolean()
   target: boolean;
 
   @IsNumber()
-  category: number
+  category: number;
 
   @IsNumber()
-  area: number
+  area: number;
 }
+
+export class CreateBoardDto extends BoardContent {}
+export class UpdateBoardDto extends BoardContent {}

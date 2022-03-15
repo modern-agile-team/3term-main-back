@@ -1,4 +1,5 @@
 import { IsBoolean, IsNumber, IsString } from 'class-validator';
+import { School } from 'src/schools/entity/school.entity';
 
 export class CreateUserDto {
   @IsString()
@@ -11,9 +12,9 @@ export class CreateUserDto {
   name: string;
 
   @IsNumber()
-  school: number;
+  school: School;
 
-  @IsNumber()
+  @IsString()
   major_no: number;
 
   @IsString()

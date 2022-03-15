@@ -3,9 +3,6 @@ import {
   BaseEntity,
   Column,
   Entity,
-  JoinColumn,
-  ManyToMany,
-  ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
@@ -21,9 +18,6 @@ export class School extends BaseEntity {
   })
   name: string;
 
-  @OneToMany((type) => User, (user) => user.no, {
-    eager: true,
-    onUpdate: 'CASCADE',
-  })
+  @OneToMany((type) => User, (user) => user.no, { eager: true })
   users: User[];
 }
