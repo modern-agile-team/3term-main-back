@@ -6,6 +6,7 @@ import {
   BaseEntity,
   Column,
   Entity,
+  JoinColumn,
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
@@ -39,11 +40,13 @@ export class Board extends BaseEntity {
 
   @Column({
     type: 'int',
+    default: 0,
   })
   thumb: number;
 
   @Column({
     type: 'int',
+    default: 0,
   })
   hit: number;
 
@@ -63,8 +66,10 @@ export class Board extends BaseEntity {
   target: boolean;
 
   @ManyToOne((type) => Category, (category) => category.no, { eager: true })
+  @JoinColumn({ name: 'categoryNo' })
   category: number;
 
   @ManyToOne((type) => Area, (area) => area.no, { eager: true })
+  @JoinColumn({ name: 'areaNo' })
   area: number;
 }

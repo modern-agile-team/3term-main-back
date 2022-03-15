@@ -7,7 +7,11 @@ import { Category } from 'src/categories/entity/category.entity';
 import { City } from 'src/cities/entity/cities.entity';
 import { Faq } from 'src/faqs/entity/faq.entity';
 import { Major } from 'src/majors/entity/major.entity';
-import { ReportedBoard, ReportedUser } from 'src/reports/entity/report.entity';
+import {
+  ReportContent,
+  ReportedBoard,
+  ReportedUser,
+} from 'src/reports/entity/report.entity';
 import { Review } from 'src/reviews/entity/review.entity';
 import { School } from 'src/schools/entity/school.entity';
 import { Ward } from 'src/wards/entity/wards.entity';
@@ -31,8 +35,9 @@ export const typeORMConfig: TypeOrmModuleOptions = {
     City,
     Faq,
     Major,
-    ReportedBoard,
+    ReportContent,
     ReportedUser,
+    ReportedBoard,
     Review,
     School,
     Ward,

@@ -9,7 +9,6 @@ export class UserRepository extends Repository<User> {
     const {
       email,
       password,
-      school_no,
       major_no,
       phone,
       nickname,
@@ -23,7 +22,6 @@ export class UserRepository extends Repository<User> {
       email,
       salt: hashedPassword,
       name,
-      school_no,
       major_no,
       phone,
       nickname,
