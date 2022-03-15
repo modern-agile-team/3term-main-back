@@ -9,8 +9,7 @@ import {
 
 @Entity('wards')
 export class Wards extends BaseEntity {
-  @PrimaryGeneratedColumn({
-  })
+  @PrimaryGeneratedColumn({})
   @OneToMany((type) => Areas, (area) => area.ward, { eager: false })
   no: number;
 
