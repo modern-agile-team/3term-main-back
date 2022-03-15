@@ -11,7 +11,7 @@ export class CreateUserDto {
   name: string;
 
   @IsNumber()
-  school_no: number;
+  school: number;
 
   @IsNumber()
   major_no: number;

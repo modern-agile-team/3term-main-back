@@ -62,9 +62,15 @@ export class Board extends BaseEntity {
   })
   target: boolean;
 
-  @ManyToOne((type) => Category, (category) => category.no, { eager: true })
+  @ManyToOne((type) => Category, (category) => category.no, {
+    eager: true,
+    onUpdate: 'CASCADE',
+  })
   category: number;
 
-  @ManyToOne((type) => Area, (area) => area.no, { eager: true })
+  @ManyToOne((type) => Area, (area) => area.no, {
+    eager: true,
+    onUpdate: 'CASCADE',
+  })
   area: number;
 }

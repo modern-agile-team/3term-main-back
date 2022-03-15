@@ -5,6 +5,7 @@ import { CreateUserDto, SignInDto } from './dto/auth-credential.dto';
 import { UserRepository } from './repository/user.repository';
 import * as bcrypt from 'bcryptjs';
 import { JwtService } from '@nestjs/jwt';
+import { clearConfigCache } from 'prettier';
 
 @Injectable()
 export class AuthService {
@@ -18,16 +19,19 @@ export class AuthService {
   }
 
   async signIn(signInDto: SignInDto): Promise<{ accessToken: string }> {
-    const { email, password } = signInDto;
-    const user = await this.userRepository.findOne({ email });
+    try {
+      const { email, password } = signInDto;
+      const user = await this.userRepository.findOne({ email });
+      if (user && (await bcrypt.compare(password, user.salt))) {
+        const payload = { email };
+        const accessToken = await this.jwtService.sign(payload);
 
-    if (user && (await bcrypt.compare(password, user.salt))) {
-      const payload = { email };
-      const accessToken = await this.jwtService.sign(payload);
-
-      return { accessToken };
-    } else {
-      throw new UnauthorizedException('로그인 실패');
+        return { accessToken };
+      } else {
+        throw new UnauthorizedException('로그인 실패');
+      }
+    } catch (e) {
+      console.log(e);
     }
   }
 }
