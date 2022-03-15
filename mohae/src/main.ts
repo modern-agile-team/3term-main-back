@@ -2,10 +2,18 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import * as config from 'config';
 import { Logger, ValidationPipe } from '@nestjs/common';
+import { getConnection } from 'typeorm';
 declare const module: any;
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  const connection = getConnection();
+  console.log(connection.isConnected);
+
+  if (connection.isConnected) {
+    await connection.close();
+  }
+  console.log(connection.isConnected);
   const serverConfig = config.get('server');
   const port = serverConfig.port;
   app.useGlobalPipes(
@@ -23,5 +31,9 @@ async function bootstrap() {
     module.hot.accept();
     module.hot.dispose(() => app.close());
   }
+  // if (module.hot) {
+  //   module.hot.accept();
+  //   module.hot.dispose(() => app.close());
+  // }
 }
 bootstrap();
