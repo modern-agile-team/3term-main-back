@@ -11,7 +11,7 @@ import {
 } from '@nestjs/common';
 import { BoardUpdate } from './board.model';
 import { BoardsService } from './boards.service';
-import { CreateBoardDto } from './dto/board.dto';
+import { CreateBoardDto, UpdateBoardDto } from './dto/board.dto';
 import { Board } from './entity/board.entity';
 
 @Controller('boards')
@@ -42,9 +42,9 @@ export class BoardsController {
   @Patch('/:no')
   updateBoard(
     @Param('no') no: number,
-    @Body() data: BoardUpdate,
+    @Body() updateBoardDto: UpdateBoardDto,
   ): Promise<Board> {
-    this.boardService.update(no, data);
+    this.boardService.update(no, updateBoardDto);
     return Object.assign({
       statusCode: 201,
       msg: '게시글 수정이 완료되었습니다.',

@@ -12,7 +12,7 @@ export class AuthController {
   @Post('/signin')
   async signIn(@Body() signInDto: SignInDto): Promise<{ accessToken: string }> {
     const result = await this.authService.signIn(signInDto);
-    console.log(result);
+
     return result;
   }
 }

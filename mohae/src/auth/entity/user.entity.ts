@@ -1,9 +1,11 @@
 import { ReportedUser } from 'src/reports/entity/report.entity';
 import { Review } from 'src/reviews/entity/review.entity';
+import { School } from 'src/schools/entity/school.entity';
 import {
   BaseEntity,
   Column,
   Entity,
+  ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
   Timestamp,
@@ -41,10 +43,11 @@ export class User extends BaseEntity {
   in_date: Timestamp;
 
   // FK
-  @Column({
-    type: 'int',
-  })
-  school_no: number;
+  // @Column({
+  //   type: 'int',
+  // })
+  @ManyToOne((type) => School, (school) => school.no, { eager: true })
+  school: School;
   // FK
   @Column({
     type: 'int',
@@ -72,7 +75,7 @@ export class User extends BaseEntity {
   @Column({
     type: 'tinyint',
   })
-  manager: number;
+  manager: boolean;
 
   @Column({
     type: 'varchar',
