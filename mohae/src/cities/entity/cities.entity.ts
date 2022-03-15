@@ -1,4 +1,4 @@
-import { Areas } from 'src/areas/entity/areas.entity';
+import { Area } from 'src/areas/entity/areas.entity';
 import {
   BaseEntity,
   Column,
@@ -8,9 +8,9 @@ import {
 } from 'typeorm';
 
 @Entity('cities')
-export class Cities extends BaseEntity {
+export class City extends BaseEntity {
   @PrimaryGeneratedColumn({})
-  @OneToMany((type) => Areas, (area) => area.city, { eager: false })
+  @OneToMany((type) => Area, (area) => area.city, { eager: false })
   no: number;
 
   @Column({

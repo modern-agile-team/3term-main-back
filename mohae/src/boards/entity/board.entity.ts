@@ -1,4 +1,4 @@
-import { Areas } from 'src/areas/entity/areas.entity';
+import { Area } from 'src/areas/entity/areas.entity';
 import { Category } from 'src/categories/entity/category.entity';
 import { ReportedBoard } from 'src/reports/entity/report.entity';
 import { Review } from 'src/reviews/entity/review.entity';
@@ -65,6 +65,6 @@ export class Board extends BaseEntity {
   @ManyToOne((type) => Category, (category) => category.no, { eager: true })
   category: number;
 
-  @ManyToOne((type) => Areas, (area) => area.no, { eager: true })
+  @ManyToOne((type) => Area, (area) => area.no, { eager: true })
   area: number;
 }

@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Areas } from './entity/areas.entity';
+import { Area } from './entity/areas.entity';
 import { AreasRepository } from './repository/area.repository';
 
 @Injectable()
@@ -10,7 +10,7 @@ export class AreasService {
     private areasRepository: AreasRepository,
   ) {}
 
-  async getAllAreas(): Promise<Areas[]> {
+  async getAllAreas(): Promise<Area[]> {
     return this.areasRepository.find();
   }
 }

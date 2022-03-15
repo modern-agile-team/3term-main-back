@@ -1,6 +1,6 @@
 import { Board } from 'src/boards/entity/board.entity';
-import { Cities } from 'src/cities/entity/cities.entity';
-import { Wards } from 'src/wards/entity/wards.entity';
+import { City } from 'src/cities/entity/cities.entity';
+import { Ward } from 'src/wards/entity/wards.entity';
 import {
   BaseEntity,
   Entity,
@@ -10,14 +10,14 @@ import {
 } from 'typeorm';
 
 @Entity('areas')
-export class Areas extends BaseEntity {
+export class Area extends BaseEntity {
   @PrimaryGeneratedColumn()
   @OneToMany((type) => Board, (board) => board.area, { eager: false })
   no: number;
 
-  @ManyToOne((type) => Cities, (cities) => cities.no, { eager: true })
+  @ManyToOne((type) => City, (citie) => citie.no, { eager: true })
   city: number;
 
-  @ManyToOne((type) => Wards, (ward) => ward.no, { eager: true })
+  @ManyToOne((type) => Ward, (ward) => ward.no, { eager: true })
   ward: number;
 }
