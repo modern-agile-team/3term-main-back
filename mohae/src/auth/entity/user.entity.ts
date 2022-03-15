@@ -1,4 +1,4 @@
-import { ReportContent, ReportedUser } from 'src/reports/entity/report.entity';
+import { ReportedUser } from 'src/reports/entity/report.entity';
 import { Review } from 'src/reviews/entity/review.entity';
 import {
   BaseEntity,

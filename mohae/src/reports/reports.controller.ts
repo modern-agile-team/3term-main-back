@@ -33,27 +33,28 @@ export class ReportsController {
 
   @Post('board')
   @UsePipes(ValidationPipe)
-  createBoardReport(
-    @Body() createReportBoardDto: CreateReportBoardDto,
-  ): Promise<ReportedBoard> {
+  createBoardReport(@Body() createReportBoardDto: CreateReportBoardDto) {
     this.logger.verbose(
       `Board report has been received. Reported board Payload: ${JSON.stringify(
         createReportBoardDto,
       )}`,
     );
-    return this.reportsService.createBoardReport(createReportBoardDto);
+    const response =
+      this.reportsService.createBoardReport(createReportBoardDto);
+
+    return response;
   }
 
   @Post('user')
   @UsePipes(ValidationPipe)
-  createUserReport(
-    @Body() createReportUserDto: CreateReportUserDto,
-  ): Promise<ReportedUser> {
+  createUserReport(@Body() createReportUserDto: CreateReportUserDto) {
     this.logger.verbose(
       `User report has been received. Reported user Payload: ${JSON.stringify(
         createReportUserDto,
       )}`,
     );
-    return this.reportsService.createUserReport(createReportUserDto);
+    const response = this.reportsService.createUserReport(createReportUserDto);
+
+    return response;
   }
 }

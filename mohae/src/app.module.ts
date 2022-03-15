@@ -17,7 +17,6 @@ import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forRoot(typeORMConfig),
     ReportsModule,
     FaqsModule,
     CategoriesModule,
@@ -29,6 +28,7 @@ import { AuthModule } from './auth/auth.module';
     SchoolsModule,
     MajorsModule,
     AuthModule,
+    TypeOrmModule.forRoot(typeORMConfig),
   ],
   controllers: [AppController],
   providers: [AppService],

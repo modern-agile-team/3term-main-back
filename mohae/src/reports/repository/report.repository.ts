@@ -1,3 +1,7 @@
+import {
+  InternalServerErrorException,
+  NotFoundException,
+} from '@nestjs/common';
 import { EntityRepository, Repository } from 'typeorm';
 import {
   CreateReportBoardDto,
@@ -7,9 +11,7 @@ import { ReportedBoard, ReportedUser } from '../entity/report.entity';
 
 @EntityRepository(ReportedBoard)
 export class ReportedBoardRepository extends Repository<ReportedBoard> {
-  async createBoardReport(
-    createReportBoardDto: CreateReportBoardDto,
-  ): Promise<ReportedBoard> {
+  async createBoardReport(createReportBoardDto: CreateReportBoardDto) {
     const {
       reportedBoardNo,
       reportUserNo,
@@ -28,16 +30,26 @@ export class ReportedBoardRepository extends Repository<ReportedBoard> {
       description,
     });
 
-    await reportedBoard.save();
-    return reportedBoard;
+    try {
+      await reportedBoard.save();
+      return reportedBoard;
+    } catch (e) {
+      if (e.errno === 1452) {
+        throw new NotFoundException(
+          `신고 에러 : 해당 게시글이 존재하지 않습니다.`,
+        );
+      } else {
+        throw new InternalServerErrorException(
+          `서버 에러 : 게시글 신고 에러입니다.`,
+        );
+      }
+    }
   }
 }
 
 @EntityRepository(ReportedUser)
 export class ReportedUserRepository extends Repository<ReportedUser> {
-  async createUserReport(
-    createReportUserDto: CreateReportUserDto,
-  ): Promise<ReportedUser> {
+  async createUserReport(createReportUserDto: CreateReportUserDto) {
     const {
       reportedUserNo,
       reportUserNo,
@@ -46,8 +58,7 @@ export class ReportedUserRepository extends Repository<ReportedUser> {
       thirdNo,
       description,
     } = createReportUserDto;
-
-    const reportedBoard = this.create({
+    const reportedUser = this.create({
       reportedUser: reportedUserNo,
       reportUser: reportUserNo,
       first_no: firstNo,
@@ -56,7 +67,19 @@ export class ReportedUserRepository extends Repository<ReportedUser> {
       description,
     });
 
-    await reportedBoard.save();
-    return reportedBoard;
+    try {
+      await reportedUser.save();
+      return reportedUser;
+    } catch (e) {
+      if (e.errno === 1452) {
+        throw new NotFoundException(
+          `신고 에러 : 해당 유저가 존재하지 않습니다.`,
+        );
+      } else {
+        throw new InternalServerErrorException(
+          `서버 에러 : 유저 신고 에러입니다.`,
+        );
+      }
+    }
   }
 }
