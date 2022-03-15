@@ -28,15 +28,45 @@ export class ReportsService {
     return await this.reportedUserRepository.findOne(no);
   }
 
-  createBoardReport(
-    createReportBoardDto: CreateReportBoardDto,
-  ): Promise<ReportedBoard> {
-    return this.reportedBoardRepository.createBoardReport(createReportBoardDto);
+  async createBoardReport(createReportBoardDto: CreateReportBoardDto) {
+    const report = await this.reportedBoardRepository.createBoardReport(
+      createReportBoardDto,
+    );
+
+    if (report) {
+      return {
+        success: true,
+        reportNo: report.no,
+        status: 201,
+        msg: '게시글 신고가 정상적으로 등록되었습니다.',
+      };
+    } else {
+      return {
+        success: false,
+        status: 500,
+        msg: '게시글 신고 에러: 알 수 없는 에러입니다.',
+      };
+    }
   }
 
-  createUserReport(
-    createReportUserDto: CreateReportUserDto,
-  ): Promise<ReportedUser> {
-    return this.reportedUserRepository.createUserReport(createReportUserDto);
+  async createUserReport(createReportUserDto: CreateReportUserDto) {
+    const report = await this.reportedUserRepository.createUserReport(
+      createReportUserDto,
+    );
+
+    if (report) {
+      return {
+        success: true,
+        reportNo: report.no,
+        status: 201,
+        msg: '유저 신고가 정상적으로 등록되었습니다.',
+      };
+    } else {
+      return {
+        success: false,
+        status: 500,
+        msg: '유저 신고 에러: 알 수 없는 에러입니다.',
+      };
+    }
   }
 }
