@@ -13,8 +13,8 @@ export class UserRepository extends Repository<User> {
       password,
       phone,
       nickname,
-      school,
-      major,
+      // school,
+      // major,
       manager,
       name,
       photo_url,
@@ -29,8 +29,8 @@ export class UserRepository extends Repository<User> {
       nickname,
       manager,
       photo_url,
-      school,
-      major,
+      // school,
+      // major,
     });
     try {
       await user.save();

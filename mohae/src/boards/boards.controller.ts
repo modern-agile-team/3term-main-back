@@ -8,24 +8,17 @@ import {
   UsePipes,
   ValidationPipe,
   Patch,
+  ParseIntPipe,
 } from '@nestjs/common';
-import { CreateReviewDto } from 'src/reviews/dto/create-review.dto';
-import { BoardUpdate } from './board.model';
+import { ApiCreatedResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { BoardsService } from './boards.service';
 import { CreateBoardDto, UpdateBoardDto } from './dto/board.dto';
 import { Board } from './entity/board.entity';
 
 @Controller('boards')
+@ApiTags('Boards')
 export class BoardsController {
   constructor(private boardService: BoardsService) {}
-
-  @Patch('review/:no')
-  createBoardReview(
-    @Param('no') no: number,
-    @Body() createReviewDto: CreateReviewDto,
-  ) {
-    return this.boardService.createBoardReview(no, createReviewDto);
-  }
 
   @Get()
   getAllBoard(): Promise<Board[]> {
@@ -39,8 +32,31 @@ export class BoardsController {
 
   @Post()
   @UsePipes(ValidationPipe)
-  createBoard(@Body() createBoardDto: CreateBoardDto): Promise<Board> {
-    return this.boardService.create(createBoardDto);
+  @ApiOperation({
+    summary: '게시글 생성 경로',
+    description: '게시글 생성 API',
+  })
+  @ApiCreatedResponse({
+    description: '성공여부',
+    schema: {
+      example: {
+        statusCode: 201,
+        msg: '게시글 생성이 완료되었습니다.',
+        response: {
+          success: true,
+          createBoardNo: 26,
+        },
+      },
+    },
+  })
+  async createBoard(@Body() createBoardDto: CreateBoardDto): Promise<object> {
+    const response = await this.boardService.createBoard(createBoardDto);
+
+    return Object.assign({
+      statusCode: 201,
+      msg: '게시글 생성이 완료되었습니다.',
+      response,
+    });
   }
 
   @Delete('/:no')
@@ -49,14 +65,16 @@ export class BoardsController {
   }
 
   @Patch('/:no')
-  updateBoard(
+  async updateBoard(
     @Param('no') no: number,
     @Body() updateBoardDto: UpdateBoardDto,
-  ): Promise<Board> {
-    this.boardService.update(no, updateBoardDto);
+  ): Promise<object> {
+    const response = await this.boardService.updateBoard(no, updateBoardDto);
+
     return Object.assign({
       statusCode: 201,
       msg: '게시글 수정이 완료되었습니다.',
+      response,
     });
   }
 }
