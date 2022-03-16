@@ -13,11 +13,15 @@ export class Review extends BaseEntity {
   @PrimaryGeneratedColumn()
   no: number;
 
-  @ManyToOne((type) => Board, (board) => board.no, { eager: true })
-  board: number;
+  @ManyToOne((type) => Board, (board) => board.no, { onDelete: 'SET NULL' })
+  board: Board;
 
-  @ManyToOne((type) => User, (user) => user.no, { eager: true })
-  reviewer: number;
+  // @Column({
+  //   type: 'int',
+  //   default: 1,
+  // })
+  // @ManyToOne((type) => User, (user) => user.no, { eager: true })
+  // reviewer: number;
 
   @Column({
     type: 'mediumtext',

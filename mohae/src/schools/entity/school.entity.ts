@@ -18,6 +18,6 @@ export class School extends BaseEntity {
   })
   name: string;
 
-  @OneToMany((type) => User, (user) => user.no, { eager: true })
+  // @OneToMany((type) => User, (user) => user.no, { eager: true })
   users: User[];
 }

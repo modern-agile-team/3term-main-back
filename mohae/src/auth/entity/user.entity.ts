@@ -16,7 +16,7 @@ import {
 @Unique(['email', 'nickname'])
 export class User extends BaseEntity {
   @PrimaryGeneratedColumn()
-  @OneToMany((type) => Review, (review) => review.reviewer, { eager: false })
+  // @OneToMany((type) => Review, (review) => review.reviewer, { eager: false })
   @OneToMany((type) => ReportedUser, (report) => report.reportedUser, {
     eager: false,
   })
@@ -46,13 +46,13 @@ export class User extends BaseEntity {
   // @Column({
   //   type: 'int',
   // })
-  @ManyToOne((type) => School, (school) => school.no, { eager: true })
-  school: School;
+  // @ManyToOne((type) => School, (school) => school.no, { eager: true })
+  school?: number;
   // FK
   // @Column({
   //   type: 'int',
   // })
-  major_no: number;
+  major_no?: number;
 
   @Column({
     type: 'varchar',
