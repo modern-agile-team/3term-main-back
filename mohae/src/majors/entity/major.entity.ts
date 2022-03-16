@@ -18,6 +18,6 @@ export class Major extends BaseEntity {
   })
   name: string;
 
-  @OneToMany((type) => User, (user) => user.major)
+  // @OneToMany((type) => User, (user) => user.major)
   users: User[];
 }
