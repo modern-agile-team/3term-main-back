@@ -1,8 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { CreateReviewDto } from 'src/reviews/dto/create-review.dto';
-import { ReviewRepository } from 'src/reviews/repository/review.repository';
-import { BoardUpdate } from './board.model';
 import { CreateBoardDto, UpdateBoardDto } from './dto/board.dto';
 import { Board } from './entity/board.entity';
 import { BoardRepository } from './repository/board.repository';
@@ -12,28 +9,7 @@ export class BoardsService {
   constructor(
     @InjectRepository(BoardRepository)
     private boardRepository: BoardRepository,
-    private reviewRepository: ReviewRepository,
   ) {}
-
-  async createBoardReview(no: number, createReviewDto: CreateReviewDto) {
-    try {
-      const board = await this.boardRepository.findOne(no, {
-        relations: ['reviews'],
-      });
-
-      await this.reviewRepository.save(createReviewDto);
-      const review = {
-        boardNo: createReviewDto.boardNo,
-        rating: createReviewDto.rating,
-        description: createReviewDto.description,
-      };
-      board.reviews.push();
-      console.log(board, review);
-      return await this.boardRepository.save(board);
-    } catch (e) {
-      throw console.log(e);
-    }
-  }
 
   async getAllBoards(): Promise<Board[]> {
     return this.boardRepository.find();
@@ -43,7 +19,7 @@ export class BoardsService {
     return this.boardRepository.findOne(no);
   }
 
-  async create(createBoardDto: CreateBoardDto): Promise<Board> {
+  async createBoard(createBoardDto: CreateBoardDto): Promise<object> {
     return this.boardRepository.createBoard(createBoardDto);
   }
 
@@ -54,16 +30,10 @@ export class BoardsService {
     }
   }
 
-  async update(no: number, updateBoardDto: UpdateBoardDto): Promise<Board> {
-    const findBoard = await this.findOne(no);
-    const { title, description, price, summary, target } = updateBoardDto;
-    findBoard.title = title;
-    findBoard.description = description;
-    findBoard.price = price;
-    findBoard.summary = summary;
-    findBoard.target = target;
-    await this.boardRepository.save(findBoard);
-
-    return findBoard;
+  async updateBoard(
+    no: number,
+    updateBoardDto: UpdateBoardDto,
+  ): Promise<object> {
+    return await this.boardRepository.updateBoard(no, updateBoardDto);
   }
 }

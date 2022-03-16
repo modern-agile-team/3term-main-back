@@ -12,6 +12,7 @@ import { ReviewsModule } from './reviews/reviews.module';
 import { SchoolsModule } from './schools/schools.module';
 import { MajorsModule } from './majors/majors.module';
 import { AuthModule } from './auth/auth.module';
+import { ProfilesModule } from './profiles/profiles.module';
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { AuthModule } from './auth/auth.module';
     MajorsModule,
     AuthModule,
     TypeOrmModule.forRoot(typeORMConfig),
+    ProfilesModule,
   ],
   controllers: [AppController],
   providers: [AppService],

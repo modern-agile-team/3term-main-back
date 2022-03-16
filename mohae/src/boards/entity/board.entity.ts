@@ -20,7 +20,10 @@ export class Board extends BaseEntity {
   // })
   no: number;
 
-  // @OneToMany((type) => Review, (review) => review.board, { nullable: true })
+  @OneToMany((type) => Review, (review) => review.board, {
+    nullable: true,
+    eager: true,
+  })
   reviews: Review[];
 
   @Column({

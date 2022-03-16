@@ -6,6 +6,7 @@ import {
   Entity,
   ManyToOne,
   PrimaryGeneratedColumn,
+  Timestamp,
 } from 'typeorm';
 
 @Entity('reviews')
@@ -13,7 +14,9 @@ export class Review extends BaseEntity {
   @PrimaryGeneratedColumn()
   no: number;
 
-  // @ManyToOne((type) => Board, (board) => board.no, { onDelete: 'SET NULL' })
+  @ManyToOne((type) => Board, (board) => board.no, {
+    onDelete: 'SET NULL',
+  })
   board: Board;
 
   @Column({
@@ -36,5 +39,5 @@ export class Review extends BaseEntity {
   @Column({
     type: 'timestamp',
   })
-  in_date: number;
+  in_date: Timestamp;
 }

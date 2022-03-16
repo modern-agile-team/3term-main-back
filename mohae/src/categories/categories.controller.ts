@@ -1,8 +1,10 @@
 import { Controller, Get, Logger, Param, ParseIntPipe } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 import { CategoriesService } from './categories.service';
 import { Category } from './entity/category.entity';
 
 @Controller('categories')
+@ApiTags('Categories')
 export class CategoriesController {
   private logger = new Logger('CategoriesController');
   constructor(private categoryService: CategoriesService) {}
