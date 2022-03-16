@@ -24,21 +24,6 @@ export class BoardRepository extends Repository<Board> {
     return { success: true, createBoardNo: createdboard.no };
   }
 
-  async createReview(
-    no: number,
-    createReviewDto: CreateReviewDto,
-    reviewRepository: ReviewRepository,
-  ): Promise<Board> {
-    const board = await this.findOne(no, {
-      relations: ['reviews'],
-    });
-    const review = await reviewRepository.createReview(createReviewDto);
-
-    board.reviews.push(review);
-
-    return await this.save(board);
-  }
-
   async updateBoard(
     no: number,
     updateBoardDto: UpdateBoardDto,

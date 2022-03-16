@@ -11,8 +11,6 @@ import {
   ParseIntPipe,
 } from '@nestjs/common';
 import { ApiCreatedResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { CreateReviewDto } from 'src/reviews/dto/create-review.dto';
-import { BoardUpdate } from './board.model';
 import { BoardsService } from './boards.service';
 import { CreateBoardDto, UpdateBoardDto } from './dto/board.dto';
 import { Board } from './entity/board.entity';
@@ -21,14 +19,6 @@ import { Board } from './entity/board.entity';
 @ApiTags('Boards')
 export class BoardsController {
   constructor(private boardService: BoardsService) {}
-
-  @Patch('review/:no')
-  createBoardReview(
-    @Param('no', ParseIntPipe) no: number,
-    @Body() createReviewDto: CreateReviewDto,
-  ): Promise<Board> {
-    return this.boardService.createBoardReview(no, createReviewDto);
-  }
 
   @Get()
   getAllBoard(): Promise<Board[]> {
