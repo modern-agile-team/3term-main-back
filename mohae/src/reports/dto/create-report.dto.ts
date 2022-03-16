@@ -1,6 +1,6 @@
 import { IsNumber, IsString } from 'class-validator';
 
-export abstract class PublicReportDto {
+export abstract class CreateReportDto {
   @IsNumber()
   reportUserNo: number;
 
@@ -15,14 +15,4 @@ export abstract class PublicReportDto {
 
   @IsString()
   description: string;
-}
-
-export class CreateReportBoardDto extends PublicReportDto {
-  @IsNumber()
-  reportedBoardNo: number;
-}
-
-export class CreateReportUserDto extends PublicReportDto {
-  @IsNumber()
-  reportedUserNo: number;
 }

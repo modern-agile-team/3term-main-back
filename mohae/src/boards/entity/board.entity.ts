@@ -5,8 +5,6 @@ import {
   BaseEntity,
   Column,
   Entity,
-  JoinColumn,
-  ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
   Timestamp,
@@ -15,10 +13,13 @@ import {
 @Entity('boards')
 export class Board extends BaseEntity {
   @PrimaryGeneratedColumn()
-  // @OneToMany((type) => ReportedBoard, (report) => report.reportedBoard, {
-  //   eager: false,
-  // })
   no: number;
+
+  @OneToMany((type) => ReportedBoard, (report) => report.reportedBoard, {
+    nullable: true,
+    eager: true,
+  })
+  reports: ReportedBoard[];
 
   @OneToMany((type) => Review, (review) => review.board, {
     nullable: true,
