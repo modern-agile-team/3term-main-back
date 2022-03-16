@@ -1,10 +1,13 @@
+import { Major } from 'src/majors/entity/major.entity';
 import { ReportedUser } from 'src/reports/entity/report.entity';
 import { Review } from 'src/reviews/entity/review.entity';
 import { School } from 'src/schools/entity/school.entity';
+
 import {
   BaseEntity,
   Column,
   Entity,
+  JoinColumn,
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
@@ -16,13 +19,6 @@ import {
 @Unique(['email', 'nickname'])
 export class User extends BaseEntity {
   @PrimaryGeneratedColumn()
-  // @OneToMany((type) => Review, (review) => review.reviewer, { eager: false })
-  @OneToMany((type) => ReportedUser, (report) => report.reportedUser, {
-    eager: false,
-  })
-  @OneToMany((type) => ReportedUser, (reportUser) => reportUser.reportUser, {
-    eager: false,
-  })
   no: number;
 
   @Column({
@@ -42,21 +38,14 @@ export class User extends BaseEntity {
   })
   in_date: Timestamp;
 
-  // FK
-  // @Column({
-  //   type: 'int',
-  // })
-  // @ManyToOne((type) => School, (school) => school.no, { eager: true })
-  school?: number;
-  // FK
-  // @Column({
-  //   type: 'int',
-  // })
-  major_no?: number;
+  @ManyToOne((type) => School, (school) => school.users, { eager: true })
+  school: number;
+
+  @ManyToOne((type) => Major, (major) => major, { eager: true })
+  major: number;
 
   @Column({
     type: 'varchar',
-    length: 255,
   })
   email: string;
 
@@ -73,7 +62,7 @@ export class User extends BaseEntity {
   nickname: string;
 
   @Column({
-    type: 'tinyint',
+    type: 'boolean',
   })
   manager: boolean;
 
