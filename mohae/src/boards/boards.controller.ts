@@ -8,7 +8,6 @@ import {
   UsePipes,
   ValidationPipe,
   Patch,
-  ParseIntPipe,
 } from '@nestjs/common';
 import { ApiCreatedResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { BoardsService } from './boards.service';

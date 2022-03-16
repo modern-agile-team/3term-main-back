@@ -38,8 +38,10 @@ export abstract class ReportContent extends BaseEntity {
 
 @Entity('reported_boards')
 export class ReportedBoard extends ReportContent {
-  // @ManyToOne((type) => Board, (board) => board.no, { eager: true })
-  reportedBoard: number;
+  @ManyToOne((type) => Board, (board) => board.no, {
+    onDelete: 'SET NULL',
+  })
+  reportedBoard: Board;
 }
 
 @Entity('reported_users')
