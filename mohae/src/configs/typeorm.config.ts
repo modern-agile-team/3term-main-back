@@ -4,7 +4,6 @@ import { Area } from 'src/areas/entity/areas.entity';
 import { User } from 'src/auth/entity/user.entity';
 import { Board } from 'src/boards/entity/board.entity';
 import { Category } from 'src/categories/entity/category.entity';
-import { City } from 'src/cities/entity/cities.entity';
 import { Faq } from 'src/faqs/entity/faq.entity';
 import { Major } from 'src/majors/entity/major.entity';
 import {
@@ -14,7 +13,6 @@ import {
 } from 'src/reports/entity/report.entity';
 import { Review } from 'src/reviews/entity/review.entity';
 import { School } from 'src/schools/entity/school.entity';
-import { Ward } from 'src/wards/entity/wards.entity';
 
 const dbConfig = config.get('db');
 
@@ -32,7 +30,6 @@ export const typeORMConfig: TypeOrmModuleOptions = {
     User,
     Board,
     Category,
-    City,
     Faq,
     Major,
     ReportContent,
@@ -40,7 +37,6 @@ export const typeORMConfig: TypeOrmModuleOptions = {
     ReportedBoard,
     Review,
     School,
-    Ward,
   ],
   // entities: [__dirname + '/../**/*.entity.{ts,js}'],
   synchronize: dbConfig.synchronize,
