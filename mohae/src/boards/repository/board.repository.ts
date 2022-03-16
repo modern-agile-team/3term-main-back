@@ -31,9 +31,10 @@ export class BoardRepository extends Repository<Board> {
     const board = await this.findOne(no, {
       relations: ['reviews'],
     });
+    const review = await reviewRepository.createReview(createReviewDto);
 
-    const review = await reviewRepository.save(createReviewDto);
     board.reviews.push(review);
+
     return await this.save(board);
   }
 }

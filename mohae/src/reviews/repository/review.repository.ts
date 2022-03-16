@@ -6,15 +6,13 @@ import { Review } from '../entity/review.entity';
 @EntityRepository(Review)
 export class ReviewRepository extends Repository<Review> {
   async createReview(createReviewDto: CreateReviewDto) {
-    const { boardNo, reviewerNo, description, rating } = createReviewDto;
-
+    const { reviewerNo, description, rating } = createReviewDto;
     const createdReview = this.create({
       reviewer: reviewerNo,
       description,
       rating,
     });
 
-    await createdReview.save();
-    return true;
+    return await createdReview.save();
   }
 }
