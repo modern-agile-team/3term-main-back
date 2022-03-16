@@ -11,6 +11,7 @@ export class ProfilesService {
     private userRepository: UserRepository,
   ) {}
 
+  // 프로필 수정이랑 프로필 조회 기능이 Repository가 UserRepository라 ProfileService에 둘 지 UserRepository에 따로 뺄지 정해야함
   async findOneProfile(no: number): Promise<object> {
     const profile = await this.userRepository.findOne(no);
     if (!profile) {

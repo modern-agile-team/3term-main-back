@@ -44,16 +44,10 @@ export class BoardsService {
     }
   }
 
-  async update(no: number, updateBoardDto: UpdateBoardDto): Promise<Board> {
-    const findBoard = await this.findOne(no);
-    const { title, description, price, summary, target } = updateBoardDto;
-    findBoard.title = title;
-    findBoard.description = description;
-    findBoard.price = price;
-    findBoard.summary = summary;
-    findBoard.target = target;
-    await this.boardRepository.save(findBoard);
-
-    return findBoard;
+  async updateBoard(
+    no: number,
+    updateBoardDto: UpdateBoardDto,
+  ): Promise<object> {
+    return await this.boardRepository.updateBoard(no, updateBoardDto);
   }
 }
