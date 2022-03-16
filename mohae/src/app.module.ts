@@ -7,8 +7,6 @@ import { ReportsModule } from './reports/reports.module';
 import { FaqsModule } from './faqs/faqs.module';
 import { CategoriesModule } from './categories/categories.module';
 import { BoardsModule } from './boards/boards.module';
-import { CitiesModule } from './cities/cities.module';
-import { WardsModule } from './wards/wards.module';
 import { AreasModule } from './areas/areas.module';
 import { ReviewsModule } from './reviews/reviews.module';
 import { SchoolsModule } from './schools/schools.module';
@@ -21,8 +19,6 @@ import { AuthModule } from './auth/auth.module';
     FaqsModule,
     CategoriesModule,
     BoardsModule,
-    CitiesModule,
-    WardsModule,
     AreasModule,
     ReviewsModule,
     SchoolsModule,

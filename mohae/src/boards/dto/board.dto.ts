@@ -18,9 +18,6 @@ export abstract class BoardContent {
 
   @IsNumber()
   category: number;
-
-  @IsNumber()
-  area: number;
 }
 
 export class CreateBoardDto extends BoardContent {}
