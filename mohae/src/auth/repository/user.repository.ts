@@ -11,7 +11,7 @@ export class UserRepository extends Repository<User> {
       password,
       phone,
       nickname,
-      school,
+      // school,
       major,
       manager,
       name,
@@ -27,7 +27,7 @@ export class UserRepository extends Repository<User> {
       nickname,
       manager,
       photo_url,
-      school,
+      // school,
       major,
     });
     try {

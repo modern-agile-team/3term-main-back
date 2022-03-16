@@ -12,7 +12,7 @@ export abstract class ReportContent extends BaseEntity {
   @PrimaryGeneratedColumn()
   no: number;
 
-  @ManyToOne((type) => User, (user) => user.no, { eager: true })
+  // @ManyToOne((type) => User, (user) => user.no, { eager: true })
   reportUser: number;
 
   @Column({
@@ -38,12 +38,12 @@ export abstract class ReportContent extends BaseEntity {
 
 @Entity('reported_boards')
 export class ReportedBoard extends ReportContent {
-  @ManyToOne((type) => Board, (board) => board.no, { eager: true })
+  // @ManyToOne((type) => Board, (board) => board.no, { eager: true })
   reportedBoard: number;
 }
 
 @Entity('reported_users')
 export class ReportedUser extends ReportContent {
-  @ManyToOne((type) => User, (user) => user.no, { eager: true })
+  // @ManyToOne((type) => User, (user) => user.no, { eager: true })
   reportedUser: number;
 }

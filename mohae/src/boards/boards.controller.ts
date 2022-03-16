@@ -9,6 +9,7 @@ import {
   ValidationPipe,
   Patch,
 } from '@nestjs/common';
+import { CreateReviewDto } from 'src/reviews/dto/create-review.dto';
 import { BoardUpdate } from './board.model';
 import { BoardsService } from './boards.service';
 import { CreateBoardDto, UpdateBoardDto } from './dto/board.dto';
@@ -17,6 +18,14 @@ import { Board } from './entity/board.entity';
 @Controller('boards')
 export class BoardsController {
   constructor(private boardService: BoardsService) {}
+
+  @Patch('review/:no')
+  createBoardReview(
+    @Param('no') no: number,
+    @Body() createReviewDto: CreateReviewDto,
+  ) {
+    return this.boardService.createBoardReview(no, createReviewDto);
+  }
 
   @Get()
   getAllBoard(): Promise<Board[]> {
