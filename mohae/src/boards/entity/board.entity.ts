@@ -1,4 +1,3 @@
-import { Area } from 'src/areas/entity/areas.entity';
 import { Category } from 'src/categories/entity/category.entity';
 import { ReportedBoard } from 'src/reports/entity/report.entity';
 import { Review } from 'src/reviews/entity/review.entity';
@@ -20,7 +19,7 @@ export class Board extends BaseEntity {
   no: number;
 
   @OneToMany((type) => ReportedBoard, (report) => report.reportedBoard, {
-    eager: false,
+    eager: true,
   })
   reviews: Review[];
 
