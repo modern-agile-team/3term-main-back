@@ -2,17 +2,19 @@ import { EntityRepository, Repository } from 'typeorm';
 import { CreateUserDto } from '../dto/auth-credential.dto';
 import { User } from '../entity/user.entity';
 import * as bcrypt from 'bcryptjs';
+import { Duplex } from 'stream';
+import { ConflictException } from '@nestjs/common';
 
 @EntityRepository(User)
 export class UserRepository extends Repository<User> {
-  async createUser(createUserDto: CreateUserDto): Promise<void> {
+  async createUser(createUserDto: CreateUserDto): Promise<User> {
     const {
       email,
       password,
       phone,
       nickname,
-      // school,
-      // major,
+      school,
+      major,
       manager,
       name,
       photo_url,
@@ -27,13 +29,18 @@ export class UserRepository extends Repository<User> {
       nickname,
       manager,
       photo_url,
-      // school,
-      // major,
+      school,
+      major,
     });
     try {
-      await this.save(user);
-    } catch (error) {
-      console.log(error);
+      await user.save();
+      return user;
+    } catch (e) {
+      if (e.errno === 1062) {
+        throw new ConflictException(
+          '해당 닉네임 또는 이메일이 이미 존재합니다.',
+        );
+      }
     }
   }
 }
