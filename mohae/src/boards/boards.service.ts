@@ -33,7 +33,7 @@ export class BoardsService {
     return this.boardRepository.findOne(no);
   }
 
-  async create(createBoardDto: CreateBoardDto): Promise<Board> {
+  async createBoard(createBoardDto: CreateBoardDto): Promise<object> {
     return this.boardRepository.createBoard(createBoardDto);
   }
 

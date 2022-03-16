@@ -34,5 +34,5 @@ export function setupSwagger(app: INestApplication): void {
     .build();
 
   const document = SwaggerModule.createDocument(app, options);
-  SwaggerModule.setup('api-docs', app, document, swaggerCustomOptions);
+  SwaggerModule.setup('mohae-api-docs', app, document, swaggerCustomOptions);
 }

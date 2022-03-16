@@ -49,11 +49,24 @@ export class BoardsController {
   @ApiCreatedResponse({
     description: '성공여부',
     schema: {
-      example: { success: true },
+      example: {
+        statusCode: 201,
+        msg: '게시글 생성이 완료되었습니다.',
+        response: {
+          success: true,
+          createBoardNo: 26,
+        },
+      },
     },
   })
-  createBoard(@Body() createBoardDto: CreateBoardDto): Promise<Board> {
-    return this.boardService.create(createBoardDto);
+  async createBoard(@Body() createBoardDto: CreateBoardDto): Promise<object> {
+    const response = await this.boardService.createBoard(createBoardDto);
+
+    return Object.assign({
+      statusCode: 201,
+      msg: '게시글 생성이 완료되었습니다.',
+      response,
+    });
   }
 
   @Delete('/:no')
