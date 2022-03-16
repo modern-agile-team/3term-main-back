@@ -6,10 +6,12 @@ import {
   ParseIntPipe,
   Patch,
 } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { ProfilesService } from './profiles.service';
 
 @Controller('profile')
+@ApiTags('Profile')
 export class ProfilesController {
   constructor(private profileService: ProfilesService) {}
 

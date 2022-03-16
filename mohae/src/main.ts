@@ -3,6 +3,7 @@ import { AppModule } from './app.module';
 import * as config from 'config';
 import { Logger, ValidationPipe } from '@nestjs/common';
 import { getConnection } from 'typeorm';
+import { setupSwagger } from './utils/swagger';
 
 declare const module: any;
 
@@ -18,6 +19,9 @@ async function bootstrap() {
       transform: true,
     }),
   );
+
+  //Swagger 환경설정 연결
+  setupSwagger(app);
 
   await app.listen(port);
   Logger.log(`Start Run: ${port}`);

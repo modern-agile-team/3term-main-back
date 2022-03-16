@@ -8,6 +8,7 @@ import {
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 import {
   CreateReportBoardDto,
   CreateReportUserDto,
@@ -16,6 +17,7 @@ import { ReportedBoard, ReportedUser } from './entity/report.entity';
 import { ReportsService } from './reports.service';
 
 @Controller('reports')
+@ApiTags('Reports')
 export class ReportsController {
   private logger = new Logger('ReportsController');
   constructor(private reportsService: ReportsService) {}

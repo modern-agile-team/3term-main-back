@@ -10,6 +10,7 @@ import {
   Patch,
   ParseIntPipe,
 } from '@nestjs/common';
+import { ApiCreatedResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { CreateReviewDto } from 'src/reviews/dto/create-review.dto';
 import { BoardUpdate } from './board.model';
 import { BoardsService } from './boards.service';
@@ -17,6 +18,7 @@ import { CreateBoardDto, UpdateBoardDto } from './dto/board.dto';
 import { Board } from './entity/board.entity';
 
 @Controller('boards')
+@ApiTags('Boards')
 export class BoardsController {
   constructor(private boardService: BoardsService) {}
 
@@ -40,6 +42,16 @@ export class BoardsController {
 
   @Post()
   @UsePipes(ValidationPipe)
+  @ApiOperation({
+    summary: '게시글 생성 경로',
+    description: '게시글 생성 API',
+  })
+  @ApiCreatedResponse({
+    description: '성공여부',
+    schema: {
+      example: { success: true },
+    },
+  })
   createBoard(@Body() createBoardDto: CreateBoardDto): Promise<Board> {
     return this.boardService.create(createBoardDto);
   }
