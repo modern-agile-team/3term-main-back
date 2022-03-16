@@ -4,15 +4,13 @@ import {
   Get,
   Logger,
   Param,
+  ParseIntPipe,
   Post,
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import {
-  CreateReportBoardDto,
-  CreateReportUserDto,
-} from './dto/create-report.dto';
+import { CreateReportDto } from './dto/create-report.dto';
 import { ReportedBoard, ReportedUser } from './entity/report.entity';
 import { ReportsService } from './reports.service';
 
@@ -33,23 +31,32 @@ export class ReportsController {
     return this.reportsService.findOneUser(no);
   }
 
-  @Post('board')
+  @Post('/board/:no')
   @UsePipes(ValidationPipe)
-  createBoardReport(@Body() createReportBoardDto: CreateReportBoardDto) {
+  async createBoardReport(
+    @Param('no', ParseIntPipe) no: number,
+    @Body() createReportDto: CreateReportDto,
+  ) {
     this.logger.verbose(
       `Board report has been received. Reported board Payload: ${JSON.stringify(
-        createReportBoardDto,
+        createReportDto,
       )}`,
     );
-    const response =
-      this.reportsService.createBoardReport(createReportBoardDto);
+    const response = await this.reportsService.createBoardReport(
+      no,
+      createReportDto,
+    );
 
-    return response;
+    return Object.assign({
+      statusCode: 201,
+      msg: '게시글 신고가 접수되었습니다.',
+      response,
+    });
   }
 
-  @Post('user')
+  @Post('/user')
   @UsePipes(ValidationPipe)
-  createUserReport(@Body() createReportUserDto: CreateReportUserDto) {
+  createUserReport(@Body() createReportUserDto: CreateReportDto) {
     this.logger.verbose(
       `User report has been received. Reported user Payload: ${JSON.stringify(
         createReportUserDto,

@@ -8,7 +8,6 @@ import {
   Post,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { BoardsService } from 'src/boards/boards.service';
 import { CreateReviewDto } from './dto/create-review.dto';
 import { Review } from './entity/review.entity';
 import { ReviewsService } from './reviews.service';
@@ -28,7 +27,7 @@ export class ReviewsController {
     return this.reviewService.findOne(no);
   }
 
-  @Patch(':no')
+  @Post(':no')
   async createReview(
     @Param('no', ParseIntPipe) no: number,
     @Body() createReviewDto: CreateReviewDto,
