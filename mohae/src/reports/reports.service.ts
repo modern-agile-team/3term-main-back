@@ -1,9 +1,7 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import {
-  CreateReportBoardDto,
-  CreateReportUserDto,
-} from './dto/create-report.dto';
+import { BoardRepository } from 'src/boards/repository/board.repository';
+import { CreateReportDto } from './dto/create-report.dto';
 import { ReportedBoard, ReportedUser } from './entity/report.entity';
 import {
   ReportedBoardRepository,
@@ -18,6 +16,8 @@ export class ReportsService {
 
     @InjectRepository(ReportedUserRepository)
     private reportedUserRepository: ReportedUserRepository,
+
+    private boardsRepository: BoardRepository,
   ) {}
 
   async findOneBoard(no: number): Promise<ReportedBoard> {
@@ -28,30 +28,29 @@ export class ReportsService {
     return await this.reportedUserRepository.findOne(no);
   }
 
-  async createBoardReport(createReportBoardDto: CreateReportBoardDto) {
-    const report = await this.reportedBoardRepository.createBoardReport(
-      createReportBoardDto,
-    );
-
-    if (report) {
-      return {
-        success: true,
-        reportNo: report.no,
-        status: 201,
-        msg: '게시글 신고가 정상적으로 등록되었습니다.',
-      };
+  async createBoardReport(no: number, createReportDto: CreateReportDto) {
+    const board = await this.boardsRepository.findOne(no, {
+      relations: ['reports'],
+    });
+    if (!board) {
+      throw new NotFoundException(`No: ${no} 게시글이 존재하지 않습니다.`);
     } else {
-      return {
-        success: false,
-        status: 500,
-        msg: '게시글 신고 에러: 알 수 없는 에러입니다.',
-      };
+      const reportedBoard =
+        await this.reportedBoardRepository.createBoardReport(
+          no,
+          createReportDto,
+        );
+
+      board.reports.push(reportedBoard);
+
+      await this.boardsRepository.save(board);
+      return board;
     }
   }
 
-  async createUserReport(createReportUserDto: CreateReportUserDto) {
+  async createUserReport(createReportDto: CreateReportDto) {
     const report = await this.reportedUserRepository.createUserReport(
-      createReportUserDto,
+      createReportDto,
     );
 
     if (report) {
