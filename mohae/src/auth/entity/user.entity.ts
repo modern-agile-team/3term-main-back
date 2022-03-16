@@ -53,7 +53,7 @@ export class User extends BaseEntity {
 
   @Column({
     type: 'varchar',
-    // length: 13,
+    // length: 13,,
   })
   phone: string;
 
