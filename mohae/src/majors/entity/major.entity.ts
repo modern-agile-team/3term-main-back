@@ -3,8 +3,6 @@ import {
   BaseEntity,
   Column,
   Entity,
-  JoinColumn,
-  ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
@@ -14,15 +12,12 @@ export class Major extends BaseEntity {
   @PrimaryGeneratedColumn()
   no: number;
 
-  @OneToMany((type) => User, (user) => user.no, {
-    eager: true,
-    onUpdate: 'CASCADE',
-  })
-  users: User[];
-
   @Column({
     type: 'varchar',
     length: 15,
   })
   name: string;
+
+  @OneToMany((type) => User, (user) => user.major)
+  users: User[];
 }

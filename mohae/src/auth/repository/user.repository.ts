@@ -9,9 +9,10 @@ export class UserRepository extends Repository<User> {
     const {
       email,
       password,
-      major_no,
       phone,
       nickname,
+      school,
+      major,
       manager,
       name,
       photo_url,
@@ -22,11 +23,12 @@ export class UserRepository extends Repository<User> {
       email,
       salt: hashedPassword,
       name,
-      major_no,
       phone,
       nickname,
       manager,
       photo_url,
+      school,
+      major,
     });
     try {
       await this.save(user);

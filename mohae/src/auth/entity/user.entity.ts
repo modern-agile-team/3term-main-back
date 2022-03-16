@@ -7,6 +7,7 @@ import {
   BaseEntity,
   Column,
   Entity,
+  JoinColumn,
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
@@ -37,21 +38,14 @@ export class User extends BaseEntity {
   })
   in_date: Timestamp;
 
-  // FK
-  // @Column({
-  //   type: 'int',
-  // })
-  @ManyToOne((type) => School, (school) => school.no, { eager: true })
-  school: School;
-  // FK
-  @ManyToOne((type) => Major, (major) => major.no, {
-    eager: true,
-  })
-  major_no: number;
+  @ManyToOne((type) => School, (school) => school.users, { eager: true })
+  school: number;
+
+  @ManyToOne((type) => Major, (major) => major.users, { eager: true })
+  major: number;
 
   @Column({
     type: 'varchar',
-    length: 255,
   })
   email: string;
 
