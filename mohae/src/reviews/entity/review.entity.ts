@@ -13,7 +13,7 @@ export class Review extends BaseEntity {
   @PrimaryGeneratedColumn()
   no: number;
 
-  // @ManyToOne((type) => Board, (board) => board.no, { onDelete: 'SET NULL' })
+  @ManyToOne((type) => Board, (board) => board.no, { onDelete: 'SET NULL' })
   board: Board;
 
   @Column({

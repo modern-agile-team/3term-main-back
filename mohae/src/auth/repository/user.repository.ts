@@ -12,7 +12,7 @@ export class UserRepository extends Repository<User> {
       phone,
       nickname,
       // school,
-      major,
+      // major,
       manager,
       name,
       photo_url,
@@ -28,7 +28,7 @@ export class UserRepository extends Repository<User> {
       manager,
       photo_url,
       // school,
-      major,
+      // major,
     });
     try {
       await this.save(user);

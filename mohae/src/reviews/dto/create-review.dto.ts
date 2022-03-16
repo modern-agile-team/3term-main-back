@@ -2,14 +2,14 @@ import { IsNumber, IsString } from 'class-validator';
 
 export class CreateReviewDto {
   @IsNumber()
-  readonly boardNo: number;
-
-  // @IsNumber()
-  // reviewerNo: number;
-
-  @IsString()
-  readonly description: string;
+  boardNo: number;
 
   @IsNumber()
-  readonly rating: number;
+  reviewerNo: number;
+
+  @IsString()
+  description: string;
+
+  @IsNumber()
+  rating: number;
 }

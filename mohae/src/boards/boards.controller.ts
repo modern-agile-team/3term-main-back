@@ -8,6 +8,7 @@ import {
   UsePipes,
   ValidationPipe,
   Patch,
+  ParseIntPipe,
 } from '@nestjs/common';
 import { CreateReviewDto } from 'src/reviews/dto/create-review.dto';
 import { BoardUpdate } from './board.model';
@@ -21,9 +22,9 @@ export class BoardsController {
 
   @Patch('review/:no')
   createBoardReview(
-    @Param('no') no: number,
+    @Param('no', ParseIntPipe) no: number,
     @Body() createReviewDto: CreateReviewDto,
-  ) {
+  ): Promise<Board> {
     return this.boardService.createBoardReview(no, createReviewDto);
   }
 
