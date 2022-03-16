@@ -23,13 +23,13 @@ export class User extends BaseEntity {
 
   @Column({
     type: 'varchar',
-    length: 12,
+    // length: 12,
   })
   name: string;
 
   @Column({
     type: 'varchar',
-    length: 255,
+    // length: 255,
   })
   photo_url: string;
 
@@ -46,18 +46,19 @@ export class User extends BaseEntity {
 
   @Column({
     type: 'varchar',
+    // length: 30,
   })
   email: string;
 
   @Column({
     type: 'varchar',
-    length: 255,
+    // length: 13,
   })
   phone: string;
 
   @Column({
     type: 'varchar',
-    length: 255,
+    // length: 8,
   })
   nickname: string;
 
@@ -68,7 +69,7 @@ export class User extends BaseEntity {
 
   @Column({
     type: 'varchar',
-    length: 255,
+    // length: 255,
   })
   salt: string;
 }

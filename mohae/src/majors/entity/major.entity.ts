@@ -14,7 +14,7 @@ export class Major extends BaseEntity {
 
   @Column({
     type: 'varchar',
-    length: 15,
+    // length: 15,
   })
   name: string;
 
