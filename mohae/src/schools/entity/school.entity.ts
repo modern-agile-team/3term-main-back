@@ -1,4 +1,4 @@
-import { User } from 'src/auth/entity/user.entity';
+// import { User } from 'src/auth/entity/user.entity';
 import {
   BaseEntity,
   Column,
@@ -18,10 +18,6 @@ export class School extends BaseEntity {
   })
   name: string;
 
-<<<<<<< HEAD
-  // @OneToMany((type) => User, (user) => user.no, { eager: true })
-=======
-  @OneToMany((type) => User, (user) => user.school)
->>>>>>> e0bba48d0ff09a441f52b1098e08d1fa9a4e6507
-  users: User[];
+  // @OneToMany((type) => User, (user) => user.school)
+  users: number;
 }
