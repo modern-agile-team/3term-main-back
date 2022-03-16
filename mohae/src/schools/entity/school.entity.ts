@@ -1,4 +1,5 @@
 // import { User } from 'src/auth/entity/user.entity';
+import { User } from 'src/auth/entity/user.entity';
 import {
   BaseEntity,
   Column,
@@ -18,6 +19,6 @@ export class School extends BaseEntity {
   })
   name: string;
 
-  // @OneToMany((type) => User, (user) => user.school)
-  users: number;
+  @OneToMany((type) => User, (user) => user.school)
+  users: User[];
 }
