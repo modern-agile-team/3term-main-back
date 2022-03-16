@@ -17,10 +17,12 @@ import {
 export class Board extends BaseEntity {
   @PrimaryGeneratedColumn()
   @OneToMany((type) => Review, (review) => review.board, { eager: false })
+  no: number;
+
   @OneToMany((type) => ReportedBoard, (report) => report.reportedBoard, {
     eager: false,
   })
-  no: number;
+  reviews: Review[];
 
   @Column({
     type: 'varchar',
@@ -66,10 +68,8 @@ export class Board extends BaseEntity {
   target: boolean;
 
   @ManyToOne((type) => Category, (category) => category.no, { eager: true })
-  @JoinColumn({ name: 'categoryNo' })
   category: number;
 
-  @ManyToOne((type) => Area, (area) => area.no, { eager: true })
-  @JoinColumn({ name: 'areaNo' })
+  // @ManyToOne((type) => Area, (area) => area.no, { eager: true })
   area: number;
 }

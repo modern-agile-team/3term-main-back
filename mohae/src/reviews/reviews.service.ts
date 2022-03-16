@@ -13,7 +13,10 @@ export class ReviewsService {
   ) {}
 
   async findAll(): Promise<Review[]> {
-    return await this.reviewRepository.find();
+    const query = this.reviewRepository.createQueryBuilder('reviews');
+    const reviews = await query.getMany();
+
+    return reviews;
   }
 
   async findOne(no: number): Promise<Review> {

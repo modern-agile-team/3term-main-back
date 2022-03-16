@@ -49,9 +49,9 @@ export class User extends BaseEntity {
   @ManyToOne((type) => School, (school) => school.no, { eager: true })
   school: School;
   // FK
-  @Column({
-    type: 'int',
-  })
+  // @Column({
+  //   type: 'int',
+  // })
   major_no: number;
 
   @Column({
