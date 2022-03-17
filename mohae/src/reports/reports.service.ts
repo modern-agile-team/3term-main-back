@@ -60,6 +60,7 @@ export class ReportsService {
         );
 
       board.reports.push(reportedBoard);
+
       const selectedBoard = await this.boardsRepository.findOne(no);
 
       await this.boardsRepository.save(board);
