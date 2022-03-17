@@ -23,8 +23,14 @@ export class ReviewsController {
   }
 
   @Get(':no')
-  findOne(@Param('no') no: number): Promise<Review> {
-    return this.reviewService.findOne(no);
+  async findOneReview(@Param('no') no: number): Promise<Review> {
+    const response = await this.reviewService.findOneReview(no);
+
+    return Object.assign({
+      statusCode: 200,
+      msg: `${no}번 리뷰가  조회되었습니다.`,
+      response,
+    });
   }
 
   @Post(':no')

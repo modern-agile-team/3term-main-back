@@ -22,4 +22,17 @@ export class ReviewRepository extends Repository<Review> {
       throw new InternalServerErrorException(e);
     }
   }
+
+  async findOneReview(no: number): Promise<Review> {
+    try {
+      const review = await this.createQueryBuilder('reviews')
+        .leftJoinAndSelect('reviews.board', 'boards')
+        .where('reviews.no = :no', { no })
+        .getOne();
+
+      return review;
+    } catch (e) {
+      throw new InternalServerErrorException(e);
+    }
+  }
 }

@@ -4,6 +4,7 @@ import {
   BaseEntity,
   Column,
   Entity,
+  JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
   Timestamp,
@@ -16,6 +17,9 @@ export class Review extends BaseEntity {
 
   @ManyToOne((type) => Board, (board) => board.no, {
     onDelete: 'SET NULL',
+  })
+  @JoinColumn({
+    name: 'board_no',
   })
   board: Board;
 
