@@ -20,12 +20,14 @@ export class ReportsService {
     private boardsRepository: BoardRepository,
   ) {}
 
-  async findOneBoard(no: number): Promise<ReportedBoard> {
-    return await this.reportedBoardRepository.findOne(no);
+  async findOneReportBoard(no: number): Promise<ReportedBoard> {
+    const report = await this.reportedBoardRepository.findOneReportBoard(no);
+
+    return report;
   }
 
-  async findOneUser(no: number): Promise<ReportedUser> {
-    return await this.reportedUserRepository.findOne(no);
+  async findOneReportUser(no: number): Promise<void> {
+    return await this.reportedUserRepository.findOneReportUser(no);
   }
 
   async createBoardReport(no: number, createReportDto: CreateReportDto) {
