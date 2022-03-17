@@ -1,6 +1,8 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { Board } from 'src/boards/entity/board.entity';
 import { BoardRepository } from 'src/boards/repository/board.repository';
+import { createQueryBuilder, getConnection, getRepository } from 'typeorm';
 import { CreateReviewDto } from './dto/create-review.dto';
 import { Review } from './entity/review.entity';
 import { ReviewRepository } from './repository/review.repository';
@@ -14,15 +16,19 @@ export class ReviewsService {
     private boardsRepository: BoardRepository,
   ) {}
 
-  async findAll(): Promise<Review[]> {
-    const query = this.reviewRepository.createQueryBuilder('reviews');
-    const reviews = await query.getMany();
+  async findAllReview(): Promise<Review[]> {
+    const reviews = await this.reviewRepository.findAllReview();
 
     return reviews;
   }
 
-  async findOne(no: number): Promise<Review> {
-    return await this.reviewRepository.findOne(no);
+  async findOneReview(no: number): Promise<Review> {
+    const review = await this.reviewRepository.findOneReview(no);
+
+    if (!review) {
+      throw new NotFoundException(`${no}에 해당하는 리뷰를 찾을 수 없습니다.`);
+    }
+    return review;
   }
 
   async createReview(
