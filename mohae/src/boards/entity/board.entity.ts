@@ -78,8 +78,8 @@ export class Board extends BaseEntity {
   })
   category: Category;
 
-  @ManyToOne((type) => Area, (area) => area.no, {
-    onDelete: 'SET NULL',
+  @OneToMany((type) => Area, (area) => area.board, {
+    nullable: true,
   })
   area: Area;
 }

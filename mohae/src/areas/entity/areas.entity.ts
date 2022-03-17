@@ -3,6 +3,7 @@ import {
   BaseEntity,
   Column,
   Entity,
+  ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
@@ -10,10 +11,6 @@ import {
 @Entity('areas')
 export class Area extends BaseEntity {
   @PrimaryGeneratedColumn()
-  @OneToMany((type) => Board, (board) => board.no, {
-    nullable: true,
-    eager: true,
-  })
   no: number;
 
   @Column({
@@ -21,4 +18,10 @@ export class Area extends BaseEntity {
     length: 10,
   })
   name: string;
+
+  @ManyToOne((type) => Board, (board) => board.no, {
+    nullable: true,
+    eager: true,
+  })
+  board: Board[];
 }
