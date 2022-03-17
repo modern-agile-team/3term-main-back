@@ -16,7 +16,7 @@ export class BoardsService {
   ) {}
 
   async getAllBoards(): Promise<Board[]> {
-    return this.boardRepository.find();
+    return this.boardRepository.findAllBoard();
   }
 
   async findOne(no: number): Promise<Board> {

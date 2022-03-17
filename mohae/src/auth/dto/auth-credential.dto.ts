@@ -1,4 +1,12 @@
-import { IsBoolean, IsNumber, IsString } from 'class-validator';
+import {
+  IsBoolean,
+  IsNumber,
+  IsString,
+  Validate,
+  Validator,
+} from 'class-validator';
+import { Unique } from 'typeorm';
+import { User } from '../entity/user.entity';
 
 export class CreateUserDto {
   @IsString()

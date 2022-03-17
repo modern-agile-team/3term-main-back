@@ -1,3 +1,4 @@
+import { Validate } from 'class-validator';
 import { Major } from 'src/majors/entity/major.entity';
 import { ReportedUser } from 'src/reports/entity/report.entity';
 import { Review } from 'src/reviews/entity/review.entity';
@@ -16,20 +17,19 @@ import {
 } from 'typeorm';
 
 @Entity('users')
-@Unique(['email', 'nickname'])
 export class User extends BaseEntity {
   @PrimaryGeneratedColumn()
   no: number;
 
   @Column({
     type: 'varchar',
-    length: 12,
+    // length: 12 ,
   })
   name: string;
 
   @Column({
     type: 'varchar',
-    length: 255,
+    // length: 255,
   })
   photo_url: string;
 
@@ -38,26 +38,29 @@ export class User extends BaseEntity {
   })
   in_date: Timestamp;
 
-  // @ManyToOne((type) => School, (school) => school.users, { eager: true })
+  @ManyToOne((type) => School, (school) => school.users, { eager: true })
   school: number;
 
-  // @ManyToOne((type) => Major, (major) => major, { eager: true })
+  @ManyToOne((type) => Major, (major) => major, { eager: true })
   major: number;
 
   @Column({
+    unique: true,
     type: 'varchar',
+    // length: 30,
   })
   email: string;
 
   @Column({
     type: 'varchar',
-    length: 255,
+    // length: 13,,
   })
   phone: string;
 
   @Column({
+    unique: true,
     type: 'varchar',
-    length: 255,
+    // length: 8,
   })
   nickname: string;
 
@@ -68,7 +71,7 @@ export class User extends BaseEntity {
 
   @Column({
     type: 'varchar',
-    length: 255,
+    // length: 255,
   })
   salt: string;
 }

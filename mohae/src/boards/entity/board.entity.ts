@@ -1,3 +1,4 @@
+import { Area } from 'src/areas/entity/areas.entity';
 import { Category } from 'src/categories/entity/category.entity';
 import { ReportedBoard } from 'src/reports/entity/report.entity';
 import { Review } from 'src/reviews/entity/review.entity';
@@ -5,6 +6,7 @@ import {
   BaseEntity,
   Column,
   Entity,
+  JoinColumn,
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
@@ -76,6 +78,6 @@ export class Board extends BaseEntity {
   })
   category: Category;
 
-  // @ManyToOne((type) => Area, (area) => area.no, { eager: true })
-  area: number;
+  @ManyToOne((type) => Area, (area) => area.no, { eager: false })
+  area: Area;
 }
