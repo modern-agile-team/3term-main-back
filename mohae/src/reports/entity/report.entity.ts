@@ -4,6 +4,7 @@ import {
   BaseEntity,
   Column,
   Entity,
+  JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
@@ -40,6 +41,9 @@ export abstract class ReportContent extends BaseEntity {
 export class ReportedBoard extends ReportContent {
   @ManyToOne((type) => Board, (board) => board.no, {
     onDelete: 'SET NULL',
+  })
+  @JoinColumn({
+    name: 'reported_board',
   })
   reportedBoard: Board;
 }

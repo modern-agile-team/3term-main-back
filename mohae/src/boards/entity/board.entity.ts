@@ -5,6 +5,7 @@ import {
   BaseEntity,
   Column,
   Entity,
+  ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
   Timestamp,
@@ -70,8 +71,10 @@ export class Board extends BaseEntity {
   })
   target: boolean;
 
-  // @ManyToOne((type) => Category, (category) => category.no, { eager: true })
-  category: number;
+  @ManyToOne((type) => Category, (category) => category.no, {
+    onDelete: 'SET NULL',
+  })
+  category: Category;
 
   // @ManyToOne((type) => Area, (area) => area.no, { eager: true })
   area: number;
