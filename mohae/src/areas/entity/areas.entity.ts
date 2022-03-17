@@ -10,6 +10,10 @@ import {
 @Entity('areas')
 export class Area extends BaseEntity {
   @PrimaryGeneratedColumn()
+  @OneToMany((type) => Board, (board) => board.no, {
+    nullable: true,
+    eager: true,
+  })
   no: number;
 
   @Column({
@@ -17,7 +21,4 @@ export class Area extends BaseEntity {
     length: 10,
   })
   name: string;
-
-  @OneToMany((type) => Board, (board) => board.no, { eager: true })
-  board: Board[];
 }

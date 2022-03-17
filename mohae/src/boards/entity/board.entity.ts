@@ -6,6 +6,7 @@ import {
   BaseEntity,
   Column,
   Entity,
+  JoinColumn,
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
@@ -77,6 +78,8 @@ export class Board extends BaseEntity {
   })
   category: Category;
 
-  @ManyToOne((type) => Area, (area) => area.no)
+  @ManyToOne((type) => Area, (area) => area.no, {
+    onDelete: 'SET NULL',
+  })
   area: Area;
 }
