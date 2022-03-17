@@ -29,7 +29,7 @@ export class ReviewRepository extends Repository<Review> {
     try {
       const reviews = await this.createQueryBuilder('reviews')
         .leftJoinAndSelect('reviews.board', 'boards')
-        .where('reviews.board_no = boards.no')
+        .where('reviews.board = boards.no')
         .getMany();
 
       return reviews;
