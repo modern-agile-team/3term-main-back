@@ -18,8 +18,14 @@ export class ReviewsController {
   constructor(private reviewService: ReviewsService) {}
 
   @Get()
-  findAll(): Promise<Review[]> {
-    return this.reviewService.findAll();
+  async findAllReview(): Promise<Review[]> {
+    const response = await this.reviewService.findAllReview();
+
+    return Object.assign({
+      statusCode: 200,
+      msg: `전체 리뷰 조회가 완료되었습니다.`,
+      response,
+    });
   }
 
   @Get(':no')
@@ -28,7 +34,7 @@ export class ReviewsController {
 
     return Object.assign({
       statusCode: 200,
-      msg: `${no}번 리뷰가  조회되었습니다.`,
+      msg: `${no}번 리뷰가 조회되었습니다.`,
       response,
     });
   }

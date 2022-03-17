@@ -16,10 +16,8 @@ export class ReviewsService {
     private boardsRepository: BoardRepository,
   ) {}
 
-  async findAll(): Promise<Review[]> {
-    const reviews = await getRepository(Review)
-      .createQueryBuilder('reviews')
-      .getMany();
+  async findAllReview(): Promise<Review[]> {
+    const reviews = await this.reviewRepository.findAllReview();
 
     return reviews;
   }
