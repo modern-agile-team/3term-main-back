@@ -19,9 +19,9 @@ export class Area extends BaseEntity {
   })
   name: string;
 
-  @ManyToOne((type) => Board, (board) => board.no, {
+  @OneToMany((type) => Board, (board) => board.area, {
     nullable: true,
     eager: true,
   })
-  board: Board[];
+  board: Board;
 }

@@ -1,10 +1,28 @@
-import { NotFoundException } from '@nestjs/common';
+import {
+  InternalServerErrorException,
+  NotFoundException,
+} from '@nestjs/common';
 import { EntityRepository, Repository } from 'typeorm';
 import { CreateBoardDto, UpdateBoardDto } from '../dto/board.dto';
 import { Board } from '../entity/board.entity';
 
 @EntityRepository(Board)
 export class BoardRepository extends Repository<Board> {
+  async findAllBoard(): Promise<Board[]> {
+    try {
+      const boards = await this.createQueryBuilder('boards')
+        .leftJoinAndSelect('boards.area', 'areas')
+        .where('boards.area = areas.no')
+        .getMany();
+
+      return boards;
+    } catch (e) {
+      throw new InternalServerErrorException(
+        `${e} ### 게시판 전체 조회 : 알 수 없는 서버 에러입니다.`,
+      );
+    }
+  }
+
   async createBoard(
     category: object,
     createBoardDto: CreateBoardDto,
