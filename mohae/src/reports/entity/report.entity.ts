@@ -6,8 +6,30 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
+
+@Entity('report_checkboxes')
+export class ReportCheckBox extends BaseEntity {
+  @PrimaryGeneratedColumn()
+  no: number;
+
+  @Column({
+    type: 'varchar',
+    length: 30,
+  })
+  content: string;
+
+  @OneToMany((type) => ReportedUser, (report) => report.first, {
+    nullable: true,
+    eager: true,
+  })
+  @JoinColumn({
+    name: 'report_content',
+  })
+  reportContents: ReportContent[];
+}
 
 export abstract class ReportContent extends BaseEntity {
   @PrimaryGeneratedColumn()
@@ -16,10 +38,10 @@ export abstract class ReportContent extends BaseEntity {
   // @ManyToOne((type) => User, (user) => user.no, { eager: true })
   reportUser: number;
 
-  @Column({
-    type: 'int',
+  @ManyToOne((type) => ReportCheckBox, (reportCheck) => reportCheck.content, {
+    onDelete: 'SET NULL',
   })
-  first_no: number;
+  first: ReportCheckBox;
 
   @Column({
     type: 'int',
