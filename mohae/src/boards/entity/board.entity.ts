@@ -6,6 +6,7 @@ import {
   BaseEntity,
   Column,
   Entity,
+  ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
   Timestamp,
@@ -74,6 +75,6 @@ export class Board extends BaseEntity {
   // @ManyToOne((type) => Category, (category) => category.no, { eager: true })
   category: number;
 
-  // @ManyToOne((type) => Area, (area) => area.board, { eager: false })
+  @ManyToOne((type) => Area, (area) => area.no)
   area: Area;
 }

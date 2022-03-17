@@ -17,4 +17,7 @@ export class Area extends BaseEntity {
     length: 10,
   })
   name: string;
+
+  @OneToMany((type) => Board, (board) => board.no, { eager: true })
+  board: Board[];
 }
