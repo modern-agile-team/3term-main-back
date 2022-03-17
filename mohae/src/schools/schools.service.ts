@@ -10,9 +10,5 @@ export class SchoolsService {
   constructor(
     @InjectRepository(SchoolRepository)
     private schoolRepository: SchoolRepository,
-  ) // private userRepository: UserRepository,
-  {}
-  async findOne(no: number): Promise<School> {
-    return await this.schoolRepository.findOne(no);
-  }
+  ) {}
 }

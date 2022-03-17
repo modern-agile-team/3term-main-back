@@ -38,10 +38,10 @@ export class User extends BaseEntity {
   })
   in_date: Timestamp;
 
-  @ManyToOne((type) => School, (school) => school.users, { eager: true })
-  school: number;
+  @ManyToOne((type) => School, (school) => school.no, { eager: true })
+  school: School;
 
-  @ManyToOne((type) => Major, (major) => major, { eager: true })
+  // @ManyToOne((type) => Major, (major) => major.no, { eager: true })
   major: number;
 
   @Column({

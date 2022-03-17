@@ -19,6 +19,6 @@ export class School extends BaseEntity {
   })
   name: string;
 
-  @OneToMany((type) => User, (user) => user.school)
+  @OneToMany((type) => User, (user) => user.no)
   users: User[];
 }

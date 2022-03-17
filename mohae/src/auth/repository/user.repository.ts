@@ -2,9 +2,7 @@ import { EntityRepository, Repository } from 'typeorm';
 import { CreateUserDto } from '../dto/auth-credential.dto';
 import { User } from '../entity/user.entity';
 import * as bcrypt from 'bcryptjs';
-import { Duplex } from 'stream';
 import { ConflictException } from '@nestjs/common';
-import { School } from 'src/schools/entity/school.entity';
 
 @EntityRepository(User)
 export class UserRepository extends Repository<User> {
@@ -30,11 +28,8 @@ export class UserRepository extends Repository<User> {
       nickname,
       manager,
       photo_url,
-      school,
       major,
     });
-    // const schools = new School();
-    // schools.users.push(school)
 
     try {
       await user.save();
@@ -48,3 +43,24 @@ export class UserRepository extends Repository<User> {
     }
   }
 }
+//   async createSchool(
+//     no: number,
+//     createUserDto: CreateUserDto,
+//   ): Promise<School> {
+//     const school = await this.schoolRepository.findOne(no, {
+//       // school 테이블의 no에 해당하는 녀석에 users 테이블을 붙일 것임
+//       relations: ['users'],
+//     });
+
+//     if (!school) {
+//       throw new NotFoundException(`No: ${no} 해당 학교는 존재하지 않습니다.`);
+//     } else {
+//       const user = await this.userRepository.findOne()
+
+//       school.users.push(user);
+
+//       await this.schoolRepository.save(school);
+//       return user;
+//     }
+//   }
+// }

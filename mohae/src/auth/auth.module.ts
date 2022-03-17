@@ -21,6 +21,7 @@ const jwtConfig = config.get('jwt');
       },
     }),
     TypeOrmModule.forFeature([UserRepository]),
+    SchoolsModule,
   ],
   controllers: [AuthController],
   providers: [AuthService],
