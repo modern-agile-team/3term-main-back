@@ -4,7 +4,11 @@ import {
 } from '@nestjs/common';
 import { EntityRepository, Repository } from 'typeorm';
 import { CreateReportDto } from '../dto/create-report.dto';
-import { ReportedBoard, ReportedUser } from '../entity/report.entity';
+import {
+  ReportCheckBox,
+  ReportedBoard,
+  ReportedUser,
+} from '../entity/report.entity';
 
 @EntityRepository(ReportedBoard)
 export class ReportedBoardRepository extends Repository<ReportedBoard> {
@@ -23,14 +27,16 @@ export class ReportedBoardRepository extends Repository<ReportedBoard> {
     }
   }
 
-  async createBoardReport(no: number, createReportDto: CreateReportDto) {
-    const { reportUserNo, firstNo, secondNo, thirdNo, description } =
-      createReportDto;
+  async createBoardReport(
+    firstCheck: ReportCheckBox,
+    createReportDto: CreateReportDto,
+  ) {
+    const { reportUserNo, secondNo, thirdNo, description } = createReportDto;
 
     try {
       const reportedBoard = this.create({
         reportUser: reportUserNo,
-        first_no: firstNo,
+        // first: firstCheck,
         second_no: secondNo,
         third_no: thirdNo,
         description,
@@ -53,13 +59,12 @@ export class ReportedUserRepository extends Repository<ReportedUser> {
   }
 
   async createUserReport(createReportDto: CreateReportDto) {
-    const { reportUserNo, firstNo, secondNo, thirdNo, description } =
-      createReportDto;
+    const { reportUserNo, description } = createReportDto;
     const reportedUser = this.create({
       reportUser: reportUserNo,
-      first_no: firstNo,
-      second_no: secondNo,
-      third_no: thirdNo,
+      // first_no: firstNo,
+      // second_no: secondNo,
+      // third_no: thirdNo,
       description,
     });
 
@@ -79,3 +84,6 @@ export class ReportedUserRepository extends Repository<ReportedUser> {
     }
   }
 }
+
+@EntityRepository(ReportCheckBox)
+export class ReportCheckBoxRepository extends Repository<ReportCheckBox> {}
