@@ -20,13 +20,13 @@ export class BoardsController {
   constructor(private boardService: BoardsService) {}
 
   @Get()
-  getAllBoard(): Promise<Board[]> {
-    return this.boardService.getAllBoards();
+  async getAllBoard(): Promise<Board[]> {
+    return await this.boardService.getAllBoards();
   }
 
   @Get('/:no')
-  getByOneBoard(@Param('no') no: number): Promise<Board> {
-    return this.boardService.findOne(no);
+  async getByOneBoard(@Param('no') no: number): Promise<Board> {
+    return await this.boardService.findOne(no);
   }
 
   @Post()
@@ -48,7 +48,7 @@ export class BoardsController {
       },
     },
   })
-  async createBoard(@Body() createBoardDto: CreateBoardDto): Promise<object> {
+  async createBoard(@Body() createBoardDto: CreateBoardDto): Promise<Board> {
     const response = await this.boardService.createBoard(createBoardDto);
 
     return Object.assign({

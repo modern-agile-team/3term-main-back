@@ -6,6 +6,7 @@ import {
   Param,
   ParseIntPipe,
   Post,
+  Query,
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common';
@@ -20,15 +21,25 @@ export class ReportsController {
   private logger = new Logger('ReportsController');
   constructor(private reportsService: ReportsService) {}
 
-  // 데이터 입력 테스트를 위한 조회 기능
   @Get('/board/:no')
-  findOneBoard(@Param('no') no: number): Promise<ReportedBoard> {
-    return this.reportsService.findOneBoard(no);
+  async findOneBoardReport(@Param('no') no: number): Promise<ReportedBoard> {
+    const response = await this.reportsService.findOneReportBoard(no);
+    this.logger.verbose(
+      `Reported list(board) has been received. Report Payload: ${JSON.stringify(
+        response,
+      )}`,
+    );
+
+    return Object.assign({
+      statusCode: 200,
+      msg: `No:${no} 신고 내역(게시글)이 조회되었습니다.`,
+      response,
+    });
   }
 
   @Get('/user/:no')
-  findOneUser(@Param('no') no: number): Promise<ReportedUser> {
-    return this.reportsService.findOneUser(no);
+  findOneUserReport(@Param('no') no: number): Promise<void> {
+    return this.reportsService.findOneReportUser(no);
   }
 
   @Post('/board/:no')
