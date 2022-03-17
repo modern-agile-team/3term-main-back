@@ -2,7 +2,11 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { BoardRepository } from 'src/boards/repository/board.repository';
 import { CreateReportDto } from './dto/create-report.dto';
-import { ReportedBoard, ReportedUser } from './entity/report.entity';
+import {
+  ReportCheckBox,
+  ReportedBoard,
+  ReportedUser,
+} from './entity/report.entity';
 import {
   ReportCheckBoxRepository,
   ReportedBoardRepository,
@@ -39,15 +43,16 @@ export class ReportsService {
       relations: ['reports'],
     });
     const { firstNo, secondNo, thirdNo } = createReportDto;
-    const checks = await this.reportCheckBoxRepository.selectCheckConfirm(
-      firstNo,
-      secondNo,
-      thirdNo,
-    );
 
     if (!board) {
       throw new NotFoundException(`No: ${no} 게시글이 존재하지 않습니다.`);
     } else {
+      const checks = await this.reportCheckBoxRepository.selectCheckConfirm(
+        firstNo,
+        secondNo,
+        thirdNo,
+      );
+
       const reportedBoard =
         await this.reportedBoardRepository.createBoardReport(
           checks,
@@ -56,8 +61,16 @@ export class ReportsService {
 
       board.reports.push(reportedBoard);
 
+      const selectedBoard = await this.boardsRepository.findOne(no);
+
       await this.boardsRepository.save(board);
-      await this.reportCheckBoxRepository.saveChecks(checks);
+      await this.reportCheckBoxRepository.saveChecks(
+        firstNo,
+        secondNo,
+        thirdNo,
+        selectedBoard,
+      );
+
       return board;
     }
   }
@@ -81,5 +94,11 @@ export class ReportsService {
         msg: '유저 신고 에러: 알 수 없는 에러입니다.',
       };
     }
+  }
+
+  async findAllCheckbox(): Promise<ReportCheckBox[]> {
+    const checkedReport = await this.reportCheckBoxRepository.findAllCheckbox();
+
+    return checkedReport;
   }
 }

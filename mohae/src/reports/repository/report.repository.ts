@@ -16,7 +16,7 @@ export class ReportedBoardRepository extends Repository<ReportedBoard> {
     try {
       const reportBoard = await this.createQueryBuilder('reported_boards')
         .leftJoinAndSelect('reported_boards.reportedBoard', 'boards')
-        // .leftJoinAndSelect('reported_boards.first', 'report_chechboxes')
+        .leftJoinAndSelect('reported_boards.first', 'report_chechboxes')
         .where('reported_boards.no = :no', { no })
         .getOne();
 
@@ -30,13 +30,14 @@ export class ReportedBoardRepository extends Repository<ReportedBoard> {
 
   async createBoardReport(checks, createReportDto: CreateReportDto) {
     const { reportUserNo, description } = createReportDto;
+    const { first, second, third } = checks;
 
     try {
       const reportedBoard = this.create({
         reportUser: reportUserNo,
-        first: checks[0],
-        second: checks[1],
-        third: checks[2],
+        first,
+        second,
+        third,
         description,
       });
 
@@ -85,24 +86,64 @@ export class ReportedUserRepository extends Repository<ReportedUser> {
 
 @EntityRepository(ReportCheckBox)
 export class ReportCheckBoxRepository extends Repository<ReportCheckBox> {
-  async selectCheckConfirm(first: number, second: number, third: number) {
-    const firstCheck = await this.createQueryBuilder('report_checkboxes')
-      .select()
-      .where('report_checkboxes.no = :no', { no: first })
-      .getOne();
-    const secondCheck = await this.createQueryBuilder('report_checkboxes')
-      .select()
-      .where('report_checkboxes.no = :no', { no: second })
-      .getOne();
-    const thirdCheck = await this.createQueryBuilder('report_checkboxes')
-      .select()
-      .where('report_checkboxes.no = :no', { no: third })
-      .getOne();
+  async findAllCheckbox(): Promise<ReportCheckBox[]> {
+    const checkedReport = this.createQueryBuilder('report_checkboxes')
+      .leftJoinAndSelect('report_checkboxes.firstCheckedReport', 'fisrtReport')
+      .leftJoinAndSelect(
+        'report_checkboxes.secondCheckedReport',
+        'secondReport',
+      )
+      .leftJoinAndSelect('report_checkboxes.thirdCheckedReport', 'thirdReport')
+      .leftJoinAndSelect('fisrtReport.reportedBoard', 'firstCheckBoards')
+      .leftJoinAndSelect('secondReport.reportedBoard', 'secondCheckBoards')
+      .leftJoinAndSelect('thirdReport.reportedBoard', 'thirdCheckBoards')
+      .getMany();
 
-    return [firstCheck, secondCheck, thirdCheck];
+    return checkedReport;
+  }
+  async selectCheckConfirm(
+    firstCheck: number,
+    secondCheck: number,
+    thirdCheck: number,
+  ) {
+    const checks = {
+      first: await this.createQueryBuilder('report_checkboxes')
+        .select()
+        .where('report_checkboxes.no = :no', { no: firstCheck })
+        .getOne(),
+      second: await this.createQueryBuilder('report_checkboxes')
+        .select()
+        .where('report_checkboxes.no = :no', { no: secondCheck })
+        .getOne(),
+      third: await this.createQueryBuilder('report_checkboxes')
+        .select()
+        .where('report_checkboxes.no = :no', { no: thirdCheck })
+        .getOne(),
+    };
+
+    return checks;
   }
 
-  async saveChecks(checks) {
-    console.log(checks);
+  async saveChecks(first, second, third, board) {
+    const checks = {
+      firstCheck: await this.findOne(first, {
+        relations: ['firstCheckedReport'],
+      }),
+      secondCheck: await this.findOne(second, {
+        relations: ['secondCheckedReport'],
+      }),
+      thirdCheck: await this.findOne(third, {
+        relations: ['thirdCheckedReport'],
+      }),
+    };
+    const { firstCheck, secondCheck, thirdCheck } = checks;
+
+    firstCheck.firstCheckedReport.push(board);
+    secondCheck.secondCheckedReport.push(board);
+    thirdCheck.thirdCheckedReport.push(board);
+
+    this.save(firstCheck);
+    this.save(secondCheck);
+    this.save(thirdCheck);
   }
 }
