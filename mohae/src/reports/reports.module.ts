@@ -4,6 +4,7 @@ import { BoardRepository } from 'src/boards/repository/board.repository';
 import { ReportsController } from './reports.controller';
 import { ReportsService } from './reports.service';
 import {
+  ReportCheckBoxRepository,
   ReportedBoardRepository,
   ReportedUserRepository,
 } from './repository/report.repository';
@@ -13,6 +14,7 @@ import {
     TypeOrmModule.forFeature([
       ReportedBoardRepository,
       ReportedUserRepository,
+      ReportCheckBoxRepository,
       BoardRepository,
     ]),
   ],

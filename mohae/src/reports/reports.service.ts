@@ -4,6 +4,7 @@ import { BoardRepository } from 'src/boards/repository/board.repository';
 import { CreateReportDto } from './dto/create-report.dto';
 import { ReportedBoard, ReportedUser } from './entity/report.entity';
 import {
+  ReportCheckBoxRepository,
   ReportedBoardRepository,
   ReportedUserRepository,
 } from './repository/report.repository';
@@ -16,6 +17,9 @@ export class ReportsService {
 
     @InjectRepository(ReportedUserRepository)
     private reportedUserRepository: ReportedUserRepository,
+
+    @InjectRepository(ReportCheckBoxRepository)
+    private reportCheckBoxRepository: ReportCheckBoxRepository,
 
     private boardsRepository: BoardRepository,
   ) {}
@@ -34,16 +38,24 @@ export class ReportsService {
     const board = await this.boardsRepository.findOne(no, {
       relations: ['reports'],
     });
+    const firstCheck = await this.reportCheckBoxRepository.findOne(
+      createReportDto.firstNo,
+      {
+        relations: ['reportContents'],
+      },
+    );
+    console.log(firstCheck);
     if (!board) {
       throw new NotFoundException(`No: ${no} 게시글이 존재하지 않습니다.`);
     } else {
       const reportedBoard =
         await this.reportedBoardRepository.createBoardReport(
-          no,
+          firstCheck,
           createReportDto,
         );
 
       board.reports.push(reportedBoard);
+      firstCheck.reportContents.push(reportedBoard);
 
       await this.boardsRepository.save(board);
       return board;
