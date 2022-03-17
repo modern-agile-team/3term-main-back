@@ -47,7 +47,7 @@ export class BoardRepository extends Repository<Board> {
     updateBoardDto: UpdateBoardDto,
   ): Promise<object> {
     const board = await this.findOne(no);
-    console.log(board);
+
     if (!board) {
       throw new NotFoundException(`No: ${no} 게시글을 찾을 수 없습니다.`);
     }
