@@ -12,7 +12,11 @@ import {
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { CreateReportDto } from './dto/create-report.dto';
-import { ReportedBoard, ReportedUser } from './entity/report.entity';
+import {
+  ReportCheckBox,
+  ReportedBoard,
+  ReportedUser,
+} from './entity/report.entity';
 import { ReportsService } from './reports.service';
 
 @Controller('reports')
@@ -20,6 +24,17 @@ import { ReportsService } from './reports.service';
 export class ReportsController {
   private logger = new Logger('ReportsController');
   constructor(private reportsService: ReportsService) {}
+
+  @Get('checkboxes')
+  async findAllCheckBox(): Promise<ReportCheckBox[]> {
+    const response = await this.reportsService.findAllCheckbox();
+
+    return Object.assign({
+      statusCode: 200,
+      msg: `체크 항목별 조회되었습니다.`,
+      response,
+    });
+  }
 
   @Get('/board/:no')
   async findOneBoardReport(@Param('no') no: number): Promise<ReportedBoard> {

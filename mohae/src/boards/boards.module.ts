@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { AreasRepository } from 'src/areas/repository/area.repository';
 import { CategoriesModule } from 'src/categories/categories.module';
 import { CategoriesService } from 'src/categories/categories.service';
 import { CategoryRepository } from 'src/categories/repository/category.repository';
@@ -12,6 +13,7 @@ import { BoardRepository } from './repository/board.repository';
   imports: [
     TypeOrmModule.forFeature([BoardRepository, ReviewRepository]),
     TypeOrmModule.forFeature([CategoryRepository]),
+    TypeOrmModule.forFeature([AreasRepository]),
     CategoriesModule,
   ],
   controllers: [BoardsController],

@@ -8,6 +8,7 @@ import {
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
+  Timestamp,
 } from 'typeorm';
 
 @Entity('report_checkboxes')
@@ -21,14 +22,23 @@ export class ReportCheckBox extends BaseEntity {
   })
   content: string;
 
-  @OneToMany((type) => ReportedUser, (report) => report.first, {
+  @OneToMany((type) => ReportedBoard, (report) => report.first, {
     nullable: true,
     eager: true,
   })
-  @JoinColumn({
-    name: 'report_content',
+  firstCheckedReport: ReportContent[];
+
+  @OneToMany((type) => ReportedBoard, (report) => report.second, {
+    nullable: true,
+    eager: true,
   })
-  reportContents: ReportContent[];
+  secondCheckedReport: ReportContent[];
+
+  @OneToMany((type) => ReportedBoard, (report) => report.third, {
+    nullable: true,
+    eager: true,
+  })
+  thirdCheckedReport: ReportContent[];
 }
 
 export abstract class ReportContent extends BaseEntity {
@@ -41,22 +51,31 @@ export abstract class ReportContent extends BaseEntity {
   @ManyToOne((type) => ReportCheckBox, (reportCheck) => reportCheck.content, {
     onDelete: 'SET NULL',
   })
+  @JoinColumn({ name: 'first_no' })
   first: ReportCheckBox;
 
-  @Column({
-    type: 'int',
+  @ManyToOne((type) => ReportCheckBox, (reportCheck) => reportCheck.content, {
+    onDelete: 'SET NULL',
   })
-  second_no: number;
+  @JoinColumn({ name: 'second_no' })
+  second: ReportCheckBox;
 
-  @Column({
-    type: 'int',
+  @ManyToOne((type) => ReportCheckBox, (reportCheck) => reportCheck.content, {
+    onDelete: 'SET NULL',
   })
-  third_no: number;
+  @JoinColumn({ name: 'third_no' })
+  third: ReportCheckBox;
 
   @Column({
     type: 'mediumtext',
   })
   description: string;
+
+  @Column({
+    type: 'timestamp',
+    default: () => 'CURRENT_TIMESTAMP',
+  })
+  in_date: Timestamp;
 }
 
 @Entity('reported_boards')
