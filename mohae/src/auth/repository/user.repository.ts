@@ -4,6 +4,7 @@ import { User } from '../entity/user.entity';
 import * as bcrypt from 'bcryptjs';
 import { Duplex } from 'stream';
 import { ConflictException } from '@nestjs/common';
+import { School } from 'src/schools/entity/school.entity';
 
 @EntityRepository(User)
 export class UserRepository extends Repository<User> {
@@ -32,6 +33,9 @@ export class UserRepository extends Repository<User> {
       school,
       major,
     });
+    // const schools = new School();
+    // schools.users.push(school)
+
     try {
       await user.save();
       return user;
