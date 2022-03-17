@@ -38,26 +38,26 @@ export class ReportsService {
     const board = await this.boardsRepository.findOne(no, {
       relations: ['reports'],
     });
-    const firstCheck = await this.reportCheckBoxRepository.findOne(
-      createReportDto.firstNo,
-      {
-        relations: ['reportContents'],
-      },
+    const { firstNo, secondNo, thirdNo } = createReportDto;
+    const checks = await this.reportCheckBoxRepository.selectCheckConfirm(
+      firstNo,
+      secondNo,
+      thirdNo,
     );
-    console.log(firstCheck);
+
     if (!board) {
       throw new NotFoundException(`No: ${no} 게시글이 존재하지 않습니다.`);
     } else {
       const reportedBoard =
         await this.reportedBoardRepository.createBoardReport(
-          firstCheck,
+          checks,
           createReportDto,
         );
 
       board.reports.push(reportedBoard);
-      firstCheck.reportContents.push(reportedBoard);
 
       await this.boardsRepository.save(board);
+      await this.reportCheckBoxRepository.saveChecks(checks);
       return board;
     }
   }

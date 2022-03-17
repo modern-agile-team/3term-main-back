@@ -16,6 +16,7 @@ export class ReportedBoardRepository extends Repository<ReportedBoard> {
     try {
       const reportBoard = await this.createQueryBuilder('reported_boards')
         .leftJoinAndSelect('reported_boards.reportedBoard', 'boards')
+        // .leftJoinAndSelect('reported_boards.first', 'report_chechboxes')
         .where('reported_boards.no = :no', { no })
         .getOne();
 
@@ -27,18 +28,15 @@ export class ReportedBoardRepository extends Repository<ReportedBoard> {
     }
   }
 
-  async createBoardReport(
-    firstCheck: ReportCheckBox,
-    createReportDto: CreateReportDto,
-  ) {
-    const { reportUserNo, secondNo, thirdNo, description } = createReportDto;
+  async createBoardReport(checks, createReportDto: CreateReportDto) {
+    const { reportUserNo, description } = createReportDto;
 
     try {
       const reportedBoard = this.create({
         reportUser: reportUserNo,
-        // first: firstCheck,
-        second_no: secondNo,
-        third_no: thirdNo,
+        first: checks[0],
+        second: checks[1],
+        third: checks[2],
         description,
       });
 
@@ -86,4 +84,25 @@ export class ReportedUserRepository extends Repository<ReportedUser> {
 }
 
 @EntityRepository(ReportCheckBox)
-export class ReportCheckBoxRepository extends Repository<ReportCheckBox> {}
+export class ReportCheckBoxRepository extends Repository<ReportCheckBox> {
+  async selectCheckConfirm(first: number, second: number, third: number) {
+    const firstCheck = await this.createQueryBuilder('report_checkboxes')
+      .select()
+      .where('report_checkboxes.no = :no', { no: first })
+      .getOne();
+    const secondCheck = await this.createQueryBuilder('report_checkboxes')
+      .select()
+      .where('report_checkboxes.no = :no', { no: second })
+      .getOne();
+    const thirdCheck = await this.createQueryBuilder('report_checkboxes')
+      .select()
+      .where('report_checkboxes.no = :no', { no: third })
+      .getOne();
+
+    return [firstCheck, secondCheck, thirdCheck];
+  }
+
+  async saveChecks(checks) {
+    console.log(checks);
+  }
+}
