@@ -39,7 +39,7 @@ export class AuthService {
       return user;
     } else {
       throw new InternalServerErrorException(
-        '서버에러입니다 서버 담당장에게 말해주세요',
+        '서버에러입니다 서버 담당자에게 말해주세요',
       );
     }
   }
