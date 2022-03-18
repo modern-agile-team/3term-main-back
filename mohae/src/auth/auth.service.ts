@@ -35,7 +35,11 @@ export class AuthService {
     const majorRepo = await this.majorRepository.findOne(major, {
       relations: ['users'],
     });
-    const user = await this.userRepository.createUser(createUserDto);
+    const user = await this.userRepository.createUser(
+      createUserDto,
+      schoolRepo,
+      majorRepo,
+    );
 
     schoolRepo.users.push(user);
     majorRepo.users.push(user);
