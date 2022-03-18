@@ -3,6 +3,7 @@ import { Board } from 'src/boards/entity/board.entity';
 import {
   BaseEntity,
   Column,
+  CreateDateColumn,
   Entity,
   JoinColumn,
   ManyToOne,
@@ -19,6 +20,7 @@ export class ReportCheckBox extends BaseEntity {
   @Column({
     type: 'varchar',
     length: 30,
+    comment: '신고할 때 체크박스의 내용들',
   })
   content: string;
 
@@ -68,13 +70,11 @@ export abstract class ReportContent extends BaseEntity {
 
   @Column({
     type: 'mediumtext',
+    comment: '게시글 또는 유저 신고 내용',
   })
   description: string;
 
-  @Column({
-    type: 'timestamp',
-    default: () => 'CURRENT_TIMESTAMP',
-  })
+  @CreateDateColumn({ comment: '게시글 또는 유저 신고 생성 일시' })
   in_date: Timestamp;
 }
 
@@ -82,9 +82,6 @@ export abstract class ReportContent extends BaseEntity {
 export class ReportedBoard extends ReportContent {
   @ManyToOne((type) => Board, (board) => board.no, {
     onDelete: 'SET NULL',
-  })
-  @JoinColumn({
-    name: 'reported_board',
   })
   reportedBoard: Board;
 }

@@ -8,11 +8,13 @@ export class Faq extends BaseEntity {
   @Column({
     type: 'varchar',
     length: 30,
+    comment: 'FAQ 제목',
   })
   title: string;
 
   @Column({
     type: 'mediumtext',
+    comment: 'FAQ 내용',
   })
   description: string;
 }
