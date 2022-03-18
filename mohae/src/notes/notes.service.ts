@@ -8,7 +8,7 @@ export class NotesService {
     constructor(
         @InjectRepository(NoteRepository)
         private noteRepository: NoteRepository
-    ) {}
+    ){}
 
     async getAllNotes(): Promise<Note[]> {
         return this.noteRepository.find()
