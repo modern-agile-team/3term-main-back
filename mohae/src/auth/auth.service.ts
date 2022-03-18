@@ -71,23 +71,19 @@ export class AuthService {
     }
   }
   async signDown(no: number): Promise<DeleteResult> {
-    try {
-      const result = await this.userRepository
-        .createQueryBuilder()
-        .delete()
-        .from(User)
-        .where('no = :no', { no })
-        .execute();
+    const result = await this.userRepository
+      .createQueryBuilder()
+      .delete()
+      .from(User)
+      .where('no = :no', { no })
+      .execute();
 
-      if (result.affected === 0) {
-        throw new NotFoundException(
-          `${no} 회원님의 회원탈퇴가 정상적으로 이루어 지지 않았습니다.`,
-        );
-      } else if (result.affected === 1) {
-        return result;
-      }
-    } catch (e) {
-      console.log(e);
+    if (result.affected === 0) {
+      throw new NotFoundException(
+        `${no} 회원님의 회원탈퇴가 정상적으로 이루어 지지 않았습니다.`,
+      );
+    } else if (result.affected === 1) {
+      return result;
     }
   }
 }
