@@ -39,10 +39,12 @@ export class User extends BaseEntity {
   in_date: Timestamp;
 
   @ManyToOne((type) => School, (school) => school.no, { eager: true })
+  @JoinColumn({ name: 'school_no' })
   school: School;
 
-  // @ManyToOne((type) => Major, (major) => major, { eager: true })
-  major: number;
+  @ManyToOne((type) => Major, (major) => major.no, { eager: true })
+  @JoinColumn({ name: 'major_no' })
+  major: Major;
 
   @Column({
     unique: true,

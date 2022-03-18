@@ -11,16 +11,8 @@ import {
 @EntityRepository(User)
 export class UserRepository extends Repository<User> {
   async createUser(createUserDto: CreateUserDto): Promise<User> {
-    const {
-      email,
-      password,
-      phone,
-      nickname,
-      major,
-      manager,
-      name,
-      photo_url,
-    } = createUserDto;
+    const { email, password, phone, nickname, manager, name, photo_url } =
+      createUserDto;
     const salt = await bcrypt.genSalt();
     const hashedPassword = await bcrypt.hash(password, salt);
     const user = this.create({
@@ -31,7 +23,6 @@ export class UserRepository extends Repository<User> {
       nickname,
       manager,
       photo_url,
-      major,
     });
 
     try {
@@ -41,6 +32,10 @@ export class UserRepository extends Repository<User> {
       if (e.errno === 1062) {
         throw new ConflictException(
           '해당 닉네임 또는 이메일이 이미 존재합니다.',
+        );
+      } else {
+        throw new InternalServerErrorException(
+          '서버에러입니다 서버 담당자에게 말해주세요',
         );
       }
     }

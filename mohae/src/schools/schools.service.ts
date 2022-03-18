@@ -13,8 +13,8 @@ export class SchoolsService {
   ) {}
 
   async findOne(no: number) {
-    const test = await this.schoolRepository.findOneSchool(no);
+    const school = await this.schoolRepository.findOneSchool(no);
 
-    return test;
+    return school;
   }
 }
