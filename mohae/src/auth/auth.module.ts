@@ -9,6 +9,7 @@ import * as config from 'config';
 import { SchoolRepository } from 'src/schools/repository/school.repository';
 import { SchoolsModule } from 'src/schools/schools.module';
 import { SchoolsService } from 'src/schools/schools.service';
+import { JwtStrategy } from './jwt/jwt.strategy';
 
 const jwtConfig = config.get('jwt');
 @Module({
@@ -24,6 +25,7 @@ const jwtConfig = config.get('jwt');
     SchoolsModule,
   ],
   controllers: [AuthController],
-  providers: [AuthService, SchoolsService],
+  providers: [AuthService, JwtStrategy],
+  exports: [JwtStrategy, PassportModule],
 })
 export class AuthModule {}

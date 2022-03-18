@@ -4,10 +4,10 @@ import { NotesService } from './notes.service';
 
 @Controller('notes')
 export class NotesController {
-    constructor(private noteService: NotesService) {}
+  constructor(private noteService: NotesService) {}
 
-    @Get()
-    async getAllNote(): Promise<Note[]> {
-        return await this.noteService.getAllNotes()
-    }
+  @Get()
+  async getAllNote(): Promise<Note[]> {
+    return await this.noteService.getAllNotes();
+  }
 }
