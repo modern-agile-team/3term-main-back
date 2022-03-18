@@ -1,6 +1,5 @@
 import {
   Injectable,
-  InternalServerErrorException,
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -15,10 +14,8 @@ import * as bcrypt from 'bcryptjs';
 import { JwtService } from '@nestjs/jwt';
 import { User } from './entity/user.entity';
 import { SchoolRepository } from 'src/schools/repository/school.repository';
-import { throws } from 'assert';
-import { CreateReviewDto } from 'src/reviews/dto/create-review.dto';
-import { School } from 'src/schools/entity/school.entity';
 import { DeleteResult } from 'typeorm';
+import { MajorRepository } from 'src/majors/repository/major.repository';
 
 @Injectable()
 export class AuthService {
@@ -27,21 +24,23 @@ export class AuthService {
     private userRepository: UserRepository,
     private jwtService: JwtService,
     private schoolRepository: SchoolRepository,
+    private majorRepository: MajorRepository,
   ) {}
   async signUp(createUserDto: CreateUserDto): Promise<User> {
-    const { school } = createUserDto;
-    const schoolRepo = await this.schoolRepository.findOne(school);
-    // console.log(typeof schoolRepo.users);
+    const { school, major } = createUserDto;
+
+    const schoolRepo = await this.schoolRepository.findOne(school, {
+      relations: ['users'],
+    });
+    const majorRepo = await this.majorRepository.findOne(major, {
+      relations: ['users'],
+    });
     const user = await this.userRepository.createUser(createUserDto);
 
-    if (user) {
-      // schoolRepo.users.push(user);
-      return user;
-    } else {
-      throw new InternalServerErrorException(
-        '서버에러입니다 서버 담당자에게 말해주세요',
-      );
-    }
+    schoolRepo.users.push(user);
+    majorRepo.users.push(user);
+
+    return user;
   }
 
   async signIn(signInDto: SignInDto): Promise<{ accessToken: string }> {

@@ -12,7 +12,9 @@ export class SchoolsService {
     private schoolRepository: SchoolRepository,
   ) {}
 
-  async findOne(no: number): Promise<School> {
-    return await this.schoolRepository.findOne(no);
+  async findOne(no: number) {
+    const school = await this.schoolRepository.findOneSchool(no);
+
+    return school;
   }
 }
