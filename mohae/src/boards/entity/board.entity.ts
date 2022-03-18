@@ -1,5 +1,6 @@
 import { Area } from 'src/areas/entity/areas.entity';
 import { Category } from 'src/categories/entity/category.entity';
+import { Note } from 'src/notes/entity/note.entity';
 import { ReportedBoard } from 'src/reports/entity/report.entity';
 import { Review } from 'src/reviews/entity/review.entity';
 import {
@@ -9,6 +10,7 @@ import {
   JoinColumn,
   ManyToOne,
   OneToMany,
+  OneToOne,
   PrimaryGeneratedColumn,
   Timestamp,
 } from 'typeorm';
@@ -80,4 +82,7 @@ export class Board extends BaseEntity {
 
   @ManyToOne((type) => Area, (area) => area.no, { eager: false })
   area: Area;
+
+  @ManyToOne((type) => Note, (note) => note.board, {eager: false})
+  note: Note
 }
