@@ -20,10 +20,10 @@ const jwtConfig = config.get('jwt');
         expiresIn: jwtConfig.expiresIn,
       },
     }),
-    TypeOrmModule.forFeature([UserRepository]),
+    TypeOrmModule.forFeature([UserRepository, SchoolRepository]),
     SchoolsModule,
   ],
   controllers: [AuthController],
-  providers: [AuthService],
+  providers: [AuthService, SchoolsService],
 })
 export class AuthModule {}

@@ -5,8 +5,6 @@ import {
   Validate,
   Validator,
 } from 'class-validator';
-import { Unique } from 'typeorm';
-import { User } from '../entity/user.entity';
 
 export class CreateUserDto {
   @IsString()
@@ -43,4 +41,9 @@ export class SignInDto {
 
   @IsString()
   password: string;
+}
+
+export class SignDownDto {
+  @IsString()
+  email: string;
 }
