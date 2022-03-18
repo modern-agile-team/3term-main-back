@@ -43,16 +43,14 @@ export class ReviewsService {
 
       if (!board) {
         throw new NotFoundException(`No: ${no} 게시글이 존재하지 않습니다.`);
-      } else {
-        const review = await this.reviewRepository.createReview(
-          createReviewDto,
-        );
-
-        board.reviews.push(review);
-
-        await this.boardsRepository.save(board);
-        return review;
       }
+
+      const review = await this.reviewRepository.createReview(createReviewDto);
+
+      board.reviews.push(review);
+
+      await this.boardsRepository.save(board);
+      return review;
     } catch (e) {
       throw e;
     }

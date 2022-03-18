@@ -8,7 +8,9 @@ import {
   UsePipes,
   ValidationPipe,
   Patch,
+  UseGuards,
 } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
 import { ApiCreatedResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { BoardsService } from './boards.service';
 import { CreateBoardDto, UpdateBoardDto } from './dto/board.dto';
