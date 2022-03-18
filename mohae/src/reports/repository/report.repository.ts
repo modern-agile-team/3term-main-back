@@ -87,19 +87,31 @@ export class ReportedUserRepository extends Repository<ReportedUser> {
 @EntityRepository(ReportCheckBox)
 export class ReportCheckBoxRepository extends Repository<ReportCheckBox> {
   async findAllCheckbox(): Promise<ReportCheckBox[]> {
-    const checkedReport = this.createQueryBuilder('report_checkboxes')
-      .leftJoinAndSelect('report_checkboxes.firstCheckedReport', 'fisrtReport')
-      .leftJoinAndSelect(
-        'report_checkboxes.secondCheckedReport',
-        'secondReport',
-      )
-      .leftJoinAndSelect('report_checkboxes.thirdCheckedReport', 'thirdReport')
-      .leftJoinAndSelect('fisrtReport.reportedBoard', 'firstCheckBoards')
-      .leftJoinAndSelect('secondReport.reportedBoard', 'secondCheckBoards')
-      .leftJoinAndSelect('thirdReport.reportedBoard', 'thirdCheckBoards')
-      .getMany();
+    try {
+      const checkedReport = this.createQueryBuilder('report_checkboxes')
+        .leftJoinAndSelect(
+          'report_checkboxes.firstCheckedReport',
+          'fisrtReport',
+        )
+        .leftJoinAndSelect(
+          'report_checkboxes.secondCheckedReport',
+          'secondReport',
+        )
+        .leftJoinAndSelect(
+          'report_checkboxes.thirdCheckedReport',
+          'thirdReport',
+        )
+        .leftJoinAndSelect('fisrtReport.reportedBoard', 'firstCheckBoards')
+        .leftJoinAndSelect('secondReport.reportedBoard', 'secondCheckBoards')
+        .leftJoinAndSelect('thirdReport.reportedBoard', 'thirdCheckBoards')
+        .getMany();
 
-    return checkedReport;
+      return checkedReport;
+    } catch (e) {
+      throw new InternalServerErrorException(
+        `${e} ### 체크박스 전체 조회 : 알 수 없는 서버 에러입니다.`,
+      );
+    }
   }
   async selectCheckConfirm(
     firstCheck: number,
