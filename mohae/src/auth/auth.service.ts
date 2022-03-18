@@ -30,18 +30,27 @@ export class AuthService {
   ) {}
   async signUp(createUserDto: CreateUserDto): Promise<User> {
     const { school } = createUserDto;
-    const schoolRepo = await this.schoolRepository.findOne(school);
-    // console.log(typeof schoolRepo.users);
+    // const beforeSchool = await this.schoolRepository.findOne(school);
+    // console.log(beforeSchool);
+    const schoolRepo = await this.schoolRepository.findOne(school, {
+      relations: ['users'],
+    });
+
     const user = await this.userRepository.createUser(createUserDto);
 
-    if (user) {
-      // schoolRepo.users.push(user);
-      return user;
-    } else {
-      throw new InternalServerErrorException(
-        '서버에러입니다 서버 담당자에게 말해주세요',
-      );
-    }
+    console.log(user, schoolRepo);
+
+    schoolRepo.users.push(user);
+
+    console.log(schoolRepo);
+    // if (user) {
+    // schoolRepo.users.push(user);
+    return user;
+    // } else {
+    //   throw new InternalServerErrorException(
+    // '서버에러입니다 서버 담당자에게 말해주세요',
+    //   );
+    // }
   }
 
   async signIn(signInDto: SignInDto): Promise<{ accessToken: string }> {

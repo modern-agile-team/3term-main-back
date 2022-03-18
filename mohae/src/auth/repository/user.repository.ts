@@ -16,7 +16,6 @@ export class UserRepository extends Repository<User> {
       password,
       phone,
       nickname,
-      school,
       major,
       manager,
       name,

@@ -24,6 +24,6 @@ const jwtConfig = config.get('jwt');
     SchoolsModule,
   ],
   controllers: [AuthController],
-  providers: [AuthService, SchoolsService],
+  providers: [AuthService],
 })
 export class AuthModule {}
