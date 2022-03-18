@@ -27,29 +27,34 @@ export class ReviewsService {
 
     if (!review) {
       throw new NotFoundException(`${no}에 해당하는 리뷰를 찾을 수 없습니다.`);
+    } else {
+      return review;
     }
-    return review;
   }
 
   async createReview(
     no: number,
     createReviewDto: CreateReviewDto,
   ): Promise<Review> {
-    const board = await this.boardsRepository.findOne(no, {
-      relations: ['reviews'],
-    });
-    if (!board) {
-      throw new NotFoundException(`No: ${no} 게시글이 존재하지 않습니다.`);
-    } else {
-      const review = await this.reviewRepository.createReview(
-        no,
-        createReviewDto,
-      );
+    try {
+      const board = await this.boardsRepository.findOne(no, {
+        relations: ['reviews'],
+      });
 
-      board.reviews.push(review);
+      if (!board) {
+        throw new NotFoundException(`No: ${no} 게시글이 존재하지 않습니다.`);
+      } else {
+        const review = await this.reviewRepository.createReview(
+          createReviewDto,
+        );
 
-      await this.boardsRepository.save(board);
-      return review;
+        board.reviews.push(review);
+
+        await this.boardsRepository.save(board);
+        return review;
+      }
+    } catch (e) {
+      throw e;
     }
   }
 }
