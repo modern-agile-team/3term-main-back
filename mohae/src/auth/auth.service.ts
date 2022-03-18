@@ -1,4 +1,5 @@
 import {
+  ConflictException,
   Injectable,
   NotFoundException,
   UnauthorizedException,
@@ -16,6 +17,7 @@ import { User } from './entity/user.entity';
 import { SchoolRepository } from 'src/schools/repository/school.repository';
 import { DeleteResult } from 'typeorm';
 import { MajorRepository } from 'src/majors/repository/major.repository';
+import { isEmail } from 'class-validator';
 
 @Injectable()
 export class AuthService {
@@ -27,7 +29,7 @@ export class AuthService {
     private majorRepository: MajorRepository,
   ) {}
   async signUp(createUserDto: CreateUserDto): Promise<User> {
-    const { school, major } = createUserDto;
+    const { school, major, email, nickname } = createUserDto;
 
     const schoolRepo = await this.schoolRepository.findOne(school, {
       relations: ['users'],
@@ -35,7 +37,16 @@ export class AuthService {
     const majorRepo = await this.majorRepository.findOne(major, {
       relations: ['users'],
     });
-    const user = await this.userRepository.createUser(createUserDto);
+
+    const duplicate = await this.userRepository.duplicateCheck(email, nickname);
+    if (duplicate) {
+      throw new ConflictException('해당 닉네임 또는 이메일이 이미 존재합니다.');
+    }
+    const user = await this.userRepository.createUser(
+      createUserDto,
+      schoolRepo,
+      majorRepo,
+    );
 
     schoolRepo.users.push(user);
     majorRepo.users.push(user);
