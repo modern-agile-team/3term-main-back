@@ -15,6 +15,7 @@ export class Major extends BaseEntity {
   @Column({
     type: 'varchar',
     length: 15,
+    comment: '전공 이름',
   })
   name: string;
 

@@ -18,29 +18,23 @@ export class UserRepository extends Repository<User> {
 
     const user = this.create({
       email,
+      school,
+      major,
       salt: hashedPassword,
       name,
       phone,
       nickname,
       manager,
       photo_url,
-      school,
-      major,
     });
 
     try {
       await user.save();
       return user;
     } catch (e) {
-      if (e.errno === 1062) {
-        throw new ConflictException(
-          '해당 닉네임 또는 이메일이 이미 존재합니다.',
-        );
-      } else {
-        throw new InternalServerErrorException(
-          '서버에러입니다 서버 담당자에게 말해주세요',
-        );
-      }
+      throw new InternalServerErrorException(
+        '서버에러입니다 서버 담당자에게 말해주세요',
+      );
     }
   }
 
@@ -56,6 +50,20 @@ export class UserRepository extends Repository<User> {
     } catch (e) {
       throw new InternalServerErrorException(
         `${e} ### 유저 프로필 선택 조회 : 알 수 없는 서버 에러입니다.`,
+      );
+    }
+  }
+  async duplicateCheck(email, nickname) {
+    try {
+      const duplicate = await this.createQueryBuilder('users')
+        .select()
+        .where('users.email= :email', { email })
+        .orWhere('users.nickname =:nickname', { nickname })
+        .getOne();
+      return duplicate;
+    } catch (e) {
+      throw new InternalServerErrorException(
+        `${e} ### 중복체크 : 알 수 없는 서버 에러입니다.`,
       );
     }
   }

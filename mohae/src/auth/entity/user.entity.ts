@@ -23,18 +23,19 @@ export class User extends BaseEntity {
 
   @Column({
     type: 'varchar',
-    // length: 12 ,
+    comment: '회원 이름',
   })
   name: string;
 
   @Column({
     type: 'varchar',
-    // length: 255,
+    comment: '회원 개인 프로필사진',
   })
   photo_url: string;
 
   @Column({
     type: 'timestamp',
+    comment: '회원가입시간',
   })
   in_date: Timestamp;
 
@@ -49,31 +50,32 @@ export class User extends BaseEntity {
   @Column({
     unique: true,
     type: 'varchar',
-    // length: 30,
+    comment: '회원 이메일',
   })
   email: string;
 
   @Column({
     type: 'varchar',
-    // length: 13,,
+    comment: '회원 전화번호',
   })
   phone: string;
 
   @Column({
     unique: true,
     type: 'varchar',
-    // length: 8,
+    comment: '회원 닉네임',
   })
   nickname: string;
 
   @Column({
     type: 'boolean',
+    comment: '관리자 여부',
   })
   manager: boolean;
 
   @Column({
     type: 'varchar',
-    // length: 255,
+    comment: '암호화된 비밀번호',
   })
   salt: string;
 }

@@ -1,4 +1,5 @@
 import {
+  ConflictException,
   Injectable,
   NotFoundException,
   UnauthorizedException,
@@ -16,6 +17,7 @@ import { User } from './entity/user.entity';
 import { SchoolRepository } from 'src/schools/repository/school.repository';
 import { DeleteResult } from 'typeorm';
 import { MajorRepository } from 'src/majors/repository/major.repository';
+import { isEmail } from 'class-validator';
 
 @Injectable()
 export class AuthService {
@@ -27,7 +29,7 @@ export class AuthService {
     private majorRepository: MajorRepository,
   ) {}
   async signUp(createUserDto: CreateUserDto): Promise<User> {
-    const { school, major } = createUserDto;
+    const { school, major, email, nickname } = createUserDto;
 
     const schoolRepo = await this.schoolRepository.findOne(school, {
       relations: ['users'],
@@ -35,6 +37,11 @@ export class AuthService {
     const majorRepo = await this.majorRepository.findOne(major, {
       relations: ['users'],
     });
+
+    const duplicate = await this.userRepository.duplicateCheck(email, nickname);
+    if (duplicate) {
+      throw new ConflictException('해당 닉네임 또는 이메일이 이미 존재합니다.');
+    }
     const user = await this.userRepository.createUser(
       createUserDto,
       schoolRepo,
@@ -64,23 +71,19 @@ export class AuthService {
     }
   }
   async signDown(no: number): Promise<DeleteResult> {
-    try {
-      const result = await this.userRepository
-        .createQueryBuilder()
-        .delete()
-        .from(User)
-        .where('no = :no', { no })
-        .execute();
+    const result = await this.userRepository
+      .createQueryBuilder()
+      .delete()
+      .from(User)
+      .where('no = :no', { no })
+      .execute();
 
-      if (result.affected === 0) {
-        throw new NotFoundException(
-          `${no} 회원님의 회원탈퇴가 정상적으로 이루어 지지 않았습니다.`,
-        );
-      } else if (result.affected === 1) {
-        return result;
-      }
-    } catch (e) {
-      console.log(e);
+    if (result.affected === 0) {
+      throw new NotFoundException(
+        `${no} 회원님의 회원탈퇴가 정상적으로 이루어 지지 않았습니다.`,
+      );
+    } else if (result.affected === 1) {
+      return result;
     }
   }
 }
