@@ -18,6 +18,7 @@ export class ProfilesController {
   @Get(':no')
   async findOneProfile(@Param('no', ParseIntPipe) no: number): Promise<object> {
     const response = await this.profileService.findOneProfile(no);
+
     return Object.assign({
       success: true,
       statusCode: 200,
