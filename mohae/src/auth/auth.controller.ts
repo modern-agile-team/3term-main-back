@@ -6,8 +6,11 @@ import {
   ParseIntPipe,
   ParseUUIDPipe,
   Post,
+  Req,
+  UseGuards,
   ValidationPipe,
 } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
 import { ApiTags } from '@nestjs/swagger';
 import { School } from 'src/schools/entity/school.entity';
 import { DeleteResult } from 'typeorm';
@@ -33,6 +36,7 @@ export class AuthController {
       email,
     });
   }
+
   @Post('/signin')
   async signIn(@Body() signInDto: SignInDto): Promise<{ accessToken: string }> {
     const response = await this.authService.signIn(signInDto);
@@ -43,6 +47,7 @@ export class AuthController {
       token: response.accessToken,
     });
   }
+
   @Delete('/:no')
   async signDown(@Param('no') no: number): Promise<DeleteResult> {
     const response = await this.authService.signDown(no);
@@ -51,5 +56,11 @@ export class AuthController {
       mas: `성공적으로 회원탈퇴가 진행되었습니다.`,
       response,
     });
+  }
+
+  @Post('/authtest')
+  @UseGuards(AuthGuard())
+  authTest(@Req() req) {
+    console.log(req);
   }
 }
