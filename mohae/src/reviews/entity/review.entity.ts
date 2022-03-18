@@ -3,6 +3,7 @@ import { Board } from 'src/boards/entity/board.entity';
 import {
   BaseEntity,
   Column,
+  CreateDateColumn,
   Entity,
   JoinColumn,
   ManyToOne,
@@ -37,8 +38,6 @@ export class Review extends BaseEntity {
   })
   readonly rating: number;
 
-  @Column({
-    type: 'timestamp',
-  })
+  @CreateDateColumn()
   readonly in_date: Timestamp;
 }
