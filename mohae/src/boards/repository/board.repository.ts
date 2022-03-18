@@ -18,7 +18,6 @@ export class BoardRepository extends Repository<Board> {
         .getMany();
 
       return boards;
-      
     } catch (e) {
       throw new InternalServerErrorException(
         `${e} ### 게시판 전체 조회 : 알 수 없는 서버 에러입니다.`,
