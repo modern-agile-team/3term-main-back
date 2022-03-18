@@ -10,8 +10,13 @@ export class FaqsController {
   constructor(private faqsService: FaqsService) {}
 
   @Get()
-  findAllFaqs(): Promise<Faq[]> {
-    this.logger.verbose(`The user accessed the FAQ.`);
-    return this.faqsService.findAllFaqs();
+  async findAllFaq(): Promise<Faq[]> {
+    const response = await this.faqsService.findAllFaq();
+
+    return Object.assign({
+      statusCode: 200,
+      msg: `전체 FAQ가 조회되었습니다.`,
+      response,
+    });
   }
 }

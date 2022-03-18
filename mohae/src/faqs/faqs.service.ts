@@ -10,7 +10,9 @@ export class FaqsService {
     private faqRepository: FaqRepository,
   ) {}
 
-  findAllFaqs(): Promise<Faq[]> {
-    return this.faqRepository.find();
+  findAllFaq(): Promise<Faq[]> {
+    const faqs = this.faqRepository.findAllFaq();
+
+    return faqs;
   }
 }
