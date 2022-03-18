@@ -32,9 +32,9 @@ export class UserRepository extends Repository<User> {
       nickname,
       manager,
       photo_url,
-      school,
       major,
     });
+
     try {
       await user.save();
       return user;

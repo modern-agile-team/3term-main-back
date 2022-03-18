@@ -38,7 +38,7 @@ export class ProfilesService {
 
     profile.phone = phone;
     profile.nickname = nickname;
-    profile.school = school;
+    // profile.school = school;
     profile.major = major;
     profile.photo_url = photo_url;
 
