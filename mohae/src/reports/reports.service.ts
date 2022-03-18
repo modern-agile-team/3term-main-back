@@ -28,6 +28,12 @@ export class ReportsService {
     private boardsRepository: BoardRepository,
   ) {}
 
+  async findAllCheckbox(): Promise<ReportCheckBox[]> {
+    const checkedReport = await this.reportCheckBoxRepository.findAllCheckbox();
+
+    return checkedReport;
+  }
+
   async findOneReportBoard(no: number): Promise<ReportedBoard> {
     const report = await this.reportedBoardRepository.findOneReportBoard(no);
 
@@ -94,11 +100,5 @@ export class ReportsService {
         msg: '유저 신고 에러: 알 수 없는 에러입니다.',
       };
     }
-  }
-
-  async findAllCheckbox(): Promise<ReportCheckBox[]> {
-    const checkedReport = await this.reportCheckBoxRepository.findAllCheckbox();
-
-    return checkedReport;
   }
 }

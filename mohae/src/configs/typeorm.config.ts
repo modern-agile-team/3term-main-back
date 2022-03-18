@@ -14,7 +14,7 @@ import {
 } from 'src/reports/entity/report.entity';
 import { Review } from 'src/reviews/entity/review.entity';
 import { School } from 'src/schools/entity/school.entity';
-
+import {Note} from 'src/notes/entity/note.entity'
 const dbConfig = config.get('db');
 
 const { DB_HOST, DB_PORT, DB_USER, DB_PSWORD, DB_DATABASE } = process.env;
@@ -39,6 +39,7 @@ export const typeORMConfig: TypeOrmModuleOptions = {
     ReportCheckBox,
     Review,
     School,
+    Note
   ],
   // entities: [__dirname + '/../**/*.entity.{ts,js}'],
   synchronize: dbConfig.synchronize,

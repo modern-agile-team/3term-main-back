@@ -2,7 +2,11 @@ import { EntityRepository, Repository } from 'typeorm';
 import { CreateUserDto } from '../dto/auth-credential.dto';
 import { User } from '../entity/user.entity';
 import * as bcrypt from 'bcryptjs';
-import { ConflictException } from '@nestjs/common';
+import { Duplex } from 'stream';
+import {
+  ConflictException,
+  InternalServerErrorException,
+} from '@nestjs/common';
 
 @EntityRepository(User)
 export class UserRepository extends Repository<User> {
@@ -42,25 +46,20 @@ export class UserRepository extends Repository<User> {
       }
     }
   }
+
+  async findOneUser(no: number) {
+    try {
+      const user = await this.createQueryBuilder('users')
+        .leftJoinAndSelect('users.school', 'school')
+        .where('users.no = :no', { no })
+        .andWhere('users.school = school.no')
+        .getOne();
+
+      return user;
+    } catch (e) {
+      throw new InternalServerErrorException(
+        `${e} ### 유저 프로필 선택 조회 : 알 수 없는 서버 에러입니다.`,
+      );
+    }
+  }
 }
-//   async createSchool(
-//     no: number,
-//     createUserDto: CreateUserDto,
-//   ): Promise<School> {
-//     const school = await this.schoolRepository.findOne(no, {
-//       // school 테이블의 no에 해당하는 녀석에 users 테이블을 붙일 것임
-//       relations: ['users'],
-//     });
-
-//     if (!school) {
-//       throw new NotFoundException(`No: ${no} 해당 학교는 존재하지 않습니다.`);
-//     } else {
-//       const user = await this.userRepository.findOne()
-
-//       school.users.push(user);
-
-//       await this.schoolRepository.save(school);
-//       return user;
-//     }
-//   }
-// }
