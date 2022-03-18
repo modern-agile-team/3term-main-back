@@ -1,7 +1,22 @@
-import { Body, Controller, Post, ValidationPipe } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Param,
+  ParseIntPipe,
+  ParseUUIDPipe,
+  Post,
+  ValidationPipe,
+} from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
+import { School } from 'src/schools/entity/school.entity';
+import { DeleteResult } from 'typeorm';
 import { AuthService } from './auth.service';
-import { CreateUserDto, SignInDto } from './dto/auth-credential.dto';
+import {
+  CreateUserDto,
+  SignDownDto,
+  SignInDto,
+} from './dto/auth-credential.dto';
 import { User } from './entity/user.entity';
 
 @Controller('auth')
@@ -9,13 +24,32 @@ import { User } from './entity/user.entity';
 export class AuthController {
   constructor(private authService: AuthService) {}
   @Post('/signup')
-  signUp(@Body() createUserDto: CreateUserDto): Promise<User> {
-    return this.authService.signUp(createUserDto);
+  async signUp(@Body() createUserDto: CreateUserDto): Promise<User> {
+    const { nickname, email } = await this.authService.signUp(createUserDto);
+    return Object.assign({
+      statusCode: 201,
+      msg: `성공적으로 회원가입이 되었습니다.`,
+      nickname,
+      email,
+    });
   }
   @Post('/signin')
   async signIn(@Body() signInDto: SignInDto): Promise<{ accessToken: string }> {
-    const result = await this.authService.signIn(signInDto);
+    const response = await this.authService.signIn(signInDto);
 
-    return result;
+    return Object.assign({
+      statusCode: 200,
+      msg: `성공적으로 로그인이 되었습니다.`,
+      token: response.accessToken,
+    });
+  }
+  @Delete('/:no')
+  async signDown(@Param('no') no: number): Promise<DeleteResult> {
+    const response = await this.authService.signDown(no);
+    return Object.assign({
+      statusCode: 204,
+      mas: `성공적으로 회원탈퇴가 진행되었습니다.`,
+      response,
+    });
   }
 }
