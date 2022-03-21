@@ -16,9 +16,10 @@ export class School extends BaseEntity {
   @Column({
     type: 'varchar',
     length: 15,
+    comment: '학교 이름',
   })
   name: string;
 
-  @OneToMany((type) => User, (user) => user.no)
+  @OneToMany((type) => User, (user) => user.school)
   users: User[];
 }

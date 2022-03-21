@@ -15,6 +15,7 @@ export class Category extends BaseEntity {
   @Column({
     type: 'varchar',
     length: 12,
+    comment: '카테고리 종류',
   })
   name: string;
 

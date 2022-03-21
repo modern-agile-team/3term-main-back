@@ -6,7 +6,7 @@ import { Faq } from '../entity/faq.entity';
 export class FaqRepository extends Repository<Faq> {
   async findAllFaq(): Promise<Faq[]> {
     try {
-      const faqs = this.createQueryBuilder('faqs').select().getMany();
+      const faqs = await this.createQueryBuilder('faqs').select().getMany();
 
       return faqs;
     } catch (e) {

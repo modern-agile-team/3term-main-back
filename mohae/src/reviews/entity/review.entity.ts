@@ -30,14 +30,18 @@ export class Review extends BaseEntity {
 
   @Column({
     type: 'mediumtext',
+    comment: '리뷰 작성할 때 내용이 들어감',
   })
   readonly description: string;
 
   @Column({
     type: 'int',
+    comment: '리뷰 작성할 때 평점이 들어감',
   })
   readonly rating: number;
 
-  @CreateDateColumn()
+  @CreateDateColumn({
+    comment: '리뷰 작성하면 시간 입력',
+  })
   readonly in_date: Timestamp;
 }

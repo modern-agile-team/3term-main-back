@@ -15,9 +15,10 @@ export class Major extends BaseEntity {
   @Column({
     type: 'varchar',
     length: 15,
+    comment: '전공 이름',
   })
   name: string;
 
-  // @OneToMany((type) => User, (user) => user.major)
+  @OneToMany((type) => User, (user) => user.major)
   users: User[];
 }

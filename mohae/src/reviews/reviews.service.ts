@@ -1,8 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Board } from 'src/boards/entity/board.entity';
 import { BoardRepository } from 'src/boards/repository/board.repository';
-import { createQueryBuilder, getConnection, getRepository } from 'typeorm';
 import { CreateReviewDto } from './dto/create-review.dto';
 import { Review } from './entity/review.entity';
 import { ReviewRepository } from './repository/review.repository';
@@ -13,6 +11,7 @@ export class ReviewsService {
     @InjectRepository(ReviewRepository)
     private reviewRepository: ReviewRepository,
 
+    @InjectRepository(BoardRepository)
     private boardsRepository: BoardRepository,
   ) {}
 
@@ -43,16 +42,14 @@ export class ReviewsService {
 
       if (!board) {
         throw new NotFoundException(`No: ${no} 게시글이 존재하지 않습니다.`);
-      } else {
-        const review = await this.reviewRepository.createReview(
-          createReviewDto,
-        );
-
-        board.reviews.push(review);
-
-        await this.boardsRepository.save(board);
-        return review;
       }
+
+      const review = await this.reviewRepository.createReview(createReviewDto);
+
+      board.reviews.push(review);
+
+      await this.boardsRepository.save(board);
+      return review;
     } catch (e) {
       throw e;
     }

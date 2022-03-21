@@ -34,12 +34,10 @@ export class ProfilesService {
       throw new NotFoundException('유저 정보를 찾지 못했습니다.');
     }
 
-    const { phone, nickname, school, major, photo_url } = updateProfileDto;
+    const { phone, nickname, major, photo_url } = updateProfileDto;
 
     profile.phone = phone;
     profile.nickname = nickname;
-    // profile.school = school;
-    profile.major = major;
     profile.photo_url = photo_url;
 
     await this.userRepository.save(profile);
