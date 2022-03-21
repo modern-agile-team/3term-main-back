@@ -2,7 +2,7 @@ import {
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
-import { EntityRepository, Repository } from 'typeorm';
+import { EntityRepository, getConnection, Repository } from 'typeorm';
 import { CreateBoardDto, UpdateBoardDto } from '../dto/board.dto';
 import { Board } from '../entity/board.entity';
 
@@ -29,21 +29,15 @@ export class BoardRepository extends Repository<Board> {
     category: object,
     area: object,
     createBoardDto: CreateBoardDto,
-  ): Promise<Board> {
+  ): Promise<void> {
     const { price, title, description, summary, target } = createBoardDto;
-
-    const createdboard = this.create({
-      price,
-      title,
-      description,
-      summary,
-      target,
-      category,
-      area,
-    });
-
-    await createdboard.save();
-    return createdboard;
+    console.log(price, title, description, summary, target, category, area);
+    await getConnection()
+      .createQueryBuilder()
+      .insert()
+      .into(Board)
+      .values([{ price, title, description, summary, target, category, area }])
+      .execute();
   }
 
   async updateBoard(
