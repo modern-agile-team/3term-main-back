@@ -11,6 +11,7 @@ export class ReviewsService {
     @InjectRepository(ReviewRepository)
     private reviewRepository: ReviewRepository,
 
+    @InjectRepository(BoardRepository)
     private boardsRepository: BoardRepository,
   ) {}
 
