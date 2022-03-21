@@ -1,5 +1,6 @@
 import {
   ConflictException,
+  Inject,
   Injectable,
   NotFoundException,
   UnauthorizedException,
@@ -57,7 +58,9 @@ export class AuthService {
   async signIn(signInDto: SignInDto): Promise<{ accessToken: string }> {
     try {
       const { email, password } = signInDto;
-      const user = await this.userRepository.findOne({ email });
+      console.log(email, password);
+      const user = await this.userRepository.signIn(email);
+      console.log(user);
       if (user && (await bcrypt.compare(password, user.salt))) {
         const payload = { email };
         const accessToken = await this.jwtService.sign(payload);
@@ -71,12 +74,7 @@ export class AuthService {
     }
   }
   async signDown(no: number): Promise<DeleteResult> {
-    const result = await this.userRepository
-      .createQueryBuilder()
-      .delete()
-      .from(User)
-      .where('no = :no', { no })
-      .execute();
+    const result = await this.userRepository.deleteUser(no);
 
     if (result.affected === 0) {
       throw new NotFoundException(
