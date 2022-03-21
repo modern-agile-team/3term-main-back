@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { AreasRepository } from 'src/areas/repository/area.repository';
 import { BoardsModule } from 'src/boards/boards.module';
 import { BoardsService } from 'src/boards/boards.service';
 import { BoardRepository } from 'src/boards/repository/board.repository';
@@ -14,6 +15,7 @@ import { ReviewsService } from './reviews.service';
       ReviewRepository,
       BoardRepository,
       CategoryRepository,
+      AreasRepository,
     ]),
     BoardsModule,
   ],
