@@ -18,8 +18,6 @@ export class SchoolRepository extends Repository<School> {
       .where('schools.no = :no', { no })
       .andWhere('schools.no = users.school')
       .getOne();
-
-    console.log(school);
     return school;
   }
 }
