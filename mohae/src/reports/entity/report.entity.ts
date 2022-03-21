@@ -47,9 +47,6 @@ export abstract class ReportContent extends BaseEntity {
   @PrimaryGeneratedColumn()
   no: number;
 
-  // @ManyToOne((type) => User, (user) => user.no, { eager: true })
-  reportUser: number;
-
   @ManyToOne((type) => ReportCheckBox, (reportCheck) => reportCheck.content, {
     onDelete: 'SET NULL',
   })
@@ -84,10 +81,25 @@ export class ReportedBoard extends ReportContent {
     onDelete: 'SET NULL',
   })
   reportedBoard: Board;
+
+  @ManyToOne((type) => User, (user) => user.no, {
+    onDelete: 'SET NULL',
+  })
+  @JoinColumn({ name: 'report_board_no' })
+  reportBoard: User;
 }
 
 @Entity('reported_users')
 export class ReportedUser extends ReportContent {
-  // @ManyToOne((type) => User, (user) => user.no, { eager: true })
-  reportedUser: number;
+  @ManyToOne((type) => User, (user) => user.no, {
+    onDelete: 'SET NULL',
+  })
+  @JoinColumn({ name: 'reported_user_no' })
+  reportedUser: User;
+
+  @ManyToOne((type) => User, (user) => user.no, {
+    onDelete: 'SET NULL',
+  })
+  @JoinColumn({ name: 'report_user_no' })
+  reportUser: User;
 }

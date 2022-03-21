@@ -53,43 +53,19 @@ export class ReportsController {
   }
 
   @Get('/user/:no')
-  findOneUserReport(@Param('no') no: number): Promise<void> {
+  findOneUserReport(@Param('no') no: number): Promise<ReportedUser> {
     return this.reportsService.findOneReportUser(no);
   }
 
-  @Post('/board/:no')
+  @Post()
   @UsePipes(ValidationPipe)
-  async createBoardReport(
-    @Param('no', ParseIntPipe) no: number,
-    @Body() createReportDto: CreateReportDto,
-  ) {
-    this.logger.verbose(
-      `Board report has been received. Reported board Payload: ${JSON.stringify(
-        createReportDto,
-      )}`,
-    );
-    const response = await this.reportsService.createBoardReport(
-      no,
-      createReportDto,
-    );
+  async createReport(@Body() createReportDto: CreateReportDto) {
+    const response = await this.reportsService.createReport(createReportDto);
 
     return Object.assign({
       statusCode: 201,
-      msg: '게시글 신고가 접수되었습니다.',
+      msg: `${createReportDto.head} 신고가 접수되었습니다.`,
       response,
     });
-  }
-
-  @Post('/user')
-  @UsePipes(ValidationPipe)
-  createUserReport(@Body() createReportUserDto: CreateReportDto) {
-    this.logger.verbose(
-      `User report has been received. Reported user Payload: ${JSON.stringify(
-        createReportUserDto,
-      )}`,
-    );
-    const response = this.reportsService.createUserReport(createReportUserDto);
-
-    return response;
   }
 }

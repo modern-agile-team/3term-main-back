@@ -29,12 +29,11 @@ export class ReportedBoardRepository extends Repository<ReportedBoard> {
   }
 
   async createBoardReport(checks, createReportDto: CreateReportDto) {
-    const { reportUserNo, description } = createReportDto;
+    const { description } = createReportDto;
     const { first, second, third } = checks;
 
     try {
       const reportedBoard = this.create({
-        reportUser: reportUserNo,
         first,
         second,
         third,
@@ -53,33 +52,43 @@ export class ReportedBoardRepository extends Repository<ReportedBoard> {
 
 @EntityRepository(ReportedUser)
 export class ReportedUserRepository extends Repository<ReportedUser> {
-  async findOneReportUser(no: number): Promise<void> {
-    return;
+  async findOneReportUser(no: number): Promise<ReportedUser> {
+    try {
+      const reportUser = await this.createQueryBuilder('reported_users')
+        .leftJoinAndSelect('reported_users.reportUser', 'reportUser')
+        .leftJoinAndSelect('reported_users.reportedUser', 'reportedUser')
+        .leftJoinAndSelect('reported_users.first', 'firstCheck')
+        .leftJoinAndSelect('reported_users.second', 'secondCheck')
+        .leftJoinAndSelect('reported_users.third', 'thirdCheck')
+        .where('reported_users.no = :no', { no })
+        .getOne();
+
+      return reportUser;
+    } catch (e) {
+      throw new InternalServerErrorException(
+        `${e} ### 신고 내역(유저) 조회 : 알 수 없는 서버 에러입니다.`,
+      );
+    }
   }
 
-  async createUserReport(createReportDto: CreateReportDto) {
-    const { reportUserNo, description } = createReportDto;
-    const reportedUser = this.create({
-      reportUser: reportUserNo,
-      // first_no: firstNo,
-      // second_no: secondNo,
-      // third_no: thirdNo,
-      description,
-    });
+  async createUserReport(checks, createReportDto: CreateReportDto) {
+    const { description } = createReportDto;
+    const { first, second, third } = checks;
 
     try {
+      const reportedUser = this.create({
+        first,
+        second,
+        third,
+        description,
+      });
+
       await reportedUser.save();
       return reportedUser;
     } catch (e) {
-      if (e.errno === 1452) {
-        throw new NotFoundException(
-          `신고 에러 : 해당 유저가 존재하지 않습니다.`,
-        );
-      } else {
-        throw new InternalServerErrorException(
-          `서버 에러 : 유저 신고 에러입니다.`,
-        );
-      }
+      throw new InternalServerErrorException(
+        `${e} ### 게시글 신고 : 알 수 없는 서버 에러입니다.`,
+      );
     }
   }
 }
@@ -136,7 +145,7 @@ export class ReportCheckBoxRepository extends Repository<ReportCheckBox> {
     return checks;
   }
 
-  async saveChecks(first, second, third, board) {
+  async saveChecks(first: number, second: number, third: number, head) {
     const checks = {
       firstCheck: await this.findOne(first, {
         relations: ['firstCheckedReport'],
@@ -150,9 +159,9 @@ export class ReportCheckBoxRepository extends Repository<ReportCheckBox> {
     };
     const { firstCheck, secondCheck, thirdCheck } = checks;
 
-    firstCheck.firstCheckedReport.push(board);
-    secondCheck.secondCheckedReport.push(board);
-    thirdCheck.thirdCheckedReport.push(board);
+    firstCheck.firstCheckedReport.push(head);
+    secondCheck.secondCheckedReport.push(head);
+    thirdCheck.thirdCheckedReport.push(head);
 
     this.save(firstCheck);
     this.save(secondCheck);

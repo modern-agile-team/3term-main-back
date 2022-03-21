@@ -10,8 +10,8 @@ export class FaqsService {
     private faqRepository: FaqRepository,
   ) {}
 
-  findAllFaq(): Promise<Faq[]> {
-    const faqs = this.faqRepository.findAllFaq();
+  async findAllFaq(): Promise<Faq[]> {
+    const faqs = await this.faqRepository.findAllFaq();
 
     return faqs;
   }

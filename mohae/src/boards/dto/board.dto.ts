@@ -51,7 +51,7 @@ export abstract class BoardContent {
   category: number;
 
   @IsNumber()
-  area: number;
+  areaNo: number;
 }
 
 export class CreateBoardDto extends BoardContent {}

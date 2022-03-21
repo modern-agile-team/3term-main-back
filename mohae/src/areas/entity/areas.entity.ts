@@ -23,5 +23,5 @@ export class Area extends BaseEntity {
     nullable: true,
     eager: true,
   })
-  board: Board;
+  boards: Board[];
 }
