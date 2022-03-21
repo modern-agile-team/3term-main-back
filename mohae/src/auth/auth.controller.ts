@@ -39,7 +39,6 @@ export class AuthController {
 
   @Post('/signin')
   async signIn(@Body() signInDto: SignInDto): Promise<{ accessToken: string }> {
-    console.log(signInDto);
     const response = await this.authService.signIn(signInDto);
 
     return Object.assign({
