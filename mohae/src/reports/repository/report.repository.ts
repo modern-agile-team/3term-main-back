@@ -29,12 +29,11 @@ export class ReportedBoardRepository extends Repository<ReportedBoard> {
   }
 
   async createBoardReport(checks, createReportDto: CreateReportDto) {
-    const { reportUserNo, description } = createReportDto;
+    const { description } = createReportDto;
     const { first, second, third } = checks;
 
     try {
       const reportedBoard = this.create({
-        reportUser: reportUserNo,
         first,
         second,
         third,
@@ -56,7 +55,8 @@ export class ReportedUserRepository extends Repository<ReportedUser> {
   async findOneReportUser(no: number): Promise<ReportedUser> {
     try {
       const reportUser = await this.createQueryBuilder('reported_users')
-        .leftJoinAndSelect('reported_users.reportedUser', 'users')
+        .leftJoinAndSelect('reported_users.reportUser', 'reportUser')
+        .leftJoinAndSelect('reported_users.reportedUser', 'reportedUser')
         .leftJoinAndSelect('reported_users.first', 'firstCheck')
         .leftJoinAndSelect('reported_users.second', 'secondCheck')
         .leftJoinAndSelect('reported_users.third', 'thirdCheck')
@@ -66,18 +66,17 @@ export class ReportedUserRepository extends Repository<ReportedUser> {
       return reportUser;
     } catch (e) {
       throw new InternalServerErrorException(
-        `${e} ### 신고 내역(게시글) 조회 : 알 수 없는 서버 에러입니다.`,
+        `${e} ### 신고 내역(유저) 조회 : 알 수 없는 서버 에러입니다.`,
       );
     }
   }
 
   async createUserReport(checks, createReportDto: CreateReportDto) {
-    const { reportUserNo, description } = createReportDto;
+    const { description } = createReportDto;
     const { first, second, third } = checks;
 
     try {
       const reportedUser = this.create({
-        reportUser: reportUserNo,
         first,
         second,
         third,
