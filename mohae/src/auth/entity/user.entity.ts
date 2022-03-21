@@ -85,4 +85,10 @@ export class User extends BaseEntity {
     comment: '삭제일',
   })
   deletedAt: Date | null;
+
+  @OneToMany((type) => ReportedUser, (user) => user.reportedUser, {
+    nullable: true,
+    eager: true,
+  })
+  reports: ReportedUser[];
 }

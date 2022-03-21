@@ -1,6 +1,8 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { UserRepository } from 'src/auth/repository/user.repository';
 import { BoardRepository } from 'src/boards/repository/board.repository';
+import { In } from 'typeorm';
 import { CreateReportDto } from './dto/create-report.dto';
 import {
   ReportCheckBox,
@@ -25,7 +27,11 @@ export class ReportsService {
     @InjectRepository(ReportCheckBoxRepository)
     private reportCheckBoxRepository: ReportCheckBoxRepository,
 
-    private boardsRepository: BoardRepository,
+    @InjectRepository(BoardRepository)
+    private boardRepository: BoardRepository,
+
+    @InjectRepository(UserRepository)
+    private userRepository: UserRepository,
   ) {}
 
   async findAllCheckbox(): Promise<ReportCheckBox[]> {
@@ -40,65 +46,85 @@ export class ReportsService {
     return report;
   }
 
-  async findOneReportUser(no: number): Promise<void> {
+  async findOneReportUser(no: number): Promise<ReportedUser> {
     return await this.reportedUserRepository.findOneReportUser(no);
   }
 
-  async createBoardReport(no: number, createReportDto: CreateReportDto) {
-    const board = await this.boardsRepository.findOne(no, {
-      relations: ['reports'],
-    });
-    const { firstNo, secondNo, thirdNo } = createReportDto;
+  async createReport(createReportDto: CreateReportDto) {
+    const { head, headNo, firstNo, secondNo, thirdNo } = createReportDto;
+    const checks = await this.reportCheckBoxRepository.selectCheckConfirm(
+      firstNo,
+      secondNo,
+      thirdNo,
+    );
 
-    if (!board) {
-      throw new NotFoundException(`No: ${no} 게시글이 존재하지 않습니다.`);
-    } else {
-      const checks = await this.reportCheckBoxRepository.selectCheckConfirm(
-        firstNo,
-        secondNo,
-        thirdNo,
-      );
+    switch (head) {
+      // 게시글 신고일 때의 로직
+      case 'board':
+        const board = await this.boardRepository.findOne(headNo, {
+          relations: ['reports'],
+        });
 
-      const reportedBoard =
-        await this.reportedBoardRepository.createBoardReport(
+        if (!board) {
+          throw new NotFoundException(
+            `No: ${headNo} 게시글이 존재하지 않습니다.`,
+          );
+        }
+
+        const reportedBoard =
+          await this.reportedBoardRepository.createBoardReport(
+            checks,
+            createReportDto,
+          );
+
+        board.reports.push(reportedBoard);
+
+        const selectedBoard = await this.boardRepository.findOne(headNo);
+
+        await this.boardRepository.save(board);
+        await this.reportCheckBoxRepository.saveChecks(
+          firstNo,
+          secondNo,
+          thirdNo,
+          selectedBoard,
+        );
+
+        return board;
+
+      // 유저 신고일 때의 로직
+      case 'user':
+        const user = await this.userRepository.findOne(headNo, {
+          relations: ['reports'],
+        });
+
+        if (!user) {
+          throw new NotFoundException(
+            `No: ${headNo} 유저가 존재하지 않습니다.`,
+          );
+        }
+
+        const reportedUser = await this.reportedUserRepository.createUserReport(
           checks,
           createReportDto,
         );
 
-      board.reports.push(reportedBoard);
+        user.reports.push(reportedUser);
 
-      const selectedBoard = await this.boardsRepository.findOne(no);
+        const selectedUser = await this.userRepository.findOneUser(headNo);
 
-      await this.boardsRepository.save(board);
-      await this.reportCheckBoxRepository.saveChecks(
-        firstNo,
-        secondNo,
-        thirdNo,
-        selectedBoard,
-      );
+        await this.userRepository.save(user);
+        await this.reportCheckBoxRepository.saveChecks(
+          firstNo,
+          secondNo,
+          thirdNo,
+          selectedUser,
+        );
 
-      return board;
-    }
-  }
-
-  async createUserReport(createReportDto: CreateReportDto) {
-    const report = await this.reportedUserRepository.createUserReport(
-      createReportDto,
-    );
-
-    if (report) {
-      return {
-        success: true,
-        reportNo: report.no,
-        status: 201,
-        msg: '유저 신고가 정상적으로 등록되었습니다.',
-      };
-    } else {
-      return {
-        success: false,
-        status: 500,
-        msg: '유저 신고 에러: 알 수 없는 에러입니다.',
-      };
+        return user;
+      default:
+        throw new NotFoundException(
+          `해당 경로를 찾을 수 없습니다. Head 정보를 확인해 주세요.`,
+        );
     }
   }
 }
