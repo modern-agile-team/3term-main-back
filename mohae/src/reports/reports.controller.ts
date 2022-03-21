@@ -68,40 +68,4 @@ export class ReportsController {
       response,
     });
   }
-
-  // @Post('/board/:no')
-  // @UsePipes(ValidationPipe)
-  // async createBoardReport(
-  //   @Param('no', ParseIntPipe) no: number,
-  //   @Body() createReportDto: CreateReportDto,
-  // ) {
-  //   this.logger.verbose(
-  //     `Board report has been received. Reported board Payload: ${JSON.stringify(
-  //       createReportDto,
-  //     )}`,
-  //   );
-  //   const response = await this.reportsService.createBoardReport(
-  //     no,
-  //     createReportDto,
-  //   );
-
-  //   return Object.assign({
-  //     statusCode: 201,
-  //     msg: '게시글 신고가 접수되었습니다.',
-  //     response,
-  //   });
-  // }
-
-  // @Post('/user')
-  // @UsePipes(ValidationPipe)
-  // createUserReport(@Body() createReportUserDto: CreateReportDto) {
-  //   this.logger.verbose(
-  //     `User report has been received. Reported user Payload: ${JSON.stringify(
-  //       createReportUserDto,
-  //     )}`,
-  //   );
-  //   const response = this.reportsService.createUserReport(createReportUserDto);
-
-  //   return response;
-  // }
 }
