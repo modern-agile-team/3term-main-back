@@ -83,6 +83,7 @@ export class Board extends BaseEntity {
   @ManyToOne((type) => Area, (area) => area.no, { eager: false })
   area: Area;
 
-  @ManyToOne((type) => Note, (note) => note.board, {eager: false})
-  note: Note
+  @OneToOne(() => Note, (note) => note.board)
+  @JoinColumn({ name: 'note_no' })
+  note: Note;
 }

@@ -14,7 +14,7 @@ export class BoardRepository extends Repository<Board> {
         .leftJoinAndSelect('boards.area', 'areas')
         .leftJoinAndSelect('boards.note', 'notes')
         .where('boards.area = areas.no')
-        .where('boards.no = notes.boardNo')
+        .where('boards.note = notes.no')
         .getMany();
 
       return boards;
