@@ -38,6 +38,20 @@ export class UserRepository extends Repository<User> {
     }
   }
 
+  async signIn(email: string) {
+    try {
+      const user = await this.createQueryBuilder('users')
+        .where('users.email = :email', { email })
+        .getOne();
+
+      return user;
+    } catch (e) {
+      throw new InternalServerErrorException(
+        `${e} ### 로그인 : 알 수 없는 서버 에러입니다.`,
+      );
+    }
+  }
+
   async findOneUser(no: number) {
     try {
       const user = await this.createQueryBuilder('users')
@@ -52,6 +66,14 @@ export class UserRepository extends Repository<User> {
         `${e} ### 유저 프로필 선택 조회 : 알 수 없는 서버 에러입니다.`,
       );
     }
+  }
+  async deleteUser(no: number) {
+    const result = await this.createQueryBuilder()
+      .softDelete()
+      .from(User)
+      .where('no = :no', { no })
+      .execute();
+    return result;
   }
   async duplicateCheck(email, nickname) {
     try {

@@ -7,6 +7,7 @@ import { School } from 'src/schools/entity/school.entity';
 import {
   BaseEntity,
   Column,
+  DeleteDateColumn,
   Entity,
   JoinColumn,
   ManyToOne,
@@ -78,4 +79,10 @@ export class User extends BaseEntity {
     comment: '암호화된 비밀번호',
   })
   salt: string;
+
+  @DeleteDateColumn({
+    name: 'delete_at',
+    comment: '삭제일',
+  })
+  deletedAt: Date | null;
 }
