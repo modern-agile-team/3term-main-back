@@ -27,6 +27,7 @@ export class BoardRepository extends Repository<Board> {
 
   async createBoard(
     category: object,
+    area: object,
     createBoardDto: CreateBoardDto,
   ): Promise<Board> {
     const { price, title, description, summary, target } = createBoardDto;
@@ -38,6 +39,7 @@ export class BoardRepository extends Repository<Board> {
       summary,
       target,
       category,
+      area,
     });
 
     await createdboard.save();
