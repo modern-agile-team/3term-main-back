@@ -39,6 +39,7 @@ export class AuthController {
 
   @Post('/signin')
   async signIn(@Body() signInDto: SignInDto): Promise<{ accessToken: string }> {
+    console.log(signInDto);
     const response = await this.authService.signIn(signInDto);
 
     return Object.assign({
@@ -53,8 +54,7 @@ export class AuthController {
     const response = await this.authService.signDown(no);
     return Object.assign({
       statusCode: 204,
-      mas: `성공적으로 회원탈퇴가 진행되었습니다.`,
-      response,
+      msg: `성공적으로 회원탈퇴가 진행되었습니다.`,
     });
   }
 
