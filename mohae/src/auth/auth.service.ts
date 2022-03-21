@@ -40,6 +40,7 @@ export class AuthService {
     });
 
     const duplicate = await this.userRepository.duplicateCheck(email, nickname);
+
     if (duplicate) {
       throw new ConflictException('해당 닉네임 또는 이메일이 이미 존재합니다.');
     }
@@ -58,9 +59,8 @@ export class AuthService {
   async signIn(signInDto: SignInDto): Promise<{ accessToken: string }> {
     try {
       const { email, password } = signInDto;
-      console.log(email, password);
       const user = await this.userRepository.signIn(email);
-      console.log(user);
+
       if (user && (await bcrypt.compare(password, user.salt))) {
         const payload = { email };
         const accessToken = await this.jwtService.sign(payload);
