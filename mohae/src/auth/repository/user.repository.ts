@@ -56,6 +56,7 @@ export class UserRepository extends Repository<User> {
     try {
       const user = await this.createQueryBuilder('users')
         .leftJoinAndSelect('users.school', 'school')
+        .leftJoinAndSelect('users.reports', 'reports')
         .where('users.no = :no', { no })
         .andWhere('users.school = school.no')
         .getOne();

@@ -1,6 +1,12 @@
 import { IsNumber, IsString } from 'class-validator';
 
 export abstract class CreateReportDto {
+  @IsString()
+  head: string;
+
+  @IsNumber()
+  headNo: number;
+
   @IsNumber()
   reportUserNo: number;
 

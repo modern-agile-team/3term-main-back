@@ -88,6 +88,9 @@ export class ReportedBoard extends ReportContent {
 
 @Entity('reported_users')
 export class ReportedUser extends ReportContent {
-  // @ManyToOne((type) => User, (user) => user.no, { eager: true })
-  reportedUser: number;
+  @ManyToOne((type) => User, (user) => user.no, {
+    onDelete: 'SET NULL',
+  })
+  @JoinColumn({ name: 'reported_user_no' })
+  reportedUser: User;
 }
