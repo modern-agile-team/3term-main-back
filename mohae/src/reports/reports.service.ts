@@ -51,7 +51,8 @@ export class ReportsService {
   }
 
   async createReport(createReportDto: CreateReportDto) {
-    const { head, headNo, firstNo, secondNo, thirdNo } = createReportDto;
+    const { head, headNo, reportUserNo, firstNo, secondNo, thirdNo } =
+      createReportDto;
     const checks = await this.reportCheckBoxRepository.selectCheckConfirm(
       firstNo,
       secondNo,
@@ -71,6 +72,14 @@ export class ReportsService {
           );
         }
 
+        const boardReporter = await this.userRepository.findOne(reportUserNo, {
+          relations: ['boardReport'],
+        });
+
+        if (!boardReporter) {
+          throw new NotFoundException('신고자를 찾을 수 없습니다.');
+        }
+
         const reportedBoard =
           await this.reportedBoardRepository.createBoardReport(
             checks,
@@ -78,10 +87,12 @@ export class ReportsService {
           );
 
         board.reports.push(reportedBoard);
+        boardReporter.boardReport.push(reportedBoard);
 
         const selectedBoard = await this.boardRepository.findOne(headNo);
 
         await this.boardRepository.save(board);
+        await this.userRepository.save(boardReporter);
         await this.reportCheckBoxRepository.saveChecks(
           firstNo,
           secondNo,
@@ -103,16 +114,26 @@ export class ReportsService {
           );
         }
 
+        const userReporter = await this.userRepository.findOne(reportUserNo, {
+          relations: ['userReport'],
+        });
+
+        if (!userReporter) {
+          throw new NotFoundException('신고자를 찾을 수 없습니다.');
+        }
+
         const reportedUser = await this.reportedUserRepository.createUserReport(
           checks,
           createReportDto,
         );
 
         user.reports.push(reportedUser);
+        userReporter.userReport.push(reportedUser);
 
         const selectedUser = await this.userRepository.findOneUser(headNo);
 
         await this.userRepository.save(user);
+        await this.userRepository.save(userReporter);
         await this.reportCheckBoxRepository.saveChecks(
           firstNo,
           secondNo,

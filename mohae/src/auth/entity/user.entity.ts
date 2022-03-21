@@ -1,6 +1,10 @@
 import { Validate } from 'class-validator';
 import { Major } from 'src/majors/entity/major.entity';
-import { ReportedUser } from 'src/reports/entity/report.entity';
+import {
+  ReportContent,
+  ReportedBoard,
+  ReportedUser,
+} from 'src/reports/entity/report.entity';
 import { Review } from 'src/reviews/entity/review.entity';
 import { School } from 'src/schools/entity/school.entity';
 
@@ -91,4 +95,16 @@ export class User extends BaseEntity {
     eager: true,
   })
   reports: ReportedUser[];
+
+  @OneToMany((type) => ReportedUser, (user) => user.reportUser, {
+    nullable: true,
+    eager: true,
+  })
+  userReport: ReportedUser[];
+
+  @OneToMany((type) => ReportedBoard, (board) => board.reportBoard, {
+    nullable: true,
+    eager: true,
+  })
+  boardReport: ReportedBoard[];
 }
