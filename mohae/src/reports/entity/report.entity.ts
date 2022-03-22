@@ -85,8 +85,8 @@ export class ReportedBoard extends ReportContent {
   @ManyToOne((type) => User, (user) => user.no, {
     onDelete: 'SET NULL',
   })
-  @JoinColumn({ name: 'report_board_no' })
-  reportBoard: User;
+  @JoinColumn({ name: 'report_user_no' })
+  reportUser: User;
 }
 
 @Entity('reported_users')

@@ -15,7 +15,7 @@ export class ReportedBoardRepository extends Repository<ReportedBoard> {
   async findOneReportBoard(no: number): Promise<ReportedBoard> {
     try {
       const reportBoard = await this.createQueryBuilder('reported_boards')
-        .leftJoinAndSelect('reported_boards.reportBoard', 'reportBoard')
+        .leftJoinAndSelect('reported_boards.reportUser', 'reportUser')
         .leftJoinAndSelect('reported_boards.reportedBoard', 'boards')
         .leftJoinAndSelect('reported_boards.first', 'firstCheck')
         .leftJoinAndSelect('reported_boards.second', 'secondCheck')
