@@ -15,8 +15,11 @@ export class ReportedBoardRepository extends Repository<ReportedBoard> {
   async findOneReportBoard(no: number): Promise<ReportedBoard> {
     try {
       const reportBoard = await this.createQueryBuilder('reported_boards')
+        .leftJoinAndSelect('reported_boards.reportBoard', 'reportBoard')
         .leftJoinAndSelect('reported_boards.reportedBoard', 'boards')
-        .leftJoinAndSelect('reported_boards.first', 'report_chechboxes')
+        .leftJoinAndSelect('reported_boards.first', 'firstCheck')
+        .leftJoinAndSelect('reported_boards.second', 'secondCheck')
+        .leftJoinAndSelect('reported_boards.third', 'thirdCheck')
         .where('reported_boards.no = :no', { no })
         .getOne();
 
@@ -122,6 +125,7 @@ export class ReportCheckBoxRepository extends Repository<ReportCheckBox> {
       );
     }
   }
+
   async selectCheckConfirm(
     firstCheck: number,
     secondCheck: number,
