@@ -7,7 +7,7 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 
-@Entity('category')
+@Entity('categories')
 export class Category extends BaseEntity {
   @PrimaryGeneratedColumn()
   no: number;

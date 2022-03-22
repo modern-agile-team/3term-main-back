@@ -13,8 +13,10 @@ export class BoardRepository extends Repository<Board> {
       const boards = await this.createQueryBuilder('boards')
         .leftJoinAndSelect('boards.area', 'areas')
         .leftJoinAndSelect('boards.note', 'notes')
+        .leftJoinAndSelect('boards.category', 'categories')
         .where('boards.area = areas.no')
         .where('boards.note = notes.no')
+        .where('boards.category = categories.no')
         .getMany();
 
       return boards;
@@ -31,12 +33,13 @@ export class BoardRepository extends Repository<Board> {
     createBoardDto: CreateBoardDto,
   ): Promise<void> {
     const { price, title, description, summary, target } = createBoardDto;
-    await getConnection()
-      .createQueryBuilder()
+    const board = await this.createQueryBuilder('boards')
       .insert()
       .into(Board)
-      .values([{ price, title, description, summary, target, category, area }])
+      .values([{ price, title, description, summary, target }])
       .execute();
+    console.log(board);
+    // return board;
   }
 
   async updateBoard(

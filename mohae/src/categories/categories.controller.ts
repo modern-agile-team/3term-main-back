@@ -22,8 +22,16 @@ export class CategoriesController {
   }
 
   @Get('/:no')
-  findOneCategory(@Param('no', ParseIntPipe) no: number): Promise<Category> {
+  async findOneCategory(
+    @Param('no', ParseIntPipe) no: number,
+  ): Promise<Category> {
     this.logger.verbose(`카테고리 선택 조회 시도. 카테고리 번호 : ${no}`);
-    return this.categoryService.findOneCategory(no);
+    const response = await this.categoryService.findOneCategory(no);
+
+    return Object.assign({
+      statusCode: 200,
+      msg: `카테고리 전체 조회 완료`,
+      response,
+    });
   }
 }
