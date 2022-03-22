@@ -86,6 +86,25 @@ export class ReportsService {
             createReportDto,
           );
 
+        // const reportTest = await this.reportCheckBoxRepository.find({
+        //   relations: [
+        //     'firstCheckedReport',
+        //     'secondCheckedReport',
+        //     'thirdCheckedReport',
+        //   ],
+        // });
+        // const reportTest2 = await this.reportCheckBoxRepository.find({
+        //   relations: ['secondCheckedReport'],
+        // });
+        // const reportTest3 = await this.reportCheckBoxRepository.find({
+        //   relations: ['thirdCheckedReport'],
+        // });
+        // reportTest.push(reportedBoard.first);
+        // reportTest2.push(reportedBoard.second);
+        // reportTest3.push(reportedBoard.third);
+
+        // console.log(reportTest, reportTest2, reportTest3);
+
         board.reports.push(reportedBoard);
         boardReporter.boardReport.push(reportedBoard);
 

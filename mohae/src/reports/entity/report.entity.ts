@@ -47,19 +47,19 @@ export abstract class ReportContent extends BaseEntity {
   @PrimaryGeneratedColumn()
   no: number;
 
-  @ManyToOne((type) => ReportCheckBox, (reportCheck) => reportCheck.content, {
+  @ManyToOne((type) => ReportCheckBox, (reportCheck) => reportCheck.no, {
     onDelete: 'SET NULL',
   })
   @JoinColumn({ name: 'first_no' })
   first: ReportCheckBox;
 
-  @ManyToOne((type) => ReportCheckBox, (reportCheck) => reportCheck.content, {
+  @ManyToOne((type) => ReportCheckBox, (reportCheck) => reportCheck.no, {
     onDelete: 'SET NULL',
   })
   @JoinColumn({ name: 'second_no' })
   second: ReportCheckBox;
 
-  @ManyToOne((type) => ReportCheckBox, (reportCheck) => reportCheck.content, {
+  @ManyToOne((type) => ReportCheckBox, (reportCheck) => reportCheck.no, {
     onDelete: 'SET NULL',
   })
   @JoinColumn({ name: 'third_no' })
@@ -85,8 +85,8 @@ export class ReportedBoard extends ReportContent {
   @ManyToOne((type) => User, (user) => user.no, {
     onDelete: 'SET NULL',
   })
-  @JoinColumn({ name: 'report_board_no' })
-  reportBoard: User;
+  @JoinColumn({ name: 'report_user_no' })
+  reportUser: User;
 }
 
 @Entity('reported_users')

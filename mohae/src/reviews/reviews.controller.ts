@@ -38,12 +38,11 @@ export class ReviewsController {
     });
   }
 
-  @Post(':no')
+  @Post()
   async createReview(
-    @Param('no', ParseIntPipe) no: number,
     @Body() createReviewDto: CreateReviewDto,
   ): Promise<Review> {
-    const response = await this.reviewService.createReview(no, createReviewDto);
+    const response = await this.reviewService.createReview(createReviewDto);
 
     return Object.assign({
       statusCode: 201,

@@ -51,7 +51,6 @@ export class BoardsController {
     },
   })
   async createBoard(@Body() createBoardDto: CreateBoardDto): Promise<void> {
-    console.log(createBoardDto);
     const response = await this.boardService.createBoard(createBoardDto);
     return Object.assign({
       statusCode: 201,

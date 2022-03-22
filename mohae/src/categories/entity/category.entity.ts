@@ -7,7 +7,7 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 
-@Entity('category')
+@Entity('categories')
 export class Category extends BaseEntity {
   @PrimaryGeneratedColumn()
   no: number;
@@ -21,7 +21,6 @@ export class Category extends BaseEntity {
 
   @OneToMany((type) => Board, (board) => board.category, {
     nullable: true,
-    eager: true,
   })
   boards: Board[];
 }

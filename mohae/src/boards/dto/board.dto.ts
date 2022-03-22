@@ -48,7 +48,7 @@ export abstract class BoardContent {
     required: true,
   })
   @IsNumber()
-  category: number;
+  categoryNo: number;
 
   @IsNumber()
   areaNo: number;
