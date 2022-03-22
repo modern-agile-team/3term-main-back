@@ -39,11 +39,26 @@ export class AuthService {
       relations: ['users'],
     });
 
-    const duplicate = await this.userRepository.duplicateCheck(email, nickname);
+    const stringEmail = 'email';
+    const stringNickname = 'nickname';
 
-    if (duplicate) {
-      throw new ConflictException('해당 닉네임 또는 이메일이 이미 존재합니다.');
+    const duplicateEmail = await this.userRepository.duplicateCheck(
+      stringEmail,
+      email,
+    );
+    const duplicateNickname = await this.userRepository.duplicateCheck(
+      stringNickname,
+      nickname,
+    );
+    const duplicateObj = { 이메일: duplicateEmail, 닉네임: duplicateNickname };
+    const duplicateKeys = Object.keys(duplicateObj).filter((key) => {
+      if (duplicateObj[key]) return true;
+      return false;
+    });
+    if (duplicateKeys.length) {
+      throw new ConflictException(`해당 ${duplicateKeys}이 이미 존재합니다.`);
     }
+
     const user = await this.userRepository.createUser(
       createUserDto,
       schoolRepo,
