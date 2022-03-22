@@ -76,12 +76,10 @@ export class UserRepository extends Repository<User> {
       .execute();
     return result;
   }
-  async duplicateCheck(email, nickname) {
+  async duplicateCheck(string, duplicateCheck) {
     try {
       const duplicate = await this.createQueryBuilder('users')
-        .select()
-        .where('users.email= :email', { email })
-        .orWhere('users.nickname =:nickname', { nickname })
+        .where(`users.${string}= :duplicateCheck`, { duplicateCheck })
         .getOne();
       return duplicate;
     } catch (e) {
