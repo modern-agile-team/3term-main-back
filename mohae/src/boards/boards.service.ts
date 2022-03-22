@@ -34,6 +34,7 @@ export class BoardsService {
     const area = await this.areaRepository.findOne(createBoardDto.areaNo, {
       relations: ['boards'],
     });
+
     if (!category) {
       throw new NotFoundException(
         `No: ${createBoardDto.categoryNo} 카테고리가 존재하지 않습니다.`,
