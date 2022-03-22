@@ -10,9 +10,15 @@ export class CategoriesController {
   constructor(private categoryService: CategoriesService) {}
 
   @Get()
-  findAllCategories(): Promise<Category[]> {
+  async findAllCategories(): Promise<Category[]> {
     this.logger.verbose(`카테고리 전체 조회 시도.`);
-    return this.categoryService.findAllCategories();
+    const response = await this.categoryService.findAllCategories();
+
+    return Object.assign({
+      statusCode: 200,
+      msg: `카테고리 전체 조회 완료`,
+      response,
+    });
   }
 
   @Get('/:no')

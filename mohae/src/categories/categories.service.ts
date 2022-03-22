@@ -10,8 +10,14 @@ export class CategoriesService {
     private categoryRepository: CategoryRepository,
   ) {}
 
-  findAllCategories(): Promise<Category[]> {
-    return this.categoryRepository.find();
+  async findAllCategories(): Promise<Category[]> {
+    try {
+      const categories = await this.categoryRepository.findAllCategory();
+
+      return categories;
+    } catch (e) {
+      console.log(e);
+    }
   }
 
   findOneCategory(no: number): Promise<Category> {

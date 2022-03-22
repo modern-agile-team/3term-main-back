@@ -21,7 +21,6 @@ export class Category extends BaseEntity {
 
   @OneToMany((type) => Board, (board) => board.category, {
     nullable: true,
-    eager: true,
   })
   boards: Board[];
 }

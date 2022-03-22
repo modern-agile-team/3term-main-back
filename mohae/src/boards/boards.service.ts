@@ -26,7 +26,7 @@ export class BoardsService {
 
   async createBoard(createBoardDto: CreateBoardDto): Promise<void> {
     const category = await this.categoryRepository.findOne(
-      createBoardDto.category,
+      createBoardDto.categoryNo,
       {
         relations: ['boards'],
       },
@@ -34,9 +34,10 @@ export class BoardsService {
     const area = await this.areaRepository.findOne(createBoardDto.areaNo, {
       relations: ['boards'],
     });
+
     if (!category) {
       throw new NotFoundException(
-        `No: ${createBoardDto.category} 카테고리가 존재하지 않습니다.`,
+        `No: ${createBoardDto.categoryNo} 카테고리가 존재하지 않습니다.`,
       );
     }
     const board = await this.boardRepository.createBoard(

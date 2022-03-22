@@ -4,11 +4,14 @@ import {
   BaseEntity,
   Column,
   CreateDateColumn,
+  DeleteDateColumn,
   Entity,
   JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
+  RelationId,
   Timestamp,
+  UpdateDateColumn,
 } from 'typeorm';
 
 @Entity('reviews')
@@ -20,6 +23,9 @@ export class Review extends BaseEntity {
     onDelete: 'SET NULL',
   })
   readonly board: Board;
+
+  // @RelationId((board: Board) => board.reviews)
+  // reviewNos: number[];
 
   @Column({
     type: 'int',
@@ -43,5 +49,11 @@ export class Review extends BaseEntity {
   @CreateDateColumn({
     comment: '리뷰 작성하면 시간 입력',
   })
-  readonly in_date: Timestamp;
+  readonly in_date: Date;
+
+  @UpdateDateColumn()
+  readonly updated_date: Date;
+
+  @DeleteDateColumn()
+  readonly delete_date: Date;
 }

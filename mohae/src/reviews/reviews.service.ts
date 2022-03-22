@@ -16,32 +16,42 @@ export class ReviewsService {
   ) {}
 
   async findAllReview(): Promise<Review[]> {
-    const reviews = await this.reviewRepository.findAllReview();
+    try {
+      const reviews = await this.reviewRepository.findAllReview();
 
-    return reviews;
-  }
-
-  async findOneReview(no: number): Promise<Review> {
-    const review = await this.reviewRepository.findOneReview(no);
-
-    if (!review) {
-      throw new NotFoundException(`${no}에 해당하는 리뷰를 찾을 수 없습니다.`);
-    } else {
-      return review;
+      return reviews;
+    } catch (e) {
+      throw e;
     }
   }
 
-  async createReview(
-    no: number,
-    createReviewDto: CreateReviewDto,
-  ): Promise<Review> {
+  async findOneReview(no: number): Promise<Review> {
     try {
-      const board = await this.boardsRepository.findOne(no, {
+      const review = await this.reviewRepository.findOneReview(no);
+
+      if (!review) {
+        throw new NotFoundException(
+          `${no}에 해당하는 리뷰를 찾을 수 없습니다.`,
+        );
+      }
+
+      return review;
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  async createReview(createReviewDto: CreateReviewDto): Promise<Review> {
+    const { boardNo } = createReviewDto;
+    try {
+      const board = await this.boardsRepository.findOne(boardNo, {
         relations: ['reviews'],
       });
 
       if (!board) {
-        throw new NotFoundException(`No: ${no} 게시글이 존재하지 않습니다.`);
+        throw new NotFoundException(
+          `No: ${boardNo} 게시글이 존재하지 않습니다.`,
+        );
       }
 
       const review = await this.reviewRepository.createReview(createReviewDto);

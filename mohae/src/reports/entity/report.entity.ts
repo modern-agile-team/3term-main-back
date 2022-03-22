@@ -47,19 +47,19 @@ export abstract class ReportContent extends BaseEntity {
   @PrimaryGeneratedColumn()
   no: number;
 
-  @ManyToOne((type) => ReportCheckBox, (reportCheck) => reportCheck.content, {
+  @ManyToOne((type) => ReportCheckBox, (reportCheck) => reportCheck.no, {
     onDelete: 'SET NULL',
   })
   @JoinColumn({ name: 'first_no' })
   first: ReportCheckBox;
 
-  @ManyToOne((type) => ReportCheckBox, (reportCheck) => reportCheck.content, {
+  @ManyToOne((type) => ReportCheckBox, (reportCheck) => reportCheck.no, {
     onDelete: 'SET NULL',
   })
   @JoinColumn({ name: 'second_no' })
   second: ReportCheckBox;
 
-  @ManyToOne((type) => ReportCheckBox, (reportCheck) => reportCheck.content, {
+  @ManyToOne((type) => ReportCheckBox, (reportCheck) => reportCheck.no, {
     onDelete: 'SET NULL',
   })
   @JoinColumn({ name: 'third_no' })
