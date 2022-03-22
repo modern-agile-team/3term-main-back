@@ -8,10 +8,31 @@ export class CategoryRepository extends Repository<Category> {
     try {
       const categories = await this.createQueryBuilder('categories')
         .leftJoinAndSelect('categories.boards', 'boards')
-        .where('categories.boards = boards.no')
+        .where('categories.no = boards.category')
         .getMany();
-      console.log(categories);
+
       return categories;
+    } catch (e) {
+      throw new InternalServerErrorException(e);
+    }
+  }
+
+  async findOneCategory(no: number): Promise<Category> {
+    try {
+      const category = await this.createQueryBuilder('categories')
+        .leftJoinAndSelect('categories.boards', 'boards')
+        .select([
+          'categories.no',
+          'categories.name',
+          'boards.no',
+          'boards.title',
+          'boards.description',
+        ])
+        .where('categories.no = :no', { no })
+        .andWhere('categories.no = boards.category')
+        .getOne();
+
+      return category;
     } catch (e) {
       throw new InternalServerErrorException(e);
     }

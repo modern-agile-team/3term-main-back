@@ -46,7 +46,9 @@ export class BoardsService {
       createBoardDto,
     );
 
-    return board;
+    // category.boards.push(board);
+
+    // return board;
   }
 
   async delete(no: number): Promise<void> {
