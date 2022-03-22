@@ -75,8 +75,15 @@ export class AuthService {
     try {
       const { email, password } = signInDto;
       const user = await this.userRepository.signIn(email);
+      const isPassword = await bcrypt.compare(password, user.salt);
+      console.log(isPassword);
+      const judgeSignInObj = { user, isPassword };
+      // const judgeSignInKeys = Object.keys(judgeSignInObj).filter((key) => {
+      //   if (judgeSignInObj[key]) return true
+      //   return false
+      // })
 
-      if (user && (await bcrypt.compare(password, user.salt))) {
+      if (user && isPassword) {
         const payload = { email };
         const accessToken = await this.jwtService.sign(payload);
 
