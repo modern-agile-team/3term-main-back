@@ -6,6 +6,7 @@ import { createQueryBuilder, getConnection } from 'typeorm';
 import { CreateBoardDto, UpdateBoardDto } from './dto/board.dto';
 import { Board } from './entity/board.entity';
 import { BoardRepository } from './repository/board.repository';
+import { NoteRepository } from 'src/notes/repository/note.repository';
 
 @Injectable()
 export class BoardsService {
@@ -49,7 +50,6 @@ export class BoardsService {
     );
 
     category.boards.push(board);
-
     return board;
   }
 

@@ -34,11 +34,25 @@ export class BoardRepository extends Repository<Board> {
     area: object,
     createBoardDto: CreateBoardDto,
   ): Promise<Board> {
-    const { price, title, description, summary, target } = createBoardDto;
+    const { price, title, description, summary, target, note1, note2, note3 } =
+      createBoardDto;
     const board = await this.createQueryBuilder('boards')
       .insert()
       .into(Board)
-      .values([{ price, title, description, summary, target, category, area }])
+      .values([
+        {
+          price,
+          title,
+          description,
+          summary,
+          target,
+          category,
+          area,
+          note1,
+          note2,
+          note3,
+        },
+      ])
       .execute();
 
     const { affectedRows, insertId } = board.raw;
@@ -48,7 +62,6 @@ export class BoardRepository extends Repository<Board> {
         .leftJoinAndSelect('boards.area', 'area')
         .where('boards.no = :no', { no: insertId })
         .getOne();
-      // findOne(insertId);
     }
     // return board;
   }

@@ -52,6 +52,15 @@ export abstract class BoardContent {
 
   @IsNumber()
   areaNo: number;
+
+  @IsString()
+  note1: string;
+
+  @IsString()
+  note2: string;
+
+  @IsString()
+  note3: string;
 }
 
 export class CreateBoardDto extends BoardContent {}
