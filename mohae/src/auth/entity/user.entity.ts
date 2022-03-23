@@ -7,7 +7,6 @@ import {
 } from 'src/reports/entity/report.entity';
 import { Review } from 'src/reviews/entity/review.entity';
 import { School } from 'src/schools/entity/school.entity';
-
 import {
   BaseEntity,
   Column,

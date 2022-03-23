@@ -3,18 +3,15 @@ import {
   Controller,
   Delete,
   Param,
-  ParseIntPipe,
-  ParseUUIDPipe,
   Post,
   Req,
   UseGuards,
-  ValidationPipe,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiTags } from '@nestjs/swagger';
-import { School } from 'src/schools/entity/school.entity';
 import { DeleteResult } from 'typeorm';
 import { AuthService } from './auth.service';
+import { EmailStatusValidationPipe } from './decorator/email-user.decorator';
 import {
   CreateUserDto,
   SignDownDto,
@@ -26,6 +23,7 @@ import { User } from './entity/user.entity';
 @ApiTags('Auth')
 export class AuthController {
   constructor(private authService: AuthService) {}
+
   @Post('/signup')
   async signUp(@Body() createUserDto: CreateUserDto): Promise<User> {
     const { nickname, email } = await this.authService.signUp(createUserDto);
