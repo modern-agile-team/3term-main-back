@@ -1,11 +1,4 @@
-import { Board } from 'src/boards/entity/board.entity';
-import {
-  BaseEntity,
-  Column,
-  Entity,
-  OneToOne,
-  PrimaryGeneratedColumn,
-} from 'typeorm';
+import { BaseEntity, Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity('notes')
 export class Note extends BaseEntity {
@@ -26,7 +19,4 @@ export class Note extends BaseEntity {
     type: 'mediumtext',
   })
   note3: string;
-
-  @OneToOne((type) => Board, (board) => board.no)
-  board: Board;
 }

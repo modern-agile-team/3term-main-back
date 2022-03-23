@@ -6,13 +6,17 @@ import { createQueryBuilder, getConnection } from 'typeorm';
 import { CreateBoardDto, UpdateBoardDto } from './dto/board.dto';
 import { Board } from './entity/board.entity';
 import { BoardRepository } from './repository/board.repository';
+import { NoteRepository } from 'src/notes/repository/note.repository';
 
 @Injectable()
 export class BoardsService {
   constructor(
     @InjectRepository(BoardRepository)
     private boardRepository: BoardRepository,
+
+    @InjectRepository(AreasRepository)
     private areaRepository: AreasRepository,
+
     private categoryRepository: CategoryRepository,
   ) {}
 
@@ -24,14 +28,13 @@ export class BoardsService {
     return await this.boardRepository.findOne(no);
   }
 
-  async createBoard(createBoardDto: CreateBoardDto): Promise<void> {
-    const category = await this.categoryRepository.findOne(
-      createBoardDto.categoryNo,
-      {
-        relations: ['boards'],
-      },
-    );
-    const area = await this.areaRepository.findOne(createBoardDto.areaNo, {
+  async createBoard(createBoardDto: CreateBoardDto): Promise<Board> {
+    const { categoryNo, areaNo } = createBoardDto;
+    const category = await this.categoryRepository.findOne(categoryNo, {
+      relations: ['boards'],
+    });
+
+    const area = await this.areaRepository.findOne(areaNo, {
       relations: ['boards'],
     });
 
@@ -46,9 +49,8 @@ export class BoardsService {
       createBoardDto,
     );
 
-    // category.boards.push(board);
-
-    // return board;
+    category.boards.push(board);
+    return board;
   }
 
   async delete(no: number): Promise<void> {
