@@ -19,7 +19,9 @@ import { SchoolRepository } from 'src/schools/repository/school.repository';
 import { DeleteResult } from 'typeorm';
 import { MajorRepository } from 'src/majors/repository/major.repository';
 import { isEmail } from 'class-validator';
+import * as config from 'config';
 
+const jwtConfig = config.get('jwt');
 @Injectable()
 export class AuthService {
   constructor(
@@ -70,22 +72,26 @@ export class AuthService {
 
     return user;
   }
-
   async signIn(signInDto: SignInDto): Promise<{ accessToken: string }> {
     try {
       const { email, password } = signInDto;
       const user = await this.userRepository.signIn(email);
-
       if (user && (await bcrypt.compare(password, user.salt))) {
-        const payload = { email };
+        const payload = {
+          email,
+          issuer: 'modern-agile',
+          expiration: jwtConfig.expiresIn,
+        };
         const accessToken = await this.jwtService.sign(payload);
 
         return { accessToken };
       } else {
-        throw new UnauthorizedException('로그인 실패');
+        throw new UnauthorizedException(
+          '아이디 또는 비밀번호가 일치하지 않습니다.',
+        );
       }
     } catch (e) {
-      console.log(e);
+      throw e;
     }
   }
   async signDown(no: number): Promise<DeleteResult> {
