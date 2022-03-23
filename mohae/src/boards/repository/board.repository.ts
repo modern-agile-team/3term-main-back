@@ -2,6 +2,8 @@ import {
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
+import { Area } from 'src/areas/entity/areas.entity';
+import { Category } from 'src/categories/entity/category.entity';
 import { EntityRepository, getConnection, Repository } from 'typeorm';
 import { CreateBoardDto, UpdateBoardDto } from '../dto/board.dto';
 import { Board } from '../entity/board.entity';
@@ -28,18 +30,26 @@ export class BoardRepository extends Repository<Board> {
   }
 
   async createBoard(
-    category: object,
+    category: Category,
     area: object,
     createBoardDto: CreateBoardDto,
-  ): Promise<void> {
+  ): Promise<Board> {
     const { price, title, description, summary, target } = createBoardDto;
-    console.log(createBoardDto);
     const board = await this.createQueryBuilder('boards')
       .insert()
       .into(Board)
-      .values([{ price, title, description, summary, target }])
+      .values([{ price, title, description, summary, target, category, area }])
       .execute();
-    console.log(board);
+
+    const { affectedRows, insertId } = board.raw;
+    if (affectedRows) {
+      return await this.createQueryBuilder('boards')
+        .leftJoinAndSelect('boards.category', 'category')
+        .leftJoinAndSelect('boards.area', 'area')
+        .where('boards.no = :no', { no: insertId })
+        .getOne();
+      // findOne(insertId);
+    }
     // return board;
   }
 

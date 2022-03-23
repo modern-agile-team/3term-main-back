@@ -22,13 +22,11 @@ export class Board extends BaseEntity {
 
   @OneToMany((type) => ReportedBoard, (report) => report.reportedBoard, {
     nullable: true,
-    eager: true,
   })
   reports: ReportedBoard[];
 
   @OneToMany((type) => Review, (review) => review.board, {
     nullable: true,
-    eager: true,
   })
   reviews: Review[];
 
@@ -80,7 +78,9 @@ export class Board extends BaseEntity {
   })
   category: Category;
 
-  @ManyToOne((type) => Area, (area) => area.no, { onDelete: 'SET NULL' })
+  @ManyToOne((type) => Area, (area) => area.no, {
+    onDelete: 'SET NULL',
+  })
   area: Area;
 
   @OneToOne(() => Note, (note) => note.board)

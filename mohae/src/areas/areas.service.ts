@@ -13,4 +13,8 @@ export class AreasService {
   async getAllAreas(): Promise<Area[]> {
     return this.areasRepository.find();
   }
+
+  getOne(no: number) {
+    return this.areasRepository.findOneArea(no);
+  }
 }
