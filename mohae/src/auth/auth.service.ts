@@ -1,16 +1,11 @@
 import {
   ConflictException,
-  Inject,
   Injectable,
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import {
-  CreateUserDto,
-  SignDownDto,
-  SignInDto,
-} from './dto/auth-credential.dto';
+import { CreateUserDto, SignInDto } from './dto/auth-credential.dto';
 import { UserRepository } from './repository/user.repository';
 import * as bcrypt from 'bcryptjs';
 import { JwtService } from '@nestjs/jwt';
@@ -18,7 +13,6 @@ import { User } from './entity/user.entity';
 import { SchoolRepository } from 'src/schools/repository/school.repository';
 import { DeleteResult } from 'typeorm';
 import { MajorRepository } from 'src/majors/repository/major.repository';
-import { isEmail } from 'class-validator';
 import * as config from 'config';
 
 const jwtConfig = config.get('jwt');
