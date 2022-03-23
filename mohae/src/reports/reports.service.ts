@@ -51,12 +51,10 @@ export class ReportsService {
   }
 
   async createReport(createReportDto: CreateReportDto) {
-    const { head, headNo, reportUserNo } = createReportDto;
-    // const checks = await this.reportCheckBoxRepository.selectCheckConfirm(
-    // firstNo,
-    // secondNo,
-    // thirdNo,
-    // );
+    const { head, headNo, reportUserNo, checks } = createReportDto;
+    const checkInfo = await this.reportCheckBoxRepository.selectCheckConfirm(
+      checks,
+    );
 
     switch (head) {
       // 게시글 신고일 때의 로직
@@ -79,44 +77,23 @@ export class ReportsService {
           throw new NotFoundException('신고자를 찾을 수 없습니다.');
         }
 
-        // const reportedBoard =
-        // await this.reportedBoardRepository.createBoardReport(
-        //   checks,
-        //   createReportDto,
-        // );
+        const reportedBoard =
+          await this.reportedBoardRepository.createBoardReport(
+            checkInfo,
+            createReportDto,
+          );
 
-        // const reportTest = await this.reportCheckBoxRepository.find({
-        //   relations: [
-        //     'firstCheckedReport',
-        //     'secondCheckedReport',
-        //     'thirdCheckedReport',
-        //   ],
-        // });
-        // const reportTest2 = await this.reportCheckBoxRepository.find({
-        //   relations: ['secondCheckedReport'],
-        // });
-        // const reportTest3 = await this.reportCheckBoxRepository.find({
-        //   relations: ['thirdCheckedReport'],
-        // });
-        // reportTest.push(reportedBoard.first);
-        // reportTest2.push(reportedBoard.second);
-        // reportTest3.push(reportedBoard.third);
+        board.reports.push(reportedBoard);
+        boardReporter.boardReport.push(reportedBoard);
 
-        // console.log(reportTest, reportTest2, reportTest3);
+        const selectedBoard = await this.boardRepository.findOne(headNo);
 
-        // board.reports.push(reportedBoard);
-        // boardReporter.boardReport.push(reportedBoard);
-
-        // const selectedBoard = await this.boardRepository.findOne(headNo);
-
-        // await this.boardRepository.save(board);
-        // await this.userRepository.save(boardReporter);
-        // await this.reportCheckBoxRepository.saveChecks(
-        //   firstNo,
-        //   secondNo,
-        //   thirdNo,
-        //   selectedBoard,
-        // );
+        await this.boardRepository.save(board);
+        await this.userRepository.save(boardReporter);
+        await this.reportCheckBoxRepository.saveChecks(
+          checkInfo,
+          selectedBoard,
+        );
 
         return board;
 
