@@ -1,4 +1,4 @@
-import { IsNumber, IsString } from 'class-validator';
+import { IsArray, IsNumber, IsString } from 'class-validator';
 
 export abstract class CreateReportDto {
   @IsString()
@@ -10,14 +10,8 @@ export abstract class CreateReportDto {
   @IsNumber()
   reportUserNo: number;
 
-  @IsNumber()
-  firstNo: number;
-
-  @IsNumber()
-  secondNo: number;
-
-  @IsNumber()
-  thirdNo: number;
+  @IsArray()
+  checks: [];
 
   @IsString()
   description: string;

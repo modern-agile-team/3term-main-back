@@ -50,8 +50,9 @@ export class BoardsController {
       },
     },
   })
-  async createBoard(@Body() createBoardDto: CreateBoardDto): Promise<void> {
+  async createBoard(@Body() createBoardDto: CreateBoardDto): Promise<Board> {
     const response = await this.boardService.createBoard(createBoardDto);
+
     return Object.assign({
       statusCode: 201,
       msg: '게시글 생성이 완료되었습니다.',
