@@ -6,6 +6,7 @@ import {
   CreateDateColumn,
   Entity,
   JoinColumn,
+  ManyToMany,
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
@@ -24,46 +25,16 @@ export class ReportCheckBox extends BaseEntity {
   })
   content: string;
 
-  @OneToMany((type) => ReportedBoard, (report) => report.first, {
-    nullable: true,
-    eager: true,
-  })
-  firstCheckedReport: ReportContent[];
-
-  @OneToMany((type) => ReportedBoard, (report) => report.second, {
-    nullable: true,
-    eager: true,
-  })
-  secondCheckedReport: ReportContent[];
-
-  @OneToMany((type) => ReportedBoard, (report) => report.third, {
-    nullable: true,
-    eager: true,
-  })
-  thirdCheckedReport: ReportContent[];
+  @ManyToMany((type) => ReportedBoard, (report) => report.checks)
+  reportedBoards: ReportedBoard[];
 }
 
 export abstract class ReportContent extends BaseEntity {
   @PrimaryGeneratedColumn()
   no: number;
 
-  @ManyToOne((type) => ReportCheckBox, (reportCheck) => reportCheck.no, {
-    onDelete: 'SET NULL',
-  })
-  @JoinColumn({ name: 'first_no' })
-  first: ReportCheckBox;
-
-  @ManyToOne((type) => ReportCheckBox, (reportCheck) => reportCheck.no, {
-    onDelete: 'SET NULL',
-  })
-  @JoinColumn({ name: 'second_no' })
-  second: ReportCheckBox;
-
-  @ManyToOne((type) => ReportCheckBox, (reportCheck) => reportCheck.no, {
-    onDelete: 'SET NULL',
-  })
-  @JoinColumn({ name: 'third_no' })
-  third: ReportCheckBox;
+  @ManyToMany((type) => ReportCheckBox, (checks) => checks.reportedBoards)
+  checks: ReportCheckBox[];
 
   @Column({
     type: 'mediumtext',

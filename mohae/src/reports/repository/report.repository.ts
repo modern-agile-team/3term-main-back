@@ -31,26 +31,26 @@ export class ReportedBoardRepository extends Repository<ReportedBoard> {
     }
   }
 
-  async createBoardReport(checks, createReportDto: CreateReportDto) {
-    const { description } = createReportDto;
-    const { first, second, third } = checks;
+  // async createBoardReport(checks, createReportDto: CreateReportDto) {
+  //   const { description } = createReportDto;
+  //   const { first, second, third } = checks;
 
-    try {
-      const reportedBoard = this.create({
-        first,
-        second,
-        third,
-        description,
-      });
+  //   try {
+  //     const reportedBoard = this.create({
+  //       // first,
+  //       second,
+  //       third,
+  //       description,
+  //     });
 
-      await reportedBoard.save();
-      return reportedBoard;
-    } catch (e) {
-      throw new InternalServerErrorException(
-        `${e} ### 게시글 신고 : 알 수 없는 서버 에러입니다.`,
-      );
-    }
-  }
+  //     await reportedBoard.save();
+  //     return reportedBoard;
+  //   } catch (e) {
+  //     throw new InternalServerErrorException(
+  //       `${e} ### 게시글 신고 : 알 수 없는 서버 에러입니다.`,
+  //     );
+  //   }
+  // }
 }
 
 @EntityRepository(ReportedUser)
@@ -74,26 +74,26 @@ export class ReportedUserRepository extends Repository<ReportedUser> {
     }
   }
 
-  async createUserReport(checks, createReportDto: CreateReportDto) {
-    const { description } = createReportDto;
-    const { first, second, third } = checks;
+  // async createUserReport(checks, createReportDto: CreateReportDto) {
+  //   const { description } = createReportDto;
+  //   const { first, second, third } = checks;
 
-    try {
-      const reportedUser = this.create({
-        first,
-        second,
-        third,
-        description,
-      });
+  //   try {
+  //     const reportedUser = this.create({
+  //       first,
+  //       second,
+  //       third,
+  //       description,
+  //     });
 
-      await reportedUser.save();
-      return reportedUser;
-    } catch (e) {
-      throw new InternalServerErrorException(
-        `${e} ### 게시글 신고 : 알 수 없는 서버 에러입니다.`,
-      );
-    }
-  }
+  //     await reportedUser.save();
+  //     return reportedUser;
+  //   } catch (e) {
+  //     throw new InternalServerErrorException(
+  //       `${e} ### 게시글 신고 : 알 수 없는 서버 에러입니다.`,
+  //     );
+  //   }
+  // }
 }
 
 @EntityRepository(ReportCheckBox)
@@ -163,9 +163,9 @@ export class ReportCheckBoxRepository extends Repository<ReportCheckBox> {
     };
     const { firstCheck, secondCheck, thirdCheck } = checks;
 
-    firstCheck.firstCheckedReport.push(head);
-    secondCheck.secondCheckedReport.push(head);
-    thirdCheck.thirdCheckedReport.push(head);
+    // firstCheck.firstCheckedReport.push(head);
+    // secondCheck.secondCheckedReport.push(head);
+    // thirdCheck.thirdCheckedReport.push(head);
 
     this.save(firstCheck);
     this.save(secondCheck);

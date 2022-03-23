@@ -33,6 +33,7 @@ export class BoardRepository extends Repository<Board> {
     createBoardDto: CreateBoardDto,
   ): Promise<void> {
     const { price, title, description, summary, target } = createBoardDto;
+    console.log(createBoardDto);
     const board = await this.createQueryBuilder('boards')
       .insert()
       .into(Board)
