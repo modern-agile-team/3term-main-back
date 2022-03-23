@@ -55,47 +55,57 @@ export class ReportsService {
     const checkInfo = await this.reportCheckBoxRepository.selectCheckConfirm(
       checks,
     );
+    const checkboxRelation =
+      head === 'user' ? 'reportedUsers' : 'reportedBoards';
 
     switch (head) {
       // 게시글 신고일 때의 로직
       case 'board':
-        const board = await this.boardRepository.findOne(headNo, {
-          relations: ['reports'],
-        });
+        try {
+          const board = await this.boardRepository.findOne(headNo, {
+            relations: ['reports'],
+          });
 
-        if (!board) {
-          throw new NotFoundException(
-            `No: ${headNo} 게시글이 존재하지 않습니다.`,
+          if (!board) {
+            throw new NotFoundException(
+              `No: ${headNo} 게시글이 존재하지 않습니다.`,
+            );
+          }
+
+          const boardReporter = await this.userRepository.findOne(
+            reportUserNo,
+            {
+              relations: ['boardReport'],
+            },
           );
-        }
 
-        const boardReporter = await this.userRepository.findOne(reportUserNo, {
-          relations: ['boardReport'],
-        });
+          if (!boardReporter) {
+            throw new NotFoundException('신고자를 찾을 수 없습니다.');
+          }
 
-        if (!boardReporter) {
-          throw new NotFoundException('신고자를 찾을 수 없습니다.');
-        }
+          const reportedBoard =
+            await this.reportedBoardRepository.createBoardReport(
+              checkInfo,
+              createReportDto,
+            );
 
-        const reportedBoard =
-          await this.reportedBoardRepository.createBoardReport(
+          board.reports.push(reportedBoard);
+          boardReporter.boardReport.push(reportedBoard);
+
+          const selectedBoard = await this.boardRepository.findOne(headNo);
+
+          await this.boardRepository.save(board);
+          await this.userRepository.save(boardReporter);
+          await this.reportCheckBoxRepository.saveChecks(
             checkInfo,
-            createReportDto,
+            selectedBoard,
+            checkboxRelation,
           );
 
-        board.reports.push(reportedBoard);
-        boardReporter.boardReport.push(reportedBoard);
-
-        const selectedBoard = await this.boardRepository.findOne(headNo);
-
-        await this.boardRepository.save(board);
-        await this.userRepository.save(boardReporter);
-        await this.reportCheckBoxRepository.saveChecks(
-          checkInfo,
-          selectedBoard,
-        );
-
-        return board;
+          return board;
+        } catch (e) {
+          throw e;
+        }
 
       // 유저 신고일 때의 로직
       case 'user':
@@ -117,24 +127,23 @@ export class ReportsService {
           throw new NotFoundException('신고자를 찾을 수 없습니다.');
         }
 
-        // const reportedUser = await this.reportedUserRepository.createUserReport(
-        //   checks,
-        //   createReportDto,
-        // );
+        const reportedUser = await this.reportedUserRepository.createUserReport(
+          checkInfo,
+          createReportDto,
+        );
 
-        // user.reports.push(reportedUser);
-        // userReporter.userReport.push(reportedUser);
+        user.reports.push(reportedUser);
+        userReporter.userReport.push(reportedUser);
 
-        // const selectedUser = await this.userRepository.findOneUser(headNo);
+        const selectedUser = await this.userRepository.findOne(headNo);
 
-        // await this.userRepository.save(user);
-        // await this.userRepository.save(userReporter);
-        // await this.reportCheckBoxRepository.saveChecks(
-        //   firstNo,
-        //   secondNo,
-        //   thirdNo,
-        //   selectedUser,
-        // );
+        await this.userRepository.save(user);
+        await this.userRepository.save(userReporter);
+        await this.reportCheckBoxRepository.saveChecks(
+          checkInfo,
+          selectedUser,
+          checkboxRelation,
+        );
 
         return user;
       default:

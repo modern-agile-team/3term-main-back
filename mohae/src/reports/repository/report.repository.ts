@@ -55,9 +55,7 @@ export class ReportedUserRepository extends Repository<ReportedUser> {
       const reportUser = await this.createQueryBuilder('reported_users')
         .leftJoinAndSelect('reported_users.reportUser', 'reportUser')
         .leftJoinAndSelect('reported_users.reportedUser', 'reportedUser')
-        .leftJoinAndSelect('reported_users.first', 'firstCheck')
-        .leftJoinAndSelect('reported_users.second', 'secondCheck')
-        .leftJoinAndSelect('reported_users.third', 'thirdCheck')
+        .leftJoinAndSelect('reported_users.checks', 'checks')
         .where('reported_users.no = :no', { no })
         .getOne();
 
@@ -69,26 +67,23 @@ export class ReportedUserRepository extends Repository<ReportedUser> {
     }
   }
 
-  // async createUserReport(checks, createReportDto: CreateReportDto) {
-  //   const { description } = createReportDto;
-  //   const { first, second, third } = checks;
+  async createUserReport(checks, createReportDto: CreateReportDto) {
+    const { description } = createReportDto;
 
-  //   try {
-  //     const reportedUser = this.create({
-  //       first,
-  //       second,
-  //       third,
-  //       description,
-  //     });
+    try {
+      const reportedUser = this.create({
+        checks,
+        description,
+      });
 
-  //     await reportedUser.save();
-  //     return reportedUser;
-  //   } catch (e) {
-  //     throw new InternalServerErrorException(
-  //       `${e} ### 게시글 신고 : 알 수 없는 서버 에러입니다.`,
-  //     );
-  //   }
-  // }
+      await reportedUser.save();
+      return reportedUser;
+    } catch (e) {
+      throw new InternalServerErrorException(
+        `${e} ### 게시글 신고 : 알 수 없는 서버 에러입니다.`,
+      );
+    }
+  }
 }
 
 @EntityRepository(ReportCheckBox)
@@ -97,6 +92,7 @@ export class ReportCheckBoxRepository extends Repository<ReportCheckBox> {
     try {
       const checkedReport = this.createQueryBuilder('report_checkboxes')
         .leftJoinAndSelect('report_checkboxes.reportedBoards', 'reportedBoards')
+        .leftJoinAndSelect('report_checkboxes.reportedUsers', 'reportedUsers')
         .getMany();
 
       return checkedReport;
@@ -126,32 +122,29 @@ export class ReportCheckBoxRepository extends Repository<ReportCheckBox> {
     return checkInfo;
   }
 
-  async saveChecks(check, head) {
+  async saveChecks(check, selection, relationName) {
     try {
       const { first, second, third } = check;
-
       const saveCheck = {
         firstCheck: await this.findOne(first.no, {
-          relations: ['reportedBoards'],
+          relations: [relationName],
         }),
         secondCheck: await this.findOne(second.no, {
-          relations: ['reportedBoards'],
+          relations: [relationName],
         }),
         thirdCheck: await this.findOne(third.no, {
-          relations: ['reportedBoards'],
+          relations: [relationName],
         }),
       };
       const { firstCheck, secondCheck, thirdCheck } = saveCheck;
 
-      firstCheck.reportedBoards.push(head);
-      secondCheck.reportedBoards.push(head);
-      thirdCheck.reportedBoards.push(head);
+      firstCheck[relationName].push(selection);
+      secondCheck[relationName].push(selection);
+      thirdCheck[relationName].push(selection);
 
       this.save(firstCheck);
       this.save(secondCheck);
       this.save(thirdCheck);
-
-      console.log(firstCheck, secondCheck, thirdCheck);
     } catch (e) {
       console.log(e.message);
     }
