@@ -1,16 +1,13 @@
 import { Area } from 'src/areas/entity/areas.entity';
 import { Category } from 'src/categories/entity/category.entity';
-import { Note } from 'src/notes/entity/note.entity';
 import { ReportedBoard } from 'src/reports/entity/report.entity';
 import { Review } from 'src/reviews/entity/review.entity';
 import {
   BaseEntity,
   Column,
   Entity,
-  JoinColumn,
   ManyToOne,
   OneToMany,
-  OneToOne,
   PrimaryGeneratedColumn,
   Timestamp,
 } from 'typeorm';
@@ -83,7 +80,18 @@ export class Board extends BaseEntity {
   })
   area: Area;
 
-  @OneToOne(() => Note, (note) => note.board)
-  @JoinColumn({ name: 'note_no' })
-  note: Note;
+  @Column({
+    type: 'mediumtext',
+  })
+  note1: string;
+
+  @Column({
+    type: 'mediumtext',
+  })
+  note2: string;
+
+  @Column({
+    type: 'mediumtext',
+  })
+  note3: string;
 }
