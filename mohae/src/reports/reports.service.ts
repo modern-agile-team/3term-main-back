@@ -43,11 +43,20 @@ export class ReportsService {
   async findOneReportBoard(no: number): Promise<ReportedBoard> {
     const report = await this.reportedBoardRepository.findOneReportBoard(no);
 
+    if (!report) {
+      throw new NotFoundException(`해당 유저를 찾을 수 없습니다.`);
+    }
+
     return report;
   }
 
   async findOneReportUser(no: number): Promise<ReportedUser> {
-    return await this.reportedUserRepository.findOneReportUser(no);
+    const report = await this.reportedUserRepository.findOneReportUser(no);
+
+    if (!report) {
+      throw new NotFoundException(`해당 유저를 찾을 수 없습니다.`);
+    }
+    return report;
   }
 
   async createReport(createReportDto: CreateReportDto) {
@@ -88,15 +97,14 @@ export class ReportsService {
               createReportDto,
             );
 
-          const boardReportCheck = await this.reportedBoardRepository.findOne(
-            createdBoardReport.no,
-            {
-              relations: ['checks'],
-            },
-          );
-          boardReportCheck.checks.push(checkInfo.first);
-          boardReportCheck.checks.push(checkInfo.second);
-          boardReportCheck.checks.push(checkInfo.third);
+          const boardReportRelation =
+            await this.reportedBoardRepository.findOneBoardReportRelation(
+              createdBoardReport.no,
+            );
+
+          boardReportRelation.push(checkInfo.first);
+          boardReportRelation.push(checkInfo.second);
+          boardReportRelation.push(checkInfo.third);
           board.reports.push(createdBoardReport);
           boardReporter.boardReport.push(createdBoardReport);
 
@@ -136,16 +144,14 @@ export class ReportsService {
         const createdUserReport =
           await this.reportedUserRepository.createUserReport(createReportDto);
 
-        const userReportCheck = await this.reportedBoardRepository.findOne(
-          createdUserReport.no,
-          {
-            relations: ['checks'],
-          },
-        );
+        const userReportCheck =
+          await this.reportedUserRepository.findOneUserReportRelation(
+            createdUserReport.no,
+          );
 
-        userReportCheck.checks.push(checkInfo.first);
-        userReportCheck.checks.push(checkInfo.second);
-        userReportCheck.checks.push(checkInfo.third);
+        userReportCheck.push(checkInfo.first);
+        userReportCheck.push(checkInfo.second);
+        userReportCheck.push(checkInfo.third);
         user.reports.push(createdUserReport);
         userReporter.userReport.push(createdUserReport);
 

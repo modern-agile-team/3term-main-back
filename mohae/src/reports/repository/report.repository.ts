@@ -29,6 +29,21 @@ export class ReportedBoardRepository extends Repository<ReportedBoard> {
     }
   }
 
+  async findOneBoardReportRelation(no: number) {
+    try {
+      const relation = await this.createQueryBuilder()
+        .relation(ReportedBoard, 'checks')
+        .of(no)
+        .loadMany();
+
+      return relation;
+    } catch (e) {
+      throw new InternalServerErrorException(
+        `${e} ### 게시글 신고 릴레이션 : 알 수 없는 서버 에러입니다.`,
+      );
+    }
+  }
+
   async createBoardReport(createReportDto: CreateReportDto) {
     const { description } = createReportDto;
 
@@ -62,6 +77,21 @@ export class ReportedUserRepository extends Repository<ReportedUser> {
     } catch (e) {
       throw new InternalServerErrorException(
         `${e} ### 신고 내역(유저) 조회 : 알 수 없는 서버 에러입니다.`,
+      );
+    }
+  }
+
+  async findOneUserReportRelation(no: number) {
+    try {
+      const relation = await this.createQueryBuilder()
+        .relation(ReportedUser, 'checks')
+        .of(no)
+        .loadMany();
+
+      return relation;
+    } catch (e) {
+      throw new InternalServerErrorException(
+        `${e} ### 게시글 신고 릴레이션 : 알 수 없는 서버 에러입니다.`,
       );
     }
   }
