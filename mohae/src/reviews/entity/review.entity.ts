@@ -24,15 +24,8 @@ export class Review extends BaseEntity {
   })
   readonly board: Board;
 
-  // @RelationId((board: Board) => board.reviews)
-  // reviewNos: number[];
-
-  @Column({
-    type: 'int',
-    default: 1,
-  })
-  // @ManyToOne((type) => User, (user) => user.no, { eager: true })
-  readonly reviewer: number;
+  @ManyToOne((type) => User, (user) => user.no)
+  reviewer: User;
 
   @Column({
     type: 'mediumtext',
