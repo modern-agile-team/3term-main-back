@@ -53,8 +53,14 @@ export class ReportsController {
   }
 
   @Get('/user/:no')
-  findOneUserReport(@Param('no') no: number): Promise<ReportedUser> {
-    return this.reportsService.findOneReportUser(no);
+  async findOneUserReport(@Param('no') no: number): Promise<ReportedUser> {
+    const response = await this.reportsService.findOneReportUser(no);
+
+    return Object.assign({
+      statusCode: 200,
+      msg: `No:${no} 신고 내역(유저)이 조회되었습니다.`,
+      response,
+    });
   }
 
   @Post()
