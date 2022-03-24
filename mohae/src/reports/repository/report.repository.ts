@@ -29,12 +29,11 @@ export class ReportedBoardRepository extends Repository<ReportedBoard> {
     }
   }
 
-  async createBoardReport(checks, createReportDto: CreateReportDto) {
+  async createBoardReport(createReportDto: CreateReportDto) {
     const { description } = createReportDto;
 
     try {
       const reportedBoard = this.create({
-        checks,
         description,
       });
 
@@ -67,12 +66,11 @@ export class ReportedUserRepository extends Repository<ReportedUser> {
     }
   }
 
-  async createUserReport(checks, createReportDto: CreateReportDto) {
+  async createUserReport(createReportDto: CreateReportDto) {
     const { description } = createReportDto;
 
     try {
       const reportedUser = this.create({
-        checks,
         description,
       });
 
@@ -97,6 +95,8 @@ export class ReportCheckBoxRepository extends Repository<ReportCheckBox> {
         .leftJoinAndSelect('reportedUser.reportedUser', 'user')
         .leftJoinAndSelect('reportedBoard.reportUser', 'boardReportUser')
         .leftJoinAndSelect('reportedUser.reportUser', 'userReportUser')
+        .leftJoinAndSelect('reportedBoard.checks', 'checkedBoardReport')
+        .leftJoinAndSelect('reportedUser.checks', 'checkedUserReport')
         .getMany();
 
       return checkedReport;

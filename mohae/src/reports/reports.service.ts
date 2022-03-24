@@ -83,20 +83,28 @@ export class ReportsService {
             throw new NotFoundException('신고자를 찾을 수 없습니다.');
           }
 
-          const createdReport =
+          const createdBoardReport =
             await this.reportedBoardRepository.createBoardReport(
-              checkInfo,
               createReportDto,
             );
 
-          board.reports.push(createdReport);
-          boardReporter.boardReport.push(createdReport);
+          const boardReportCheck = await this.reportedBoardRepository.findOne(
+            createdBoardReport.no,
+            {
+              relations: ['checks'],
+            },
+          );
+          boardReportCheck.checks.push(checkInfo.first);
+          boardReportCheck.checks.push(checkInfo.second);
+          boardReportCheck.checks.push(checkInfo.third);
+          board.reports.push(createdBoardReport);
+          boardReporter.boardReport.push(createdBoardReport);
 
           await this.boardRepository.save(board);
           await this.userRepository.save(boardReporter);
           await this.reportCheckBoxRepository.saveChecks(
             checkInfo,
-            createdReport,
+            createdBoardReport,
             checkboxRelation,
           );
 
@@ -126,11 +134,18 @@ export class ReportsService {
         }
 
         const createdUserReport =
-          await this.reportedUserRepository.createUserReport(
-            checkInfo,
-            createReportDto,
-          );
+          await this.reportedUserRepository.createUserReport(createReportDto);
 
+        const userReportCheck = await this.reportedBoardRepository.findOne(
+          createdUserReport.no,
+          {
+            relations: ['checks'],
+          },
+        );
+
+        userReportCheck.checks.push(checkInfo.first);
+        userReportCheck.checks.push(checkInfo.second);
+        userReportCheck.checks.push(checkInfo.third);
         user.reports.push(createdUserReport);
         userReporter.userReport.push(createdUserReport);
 
