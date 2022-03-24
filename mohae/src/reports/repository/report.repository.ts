@@ -91,8 +91,12 @@ export class ReportCheckBoxRepository extends Repository<ReportCheckBox> {
   async findAllCheckbox(): Promise<ReportCheckBox[]> {
     try {
       const checkedReport = this.createQueryBuilder('report_checkboxes')
-        .leftJoinAndSelect('report_checkboxes.reportedBoards', 'reportedBoards')
-        .leftJoinAndSelect('report_checkboxes.reportedUsers', 'reportedUsers')
+        .leftJoinAndSelect('report_checkboxes.reportedBoards', 'reportedBoard')
+        .leftJoinAndSelect('report_checkboxes.reportedUsers', 'reportedUser')
+        .leftJoinAndSelect('reportedBoard.reportedBoard', 'board')
+        .leftJoinAndSelect('reportedUser.reportedUser', 'user')
+        .leftJoinAndSelect('reportedBoard.reportUser', 'boardReportUser')
+        .leftJoinAndSelect('reportedUser.reportUser', 'userReportUser')
         .getMany();
 
       return checkedReport;
@@ -122,7 +126,7 @@ export class ReportCheckBoxRepository extends Repository<ReportCheckBox> {
     return checkInfo;
   }
 
-  async saveChecks(check, selection, relationName) {
+  async saveChecks(check, newReport, relationName) {
     try {
       const { first, second, third } = check;
       const saveCheck = {
@@ -138,9 +142,9 @@ export class ReportCheckBoxRepository extends Repository<ReportCheckBox> {
       };
       const { firstCheck, secondCheck, thirdCheck } = saveCheck;
 
-      firstCheck[relationName].push(selection);
-      secondCheck[relationName].push(selection);
-      thirdCheck[relationName].push(selection);
+      firstCheck[relationName].push(newReport);
+      secondCheck[relationName].push(newReport);
+      thirdCheck[relationName].push(newReport);
 
       this.save(firstCheck);
       this.save(secondCheck);
