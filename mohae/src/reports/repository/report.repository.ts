@@ -29,7 +29,7 @@ export class ReportedBoardRepository extends Repository<ReportedBoard> {
     }
   }
 
-  async findOneBoardReportRelation(no: number) {
+  async findOneBoardReportRelation(no: number): Promise<any[]> {
     try {
       const relation = await this.createQueryBuilder()
         .relation(ReportedBoard, 'checks')
@@ -44,7 +44,9 @@ export class ReportedBoardRepository extends Repository<ReportedBoard> {
     }
   }
 
-  async createBoardReport(createReportDto: CreateReportDto) {
+  async createBoardReport(
+    createReportDto: CreateReportDto,
+  ): Promise<ReportedBoard> {
     const { description } = createReportDto;
 
     try {
@@ -81,7 +83,7 @@ export class ReportedUserRepository extends Repository<ReportedUser> {
     }
   }
 
-  async findOneUserReportRelation(no: number) {
+  async findOneUserReportRelation(no: number): Promise<any[]> {
     try {
       const relation = await this.createQueryBuilder()
         .relation(ReportedUser, 'checks')
@@ -105,6 +107,22 @@ export class ReportedUserRepository extends Repository<ReportedUser> {
       });
 
       await reportedUser.save();
+
+      // const reportedUser = await this.createQueryBuilder('reported_users')
+      //   .insert()
+      //   .into(ReportedUser)
+      //   .values([{ description }])
+      //   .execute();
+      // const { affectedRows, insertId } = reportedUser.raw;
+
+      // if (!affectedRows) {
+      //   throw {
+      //     success: false,
+      //     msg: '유저 신고가 정상적으로 저장되지 않았습니다.',
+      //   };
+      // }
+
+      // return insertId;
       return reportedUser;
     } catch (e) {
       throw new InternalServerErrorException(
@@ -156,9 +174,9 @@ export class ReportCheckBoxRepository extends Repository<ReportCheckBox> {
     return checkInfo;
   }
 
-  async saveChecks(check, newReport, relationName) {
+  async saveChecks(checks, newReport, relationName: string) {
     try {
-      const { first, second, third } = check;
+      const { first, second, third } = checks;
       const saveCheck = {
         firstCheck: await this.findOne(first.no, {
           relations: [relationName],
@@ -180,7 +198,9 @@ export class ReportCheckBoxRepository extends Repository<ReportCheckBox> {
       this.save(secondCheck);
       this.save(thirdCheck);
     } catch (e) {
-      console.log(e.message);
+      throw new InternalServerErrorException(
+        `${e} ### 체크 박스 저장 : 알 수 없는 서버 에러입니다.`,
+      );
     }
   }
 }
