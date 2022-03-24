@@ -106,4 +106,7 @@ export class User extends BaseEntity {
     eager: true,
   })
   boardReport: ReportedBoard[];
+
+  @OneToMany((type) => Review, (review) => review.reviewer)
+  reviews: Review[];
 }

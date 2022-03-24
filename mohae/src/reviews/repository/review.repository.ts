@@ -6,11 +6,10 @@ import { Review } from '../entity/review.entity';
 @EntityRepository(Review)
 export class ReviewRepository extends Repository<Review> {
   async createReview(createReviewDto: CreateReviewDto): Promise<Review> {
-    const { reviewerNo, description, rating } = createReviewDto;
+    const { description, rating } = createReviewDto;
 
     try {
       const createdReview = this.create({
-        reviewer: reviewerNo,
         description,
         rating,
       });
@@ -42,6 +41,7 @@ export class ReviewRepository extends Repository<Review> {
     try {
       const review = await this.createQueryBuilder('reviews')
         .leftJoinAndSelect('reviews.board', 'boards')
+        .leftJoinAndSelect('reviews.reviewer', 'user')
         .where('reviews.no = :no', { no })
         .getOne();
 
