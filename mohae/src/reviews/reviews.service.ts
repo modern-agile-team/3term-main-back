@@ -59,6 +59,10 @@ export class ReviewsService {
       const reviewer = await this.userRepository.findOne(reviewerNo, {
         relations: ['reviews'],
       });
+      this.errorConfirm.notFoundError(
+        reviewer,
+        '리뷰 작성자를 찾을 수 없습니다.',
+      );
 
       const review = await this.reviewRepository.createReview(createReviewDto);
 
