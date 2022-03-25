@@ -14,6 +14,7 @@ import { SchoolRepository } from 'src/schools/repository/school.repository';
 import { DeleteResult } from 'typeorm';
 import { MajorRepository } from 'src/majors/repository/major.repository';
 import * as config from 'config';
+import { School } from 'src/schools/entity/school.entity';
 
 const jwtConfig = config.get('jwt');
 @Injectable()
