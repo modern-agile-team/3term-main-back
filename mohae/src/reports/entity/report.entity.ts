@@ -6,6 +6,7 @@ import {
   CreateDateColumn,
   Entity,
   JoinColumn,
+  JoinTable,
   ManyToMany,
   ManyToOne,
   OneToMany,
@@ -27,14 +28,14 @@ export class ReportCheckBox extends BaseEntity {
 
   @ManyToMany((type) => ReportedBoard, (report) => report.checks)
   reportedBoards: ReportedBoard[];
+
+  @ManyToMany((type) => ReportedUser, (report) => report.checks)
+  reportedUsers: ReportedBoard[];
 }
 
 export abstract class ReportContent extends BaseEntity {
   @PrimaryGeneratedColumn()
   no: number;
-
-  @ManyToMany((type) => ReportCheckBox, (checks) => checks.reportedBoards)
-  checks: ReportCheckBox[];
 
   @Column({
     type: 'mediumtext',
@@ -53,6 +54,10 @@ export class ReportedBoard extends ReportContent {
   })
   reportedBoard: Board;
 
+  @ManyToMany((type) => ReportCheckBox, (checks) => checks.reportedBoards)
+  @JoinTable({ name: 'board_report_checks' })
+  checks: ReportCheckBox[];
+
   @ManyToOne((type) => User, (user) => user.no, {
     onDelete: 'SET NULL',
   })
@@ -67,6 +72,10 @@ export class ReportedUser extends ReportContent {
   })
   @JoinColumn({ name: 'reported_user_no' })
   reportedUser: User;
+
+  @ManyToMany((type) => ReportCheckBox, (checks) => checks.reportedUsers)
+  @JoinTable({ name: 'user_report_checks' })
+  checks: ReportCheckBox[];
 
   @ManyToOne((type) => User, (user) => user.no, {
     onDelete: 'SET NULL',
