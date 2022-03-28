@@ -4,7 +4,12 @@ import {
 } from '@nestjs/common';
 import { Area } from 'src/areas/entity/areas.entity';
 import { Category } from 'src/categories/entity/category.entity';
-import { EntityRepository, getConnection, Repository } from 'typeorm';
+import {
+  DeleteResult,
+  EntityRepository,
+  getConnection,
+  Repository,
+} from 'typeorm';
 import { CreateBoardDto, UpdateBoardDto } from '../dto/board.dto';
 import { Board } from '../entity/board.entity';
 
@@ -108,5 +113,18 @@ export class BoardRepository extends Repository<Board> {
     }
 
     return { success: true };
+  }
+
+  async deleteBoard(no: number): Promise<DeleteResult> {
+    const board = await this.findOne(no);
+    if (!board) {
+      throw new NotFoundException(`No: ${no} 게시글을 찾을 수 없습니다.`);
+    }
+    const boardQuery = await this.createQueryBuilder()
+      .softDelete()
+      .from(Board)
+      .where('no = :no', { no })
+      .execute();
+    return boardQuery;
   }
 }

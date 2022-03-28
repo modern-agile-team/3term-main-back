@@ -12,6 +12,7 @@ import {
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiCreatedResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { DeleteResult } from 'typeorm';
 import { BoardsService } from './boards.service';
 import { CreateBoardDto, UpdateBoardDto } from './dto/board.dto';
 import { Board } from './entity/board.entity';
@@ -61,8 +62,12 @@ export class BoardsController {
   }
 
   @Delete('/:no')
-  deleteBoard(@Param('no') no: number): Promise<void> {
-    return this.boardService.delete(no);
+  async deleteBoard(@Param('no') no: number): Promise<DeleteResult> {
+    const result = await this.boardService.delete(no);
+    return Object.assign({
+      statusCode: 204,
+      msg: '게시글 삭제가 완료되었습니다',
+    });
   }
 
   @Patch('/:no')
