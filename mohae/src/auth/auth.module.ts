@@ -12,6 +12,8 @@ import { SchoolsService } from 'src/schools/schools.service';
 import { MajorRepository } from 'src/majors/repository/major.repository';
 import { MajorsModule } from 'src/majors/majors.module';
 import { JwtStrategy } from './jwt/jwt.strategy';
+import { CategoryRepository } from 'src/categories/repository/category.repository';
+import { CategoriesModule } from 'src/categories/categories.module';
 
 const jwtConfig = config.get('jwt');
 @Module({
@@ -27,9 +29,11 @@ const jwtConfig = config.get('jwt');
       UserRepository,
       SchoolRepository,
       MajorRepository,
+      CategoryRepository,
     ]),
     SchoolsModule,
     MajorsModule,
+    CategoriesModule,
   ],
   controllers: [AuthController],
   providers: [AuthService, JwtStrategy],

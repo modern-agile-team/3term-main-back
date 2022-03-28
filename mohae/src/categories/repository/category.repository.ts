@@ -37,4 +37,21 @@ export class CategoryRepository extends Repository<Category> {
       throw new InternalServerErrorException(e);
     }
   }
+  async selectCategory(categories: Array<number>) {
+    const categoryInfo = {
+      first: await this.createQueryBuilder('categories')
+        .select()
+        .where('categories.no = :no', { no: categories[0] })
+        .getOne(),
+      second: await this.createQueryBuilder('categories')
+        .select()
+        .where('categories.no = :no', { no: categories[1] })
+        .getOne(),
+      third: await this.createQueryBuilder('categories')
+        .select()
+        .where('categories.no = :no', { no: categories[2] })
+        .getOne(),
+    };
+    return categoryInfo;
+  }
 }

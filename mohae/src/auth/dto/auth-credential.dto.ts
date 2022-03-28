@@ -1,4 +1,5 @@
 import {
+  IsArray,
   IsBoolean,
   IsNotEmpty,
   IsNumber,
@@ -37,6 +38,9 @@ export class CreateUserDto {
 
   @IsString()
   photo_url: string;
+
+  @IsArray()
+  categories: [];
 }
 
 export class SignInDto {

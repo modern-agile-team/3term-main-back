@@ -1,8 +1,10 @@
+import { User } from 'src/auth/entity/user.entity';
 import { Board } from 'src/boards/entity/board.entity';
 import {
   BaseEntity,
   Column,
   Entity,
+  ManyToMany,
   OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
@@ -23,4 +25,7 @@ export class Category extends BaseEntity {
     nullable: true,
   })
   boards: Board[];
+
+  @ManyToMany((type) => User, (user) => user.no)
+  users: User[];
 }

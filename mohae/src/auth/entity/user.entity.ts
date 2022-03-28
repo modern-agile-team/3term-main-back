@@ -7,12 +7,14 @@ import {
 } from 'src/reports/entity/report.entity';
 import { Review } from 'src/reviews/entity/review.entity';
 import { School } from 'src/schools/entity/school.entity';
+import { Category } from 'src/categories/entity/category.entity';
 import {
   BaseEntity,
   Column,
   DeleteDateColumn,
   Entity,
   JoinColumn,
+  ManyToMany,
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
@@ -50,6 +52,9 @@ export class User extends BaseEntity {
   @ManyToOne((type) => Major, (major) => major.no, { eager: true })
   @JoinColumn({ name: 'major_no' })
   major: Major;
+
+  @ManyToMany((type) => Category, (category) => category.no)
+  categories: Category[];
 
   @Column({
     unique: true,

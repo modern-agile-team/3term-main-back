@@ -15,6 +15,7 @@ import { DeleteResult } from 'typeorm';
 import { MajorRepository } from 'src/majors/repository/major.repository';
 import * as config from 'config';
 import { School } from 'src/schools/entity/school.entity';
+import { CategoryRepository } from 'src/categories/repository/category.repository';
 
 const jwtConfig = config.get('jwt');
 @Injectable()
@@ -25,16 +26,21 @@ export class AuthService {
     private jwtService: JwtService,
     private schoolRepository: SchoolRepository,
     private majorRepository: MajorRepository,
+    private categoriesRepository: CategoryRepository,
   ) {}
   async signUp(createUserDto: CreateUserDto): Promise<User> {
-    const { school, major, email, nickname } = createUserDto;
+    const { school, major, email, nickname, categories } = createUserDto;
 
+    console.log(categories);
     const schoolRepo = await this.schoolRepository.findOne(school, {
       relations: ['users'],
     });
     const majorRepo = await this.majorRepository.findOne(major, {
       relations: ['users'],
     });
+    const categoriesRepo = await this.categoriesRepository.selectCategory(
+      categories,
+    );
 
     const stringEmail = 'email';
     const stringNickname = 'nickname';
@@ -60,10 +66,18 @@ export class AuthService {
       createUserDto,
       schoolRepo,
       majorRepo,
+      // N:M 관계 포인트
+      // user.entity쪽 categories 속성 살펴보기
+      categories,
     );
+    console.log(user.categories);
 
     schoolRepo.users.push(user);
     majorRepo.users.push(user);
+
+    // categoriesRepo.first.users.push(user);
+    // categoriesRepo.second.users.push(user);
+    // categoriesRepo.third.users.push(user);
 
     return user;
   }
