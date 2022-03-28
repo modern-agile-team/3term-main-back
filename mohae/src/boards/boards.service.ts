@@ -25,7 +25,9 @@ export class BoardsService {
   }
 
   async findOne(no: number): Promise<Board> {
-    return await this.boardRepository.findOne(no);
+    const board = await this.boardRepository.findOneBoard(no);
+
+    return board;
   }
 
   async createBoard(createBoardDto: CreateBoardDto): Promise<Board> {
@@ -63,7 +65,26 @@ export class BoardsService {
   async updateBoard(
     no: number,
     updateBoardDto: UpdateBoardDto,
-  ): Promise<object> {
-    return await this.boardRepository.updateBoard(no, updateBoardDto);
+  ): Promise<Object> {
+    const { categoryNo, areaNo } = updateBoardDto;
+    const category = await this.categoryRepository.findOne(categoryNo, {
+      relations: ['boards'],
+    });
+
+    const area = await this.areaRepository.findOne(areaNo, {
+      relations: ['boards'],
+    });
+    const updateBoard = await this.boardRepository.updateBoard(
+      no,
+      category,
+      area,
+      updateBoardDto,
+    );
+
+    if (updateBoard) {
+      return { success: true, msg: '게시글 수정이 완료되었습니다.' };
+    }
+
+    return { success: false, msg: '게시글 수정 실패' };
   }
 }
