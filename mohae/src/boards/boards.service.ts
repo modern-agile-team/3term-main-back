@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CategoryRepository } from 'src/categories/repository/category.repository';
 import { AreasRepository } from 'src/areas/repository/area.repository';
-import { createQueryBuilder, getConnection } from 'typeorm';
+import { createQueryBuilder, DeleteResult, getConnection } from 'typeorm';
 import { CreateBoardDto, UpdateBoardDto } from './dto/board.dto';
 import { Board } from './entity/board.entity';
 import { BoardRepository } from './repository/board.repository';
@@ -55,13 +55,13 @@ export class BoardsService {
     return board;
   }
 
-  async delete(no: number): Promise<void> {
-    const result = await this.boardRepository.delete(no);
-    if (!result.affected) {
-      throw new NotFoundException(`Can't not found id ${no}`);
+  async delete(no: number): Promise<DeleteResult> {
+    const deleteBoard = await this.boardRepository.deleteBoard(no);
+    if (deleteBoard.affected === 0) {
+      throw new NotFoundException(`${no}번의 게시글이 삭제되지 않았습니다.`);
     }
+    return deleteBoard;
   }
-
   async updateBoard(
     no: number,
     updateBoardDto: UpdateBoardDto,

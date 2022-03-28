@@ -5,6 +5,7 @@ import { Review } from 'src/reviews/entity/review.entity';
 import {
   BaseEntity,
   Column,
+  DeleteDateColumn,
   Entity,
   ManyToOne,
   OneToMany,
@@ -42,6 +43,12 @@ export class Board extends BaseEntity {
     type: 'timestamp',
   })
   in_date: Timestamp;
+
+  @DeleteDateColumn({
+    name: 'delete_at',
+    comment: '삭제일',
+  })
+  deletedAt: Date | null;
 
   @Column({
     type: 'int',
