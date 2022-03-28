@@ -1,9 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UserRepository } from 'src/auth/repository/user.repository';
 import { BoardRepository } from 'src/boards/repository/board.repository';
 import { ErrorConfirm } from 'src/utils/error';
-import { In } from 'typeorm';
 import { CreateReportDto } from './dto/create-report.dto';
 import {
   ReportCheckBox,
@@ -93,11 +92,8 @@ export class ReportsService {
               '해당 게시글이 존재하지 않습니다.',
             );
 
-            const boardReporter = await this.userRepository.findOne(
+            const boardReporter = await this.userRepository.findOneReportUser(
               reportUserNo,
-              {
-                relations: ['boardReport'],
-              },
             );
             this.errorConfirm.notFoundError(
               boardReporter,
@@ -118,7 +114,7 @@ export class ReportsService {
             boardReportRelation.push(checkInfo.second);
             boardReportRelation.push(checkInfo.third);
             board.reports.push(createdBoardReport);
-            boardReporter.boardReport.push(createdBoardReport);
+            boardReporter.push(createdBoardReport);
 
             await this.boardRepository.save(board);
             await this.userRepository.save(boardReporter);
@@ -140,9 +136,10 @@ export class ReportsService {
           });
           this.errorConfirm.notFoundError(user, '유저가 존재하지 않습니다.');
 
-          const userReporter = await this.userRepository.findOne(reportUserNo, {
-            relations: ['userReport'],
-          });
+          const userReporter = await this.userRepository.findOneReportUser(
+            reportUserNo,
+          );
+
           this.errorConfirm.notFoundError(
             userReporter,
             '신고자를 찾을 수 없습니다.',
@@ -160,7 +157,7 @@ export class ReportsService {
           userReportCheck.push(checkInfo.second);
           userReportCheck.push(checkInfo.third);
           user.reports.push(createdUserReport);
-          userReporter.userReport.push(createdUserReport);
+          userReporter.push(createdUserReport);
 
           await this.userRepository.save(user);
           await this.userRepository.save(userReporter);

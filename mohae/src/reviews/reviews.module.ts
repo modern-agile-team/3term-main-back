@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AreasRepository } from 'src/areas/repository/area.repository';
+import { AuthModule } from 'src/auth/auth.module';
 import { UserRepository } from 'src/auth/repository/user.repository';
 import { BoardsModule } from 'src/boards/boards.module';
 import { BoardsService } from 'src/boards/boards.service';
@@ -21,6 +22,7 @@ import { ReviewsService } from './reviews.service';
       UserRepository,
     ]),
     BoardsModule,
+    AuthModule,
   ],
   controllers: [ReviewsController],
   providers: [ReviewsService, BoardsService, ErrorConfirm],

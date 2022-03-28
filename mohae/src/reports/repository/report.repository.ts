@@ -1,7 +1,4 @@
-import {
-  InternalServerErrorException,
-  NotFoundException,
-} from '@nestjs/common';
+import { InternalServerErrorException } from '@nestjs/common';
 import { EntityRepository, Repository } from 'typeorm';
 import { CreateReportDto } from '../dto/create-report.dto';
 import {
@@ -108,21 +105,6 @@ export class ReportedUserRepository extends Repository<ReportedUser> {
 
       await reportedUser.save();
 
-      // const reportedUser = await this.createQueryBuilder('reported_users')
-      //   .insert()
-      //   .into(ReportedUser)
-      //   .values([{ description }])
-      //   .execute();
-      // const { affectedRows, insertId } = reportedUser.raw;
-
-      // if (!affectedRows) {
-      //   throw {
-      //     success: false,
-      //     msg: '유저 신고가 정상적으로 저장되지 않았습니다.',
-      //   };
-      // }
-
-      // return insertId;
       return reportedUser;
     } catch (e) {
       throw new InternalServerErrorException(
@@ -156,22 +138,26 @@ export class ReportCheckBoxRepository extends Repository<ReportCheckBox> {
   }
 
   async selectCheckConfirm(checks: Array<number>) {
-    const checkInfo = {
-      first: await this.createQueryBuilder('report_checkboxes')
-        .select()
-        .where('report_checkboxes.no = :no', { no: checks[0] })
-        .getOne(),
-      second: await this.createQueryBuilder('report_checkboxes')
-        .select()
-        .where('report_checkboxes.no = :no', { no: checks[1] })
-        .getOne(),
-      third: await this.createQueryBuilder('report_checkboxes')
-        .select()
-        .where('report_checkboxes.no = :no', { no: checks[2] })
-        .getOne(),
-    };
+    try {
+      const checkInfo = {
+        first: await this.createQueryBuilder('report_checkboxes')
+          .select()
+          .where('report_checkboxes.no = :no', { no: checks[0] })
+          .getOne(),
+        second: await this.createQueryBuilder('report_checkboxes')
+          .select()
+          .where('report_checkboxes.no = :no', { no: checks[1] })
+          .getOne(),
+        third: await this.createQueryBuilder('report_checkboxes')
+          .select()
+          .where('report_checkboxes.no = :no', { no: checks[2] })
+          .getOne(),
+      };
 
-    return checkInfo;
+      return checkInfo;
+    } catch (e) {
+      throw new InternalServerErrorException(e);
+    }
   }
 
   async saveChecks(checks, newReport, relationName: string) {

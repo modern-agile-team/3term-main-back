@@ -4,9 +4,7 @@ import {
   Get,
   Logger,
   Param,
-  ParseIntPipe,
   Post,
-  Query,
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common';
