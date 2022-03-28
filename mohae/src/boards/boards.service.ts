@@ -58,9 +58,7 @@ export class BoardsService {
   async delete(no: number): Promise<DeleteResult> {
     const deleteBoard = await this.boardRepository.deleteBoard(no);
     if (deleteBoard.affected === 0) {
-      throw new NotFoundException(
-        `${no} 회원님의 회원탈퇴가 정상적으로 이루어 지지 않았습니다.`,
-      );
+      throw new NotFoundException(`${no}번의 게시글이 삭제되지 않았습니다.`);
     }
     return deleteBoard;
   }
