@@ -10,14 +10,21 @@ import { Board } from '../entity/board.entity';
 
 @EntityRepository(Board)
 export class BoardRepository extends Repository<Board> {
+  async findOneBoard(no: number): Promise<Board> {
+    const board = await this.createQueryBuilder('boards')
+      .leftJoinAndSelect('boards.area', 'areas')
+      .leftJoinAndSelect('boards.category', 'categories')
+      .where('boards.area = areas.no')
+      .where('boards.category = categories.no')
+      .getOne();
+    return board;
+  }
   async findAllBoard(): Promise<Board[]> {
     try {
       const boards = await this.createQueryBuilder('boards')
         .leftJoinAndSelect('boards.area', 'areas')
-        .leftJoinAndSelect('boards.note', 'notes')
         .leftJoinAndSelect('boards.category', 'categories')
         .where('boards.area = areas.no')
-        .where('boards.note = notes.no')
         .where('boards.category = categories.no')
         .getMany();
 
@@ -68,25 +75,38 @@ export class BoardRepository extends Repository<Board> {
 
   async updateBoard(
     no: number,
+    category: Category,
+    area: Area,
     updateBoardDto: UpdateBoardDto,
   ): Promise<object> {
     const board = await this.findOne(no);
-
     if (!board) {
       throw new NotFoundException(`No: ${no} 게시글을 찾을 수 없습니다.`);
     }
-    const { title, description, price, summary, target } = updateBoardDto;
+    const { title, description, price, summary, target, note1, note2, note3 } =
+      updateBoardDto;
 
-    board.title = title;
-    board.description = description;
-    board.price = price;
-    board.summary = summary;
-    board.target = target;
+    const result = await this.createQueryBuilder()
+      .update(Board)
+      .set({
+        title: title,
+        description: description,
+        price: price,
+        summary: summary,
+        target: target,
+        category: category,
+        area: area,
+        note1: note1,
+        note2: note2,
+        note3: note3,
+      })
+      .where('no = :no', { no: `${no}` })
+      .execute();
+    const { affected } = result;
+    if (!affected) {
+      return { success: false };
+    }
 
-    await this.save(board);
-    return {
-      success: true,
-      updateBoardNo: no,
-    };
+    return { success: true };
   }
 }
