@@ -4,14 +4,15 @@ import {
   BaseEntity,
   Column,
   CreateDateColumn,
+  DeleteDateColumn,
   Entity,
   JoinColumn,
   JoinTable,
   ManyToMany,
   ManyToOne,
-  OneToMany,
   PrimaryGeneratedColumn,
   Timestamp,
+  UpdateDateColumn,
 } from 'typeorm';
 
 @Entity('report_checkboxes')
@@ -26,6 +27,7 @@ export class ReportCheckBox extends BaseEntity {
   })
   content: string;
 
+  /* 신고 체크박스 Relations */
   @ManyToMany((type) => ReportedBoard, (report) => report.checks)
   reportedBoards: ReportedBoard[];
 
@@ -43,12 +45,20 @@ export abstract class ReportContent extends BaseEntity {
   })
   description: string;
 
+  /* Timestamps */
   @CreateDateColumn({ comment: '게시글 또는 유저 신고 생성 일시' })
   in_date: Timestamp;
+
+  @UpdateDateColumn({ comment: '신고 수정 일자' })
+  update_date: Timestamp;
+
+  @DeleteDateColumn({ comment: '신고 삭제 일자' })
+  delete_date: Timestamp;
 }
 
 @Entity('reported_boards')
 export class ReportedBoard extends ReportContent {
+  /* 신고된 게시글 Relations */
   @ManyToOne((type) => Board, (board) => board.no, {
     onDelete: 'SET NULL',
   })
@@ -66,6 +76,7 @@ export class ReportedBoard extends ReportContent {
 
 @Entity('reported_users')
 export class ReportedUser extends ReportContent {
+  /* 신고된 유저 Relations */
   @ManyToOne((type) => User, (user) => user.no, {
     onDelete: 'SET NULL',
   })

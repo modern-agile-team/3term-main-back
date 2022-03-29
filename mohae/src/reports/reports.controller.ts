@@ -73,6 +73,10 @@ export class ReportsController {
     });
   }
 
+  @ApiOperation({
+    summary: '유저 또는 게시글 신고 생성',
+    description: '유저 또는 게시글 신고 생성 API',
+  })
   @Post()
   @UsePipes(ValidationPipe)
   async createReport(@Body() createReportDto: CreateReportDto) {
