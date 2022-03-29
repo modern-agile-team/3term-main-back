@@ -1,14 +1,24 @@
-import { IsBoolean, IsNumber, IsString, Matches } from 'class-validator';
+import {
+  IsArray,
+  IsBoolean,
+  IsNotEmpty,
+  IsNumber,
+  IsString,
+  Matches,
+} from 'class-validator';
 
 export class CreateUserDto {
   @IsString()
   @Matches(/^[A-Za-z0-9_\.\-]+@[A-Za-z0-9\-]+\.[A-Za-z0-9\-]+/)
+  @IsNotEmpty()
   email: string;
 
   @IsString()
+  @IsNotEmpty()
   password: string;
 
   @IsString()
+  @IsNotEmpty()
   name: string;
 
   @IsNumber()
@@ -28,6 +38,9 @@ export class CreateUserDto {
 
   @IsString()
   photo_url: string;
+
+  @IsArray()
+  categories: [];
 }
 
 export class SignInDto {
