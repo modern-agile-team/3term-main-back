@@ -21,15 +21,17 @@ export class CategoryRepository extends Repository<Category> {
     try {
       const category = await this.createQueryBuilder('categories')
         .leftJoinAndSelect('categories.boards', 'boards')
-        .select([
-          'categories.no',
-          'categories.name',
-          'boards.no',
-          'boards.title',
-          'boards.description',
-        ])
+        .leftJoinAndSelect('categoreis.users', 'users')
+        // .leftJoinAndSelect('users.categories', 'userCategories')
+        // .select([
+        //   'categories.no',
+        //   'categories.name',
+        //   'boards.no',
+        //   'boards.title',
+        //   'boards.description',
+        // ])
         .where('categories.no = :no', { no })
-        .andWhere('categories.no = boards.category')
+        // .andWhere('categories.no = boards.category')
         .getOne();
 
       return category;

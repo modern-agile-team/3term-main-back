@@ -16,14 +16,6 @@ export class Review extends BaseEntity {
   @PrimaryGeneratedColumn()
   readonly no: number;
 
-  @ManyToOne((type) => Board, (board) => board.no, {
-    onDelete: 'SET NULL',
-  })
-  readonly board: Board;
-
-  @ManyToOne((type) => User, (user) => user.no)
-  reviewer: User;
-
   @Column({
     type: 'mediumtext',
     comment: '리뷰 작성할 때 내용이 들어감',
@@ -36,6 +28,16 @@ export class Review extends BaseEntity {
   })
   readonly rating: number;
 
+  /* 게시글 리뷰 Relations */
+  @ManyToOne((type) => Board, (board) => board.no, {
+    onDelete: 'SET NULL',
+  })
+  board: Board;
+
+  @ManyToOne((type) => User, (user) => user.no)
+  reviewer: User;
+
+  /* 게시글 리뷰 Timestamps */
   @CreateDateColumn({
     comment: '리뷰 작성하면 시간 입력',
   })
