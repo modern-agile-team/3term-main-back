@@ -41,19 +41,6 @@ export class AuthService {
     const categoriesRepo = await this.categoriesRepository.selectCategory(
       categories,
     );
-    // const categoriesRepofirst = await this.categoriesRepository.findOne(
-    //   categoriesRepo.first.no,
-    //   { relations: ['users'] },
-    // );
-    // console.log(categoriesRepofirst);
-    // const categoriesReposecond = await this.categoriesRepository.findOne(
-    //   categoriesRepo.second,
-    //   { relations: ['users'] },
-    // );
-    // const categoriesRepothird = await this.categoriesRepository.findOne(
-    //   categoriesRepo.third,
-    //   { relations: ['users'] },
-    // );
 
     const stringEmail = 'email';
     const stringNickname = 'nickname';
@@ -74,24 +61,26 @@ export class AuthService {
     if (duplicateKeys.length) {
       throw new ConflictException(`해당 ${duplicateKeys}이 이미 존재합니다.`);
     }
-    const categoriesArr = [];
+
     const user = await this.userRepository.createUser(
       createUserDto,
       schoolRepo,
       majorRepo,
-      categoriesArr,
     );
+    const userCategory = await this.userRepository.findOne(user.no, {
+      relations: ['categories'],
+    });
 
-    user.categories.push(categoriesRepo.first);
-    user.categories.push(categoriesRepo.second);
-    user.categories.push(categoriesRepo.third);
+    userCategory.categories.push(categoriesRepo.first);
+    userCategory.categories.push(categoriesRepo.second);
+    userCategory.categories.push(categoriesRepo.third);
     schoolRepo.users.push(user);
     majorRepo.users.push(user);
 
-    console.log(user.categories);
-    // categoriesRepo.first.users.push(user);
-    // categoriesRepo.second.users.push(user);
-    // categoriesRepo.third.users.push(user);
+    const categoriesSave = await this.categoriesRepository.saveUsers(
+      categoriesRepo,
+      user,
+    );
 
     return user;
   }

@@ -46,16 +46,22 @@ export class User extends BaseEntity {
   })
   in_date: Timestamp;
 
-  @ManyToOne((type) => School, (school) => school.no, { eager: true })
+  @ManyToOne((type) => School, (school) => school.no, {
+    eager: true,
+    onDelete: 'SET NULL',
+  })
   @JoinColumn({ name: 'school_no' })
   school: School;
 
-  @ManyToOne((type) => Major, (major) => major.no, { eager: true })
+  @ManyToOne((type) => Major, (major) => major.no, {
+    eager: true,
+    onDelete: 'SET NULL',
+  })
   @JoinColumn({ name: 'major_no' })
   major: Major;
 
-  @ManyToMany((type) => Category, (category) => category.no)
-  @JoinTable()
+  @ManyToMany((type) => Category, (category) => category.users)
+  @JoinTable({ name: 'user_in_category' })
   categories: Category[];
 
   @Column({

@@ -22,15 +22,20 @@ export class CategoryRepository extends Repository<Category> {
     try {
       const category = await this.createQueryBuilder('categories')
         .leftJoinAndSelect('categories.boards', 'boards')
+        .leftJoinAndSelect('categories.users', 'users')
         .select([
           'categories.no',
           'categories.name',
           'boards.no',
           'boards.title',
           'boards.description',
+          'users.no',
+          'users.email',
+          'users.nickname',
         ])
         .where('categories.no = :no', { no })
-        .andWhere('categories.no = boards.category')
+        // .andWhere('categories.no = boards.category')
+        // .andWhere('categories.no = users.categories')
         .getOne();
 
       return category;
@@ -55,15 +60,31 @@ export class CategoryRepository extends Repository<Category> {
     };
     return categoryInfo;
   }
-  // async findOneCategoryFromUser(no: number): Promise<Category> {
-  //   try {
-  //     const category = await this.createQueryBuilder('categories')
-  //       .leftJoinAndSelect('categories.users', 'users')
-  //       .where('categories.no = :no', { no })
-  //       .getOne();
-  //     return category;
-  //   } catch (e) {
-  //     throw e;
-  //   }
-  // }
+  async saveUsers(categories, user) {
+    try {
+      const { first, second, third } = categories;
+      const saveUsers = {
+        firstCategory: await this.findOne(first.no, {
+          relations: ['users'],
+        }),
+        secondCategory: await this.findOne(second.no, {
+          relations: ['users'],
+        }),
+        thirdCategory: await this.findOne(third.no, {
+          relations: ['users'],
+        }),
+      };
+      const { firstCategory, secondCategory, thirdCategory } = saveUsers;
+
+      firstCategory.users.push(user);
+      secondCategory.users.push(user);
+      thirdCategory.users.push(user);
+
+      this.save(firstCategory);
+      this.save(secondCategory);
+      this.save(thirdCategory);
+    } catch (e) {
+      throw e;
+    }
+  }
 }

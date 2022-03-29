@@ -26,6 +26,6 @@ export class Category extends BaseEntity {
   })
   boards: Board[];
 
-  @ManyToMany((type) => User, (user) => user.no)
+  @ManyToMany((type) => User, (user) => user.categories)
   users: User[];
 }
