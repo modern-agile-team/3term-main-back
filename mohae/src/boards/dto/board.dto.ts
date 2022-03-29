@@ -69,7 +69,7 @@ export class SearchBoardDto {
   // @IsString()
   // description: string;
   @IsString()
-  sort: string;
+  sort: 'DESC' | 'ASC';
   // @IsNumber()
   // price1: number;
   // @IsNumber()

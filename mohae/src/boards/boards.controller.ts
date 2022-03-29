@@ -10,6 +10,7 @@ import {
   Patch,
   UseGuards,
   Req,
+  Query,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiCreatedResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
@@ -32,17 +33,16 @@ export class BoardsController {
     return await this.boardService.getAllBoards();
   }
 
+  @Get('/search')
+  async searchBoard(@Query('sort') sort) {
+    const response = await this.boardService.boardSearch(sort);
+
+    return response;
+  }
+
   @Get('/:no')
   async getByOneBoard(@Param('no') no: number): Promise<Board> {
     return await this.boardService.findOne(no);
-  }
-
-  @Post('/search')
-  async searchBoard(@Body() searchBoardDto: SearchBoardDto): Promise<Board[]> {
-    console.log(searchBoardDto);
-    const response = await this.boardService.boardSearch(searchBoardDto);
-
-    return response;
   }
 
   @Post()

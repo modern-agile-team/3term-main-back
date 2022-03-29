@@ -34,17 +34,16 @@ export class BoardRepository extends Repository<Board> {
       .getOne();
     return boardQuery;
   }
-  async findSearchBoard(searchBoardDto: SearchBoardDto): Promise<Board[]> {
-    const { sort } = searchBoardDto;
-    console.log(sort);
+  async findSearchBoard(sort): Promise<Board[]> {
     const boardQuery = await this.createQueryBuilder('boards')
       // .leftJoinAndSelect('boards.area', 'areas')
       // .leftJoinAndSelect('boards.category', 'categories')
       // .where('boards.area = areas.no')
       // .andWhere('boards.category = categories.no')
-      .orderBy('boards.no', 'DESC')
+      .orderBy('boards.no', sort)
       .getMany();
-    return;
+
+    return boardQuery;
   }
   async findAllBoard(): Promise<Board[]> {
     try {

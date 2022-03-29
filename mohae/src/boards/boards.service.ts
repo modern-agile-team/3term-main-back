@@ -28,8 +28,8 @@ export class BoardsService {
     return this.boardRepository.findAllBoard();
   }
 
-  async boardSearch(searchBoardDto: SearchBoardDto): Promise<Board[]> {
-    return await this.boardRepository.findSearchBoard(searchBoardDto);
+  async boardSearch(sort): Promise<Board[]> {
+    return await this.boardRepository.findSearchBoard(sort);
   }
 
   async findOne(no: number): Promise<Board> {
