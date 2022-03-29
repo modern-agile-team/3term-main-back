@@ -1,5 +1,16 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsArray, IsNumber, IsString } from 'class-validator';
+import {
+  ArrayMaxSize,
+  ArrayMinSize,
+  ArrayNotEmpty,
+  IsArray,
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsString,
+  Length,
+  MaxLength,
+} from 'class-validator';
 
 export abstract class CreateReportDto {
   @ApiProperty({
@@ -7,6 +18,7 @@ export abstract class CreateReportDto {
     description: '신고 대상 항목입니다. (user or board)',
     required: true,
   })
+  @IsNotEmpty()
   @IsString()
   head: string;
 
@@ -15,6 +27,7 @@ export abstract class CreateReportDto {
     description: '헤드에 넘버입니다. (게시글 넘버 또는 유저 넘버)',
     required: true,
   })
+  @IsNotEmpty()
   @IsNumber()
   headNo: number;
 
@@ -23,6 +36,7 @@ export abstract class CreateReportDto {
     description: '신고자 넘버입니다.',
     required: true,
   })
+  @IsNotEmpty()
   @IsNumber()
   reportUserNo: number;
 
@@ -32,6 +46,8 @@ export abstract class CreateReportDto {
     required: true,
   })
   @IsArray()
+  @ArrayNotEmpty()
+  @ArrayMaxSize(3)
   checks: [];
 
   @ApiProperty({
