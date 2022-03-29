@@ -16,14 +16,20 @@ import { Board } from '../entity/board.entity';
 @EntityRepository(Board)
 export class BoardRepository extends Repository<Board> {
   async findOneBoard(no: number): Promise<Board> {
-    const board = await this.createQueryBuilder('boards')
+    const board = await this.findOne(no);
+    if (!board) {
+      throw new NotFoundException(`No: ${no} 게시글을 찾을 수 없습니다.`);
+    }
+    const boardQuery = await this.createQueryBuilder('boards')
       .leftJoinAndSelect('boards.area', 'areas')
       .leftJoinAndSelect('boards.category', 'categories')
-      .where('boards.area = areas.no')
-      .where('boards.category = categories.no')
+      .where('boards.no = :no', { no: `${no}` })
+      .andWhere('boards.area = areas.no')
+      .andWhere('boards.category = categories.no')
       .getOne();
-    return board;
+    return boardQuery;
   }
+
   async findAllBoard(): Promise<Board[]> {
     try {
       const boards = await this.createQueryBuilder('boards')

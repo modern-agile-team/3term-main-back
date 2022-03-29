@@ -26,7 +26,6 @@ export class BoardsService {
 
   async findOne(no: number): Promise<Board> {
     const board = await this.boardRepository.findOneBoard(no);
-
     return board;
   }
 
