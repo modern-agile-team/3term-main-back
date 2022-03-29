@@ -1,9 +1,6 @@
-import {
-  InternalServerErrorException,
-  NotFoundException,
-} from '@nestjs/common';
+import { InternalServerErrorException } from '@nestjs/common';
 import { EntityRepository, Repository } from 'typeorm';
-import { CreateReportDto } from '../dto/create-report.dto';
+import { CreateReportDto } from '../dto/report.dto';
 import {
   ReportCheckBox,
   ReportedBoard,
@@ -12,7 +9,7 @@ import {
 
 @EntityRepository(ReportedBoard)
 export class ReportedBoardRepository extends Repository<ReportedBoard> {
-  async findOneReportBoard(no: number): Promise<ReportedBoard> {
+  async findOneReportedBoard(no: number): Promise<ReportedBoard> {
     try {
       const reportBoard = await this.createQueryBuilder('reported_boards')
         .leftJoinAndSelect('reported_boards.reportUser', 'reportUser')
@@ -66,7 +63,7 @@ export class ReportedBoardRepository extends Repository<ReportedBoard> {
 
 @EntityRepository(ReportedUser)
 export class ReportedUserRepository extends Repository<ReportedUser> {
-  async findOneReportUser(no: number): Promise<ReportedUser> {
+  async findOneReportedUser(no: number): Promise<ReportedUser> {
     try {
       const reportUser = await this.createQueryBuilder('reported_users')
         .leftJoinAndSelect('reported_users.reportUser', 'reportUser')
@@ -83,7 +80,22 @@ export class ReportedUserRepository extends Repository<ReportedUser> {
     }
   }
 
-  async findOneUserReportRelation(no: number): Promise<any[]> {
+  async findOneReportUserRelation(no: number) {
+    try {
+      const relation = await this.createQueryBuilder()
+        .relation(ReportedUser, 'reportUser')
+        .of(no)
+        .loadMany();
+
+      return relation;
+    } catch (e) {
+      throw new InternalServerErrorException(
+        `${e} ### 유저 신고한 유저 릴레이션 : 알 수 없는 서버 에러입니다.`,
+      );
+    }
+  }
+
+  async findOneUserReportCheckRelation(no: number): Promise<any[]> {
     try {
       const relation = await this.createQueryBuilder()
         .relation(ReportedUser, 'checks')
@@ -93,7 +105,7 @@ export class ReportedUserRepository extends Repository<ReportedUser> {
       return relation;
     } catch (e) {
       throw new InternalServerErrorException(
-        `${e} ### 게시글 신고 릴레이션 : 알 수 없는 서버 에러입니다.`,
+        `${e} ### 유저 신고 체크 릴레이션 : 알 수 없는 서버 에러입니다.`,
       );
     }
   }
@@ -108,21 +120,6 @@ export class ReportedUserRepository extends Repository<ReportedUser> {
 
       await reportedUser.save();
 
-      // const reportedUser = await this.createQueryBuilder('reported_users')
-      //   .insert()
-      //   .into(ReportedUser)
-      //   .values([{ description }])
-      //   .execute();
-      // const { affectedRows, insertId } = reportedUser.raw;
-
-      // if (!affectedRows) {
-      //   throw {
-      //     success: false,
-      //     msg: '유저 신고가 정상적으로 저장되지 않았습니다.',
-      //   };
-      // }
-
-      // return insertId;
       return reportedUser;
     } catch (e) {
       throw new InternalServerErrorException(
@@ -156,22 +153,26 @@ export class ReportCheckBoxRepository extends Repository<ReportCheckBox> {
   }
 
   async selectCheckConfirm(checks: Array<number>) {
-    const checkInfo = {
-      first: await this.createQueryBuilder('report_checkboxes')
-        .select()
-        .where('report_checkboxes.no = :no', { no: checks[0] })
-        .getOne(),
-      second: await this.createQueryBuilder('report_checkboxes')
-        .select()
-        .where('report_checkboxes.no = :no', { no: checks[1] })
-        .getOne(),
-      third: await this.createQueryBuilder('report_checkboxes')
-        .select()
-        .where('report_checkboxes.no = :no', { no: checks[2] })
-        .getOne(),
-    };
+    try {
+      const checkInfo = {
+        first: await this.createQueryBuilder('report_checkboxes')
+          .select()
+          .where('report_checkboxes.no = :no', { no: checks[0] })
+          .getOne(),
+        second: await this.createQueryBuilder('report_checkboxes')
+          .select()
+          .where('report_checkboxes.no = :no', { no: checks[1] })
+          .getOne(),
+        third: await this.createQueryBuilder('report_checkboxes')
+          .select()
+          .where('report_checkboxes.no = :no', { no: checks[2] })
+          .getOne(),
+      };
 
-    return checkInfo;
+      return checkInfo;
+    } catch (e) {
+      throw new InternalServerErrorException(e);
+    }
   }
 
   async saveChecks(checks, newReport, relationName: string) {

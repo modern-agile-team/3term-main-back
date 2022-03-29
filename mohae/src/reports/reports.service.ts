@@ -1,10 +1,9 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UserRepository } from 'src/auth/repository/user.repository';
 import { BoardRepository } from 'src/boards/repository/board.repository';
 import { ErrorConfirm } from 'src/utils/error';
-import { In } from 'typeorm';
-import { CreateReportDto } from './dto/create-report.dto';
+import { CreateReportDto } from './dto/report.dto';
 import {
   ReportCheckBox,
   ReportedBoard,
@@ -43,9 +42,11 @@ export class ReportsService {
     return checkedReport;
   }
 
-  async findOneReportBoard(no: number): Promise<ReportedBoard> {
+  async findOneReportedBoard(no: number): Promise<ReportedBoard> {
     try {
-      const report = await this.reportedBoardRepository.findOneReportBoard(no);
+      const report = await this.reportedBoardRepository.findOneReportedBoard(
+        no,
+      );
 
       this.errorConfirm.notFoundError(
         report,
@@ -58,9 +59,9 @@ export class ReportsService {
     }
   }
 
-  async findOneReportUser(no: number): Promise<ReportedUser> {
+  async findOneReportedUser(no: number): Promise<ReportedUser> {
     try {
-      const report = await this.reportedUserRepository.findOneReportUser(no);
+      const report = await this.reportedUserRepository.findOneReportedUser(no);
 
       this.errorConfirm.notFoundError(
         report,
@@ -95,9 +96,7 @@ export class ReportsService {
 
             const boardReporter = await this.userRepository.findOne(
               reportUserNo,
-              {
-                relations: ['boardReport'],
-              },
+              { relations: ['boardReport'] },
             );
             this.errorConfirm.notFoundError(
               boardReporter,
@@ -143,6 +142,7 @@ export class ReportsService {
           const userReporter = await this.userRepository.findOne(reportUserNo, {
             relations: ['userReport'],
           });
+
           this.errorConfirm.notFoundError(
             userReporter,
             '신고자를 찾을 수 없습니다.',
@@ -152,7 +152,7 @@ export class ReportsService {
             await this.reportedUserRepository.createUserReport(createReportDto);
 
           const userReportCheck =
-            await this.reportedUserRepository.findOneUserReportRelation(
+            await this.reportedUserRepository.findOneReportUserRelation(
               createdUserReport.no,
             );
 
