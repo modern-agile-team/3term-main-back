@@ -14,6 +14,9 @@ import { SchoolRepository } from 'src/schools/repository/school.repository';
 import { DeleteResult } from 'typeorm';
 import { MajorRepository } from 'src/majors/repository/major.repository';
 import * as config from 'config';
+import { School } from 'src/schools/entity/school.entity';
+import { CategoryRepository } from 'src/categories/repository/category.repository';
+import { Category } from 'src/categories/entity/category.entity';
 
 const jwtConfig = config.get('jwt');
 @Injectable()
@@ -24,9 +27,10 @@ export class AuthService {
     private jwtService: JwtService,
     private schoolRepository: SchoolRepository,
     private majorRepository: MajorRepository,
+    private categoriesRepository: CategoryRepository,
   ) {}
   async signUp(createUserDto: CreateUserDto): Promise<User> {
-    const { school, major, email, nickname } = createUserDto;
+    const { school, major, email, nickname, categories } = createUserDto;
 
     const schoolRepo = await this.schoolRepository.findOne(school, {
       relations: ['users'],
@@ -34,6 +38,9 @@ export class AuthService {
     const majorRepo = await this.majorRepository.findOne(major, {
       relations: ['users'],
     });
+    const categoriesRepo = await this.categoriesRepository.selectCategory(
+      categories,
+    );
 
     const stringEmail = 'email';
     const stringNickname = 'nickname';
@@ -60,9 +67,20 @@ export class AuthService {
       schoolRepo,
       majorRepo,
     );
+    const userCategory = await this.userRepository.findOne(user.no, {
+      relations: ['categories'],
+    });
 
+    userCategory.categories.push(categoriesRepo.first);
+    userCategory.categories.push(categoriesRepo.second);
+    userCategory.categories.push(categoriesRepo.third);
     schoolRepo.users.push(user);
     majorRepo.users.push(user);
+
+    const categoriesSave = await this.categoriesRepository.saveUsers(
+      categoriesRepo,
+      user,
+    );
 
     return user;
   }
