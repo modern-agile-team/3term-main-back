@@ -88,13 +88,4 @@ export class UserRepository extends Repository<User> {
       );
     }
   }
-
-  async findOneReportUser(reportUserNo: number) {
-    const relation = await this.createQueryBuilder()
-      .relation(User, 'reportUser')
-      .of(reportUserNo)
-      .loadMany();
-
-    return relation;
-  }
 }

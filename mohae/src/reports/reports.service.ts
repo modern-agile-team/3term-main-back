@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { UserRepository } from 'src/auth/repository/user.repository';
 import { BoardRepository } from 'src/boards/repository/board.repository';
 import { ErrorConfirm } from 'src/utils/error';
-import { CreateReportDto } from './dto/create-report.dto';
+import { CreateReportDto } from './dto/report.dto';
 import {
   ReportCheckBox,
   ReportedBoard,
@@ -42,9 +42,11 @@ export class ReportsService {
     return checkedReport;
   }
 
-  async findOneReportBoard(no: number): Promise<ReportedBoard> {
+  async findOneReportedBoard(no: number): Promise<ReportedBoard> {
     try {
-      const report = await this.reportedBoardRepository.findOneReportBoard(no);
+      const report = await this.reportedBoardRepository.findOneReportedBoard(
+        no,
+      );
 
       this.errorConfirm.notFoundError(
         report,
@@ -57,9 +59,9 @@ export class ReportsService {
     }
   }
 
-  async findOneReportUser(no: number): Promise<ReportedUser> {
+  async findOneReportedUser(no: number): Promise<ReportedUser> {
     try {
-      const report = await this.reportedUserRepository.findOneReportUser(no);
+      const report = await this.reportedUserRepository.findOneReportedUser(no);
 
       this.errorConfirm.notFoundError(
         report,
@@ -92,8 +94,9 @@ export class ReportsService {
               '해당 게시글이 존재하지 않습니다.',
             );
 
-            const boardReporter = await this.userRepository.findOneReportUser(
+            const boardReporter = await this.userRepository.findOne(
               reportUserNo,
+              { relations: ['boardReport'] },
             );
             this.errorConfirm.notFoundError(
               boardReporter,
@@ -114,7 +117,7 @@ export class ReportsService {
             boardReportRelation.push(checkInfo.second);
             boardReportRelation.push(checkInfo.third);
             board.reports.push(createdBoardReport);
-            boardReporter.push(createdBoardReport);
+            boardReporter.boardReport.push(createdBoardReport);
 
             await this.boardRepository.save(board);
             await this.userRepository.save(boardReporter);
@@ -136,9 +139,9 @@ export class ReportsService {
           });
           this.errorConfirm.notFoundError(user, '유저가 존재하지 않습니다.');
 
-          const userReporter = await this.userRepository.findOneReportUser(
-            reportUserNo,
-          );
+          const userReporter = await this.userRepository.findOne(reportUserNo, {
+            relations: ['userReport'],
+          });
 
           this.errorConfirm.notFoundError(
             userReporter,
@@ -149,7 +152,7 @@ export class ReportsService {
             await this.reportedUserRepository.createUserReport(createReportDto);
 
           const userReportCheck =
-            await this.reportedUserRepository.findOneUserReportRelation(
+            await this.reportedUserRepository.findOneReportUserRelation(
               createdUserReport.no,
             );
 
@@ -157,7 +160,7 @@ export class ReportsService {
           userReportCheck.push(checkInfo.second);
           userReportCheck.push(checkInfo.third);
           user.reports.push(createdUserReport);
-          userReporter.push(createdUserReport);
+          userReporter.userReport.push(createdUserReport);
 
           await this.userRepository.save(user);
           await this.userRepository.save(userReporter);

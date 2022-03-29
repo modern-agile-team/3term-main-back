@@ -61,7 +61,6 @@ export class ReportedBoard extends ReportContent {
   @ManyToOne((type) => User, (user) => user.no, {
     onDelete: 'SET NULL',
   })
-  // @JoinColumn({ name: 'report_user_no' })
   reportUser: User;
 }
 
@@ -80,6 +79,5 @@ export class ReportedUser extends ReportContent {
   @ManyToOne((type) => User, (user) => user.no, {
     onDelete: 'SET NULL',
   })
-  @JoinColumn({ name: 'report_user_no' })
   reportUser: User;
 }

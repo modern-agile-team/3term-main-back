@@ -8,8 +8,8 @@ import {
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
-import { CreateReportDto } from './dto/create-report.dto';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { CreateReportDto } from './dto/report.dto';
 import {
   ReportCheckBox,
   ReportedBoard,
@@ -23,6 +23,10 @@ export class ReportsController {
   private logger = new Logger('ReportsController');
   constructor(private reportsService: ReportsService) {}
 
+  @ApiOperation({
+    summary: '체크박스 조회',
+    description: '체크박스 조회시 체크된 신고들도 함께 불러옴 API',
+  })
   @Get('checkboxes')
   async findAllCheckBox(): Promise<ReportCheckBox[]> {
     const response = await this.reportsService.findAllCheckbox();
@@ -34,9 +38,13 @@ export class ReportsController {
     });
   }
 
+  @ApiOperation({
+    summary: '신고된 게시글 상세(선택) 조회',
+    description: '신고된 게시글 상세(선택) 조회 API',
+  })
   @Get('/board/:no')
-  async findOneBoardReport(@Param('no') no: number): Promise<ReportedBoard> {
-    const response = await this.reportsService.findOneReportBoard(no);
+  async findOneReportedBoard(@Param('no') no: number): Promise<ReportedBoard> {
+    const response = await this.reportsService.findOneReportedBoard(no);
     this.logger.verbose(
       `Reported list(board) has been received. Report Payload: ${JSON.stringify(
         response,
@@ -50,9 +58,13 @@ export class ReportsController {
     });
   }
 
+  @ApiOperation({
+    summary: '신고된 유저 상세(선택) 조회',
+    description: '신고된 유저 상세(선택) 조회 API',
+  })
   @Get('/user/:no')
-  async findOneUserReport(@Param('no') no: number): Promise<ReportedUser> {
-    const response = await this.reportsService.findOneReportUser(no);
+  async findOneReportedUser(@Param('no') no: number): Promise<ReportedUser> {
+    const response = await this.reportsService.findOneReportedUser(no);
 
     return Object.assign({
       statusCode: 200,
