@@ -14,6 +14,7 @@ import {
   DeleteDateColumn,
   Entity,
   JoinColumn,
+  JoinTable,
   ManyToMany,
   ManyToOne,
   OneToMany,
@@ -54,6 +55,7 @@ export class User extends BaseEntity {
   major: Major;
 
   @ManyToMany((type) => Category, (category) => category.no)
+  @JoinTable()
   categories: Category[];
 
   @Column({
