@@ -21,22 +21,69 @@ export class CategoryRepository extends Repository<Category> {
     try {
       const category = await this.createQueryBuilder('categories')
         .leftJoinAndSelect('categories.boards', 'boards')
-        .leftJoinAndSelect('categoreis.users', 'users')
-        // .leftJoinAndSelect('users.categories', 'userCategories')
-        // .select([
-        //   'categories.no',
-        //   'categories.name',
-        //   'boards.no',
-        //   'boards.title',
-        //   'boards.description',
-        // ])
+        .leftJoinAndSelect('categories.users', 'users')
+        .select([
+          'categories.no',
+          'categories.name',
+          'boards.no',
+          'boards.title',
+          'boards.description',
+          'users.no',
+          'users.email',
+          'users.nickname',
+        ])
         .where('categories.no = :no', { no })
         // .andWhere('categories.no = boards.category')
+        // .andWhere('categories.no = users.categories')
         .getOne();
 
       return category;
     } catch (e) {
       throw new InternalServerErrorException(e);
+    }
+  }
+  async selectCategory(categories: Array<number>) {
+    const categoryInfo = {
+      first: await this.createQueryBuilder('categories')
+        .select()
+        .where('categories.no = :no', { no: categories[0] })
+        .getOne(),
+      second: await this.createQueryBuilder('categories')
+        .select()
+        .where('categories.no = :no', { no: categories[1] })
+        .getOne(),
+      third: await this.createQueryBuilder('categories')
+        .select()
+        .where('categories.no = :no', { no: categories[2] })
+        .getOne(),
+    };
+    return categoryInfo;
+  }
+  async saveUsers(categories, user) {
+    try {
+      const { first, second, third } = categories;
+      const saveUsers = {
+        firstCategory: await this.findOne(first.no, {
+          relations: ['users'],
+        }),
+        secondCategory: await this.findOne(second.no, {
+          relations: ['users'],
+        }),
+        thirdCategory: await this.findOne(third.no, {
+          relations: ['users'],
+        }),
+      };
+      const { firstCategory, secondCategory, thirdCategory } = saveUsers;
+
+      firstCategory.users.push(user);
+      secondCategory.users.push(user);
+      thirdCategory.users.push(user);
+
+      this.save(firstCategory);
+      this.save(secondCategory);
+      this.save(thirdCategory);
+    } catch (e) {
+      throw e;
     }
   }
 }
