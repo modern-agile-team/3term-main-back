@@ -9,12 +9,17 @@ import {
   ValidationPipe,
   Patch,
   UseGuards,
+  Req,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiCreatedResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { DeleteResult } from 'typeorm';
 import { BoardsService } from './boards.service';
-import { CreateBoardDto, UpdateBoardDto } from './dto/board.dto';
+import {
+  CreateBoardDto,
+  SearchBoardDto,
+  UpdateBoardDto,
+} from './dto/board.dto';
 import { Board } from './entity/board.entity';
 
 @Controller('boards')
@@ -30,6 +35,14 @@ export class BoardsController {
   @Get('/:no')
   async getByOneBoard(@Param('no') no: number): Promise<Board> {
     return await this.boardService.findOne(no);
+  }
+
+  @Post('/search')
+  async searchBoard(@Body() searchBoardDto: SearchBoardDto): Promise<Board[]> {
+    console.log(searchBoardDto);
+    const response = await this.boardService.boardSearch(searchBoardDto);
+
+    return response;
   }
 
   @Post()
