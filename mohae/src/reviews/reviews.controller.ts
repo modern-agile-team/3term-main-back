@@ -1,13 +1,6 @@
-import {
-  Body,
-  Controller,
-  Get,
-  Param,
-  ParseIntPipe,
-  Post,
-} from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
-import { CreateReviewDto } from './dto/create-review.dto';
+import { Body, Controller, Get, Param, Post } from '@nestjs/common';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { CreateReviewDto } from './dto/review.dto';
 import { Review } from './entity/review.entity';
 import { ReviewsService } from './reviews.service';
 
@@ -16,6 +9,10 @@ import { ReviewsService } from './reviews.service';
 export class ReviewsController {
   constructor(private reviewService: ReviewsService) {}
 
+  @ApiOperation({
+    summary: '리뷰 전체 조회',
+    description: '리뷰 전체 조회 API',
+  })
   @Get()
   async findAllReview(): Promise<Review[]> {
     const response = await this.reviewService.findAllReview();
@@ -27,6 +24,10 @@ export class ReviewsController {
     });
   }
 
+  @ApiOperation({
+    summary: '리뷰 상세(선택) 조회',
+    description: '리뷰 상세(선택) 조회 API',
+  })
   @Get(':no')
   async findOneReview(@Param('no') no: number): Promise<Review> {
     const response = await this.reviewService.findOneReview(no);
@@ -38,6 +39,10 @@ export class ReviewsController {
     });
   }
 
+  @ApiOperation({
+    summary: '리뷰 작성',
+    description: '리뷰 작성 API',
+  })
   @Post()
   async createReview(
     @Body() createReviewDto: CreateReviewDto,
