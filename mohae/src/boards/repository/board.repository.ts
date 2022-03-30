@@ -36,10 +36,10 @@ export class BoardRepository extends Repository<Board> {
   }
   async findSearchBoard(sort): Promise<Board[]> {
     const boardQuery = await this.createQueryBuilder('boards')
-      // .leftJoinAndSelect('boards.area', 'areas')
-      // .leftJoinAndSelect('boards.category', 'categories')
-      // .where('boards.area = areas.no')
-      // .andWhere('boards.category = categories.no')
+      .leftJoinAndSelect('boards.area', 'areas')
+      .leftJoinAndSelect('boards.category', 'categories')
+      .where('boards.area = areas.no')
+      .andWhere('boards.category = categories.no')
       .orderBy('boards.no', sort)
       .getMany();
 
