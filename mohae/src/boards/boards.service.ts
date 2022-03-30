@@ -3,7 +3,11 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { CategoryRepository } from 'src/categories/repository/category.repository';
 import { AreasRepository } from 'src/areas/repository/area.repository';
 import { createQueryBuilder, DeleteResult, getConnection } from 'typeorm';
-import { CreateBoardDto, UpdateBoardDto } from './dto/board.dto';
+import {
+  CreateBoardDto,
+  SearchBoardDto,
+  UpdateBoardDto,
+} from './dto/board.dto';
 import { Board } from './entity/board.entity';
 import { BoardRepository } from './repository/board.repository';
 import { NoteRepository } from 'src/notes/repository/note.repository';
@@ -24,9 +28,12 @@ export class BoardsService {
     return this.boardRepository.findAllBoard();
   }
 
+  async boardSearch(sort): Promise<Board[]> {
+    return await this.boardRepository.findSearchBoard(sort);
+  }
+
   async findOne(no: number): Promise<Board> {
     const board = await this.boardRepository.findOneBoard(no);
-
     return board;
   }
 
