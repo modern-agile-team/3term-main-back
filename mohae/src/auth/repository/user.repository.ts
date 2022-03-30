@@ -32,6 +32,7 @@ export class UserRepository extends Repository<User> {
       await user.save();
       return user;
     } catch (e) {
+      console.log(e);
       throw new InternalServerErrorException(
         '서버에러입니다 서버 담당자에게 말해주세요',
       );
@@ -68,7 +69,7 @@ export class UserRepository extends Repository<User> {
       );
     }
   }
-  async deleteUser(no: number) {
+  async signDown(no: number) {
     const result = await this.createQueryBuilder()
       .softDelete()
       .from(User)
@@ -86,6 +87,18 @@ export class UserRepository extends Repository<User> {
       throw new InternalServerErrorException(
         `${e} ### 중복체크 : 알 수 없는 서버 에러입니다.`,
       );
+    }
+  }
+
+  async plusLoginFailCount(userNo, FailCount) {
+    try {
+      return await this.createQueryBuilder()
+        .update(User)
+        .set({ loginFailCount: FailCount + 1 })
+        .where('no = :no', { no: userNo })
+        .execute();
+    } catch (e) {
+      throw e;
     }
   }
 }

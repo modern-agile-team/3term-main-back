@@ -19,9 +19,9 @@ export class ProfilesService {
       throw new NotFoundException(`No: ${no} 일치하는 유저가 없습니다.`);
     }
 
-    const { name, email, nickname, in_date, photo_url, school } = profile;
+    const { name, email, nickname, createdAt, photo_url, school } = profile;
 
-    return { no, name, email, nickname, photo_url, school, in_date };
+    return { no, name, email, nickname, photo_url, school, createdAt };
   }
 
   async updateProfile(

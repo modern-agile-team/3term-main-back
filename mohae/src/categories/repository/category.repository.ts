@@ -33,8 +33,6 @@ export class CategoryRepository extends Repository<Category> {
           'users.nickname',
         ])
         .where('categories.no = :no', { no })
-        // .andWhere('categories.no = boards.category')
-        // .andWhere('categories.no = users.categories')
         .getOne();
 
       return category;
@@ -57,30 +55,19 @@ export class CategoryRepository extends Repository<Category> {
         .where('categories.no = :no', { no: categories[2] })
         .getOne(),
     ];
-
     return categoryInfo;
   }
   async saveUsers(categories, user) {
     try {
-      const { first, second, third } = categories;
+      const filterCategory = categories.filter(
+        (category) => category !== undefined,
+      );
 
-      const firstCategory = await this.findOne(first.no, {
-        relations: ['users'],
-      });
-      const secondCategory = await this.findOne(second.no, {
-        relations: ['users'],
-      });
-      const thirdCategory = await this.findOne(third.no, {
-        relations: ['users'],
-      });
-
-      firstCategory.users.push(user);
-      secondCategory.users.push(user);
-      thirdCategory.users.push(user);
-
-      this.save(firstCategory);
-      this.save(secondCategory);
-      this.save(thirdCategory);
+      for (const i of filterCategory) {
+        const saveUser = await this.findOne(i.no, { relations: ['users'] });
+        saveUser.users.push(user);
+        this.save(saveUser);
+      }
     } catch (e) {
       throw e;
     }

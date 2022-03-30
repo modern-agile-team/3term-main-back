@@ -9,12 +9,18 @@ import {
   ValidationPipe,
   Patch,
   UseGuards,
+  Req,
+  Query,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiCreatedResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { DeleteResult } from 'typeorm';
 import { BoardsService } from './boards.service';
-import { CreateBoardDto, UpdateBoardDto } from './dto/board.dto';
+import {
+  CreateBoardDto,
+  SearchBoardDto,
+  UpdateBoardDto,
+} from './dto/board.dto';
 import { Board } from './entity/board.entity';
 
 @Controller('boards')
@@ -23,13 +29,20 @@ export class BoardsController {
   constructor(private boardService: BoardsService) {}
 
   @Get()
-  async getAllBoard(): Promise<Board[]> {
+  async getAllBoards(): Promise<Board[]> {
     return await this.boardService.getAllBoards();
+  }
+
+  @Get('/search')
+  async searchBoard(@Query('sort') sort): Promise<Board[]> {
+    const response = await this.boardService.searchBoard(sort);
+
+    return response;
   }
 
   @Get('/:no')
   async getByOneBoard(@Param('no') no: number): Promise<Board> {
-    return await this.boardService.findOne(no);
+    return await this.boardService.getByOneBoard(no);
   }
 
   @Post()
@@ -63,7 +76,7 @@ export class BoardsController {
 
   @Delete('/:no')
   async deleteBoard(@Param('no') no: number): Promise<DeleteResult> {
-    const result = await this.boardService.delete(no);
+    const result = await this.boardService.deleteBoard(no);
     return Object.assign({
       statusCode: 204,
       msg: '게시글 삭제가 완료되었습니다',

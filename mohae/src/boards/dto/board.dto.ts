@@ -65,3 +65,19 @@ export abstract class BoardContent {
 
 export class CreateBoardDto extends BoardContent {}
 export class UpdateBoardDto extends BoardContent {}
+export class SearchBoardDto {
+  // @IsString()
+  // description: string;
+  @IsString()
+  sort: 'DESC' | 'ASC';
+  // @IsNumber()
+  // price1: number;
+  // @IsNumber()
+  // price2: number;
+  // @IsNumber()
+  // area: number;
+  // @IsNumber()
+  // category: number;
+  // @IsBoolean()
+  // target: boolean;
+}

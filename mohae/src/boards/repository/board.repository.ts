@@ -4,33 +4,41 @@ import {
 } from '@nestjs/common';
 import { Area } from 'src/areas/entity/areas.entity';
 import { Category } from 'src/categories/entity/category.entity';
-import {
-  DeleteResult,
-  EntityRepository,
-  getConnection,
-  Repository,
-} from 'typeorm';
+import { DeleteResult, EntityRepository, Repository } from 'typeorm';
 import { CreateBoardDto, UpdateBoardDto } from '../dto/board.dto';
 import { Board } from '../entity/board.entity';
 
 @EntityRepository(Board)
 export class BoardRepository extends Repository<Board> {
-  async findOneBoard(no: number): Promise<Board> {
+  async getByOneBoard(no: number): Promise<Board> {
     const board = await this.createQueryBuilder('boards')
       .leftJoinAndSelect('boards.area', 'areas')
       .leftJoinAndSelect('boards.category', 'categories')
-      .where('boards.area = areas.no')
-      .where('boards.category = categories.no')
+      .where('boards.no = :no', { no: `${no}` })
+      .andWhere('boards.area = areas.no')
+      .andWhere('boards.category = categories.no')
       .getOne();
     return board;
   }
-  async findAllBoard(): Promise<Board[]> {
+  async searchBoard(sort): Promise<Board[]> {
+    const filteredBoard = await this.createQueryBuilder('boards')
+      .leftJoinAndSelect('boards.area', 'areas')
+      .leftJoinAndSelect('boards.category', 'categories')
+      .where('boards.area = areas.no')
+      .andWhere('boards.category = categories.no')
+      .orderBy('boards.no', sort)
+      .getMany();
+
+    return filteredBoard;
+  }
+  async getAllBoards(): Promise<Board[]> {
     try {
       const boards = await this.createQueryBuilder('boards')
         .leftJoinAndSelect('boards.area', 'areas')
         .leftJoinAndSelect('boards.category', 'categories')
         .where('boards.area = areas.no')
-        .where('boards.category = categories.no')
+        .andWhere('boards.category = categories.no')
+        .orderBy('boards.no', 'ASC')
         .getMany();
 
       return boards;
@@ -91,7 +99,7 @@ export class BoardRepository extends Repository<Board> {
     const { title, description, price, summary, target, note1, note2, note3 } =
       updateBoardDto;
 
-    const result = await this.createQueryBuilder()
+    const updatedBoard = await this.createQueryBuilder()
       .update(Board)
       .set({
         title: title,
@@ -107,7 +115,7 @@ export class BoardRepository extends Repository<Board> {
       })
       .where('no = :no', { no: `${no}` })
       .execute();
-    const { affected } = result;
+    const { affected } = updatedBoard;
     if (!affected) {
       return { success: false };
     }
@@ -120,11 +128,11 @@ export class BoardRepository extends Repository<Board> {
     if (!board) {
       throw new NotFoundException(`No: ${no} 게시글을 찾을 수 없습니다.`);
     }
-    const boardQuery = await this.createQueryBuilder()
+    const result = await this.createQueryBuilder()
       .softDelete()
       .from(Board)
       .where('no = :no', { no })
       .execute();
-    return boardQuery;
+    return result;
   }
 }
