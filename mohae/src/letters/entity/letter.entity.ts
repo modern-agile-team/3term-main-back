@@ -22,6 +22,13 @@ export class Letter extends BaseEntity {
   })
   description: string;
 
+  @Column({
+    type: 'boolean',
+    comment: '읽었는지 안읽었는지 유무 판단',
+    default: false,
+  })
+  reading_flag: boolean;
+
   @CreateDateColumn({
     name: 'create_at',
     comment: '쪽지 전송 시간',

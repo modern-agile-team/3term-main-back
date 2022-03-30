@@ -5,21 +5,25 @@ import { Letter } from '../entity/letter.entity';
 @EntityRepository(Letter)
 export class LetterRepository extends Repository<Letter> {
   async findAllLetters() {
-    return await this.find();
+    return await this.createQueryBuilder('letters')
+      .leftJoinAndSelect('letters.sender', 'sender')
+      .leftJoinAndSelect('letters.receiver', 'receiver')
+      .getMany();
   }
 
-  async sendLetter(sendLetterDto: SendLetterDto) {
-    const { description } = sendLetterDto;
-    const result = this.createQueryBuilder('letters')
+  async sendLetter(sender, receiver, description) {
+    const result = await this.createQueryBuilder('letters')
       .insert()
       .into(Letter)
       .values([
         {
+          sender,
+          receiver,
           description,
         },
       ])
       .execute();
 
-    return result;
+    return result.raw;
   }
 }
