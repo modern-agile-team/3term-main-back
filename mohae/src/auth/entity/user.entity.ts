@@ -11,6 +11,7 @@ import { Category } from 'src/categories/entity/category.entity';
 import {
   BaseEntity,
   Column,
+  CreateDateColumn,
   DeleteDateColumn,
   Entity,
   JoinColumn,
@@ -101,6 +102,12 @@ export class User extends BaseEntity {
     comment: '삭제일',
   })
   deletedAt: Date | null;
+
+  @CreateDateColumn({
+    name: 'create_at',
+    comment: '회원가입 시간',
+  })
+  createdAt: Date;
 
   @OneToMany((type) => ReportedUser, (user) => user.reportedUser, {
     nullable: true,
