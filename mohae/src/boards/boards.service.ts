@@ -3,14 +3,9 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { CategoryRepository } from 'src/categories/repository/category.repository';
 import { AreasRepository } from 'src/areas/repository/area.repository';
 import { createQueryBuilder, DeleteResult, getConnection } from 'typeorm';
-import {
-  CreateBoardDto,
-  SearchBoardDto,
-  UpdateBoardDto,
-} from './dto/board.dto';
+import { CreateBoardDto, UpdateBoardDto } from './dto/board.dto';
 import { Board } from './entity/board.entity';
 import { BoardRepository } from './repository/board.repository';
-import { NoteRepository } from 'src/notes/repository/note.repository';
 
 @Injectable()
 export class BoardsService {

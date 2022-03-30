@@ -4,17 +4,8 @@ import {
 } from '@nestjs/common';
 import { Area } from 'src/areas/entity/areas.entity';
 import { Category } from 'src/categories/entity/category.entity';
-import {
-  DeleteResult,
-  EntityRepository,
-  getConnection,
-  Repository,
-} from 'typeorm';
-import {
-  CreateBoardDto,
-  SearchBoardDto,
-  UpdateBoardDto,
-} from '../dto/board.dto';
+import { DeleteResult, EntityRepository, Repository } from 'typeorm';
+import { CreateBoardDto, UpdateBoardDto } from '../dto/board.dto';
 import { Board } from '../entity/board.entity';
 
 @EntityRepository(Board)
