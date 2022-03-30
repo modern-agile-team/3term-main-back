@@ -68,7 +68,7 @@ export class UserRepository extends Repository<User> {
       );
     }
   }
-  async deleteUser(no: number) {
+  async signDown(no: number) {
     const result = await this.createQueryBuilder()
       .softDelete()
       .from(User)

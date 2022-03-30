@@ -108,7 +108,7 @@ export class AuthService {
     }
   }
   async signDown(no: number): Promise<DeleteResult> {
-    const result = await this.userRepository.deleteUser(no);
+    const result = await this.userRepository.signDown(no);
 
     if (result.affected === 0) {
       throw new NotFoundException(
