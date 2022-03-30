@@ -61,11 +61,11 @@ export class BoardsService {
   }
 
   async deleteBoard(no: number): Promise<DeleteResult> {
-    const deleteBoard = await this.boardRepository.deleteBoard(no);
-    if (deleteBoard.affected === 0) {
+    const result = await this.boardRepository.deleteBoard(no);
+    if (result.affected === 0) {
       throw new NotFoundException(`${no}번의 게시글이 삭제되지 않았습니다.`);
     }
-    return deleteBoard;
+    return result;
   }
   async updateBoard(
     no: number,
