@@ -1,5 +1,4 @@
 import { InternalServerErrorException } from '@nestjs/common';
-import { User } from 'src/auth/entity/user.entity';
 import { EntityRepository, Repository } from 'typeorm';
 import { Category } from '../entity/category.entity';
 
