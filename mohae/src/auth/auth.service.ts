@@ -99,9 +99,18 @@ export class AuthService {
 
         return { accessToken };
       } else {
-        throw new UnauthorizedException(
-          '아이디 또는 비밀번호가 일치하지 않습니다.',
+        // 로그인에 실패 한 경우
+        const loginFailCount = await this.userRepository.plusLoginFailCount(
+          user.no,
+          user.loginFailCount,
         );
+        if (loginFailCount.affected === 1) {
+          throw new UnauthorizedException(
+            `아이디 또는 비밀번호가 일치하지 않습니다. 로그인 실패 횟수: ${
+              user.loginFailCount + 1
+            } `,
+          );
+        }
       }
     } catch (e) {
       throw e;

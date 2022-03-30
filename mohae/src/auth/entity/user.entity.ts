@@ -22,6 +22,7 @@ import {
   PrimaryGeneratedColumn,
   Timestamp,
   Unique,
+  UpdateDateColumn,
 } from 'typeorm';
 
 @Entity('users')
@@ -40,12 +41,6 @@ export class User extends BaseEntity {
     comment: '회원 개인 프로필사진',
   })
   photo_url: string;
-
-  @Column({
-    type: 'timestamp',
-    comment: '회원가입시간',
-  })
-  in_date: Timestamp;
 
   @ManyToOne((type) => School, (school) => school.no, {
     eager: true,
@@ -107,7 +102,7 @@ export class User extends BaseEntity {
     name: 'create_at',
     comment: '회원가입 시간',
   })
-  createdAt: Date;
+  createdAt: Date | null;
 
   @OneToMany((type) => ReportedUser, (user) => user.reportedUser, {
     nullable: true,
@@ -129,4 +124,23 @@ export class User extends BaseEntity {
 
   @OneToMany((type) => Review, (review) => review.reviewer)
   reviews: Review[];
+
+  //
+  @Column({
+    comment: '로그인 실패 횟수',
+    default: 0,
+  })
+  loginFailCount: number;
+
+  @Column({
+    type: 'boolean',
+    comment: '로그인 실패로 인한 계정 제한 여부',
+    default: false,
+  })
+  isLock: boolean;
+
+  @UpdateDateColumn({
+    comment: '마지막으로 로그인을 시도한 시간',
+  })
+  latestLogin: Date;
 }
