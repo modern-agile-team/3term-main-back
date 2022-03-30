@@ -43,37 +43,36 @@ export class CategoryRepository extends Repository<Category> {
     }
   }
   async selectCategory(categories: Array<number>) {
-    const categoryInfo = {
-      first: await this.createQueryBuilder('categories')
+    const categoryInfo = [
+      await this.createQueryBuilder('categories')
         .select()
         .where('categories.no = :no', { no: categories[0] })
         .getOne(),
-      second: await this.createQueryBuilder('categories')
+      await this.createQueryBuilder('categories')
         .select()
         .where('categories.no = :no', { no: categories[1] })
         .getOne(),
-      third: await this.createQueryBuilder('categories')
+      await this.createQueryBuilder('categories')
         .select()
         .where('categories.no = :no', { no: categories[2] })
         .getOne(),
-    };
+    ];
+
     return categoryInfo;
   }
   async saveUsers(categories, user) {
     try {
       const { first, second, third } = categories;
-      const saveUsers = {
-        firstCategory: await this.findOne(first.no, {
-          relations: ['users'],
-        }),
-        secondCategory: await this.findOne(second.no, {
-          relations: ['users'],
-        }),
-        thirdCategory: await this.findOne(third.no, {
-          relations: ['users'],
-        }),
-      };
-      const { firstCategory, secondCategory, thirdCategory } = saveUsers;
+
+      const firstCategory = await this.findOne(first.no, {
+        relations: ['users'],
+      });
+      const secondCategory = await this.findOne(second.no, {
+        relations: ['users'],
+      });
+      const thirdCategory = await this.findOne(third.no, {
+        relations: ['users'],
+      });
 
       firstCategory.users.push(user);
       secondCategory.users.push(user);

@@ -71,16 +71,17 @@ export class AuthService {
       relations: ['categories'],
     });
 
-    userCategory.categories.push(categoriesRepo.first);
-    userCategory.categories.push(categoriesRepo.second);
-    userCategory.categories.push(categoriesRepo.third);
+    for (const i of categoriesRepo) {
+      if (!i) {
+        continue;
+      }
+      userCategory.categories.push(i);
+    }
+
     schoolRepo.users.push(user);
     majorRepo.users.push(user);
 
-    const categoriesSave = await this.categoriesRepository.saveUsers(
-      categoriesRepo,
-      user,
-    );
+    await this.categoriesRepository.saveUsers(categoriesRepo, user);
 
     return user;
   }
