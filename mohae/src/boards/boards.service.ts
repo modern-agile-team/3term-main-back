@@ -3,14 +3,9 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { CategoryRepository } from 'src/categories/repository/category.repository';
 import { AreasRepository } from 'src/areas/repository/area.repository';
 import { createQueryBuilder, DeleteResult, getConnection } from 'typeorm';
-import {
-  CreateBoardDto,
-  SearchBoardDto,
-  UpdateBoardDto,
-} from './dto/board.dto';
+import { CreateBoardDto, UpdateBoardDto } from './dto/board.dto';
 import { Board } from './entity/board.entity';
 import { BoardRepository } from './repository/board.repository';
-import { NoteRepository } from 'src/notes/repository/note.repository';
 
 @Injectable()
 export class BoardsService {
@@ -25,15 +20,18 @@ export class BoardsService {
   ) {}
 
   async getAllBoards(): Promise<Board[]> {
-    return this.boardRepository.findAllBoard();
+    return this.boardRepository.getAllBoards();
   }
 
-  async boardSearch(sort): Promise<Board[]> {
-    return await this.boardRepository.findSearchBoard(sort);
+  async searchBoard(sort): Promise<Board[]> {
+    return await this.boardRepository.searchBoard(sort);
   }
 
-  async findOne(no: number): Promise<Board> {
-    const board = await this.boardRepository.findOneBoard(no);
+  async getByOneBoard(no: number): Promise<Board> {
+    const board = await this.boardRepository.getByOneBoard(no);
+    if (!board) {
+      throw new NotFoundException(`No: ${no} 게시글을 찾을 수 없습니다.`);
+    }
     return board;
   }
 
@@ -62,12 +60,12 @@ export class BoardsService {
     return board;
   }
 
-  async delete(no: number): Promise<DeleteResult> {
-    const deleteBoard = await this.boardRepository.deleteBoard(no);
-    if (deleteBoard.affected === 0) {
+  async deleteBoard(no: number): Promise<DeleteResult> {
+    const result = await this.boardRepository.deleteBoard(no);
+    if (result.affected === 0) {
       throw new NotFoundException(`${no}번의 게시글이 삭제되지 않았습니다.`);
     }
-    return deleteBoard;
+    return result;
   }
   async updateBoard(
     no: number,
