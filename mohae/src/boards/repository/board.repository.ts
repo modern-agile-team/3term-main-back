@@ -10,19 +10,40 @@ import {
   getConnection,
   Repository,
 } from 'typeorm';
-import { CreateBoardDto, UpdateBoardDto } from '../dto/board.dto';
+import {
+  CreateBoardDto,
+  SearchBoardDto,
+  UpdateBoardDto,
+} from '../dto/board.dto';
 import { Board } from '../entity/board.entity';
 
 @EntityRepository(Board)
 export class BoardRepository extends Repository<Board> {
   async findOneBoard(no: number): Promise<Board> {
-    const board = await this.createQueryBuilder('boards')
+    const board = await this.findOne(no);
+    if (!board) {
+      throw new NotFoundException(`No: ${no} 게시글을 찾을 수 없습니다.`);
+    }
+
+    const boardQuery = await this.createQueryBuilder('boards')
+      .leftJoinAndSelect('boards.area', 'areas')
+      .leftJoinAndSelect('boards.category', 'categories')
+      .where('boards.no = :no', { no: `${no}` })
+      .andWhere('boards.area = areas.no')
+      .andWhere('boards.category = categories.no')
+      .getOne();
+    return boardQuery;
+  }
+  async findSearchBoard(sort): Promise<Board[]> {
+    const boardQuery = await this.createQueryBuilder('boards')
       .leftJoinAndSelect('boards.area', 'areas')
       .leftJoinAndSelect('boards.category', 'categories')
       .where('boards.area = areas.no')
-      .where('boards.category = categories.no')
-      .getOne();
-    return board;
+      .andWhere('boards.category = categories.no')
+      .orderBy('boards.no', sort)
+      .getMany();
+
+    return boardQuery;
   }
   async findAllBoard(): Promise<Board[]> {
     try {
@@ -30,7 +51,8 @@ export class BoardRepository extends Repository<Board> {
         .leftJoinAndSelect('boards.area', 'areas')
         .leftJoinAndSelect('boards.category', 'categories')
         .where('boards.area = areas.no')
-        .where('boards.category = categories.no')
+        .andWhere('boards.category = categories.no')
+        .orderBy('boards.no', 'ASC')
         .getMany();
 
       return boards;

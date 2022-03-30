@@ -9,12 +9,18 @@ import {
   ValidationPipe,
   Patch,
   UseGuards,
+  Req,
+  Query,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiCreatedResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { DeleteResult } from 'typeorm';
 import { BoardsService } from './boards.service';
-import { CreateBoardDto, UpdateBoardDto } from './dto/board.dto';
+import {
+  CreateBoardDto,
+  SearchBoardDto,
+  UpdateBoardDto,
+} from './dto/board.dto';
 import { Board } from './entity/board.entity';
 
 @Controller('boards')
@@ -25,6 +31,13 @@ export class BoardsController {
   @Get()
   async getAllBoard(): Promise<Board[]> {
     return await this.boardService.getAllBoards();
+  }
+
+  @Get('/search')
+  async searchBoard(@Query('sort') sort) {
+    const response = await this.boardService.boardSearch(sort);
+
+    return response;
   }
 
   @Get('/:no')
