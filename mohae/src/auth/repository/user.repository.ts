@@ -90,6 +90,18 @@ export class UserRepository extends Repository<User> {
     }
   }
 
+  async clearLoginCount(userNo) {
+    try {
+      return await this.createQueryBuilder()
+        .update(User)
+        .set({ loginFailCount: 0 })
+        .where('no = :no', { no: userNo })
+        .execute();
+    } catch (e) {
+      throw e;
+    }
+  }
+
   async plusLoginFailCount(userNo, FailCount) {
     try {
       return await this.createQueryBuilder()

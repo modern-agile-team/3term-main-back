@@ -95,6 +95,9 @@ export class AuthService {
           issuer: 'modern-agile',
           expiration: jwtConfig.expiresIn,
         };
+        const clearLoginCount = await this.userRepository.clearLoginCount(
+          user.no,
+        );
         const accessToken = await this.jwtService.sign(payload);
 
         return { accessToken };
