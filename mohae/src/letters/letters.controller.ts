@@ -8,13 +8,23 @@ export class LettersController {
 
   @Get()
   async findAllLetters() {
-    return await this.lettersService.findAllLetters();
+    const response = await this.lettersService.findAllLetters();
+
+    return Object.assign({
+      statusCode: 200,
+      msg: '쪽지 전체 조회가 완료되었습니다.',
+      response,
+    });
   }
 
   @Post()
   async sendLetter(@Body() sendLetterDto: SendLetterDto) {
     const response = await this.lettersService.sendLetter(sendLetterDto);
 
-    return response;
+    return Object.assign({
+      statusCode: 201,
+      msg: '쪽지를 정상적으로 전송했습니다.',
+      response,
+    });
   }
 }
