@@ -10,7 +10,6 @@ export class MajorsController {
   @Get('/:no')
   async getOneMajor(@Param('no') no: number) {
     const major = await this.majorService.findOne(no);
-    console.log(major);
     return major;
   }
 }
