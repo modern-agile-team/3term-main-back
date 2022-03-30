@@ -21,7 +21,7 @@ export class BoardRepository extends Repository<Board> {
     return board;
   }
   async searchBoard(sort): Promise<Board[]> {
-    const boards = await this.createQueryBuilder('boards')
+    const filteredBoard = await this.createQueryBuilder('boards')
       .leftJoinAndSelect('boards.area', 'areas')
       .leftJoinAndSelect('boards.category', 'categories')
       .where('boards.area = areas.no')
@@ -29,7 +29,7 @@ export class BoardRepository extends Repository<Board> {
       .orderBy('boards.no', sort)
       .getMany();
 
-    return boards;
+    return filteredBoard;
   }
   async getAllBoards(): Promise<Board[]> {
     try {
@@ -99,7 +99,7 @@ export class BoardRepository extends Repository<Board> {
     const { title, description, price, summary, target, note1, note2, note3 } =
       updateBoardDto;
 
-    const result = await this.createQueryBuilder()
+    const updatedBoard = await this.createQueryBuilder()
       .update(Board)
       .set({
         title: title,
@@ -115,7 +115,7 @@ export class BoardRepository extends Repository<Board> {
       })
       .where('no = :no', { no: `${no}` })
       .execute();
-    const { affected } = result;
+    const { affected } = updatedBoard;
     if (!affected) {
       return { success: false };
     }
