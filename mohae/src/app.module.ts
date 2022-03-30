@@ -14,6 +14,7 @@ import { MajorsModule } from './majors/majors.module';
 import { AuthModule } from './auth/auth.module';
 import { ProfilesModule } from './profiles/profiles.module';
 import { NotesModule } from './notes/notes.module';
+import { LettersModule } from './letters/letters.module';
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { NotesModule } from './notes/notes.module';
     TypeOrmModule.forRoot(typeORMConfig),
     ProfilesModule,
     NotesModule,
+    LettersModule,
   ],
   controllers: [AppController],
   providers: [AppService],
