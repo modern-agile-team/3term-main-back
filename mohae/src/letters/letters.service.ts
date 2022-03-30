@@ -28,6 +28,27 @@ export class LettersService {
     return letters;
   }
 
+  async readingLetter(myNo: number, youNo: number) {
+    const notReadLetter = await this.letterRepository.notReadingLetter(
+      myNo,
+      youNo,
+    );
+    this.errorConfirm.notFoundError(notReadLetter, '경로를 찾을 수 없습니다.');
+    for (const letter of notReadLetter) {
+      const update = await this.letterRepository.updateReading(letter.no);
+      if (!update) {
+        throw new InternalServerErrorException();
+      }
+    }
+    const updatedLetter =
+      await this.letterRepository.전송하고받은쪽지인데함수명바꿔야함(
+        myNo,
+        youNo,
+      );
+
+    return updatedLetter;
+  }
+
   async sendLetter(sendLetterDto: SendLetterDto) {
     const { senderNo, receiverNo, description } = sendLetterDto;
 

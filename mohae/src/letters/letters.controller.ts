@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post } from '@nestjs/common';
 import { SendLetterDto } from './dto/letter.dto';
 import { LettersService } from './letters.service';
 
@@ -15,6 +15,16 @@ export class LettersController {
       msg: '쪽지 전체 조회가 완료되었습니다.',
       response,
     });
+  }
+
+  @Get(':myNo/:youNo')
+  async readingLetter(
+    @Param('myNo') myNo: number,
+    @Param('youNo') youNo: number,
+  ) {
+    const response = await this.lettersService.readingLetter(myNo, youNo);
+
+    return response;
   }
 
   @Post()
