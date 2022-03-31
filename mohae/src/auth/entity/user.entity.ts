@@ -25,6 +25,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { Letter } from 'src/letters/entity/letter.entity';
+import { Mailbox } from 'src/mailboxes/entity/mailbox.entity';
 
 @Entity('users')
 export class User extends BaseEntity {
@@ -154,4 +155,7 @@ export class User extends BaseEntity {
     nullable: true,
   })
   receivedLetters: Letter[];
+
+  @ManyToMany((type) => Mailbox, (mailbox) => mailbox.users)
+  mailboxes: Mailbox[];
 }
