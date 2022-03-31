@@ -18,9 +18,11 @@ export class BoardRepository extends Repository<Board> {
       .andWhere('boards.area = areas.no')
       .andWhere('boards.category = categories.no')
       .getOne();
+
     return board;
   }
-  async searchBoard(sort): Promise<Board[]> {
+
+  async searchAllBoards(sort): Promise<Board[]> {
     const filteredBoard = await this.createQueryBuilder('boards')
       .leftJoinAndSelect('boards.area', 'areas')
       .leftJoinAndSelect('boards.category', 'categories')
@@ -31,6 +33,7 @@ export class BoardRepository extends Repository<Board> {
 
     return filteredBoard;
   }
+
   async getAllBoards(): Promise<Board[]> {
     try {
       const boards = await this.createQueryBuilder('boards')
@@ -47,6 +50,14 @@ export class BoardRepository extends Repository<Board> {
         `${e} ### 게시판 전체 조회 : 알 수 없는 서버 에러입니다.`,
       );
     }
+  }
+
+  async boardCount(no: number, { hit }) {
+    await this.createQueryBuilder()
+      .update(Board)
+      .set({ hit: hit + 1 })
+      .where('no = :no', { no })
+      .execute();
   }
 
   async createBoard(

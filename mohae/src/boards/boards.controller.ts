@@ -35,7 +35,7 @@ export class BoardsController {
 
   @Get('/search')
   async searchBoard(@Query('sort') sort): Promise<Board[]> {
-    const response = await this.boardService.searchBoard(sort);
+    const response = await this.boardService.searchAllBoards(sort);
 
     return response;
   }

@@ -23,8 +23,8 @@ export class BoardsService {
     return this.boardRepository.getAllBoards();
   }
 
-  async searchBoard(sort): Promise<Board[]> {
-    return await this.boardRepository.searchBoard(sort);
+  async searchAllBoards(sort): Promise<Board[]> {
+    return await this.boardRepository.searchAllBoards(sort);
   }
 
   async getByOneBoard(no: number): Promise<Board> {
@@ -32,6 +32,8 @@ export class BoardsService {
     if (!board) {
       throw new NotFoundException(`No: ${no} 게시글을 찾을 수 없습니다.`);
     }
+    await this.boardRepository.boardCount(no, board);
+
     return board;
   }
 
