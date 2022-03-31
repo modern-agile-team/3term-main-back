@@ -7,6 +7,7 @@ import {
   ConflictException,
   InternalServerErrorException,
 } from '@nestjs/common';
+import { timeStamp } from 'console';
 
 @EntityRepository(User)
 export class UserRepository extends Repository<User> {
@@ -107,6 +108,17 @@ export class UserRepository extends Repository<User> {
       return await this.createQueryBuilder()
         .update(User)
         .set({ loginFailCount: FailCount + 1 })
+        .where('no = :no', { no: userNo })
+        .execute();
+    } catch (e) {
+      throw e;
+    }
+  }
+  async changeIsLock(userNo, isLock) {
+    try {
+      return await this.createQueryBuilder()
+        .update(User)
+        .set({ isLock: !isLock })
         .where('no = :no', { no: userNo })
         .execute();
     } catch (e) {

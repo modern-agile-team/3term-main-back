@@ -95,9 +95,10 @@ export class AuthService {
           issuer: 'modern-agile',
           expiration: jwtConfig.expiresIn,
         };
-        const clearLoginCount = await this.userRepository.clearLoginCount(
-          user.no,
-        );
+        await this.userRepository.clearLoginCount(user.no);
+        if (user.isLock === true) {
+          await this.userRepository.changeIsLock(user.no, user.isLock);
+        }
         const accessToken = await this.jwtService.sign(payload);
 
         return { accessToken };
@@ -107,6 +108,15 @@ export class AuthService {
           user.no,
           user.loginFailCount,
         );
+        if (user.loginFailCount + 1 > 5) {
+          if (user.isLock === true) {
+            throw new UnauthorizedException(
+              `로그인 실패 횟수를 모두 초과 하였습니다 10분 뒤에 다시 로그인 해주세요`,
+            );
+          }
+          await this.userRepository.changeIsLock(user.no, user.isLock);
+        }
+
         if (loginFailCount.affected === 1) {
           throw new UnauthorizedException(
             `아이디 또는 비밀번호가 일치하지 않습니다. 로그인 실패 횟수: ${
