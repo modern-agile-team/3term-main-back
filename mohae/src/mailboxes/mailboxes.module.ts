@@ -2,10 +2,10 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { MailboxesController } from './mailboxes.controller';
 import { MailboxesService } from './mailboxes.service';
-import { MailBoxRepository } from './repository/mailbox.repository';
+import { MailboxRepository } from './repository/mailbox.repository';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([MailBoxRepository])],
+  imports: [TypeOrmModule.forFeature([MailboxRepository])],
   controllers: [MailboxesController],
   providers: [MailboxesService],
 })

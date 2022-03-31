@@ -1,5 +1,11 @@
 import { EntityRepository, Repository } from 'typeorm';
-import { MailBox } from '../entity/mailbox.entity';
+import { Mailbox } from '../entity/mailbox.entity';
 
-@EntityRepository(MailBox)
-export class MailBoxRepository extends Repository<MailBox> {}
+@EntityRepository(Mailbox)
+export class MailboxRepository extends Repository<Mailbox> {
+  async searchMailboxList(no: number) {
+    const mailboxList = 23;
+
+    return mailboxList;
+  }
+}

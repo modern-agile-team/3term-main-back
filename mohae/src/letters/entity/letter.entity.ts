@@ -1,4 +1,5 @@
 import { User } from 'src/auth/entity/user.entity';
+import { Mailbox } from 'src/mailboxes/entity/mailbox.entity';
 import {
   BaseEntity,
   Column,
@@ -40,6 +41,11 @@ export class Letter extends BaseEntity {
     comment: '쪽지 삭제 시간',
   })
   deleteDate: Date | null;
+
+  @ManyToOne((type) => Mailbox, (mailbox) => mailbox.no, {
+    onDelete: 'SET NULL',
+  })
+  mailbox: Mailbox;
 
   @ManyToOne((type) => User, (user) => user.no, {
     onDelete: 'SET NULL',
