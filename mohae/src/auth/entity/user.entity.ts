@@ -24,6 +24,7 @@ import {
   Unique,
   UpdateDateColumn,
 } from 'typeorm';
+import { Letter } from 'src/letters/entity/letter.entity';
 
 @Entity('users')
 export class User extends BaseEntity {
@@ -143,4 +144,14 @@ export class User extends BaseEntity {
     comment: '마지막으로 로그인을 시도한 시간',
   })
   latestLogin: Date;
+
+  @OneToMany((type) => Letter, (letter) => letter.sender, {
+    nullable: true,
+  })
+  sendLetters: Letter[];
+
+  @OneToMany((type) => Letter, (letter) => letter.receiver, {
+    nullable: true,
+  })
+  receivedLetters: Letter[];
 }
