@@ -20,11 +20,19 @@ export class BoardsService {
   ) {}
 
   async getAllBoards(): Promise<Board[]> {
-    return this.boardRepository.getAllBoards();
+    const boards = await this.boardRepository.getAllBoards();
+    if (!boards) {
+      throw new NotFoundException(`게시글을 찾을 수 없습니다.`);
+    }
+    return boards;
   }
 
   async searchAllBoards(sort): Promise<Board[]> {
-    return await this.boardRepository.searchAllBoards(sort);
+    const boards = await this.boardRepository.searchAllBoards(sort);
+    if (!boards) {
+      throw new NotFoundException(`검색한 게시글을 찾을 수 없습니다.`);
+    }
+    return boards;
   }
 
   async getByOneBoard(no: number): Promise<Board> {
@@ -32,7 +40,7 @@ export class BoardsService {
     if (!board) {
       throw new NotFoundException(`No: ${no} 게시글을 찾을 수 없습니다.`);
     }
-    await this.boardRepository.boardCount(no, board);
+    await this.boardRepository.plusBoardHit(no, board);
 
     return board;
   }
@@ -50,6 +58,12 @@ export class BoardsService {
     if (!category) {
       throw new NotFoundException(
         `No: ${createBoardDto.categoryNo} 카테고리가 존재하지 않습니다.`,
+      );
+    }
+
+    if (!area) {
+      throw new NotFoundException(
+        `No: ${createBoardDto.areaNo} 지역이 존재하지 않습니다.`,
       );
     }
     const board = await this.boardRepository.createBoard(
@@ -81,6 +95,18 @@ export class BoardsService {
     const area = await this.areaRepository.findOne(areaNo, {
       relations: ['boards'],
     });
+
+    if (!category) {
+      throw new NotFoundException(
+        `No: ${updateBoardDto.categoryNo} 카테고리가 존재하지 않습니다.`,
+      );
+    }
+
+    if (!area) {
+      throw new NotFoundException(
+        `No: ${updateBoardDto.areaNo} 지역이 존재하지 않습니다.`,
+      );
+    }
     const updateBoard = await this.boardRepository.updateBoard(
       no,
       category,
@@ -89,7 +115,7 @@ export class BoardsService {
     );
 
     if (updateBoard) {
-      return { success: true, msg: '게시글 수정이 완료되었습니다.' };
+      return { success: true };
     }
 
     return { success: false, msg: '게시글 수정 실패' };

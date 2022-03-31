@@ -4,34 +4,44 @@ import {
 } from '@nestjs/common';
 import { Area } from 'src/areas/entity/areas.entity';
 import { Category } from 'src/categories/entity/category.entity';
-import { DeleteResult, EntityRepository, Repository } from 'typeorm';
+import { DeleteResult, EntityRepository, In, Repository } from 'typeorm';
 import { CreateBoardDto, UpdateBoardDto } from '../dto/board.dto';
 import { Board } from '../entity/board.entity';
 
 @EntityRepository(Board)
 export class BoardRepository extends Repository<Board> {
   async getByOneBoard(no: number): Promise<Board> {
-    const board = await this.createQueryBuilder('boards')
-      .leftJoinAndSelect('boards.area', 'areas')
-      .leftJoinAndSelect('boards.category', 'categories')
-      .where('boards.no = :no', { no: `${no}` })
-      .andWhere('boards.area = areas.no')
-      .andWhere('boards.category = categories.no')
-      .getOne();
+    try {
+      const board = await this.createQueryBuilder('boards')
+        .leftJoinAndSelect('boards.area', 'areas')
+        .leftJoinAndSelect('boards.category', 'categories')
+        .where('boards.no = :no', { no })
+        .andWhere('boards.area = areas.no')
+        .andWhere('boards.category = categories.no')
+        .getOne();
 
-    return board;
+      return board;
+    } catch (e) {
+      `${e} ### 게시판 상세 조회 : 알 수 없는 서버 에러입니다.`;
+    }
   }
 
   async searchAllBoards(sort): Promise<Board[]> {
-    const filteredBoard = await this.createQueryBuilder('boards')
-      .leftJoinAndSelect('boards.area', 'areas')
-      .leftJoinAndSelect('boards.category', 'categories')
-      .where('boards.area = areas.no')
-      .andWhere('boards.category = categories.no')
-      .orderBy('boards.no', sort)
-      .getMany();
+    try {
+      const filteredBoard = await this.createQueryBuilder('boards')
+        .leftJoinAndSelect('boards.area', 'areas')
+        .leftJoinAndSelect('boards.category', 'categories')
+        .where('boards.area = areas.no')
+        .andWhere('boards.category = categories.no')
+        .orderBy('boards.no', sort)
+        .getMany();
 
-    return filteredBoard;
+      return filteredBoard;
+    } catch (e) {
+      throw new InternalServerErrorException(
+        `${e} ### 게시판 정렬 조회 : 알 수 없는 서버 에러입니다.`,
+      );
+    }
   }
 
   async getAllBoards(): Promise<Board[]> {
@@ -52,12 +62,18 @@ export class BoardRepository extends Repository<Board> {
     }
   }
 
-  async boardCount(no: number, { hit }) {
-    await this.createQueryBuilder()
-      .update(Board)
-      .set({ hit: hit + 1 })
-      .where('no = :no', { no })
-      .execute();
+  async plusBoardHit(no: number, { hit }) {
+    try {
+      return await this.createQueryBuilder()
+        .update(Board)
+        .set({ hit: hit + 1 })
+        .where('no = :no', { no })
+        .execute();
+    } catch (e) {
+      throw new InternalServerErrorException(
+        `${e} ### 게시판 조회수 증가 : 알 수 없는 서버 에러입니다.`,
+      );
+    }
   }
 
   async createBoard(
@@ -65,36 +81,49 @@ export class BoardRepository extends Repository<Board> {
     area: object,
     createBoardDto: CreateBoardDto,
   ): Promise<Board> {
-    const { price, title, description, summary, target, note1, note2, note3 } =
-      createBoardDto;
-    const board = await this.createQueryBuilder('boards')
-      .insert()
-      .into(Board)
-      .values([
-        {
-          price,
-          title,
-          description,
-          summary,
-          target,
-          category,
-          area,
-          note1,
-          note2,
-          note3,
-        },
-      ])
-      .execute();
+    try {
+      const {
+        price,
+        title,
+        description,
+        summary,
+        target,
+        note1,
+        note2,
+        note3,
+      } = createBoardDto;
+      const board = await this.createQueryBuilder('boards')
+        .insert()
+        .into(Board)
+        .values([
+          {
+            price,
+            title,
+            description,
+            summary,
+            target,
+            category,
+            area,
+            note1,
+            note2,
+            note3,
+          },
+        ])
+        .execute();
 
-    const { affectedRows, insertId } = board.raw;
-    if (affectedRows) {
-      return await this.createQueryBuilder('boards')
-        .leftJoinAndSelect('boards.category', 'category')
-        .leftJoinAndSelect('boards.area', 'area')
-        .where('boards.no = :no', { no: insertId })
-        .getOne();
+      const { affectedRows, insertId } = board.raw;
+      if (affectedRows) {
+        return await this.createQueryBuilder('boards')
+          .leftJoinAndSelect('boards.category', 'category')
+          .leftJoinAndSelect('boards.area', 'area')
+          .where('boards.no = :no', { no: insertId })
+          .getOne();
+      }
+    } catch (e) {
+      throw new InternalServerErrorException(
+        `${e} ### 게시판 생성: 알 수 없는 서버 에러입니다.`,
+      );
     }
-    // return board;
   }
 
   async updateBoard(
@@ -107,31 +136,45 @@ export class BoardRepository extends Repository<Board> {
     if (!board) {
       throw new NotFoundException(`No: ${no} 게시글을 찾을 수 없습니다.`);
     }
-    const { title, description, price, summary, target, note1, note2, note3 } =
-      updateBoardDto;
+    try {
+      const {
+        title,
+        description,
+        price,
+        summary,
+        target,
+        note1,
+        note2,
+        note3,
+      } = updateBoardDto;
 
-    const updatedBoard = await this.createQueryBuilder()
-      .update(Board)
-      .set({
-        title: title,
-        description: description,
-        price: price,
-        summary: summary,
-        target: target,
-        category: category,
-        area: area,
-        note1: note1,
-        note2: note2,
-        note3: note3,
-      })
-      .where('no = :no', { no: `${no}` })
-      .execute();
-    const { affected } = updatedBoard;
-    if (!affected) {
-      return { success: false };
+      const updatedBoard = await this.createQueryBuilder()
+        .update(Board)
+        .set({
+          title: title,
+          description: description,
+          price: price,
+          summary: summary,
+          target: target,
+          category: category,
+          area: area,
+          note1: note1,
+          note2: note2,
+          note3: note3,
+        })
+        .where('no = :no', { no: `${no}` })
+        .execute();
+      const { affected } = updatedBoard;
+      if (!affected) {
+        return { success: false };
+      }
+
+      return { success: true };
+    } catch (e) {
+      throw new InternalServerErrorException(
+        `${e} ### 게시판 수정: 알 수 없는 서버 에러입니다.`,
+      );
     }
-
-    return { success: true };
   }
 
   async deleteBoard(no: number): Promise<DeleteResult> {
@@ -139,11 +182,18 @@ export class BoardRepository extends Repository<Board> {
     if (!board) {
       throw new NotFoundException(`No: ${no} 게시글을 찾을 수 없습니다.`);
     }
-    const result = await this.createQueryBuilder()
-      .softDelete()
-      .from(Board)
-      .where('no = :no', { no })
-      .execute();
-    return result;
+    try {
+      const result = await this.createQueryBuilder()
+        .softDelete()
+        .from(Board)
+        .where('no = :no', { no })
+        .execute();
+
+      return result;
+    } catch (e) {
+      throw new InternalServerErrorException(
+        `${e} ### 게시판 삭제: 알 수 없는 서버 에러입니다.`,
+      );
+    }
   }
 }

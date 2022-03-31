@@ -30,19 +30,32 @@ export class BoardsController {
 
   @Get()
   async getAllBoards(): Promise<Board[]> {
-    return await this.boardService.getAllBoards();
+    const response = await this.boardService.getAllBoards();
+    return Object.assign({
+      statusCode: 200,
+      msg: '게시글 전체 조회가 완료되었습니다.',
+      response,
+    });
   }
 
   @Get('/search')
   async searchBoard(@Query('sort') sort): Promise<Board[]> {
     const response = await this.boardService.searchAllBoards(sort);
-
-    return response;
+    return Object.assign({
+      statusCode: 200,
+      msg: '게시글 정렬 조회가 완료되었습니다.',
+      response,
+    });
   }
 
   @Get('/:no')
   async getByOneBoard(@Param('no') no: number): Promise<Board> {
-    return await this.boardService.getByOneBoard(no);
+    const response = await this.boardService.getByOneBoard(no);
+    return Object.assign({
+      statusCode: 200,
+      msg: '게시글 상세 조회가 완료되었습니다.',
+      response,
+    });
   }
 
   @Post()
@@ -76,7 +89,7 @@ export class BoardsController {
 
   @Delete('/:no')
   async deleteBoard(@Param('no') no: number): Promise<DeleteResult> {
-    const result = await this.boardService.deleteBoard(no);
+    await this.boardService.deleteBoard(no);
     return Object.assign({
       statusCode: 204,
       msg: '게시글 삭제가 완료되었습니다',
