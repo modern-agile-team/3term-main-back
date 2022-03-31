@@ -131,6 +131,7 @@ export class AuthService {
           }
         }
       }
+
       if (user.isLock === true) {
         throw new UnauthorizedException(
           `로그인 실패 횟수를 모두 초과 하였습니다 ${Math.floor(
