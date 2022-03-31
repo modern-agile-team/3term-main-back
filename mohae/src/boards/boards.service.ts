@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CategoryRepository } from 'src/categories/repository/category.repository';
 import { AreasRepository } from 'src/areas/repository/area.repository';
@@ -6,6 +10,7 @@ import { createQueryBuilder, DeleteResult, getConnection } from 'typeorm';
 import { CreateBoardDto, UpdateBoardDto } from './dto/board.dto';
 import { Board } from './entity/board.entity';
 import { BoardRepository } from './repository/board.repository';
+import { ErrorConfirm } from 'src/utils/error';
 
 @Injectable()
 export class BoardsService {
@@ -16,22 +21,40 @@ export class BoardsService {
     @InjectRepository(AreasRepository)
     private areaRepository: AreasRepository,
 
+    @InjectRepository(CategoryRepository)
     private categoryRepository: CategoryRepository,
+
+    private errorConfirm: ErrorConfirm,
   ) {}
 
   async getAllBoards(): Promise<Board[]> {
-    return this.boardRepository.getAllBoards();
+    const boards = await this.boardRepository.getAllBoards();
+    this.errorConfirm.notFoundError(boards, '게시글을 찾을 수 없습니다.');
+
+    return boards;
   }
 
-  async searchBoard(sort): Promise<Board[]> {
-    return await this.boardRepository.searchBoard(sort);
+  async searchAllBoards(sort: any): Promise<Board[]> {
+    const boards = await this.boardRepository.searchAllBoards(sort);
+    this.errorConfirm.notFoundError(
+      boards,
+      '검색한 게시글을 찾을 수 없습니다.',
+    );
+
+    return boards;
   }
 
   async getByOneBoard(no: number): Promise<Board> {
     const board = await this.boardRepository.getByOneBoard(no);
-    if (!board) {
-      throw new NotFoundException(`No: ${no} 게시글을 찾을 수 없습니다.`);
+    this.errorConfirm.notFoundError(board, `해당 게시글을 찾을 수 없습니다.`);
+    const boardHit = await this.boardRepository.addBoardHit(no, board);
+
+    if (!boardHit) {
+      throw new InternalServerErrorException(
+        '게시글 조회 수 증가가 되지 않았습니다',
+      );
     }
+
     return board;
   }
 
@@ -45,11 +68,13 @@ export class BoardsService {
       relations: ['boards'],
     });
 
-    if (!category) {
-      throw new NotFoundException(
-        `No: ${createBoardDto.categoryNo} 카테고리가 존재하지 않습니다.`,
-      );
-    }
+    this.errorConfirm.notFoundError(
+      category,
+      `해당 카테고리를 찾을 수 없습니다.`,
+    );
+
+    this.errorConfirm.notFoundError(area, `해당 지역을 찾을 수 없습니다.`);
+
     const board = await this.boardRepository.createBoard(
       category,
       area,
@@ -57,16 +82,25 @@ export class BoardsService {
     );
 
     category.boards.push(board);
+
     return board;
   }
 
   async deleteBoard(no: number): Promise<DeleteResult> {
+    const board = await this.boardRepository.findOne(no);
+    this.errorConfirm.notFoundError(board, `해당 게시글을 찾을 수 없습니다.`);
+
     const result = await this.boardRepository.deleteBoard(no);
+
     if (result.affected === 0) {
-      throw new NotFoundException(`${no}번의 게시글이 삭제되지 않았습니다.`);
+      throw new InternalServerErrorException(
+        '해당 게시글이 삭제되지 않았습니다.',
+      );
     }
+
     return result;
   }
+
   async updateBoard(
     no: number,
     updateBoardDto: UpdateBoardDto,
@@ -79,17 +113,25 @@ export class BoardsService {
     const area = await this.areaRepository.findOne(areaNo, {
       relations: ['boards'],
     });
-    const updateBoard = await this.boardRepository.updateBoard(
+
+    this.errorConfirm.notFoundError(
+      category,
+      `해당 카테고리를 찾을 수 없습니다.`,
+    );
+
+    this.errorConfirm.notFoundError(area, `해당 지역을 찾을 수 없습니다.`);
+
+    const updatedBoard = await this.boardRepository.updateBoard(
       no,
       category,
       area,
       updateBoardDto,
     );
 
-    if (updateBoard) {
-      return { success: true, msg: '게시글 수정이 완료되었습니다.' };
+    if (updatedBoard) {
+      return { success: true };
     }
 
-    return { success: false, msg: '게시글 수정 실패' };
+    return { success: false };
   }
 }

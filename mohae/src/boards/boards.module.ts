@@ -7,6 +7,7 @@ import { CategoriesModule } from 'src/categories/categories.module';
 import { CategoriesService } from 'src/categories/categories.service';
 import { CategoryRepository } from 'src/categories/repository/category.repository';
 import { ReviewRepository } from 'src/reviews/repository/review.repository';
+import { ErrorConfirm } from 'src/utils/error';
 import { BoardsController } from './boards.controller';
 import { BoardsService } from './boards.service';
 import { BoardRepository } from './repository/board.repository';
@@ -24,6 +25,6 @@ import { BoardRepository } from './repository/board.repository';
     AuthModule,
   ],
   controllers: [BoardsController],
-  providers: [BoardsService, CategoriesService],
+  providers: [BoardsService, CategoriesService, ErrorConfirm],
 })
 export class BoardsModule {}
