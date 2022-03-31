@@ -103,12 +103,12 @@ export class UserRepository extends Repository<User> {
     }
   }
 
-  async plusLoginFailCount(userNo, FailCount) {
+  async plusLoginFailCount({ no, loginFailCount }) {
     try {
       return await this.createQueryBuilder()
         .update(User)
-        .set({ loginFailCount: FailCount + 1 })
-        .where('no = :no', { no: userNo })
+        .set({ loginFailCount: loginFailCount + 1 })
+        .where('no = :no', { no })
         .execute();
     } catch (e) {
       throw e;
