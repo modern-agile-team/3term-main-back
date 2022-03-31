@@ -26,7 +26,27 @@ export class BoardRepository extends Repository<Board> {
     }
   }
 
-  async searchAllBoards(sort): Promise<Board[]> {
+  async addBoardHit(no: number, { hit }) {
+    try {
+      const boardHit = await this.createQueryBuilder()
+        .update(Board)
+        .set({ hit: hit + 1 })
+        .where('no = :no', { no })
+        .execute();
+
+      if (!boardHit.affected) {
+        return { success: false };
+      }
+
+      return { success: true };
+    } catch (e) {
+      throw new InternalServerErrorException(
+        `${e} ### 게시판 조회수 증가 : 알 수 없는 서버 에러입니다.`,
+      );
+    }
+  }
+
+  async searchAllBoards(sort: any): Promise<Board[]> {
     try {
       const filteredBoard = await this.createQueryBuilder('boards')
         .leftJoinAndSelect('boards.area', 'areas')
@@ -58,20 +78,6 @@ export class BoardRepository extends Repository<Board> {
     } catch (e) {
       throw new InternalServerErrorException(
         `${e} ### 게시판 전체 조회 : 알 수 없는 서버 에러입니다.`,
-      );
-    }
-  }
-
-  async plusBoardHit(no: number, { hit }) {
-    try {
-      return await this.createQueryBuilder()
-        .update(Board)
-        .set({ hit: hit + 1 })
-        .where('no = :no', { no })
-        .execute();
-    } catch (e) {
-      throw new InternalServerErrorException(
-        `${e} ### 게시판 조회수 증가 : 알 수 없는 서버 에러입니다.`,
       );
     }
   }
@@ -151,18 +157,18 @@ export class BoardRepository extends Repository<Board> {
       const updatedBoard = await this.createQueryBuilder()
         .update(Board)
         .set({
-          title: title,
-          description: description,
-          price: price,
-          summary: summary,
-          target: target,
-          category: category,
-          area: area,
-          note1: note1,
-          note2: note2,
-          note3: note3,
+          title,
+          description,
+          price,
+          summary,
+          target,
+          category,
+          area,
+          note1,
+          note2,
+          note3,
         })
-        .where('no = :no', { no: `${no}` })
+        .where('no = :no', { no })
         .execute();
       const { affected } = updatedBoard;
       if (!affected) {
@@ -178,10 +184,6 @@ export class BoardRepository extends Repository<Board> {
   }
 
   async deleteBoard(no: number): Promise<DeleteResult> {
-    const board = await this.findOne(no);
-    if (!board) {
-      throw new NotFoundException(`No: ${no} 게시글을 찾을 수 없습니다.`);
-    }
     try {
       const result = await this.createQueryBuilder()
         .softDelete()
