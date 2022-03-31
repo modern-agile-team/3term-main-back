@@ -15,6 +15,7 @@ import { AuthModule } from './auth/auth.module';
 import { ProfilesModule } from './profiles/profiles.module';
 import { NotesModule } from './notes/notes.module';
 import { LettersModule } from './letters/letters.module';
+import { MailboxesModule } from './mailboxes/mailboxes.module';
 
 @Module({
   imports: [
@@ -31,6 +32,7 @@ import { LettersModule } from './letters/letters.module';
     ProfilesModule,
     NotesModule,
     LettersModule,
+    MailboxesModule,
   ],
   controllers: [AppController],
   providers: [AppService],
