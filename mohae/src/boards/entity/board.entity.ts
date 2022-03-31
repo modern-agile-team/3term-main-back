@@ -5,6 +5,7 @@ import { Review } from 'src/reviews/entity/review.entity';
 import {
   BaseEntity,
   Column,
+  CreateDateColumn,
   DeleteDateColumn,
   Entity,
   ManyToOne,
@@ -39,14 +40,13 @@ export class Board extends BaseEntity {
   })
   description: string;
 
-  @Column({
-    type: 'timestamp',
+  @CreateDateColumn({
+    comment: '게시글 생성일',
   })
-  in_date: Timestamp;
+  createdAt: Date | null;
 
   @DeleteDateColumn({
-    name: 'delete_at',
-    comment: '삭제일',
+    comment: '게시글 삭제일',
   })
   deletedAt: Date | null;
 
