@@ -104,7 +104,7 @@ export class User extends BaseEntity {
     name: 'create_at',
     comment: '회원가입 시간',
   })
-  createdAt: Date | null;
+  createdAt: Date;
 
   @OneToMany((type) => ReportedUser, (user) => user.reportedUser, {
     nullable: true,

@@ -17,6 +17,7 @@ import * as config from 'config';
 import { School } from 'src/schools/entity/school.entity';
 import { CategoryRepository } from 'src/categories/repository/category.repository';
 import { Category } from 'src/categories/entity/category.entity';
+import { last, timestamp } from 'rxjs';
 
 const jwtConfig = config.get('jwt');
 @Injectable()
@@ -89,28 +90,54 @@ export class AuthService {
     try {
       const { email, password } = signInDto;
       const user = await this.userRepository.signIn(email);
-      if (user && (await bcrypt.compare(password, user.salt))) {
-        const payload = {
-          email,
-          issuer: 'modern-agile',
-          expiration: jwtConfig.expiresIn,
-        };
-        const accessToken = await this.jwtService.sign(payload);
+      const lastLogin = user.latestLogin.getTime();
+      const currentTime = new Date().getTime();
 
-        return { accessToken };
-      } else {
-        // 로그인에 실패 한 경우
-        const loginFailCount = await this.userRepository.plusLoginFailCount(
-          user.no,
-          user.loginFailCount,
-        );
-        if (loginFailCount.affected === 1) {
-          throw new UnauthorizedException(
-            `아이디 또는 비밀번호가 일치하지 않습니다. 로그인 실패 횟수: ${
-              user.loginFailCount + 1
-            } `,
+      if (user.isLock === true && currentTime >= lastLogin + 10000) {
+        await this.userRepository.changeIsLock(user.no, user.isLock);
+      }
+      const isLockUser = await this.userRepository.signIn(email);
+
+      if (isLockUser.isLock === false) {
+        if (user && (await bcrypt.compare(password, user.salt))) {
+          const payload = {
+            email,
+            issuer: 'modern-agile',
+            expiration: jwtConfig.expiresIn,
+          };
+
+          await this.userRepository.clearLoginCount(user.no);
+
+          const accessToken = await this.jwtService.sign(payload);
+
+          return { accessToken };
+        } else {
+          const loginFailCount = await this.userRepository.plusLoginFailCount(
+            isLockUser,
           );
+          const afterUser = await this.userRepository.signIn(email);
+
+          if (afterUser.loginFailCount >= 5) {
+            await this.userRepository.changeIsLock(
+              afterUser.no,
+              afterUser.isLock,
+            );
+          }
+
+          if (loginFailCount.affected === 1) {
+            throw new UnauthorizedException(
+              `아이디 또는 비밀번호가 일치하지 않습니다. 로그인 실패 횟수: ${afterUser.loginFailCount} `,
+            );
+          }
         }
+      }
+
+      if (user.isLock === true) {
+        throw new UnauthorizedException(
+          `로그인 실패 횟수를 모두 초과 하였습니다 ${Math.floor(
+            (lastLogin + 10000 - currentTime) / 1000,
+          )}초 뒤에 다시 로그인 해주세요`,
+        );
       }
     } catch (e) {
       throw e;
