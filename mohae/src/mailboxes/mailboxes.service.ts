@@ -5,6 +5,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UserRepository } from 'src/auth/repository/user.repository';
+import { ErrorConfirm } from 'src/utils/error';
 import { MailboxRepository } from './repository/mailbox.repository';
 
 @Injectable()
@@ -15,6 +16,8 @@ export class MailboxesService {
 
     @InjectRepository(UserRepository)
     private userRepository: UserRepository,
+
+    private errorConfirm: ErrorConfirm,
   ) {}
 
   async findAllMailboxes(no: number) {
@@ -28,13 +31,11 @@ export class MailboxesService {
       throw new UnauthorizedException('자신에게는 채팅을 보낼 수 없습니다.');
     }
     const me = await this.userRepository.findOne(myNo);
-    if (!me) {
-      throw new NotFoundException('내 정보 못찾음');
-    }
+    this.errorConfirm.notFoundError(me, '내 정보 못찾음');
+
     const you = await this.userRepository.findOne(yourNo);
-    if (!you) {
-      throw new NotFoundException('너 정보 못찾음');
-    }
+    this.errorConfirm.notFoundError(you, '너 정보 못찾음');
+
     const mailboxNo = await this.mailboxRepository.searchMailbox(myNo, yourNo);
 
     if (!mailboxNo) {
@@ -49,6 +50,8 @@ export class MailboxesService {
       relation.users.push(user2);
 
       await this.mailboxRepository.save(relation);
+
+      return this.mailboxRepository.findOneMailbox(newMailboxNo);
     }
 
     const mailbox = await this.mailboxRepository.findOneMailbox(mailboxNo);

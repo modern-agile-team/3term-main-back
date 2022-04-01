@@ -5,15 +5,21 @@ import { Mailbox } from '../entity/mailbox.entity';
 @EntityRepository(Mailbox)
 export class MailboxRepository extends Repository<Mailbox> {
   async findAllMailboxes(no: number) {
-    const mailbox = await this.createQueryBuilder('mailboxes')
-      .leftJoinAndSelect('mailboxes.users', 'users')
-      .leftJoinAndSelect('mailboxes.letters', 'letters')
-      .leftJoinAndSelect('letters.sender', 'sender')
-      .leftJoinAndSelect('letters.receiver', 'receiver')
-      .where('users.no = :no', { no })
-      .getMany();
+    try {
+      const mailbox = await this.createQueryBuilder('mailboxes')
+        .leftJoinAndSelect('mailboxes.users', 'users')
+        .leftJoinAndSelect('mailboxes.letters', 'letters')
+        .leftJoinAndSelect('letters.sender', 'sender')
+        .leftJoinAndSelect('letters.receiver', 'receiver')
+        .where('users.no = :no', { no })
+        .getMany();
 
-    return mailbox;
+      return mailbox;
+    } catch {
+      throw new InternalServerErrorException(
+        '### 유저 쪽지함 목록 조회 : 알 수 없는 서버 에러입니다.',
+      );
+    }
   }
 
   async searchMailbox(myNo, yourNo) {
@@ -37,28 +43,43 @@ export class MailboxRepository extends Repository<Mailbox> {
       }
 
       return 0;
-    } catch (e) {
-      throw new InternalServerErrorException(e);
+    } catch {
+      throw new InternalServerErrorException(
+        '### 쪽지함이 있는지 찾음 : 알 수 없는 서버 에러입니다.',
+      );
     }
   }
 
   async createMailbox() {
-    const newMailbox = await this.createQueryBuilder('mailboxes')
-      .insert()
-      .into(Mailbox)
-      .values({ users: [] })
-      .execute();
-    const { insertId } = newMailbox.raw;
+    try {
+      const newMailbox = await this.createQueryBuilder('mailboxes')
+        .insert()
+        .into(Mailbox)
+        .values({ users: [] })
+        .execute();
+      const { insertId } = newMailbox.raw;
 
-    return insertId;
+      return insertId;
+    } catch {
+      throw new InternalServerErrorException(
+        '### 새로운 쪽지방을 생성 : 알 수 없는 서버 에러입니다.',
+      );
+    }
   }
 
   async findOneMailbox(mailboxNo: number) {
-    const mailbox = await this.createQueryBuilder('mailboxes')
-      .leftJoinAndSelect('mailboxes.users', 'users')
-      .leftJoinAndSelect('mailboxes.letters', 'letters')
-      .getMany();
+    try {
+      const mailbox = await this.createQueryBuilder('mailboxes')
+        .leftJoinAndSelect('mailboxes.users', 'users')
+        .leftJoinAndSelect('mailboxes.letters', 'letters')
+        .where('mailboxes.no = :no', { no: mailboxNo })
+        .getMany();
 
-    return mailbox;
+      return mailbox;
+    } catch {
+      throw new InternalServerErrorException(
+        '### 쪽지함 : 알 수 없는 서버 에러입니다.',
+      );
+    }
   }
 }
