@@ -1,24 +1,12 @@
 import { InternalServerErrorException } from '@nestjs/common';
 import { User } from 'src/auth/entity/user.entity';
+import { Mailbox } from 'src/mailboxes/entity/mailbox.entity';
 import { EntityRepository, Repository } from 'typeorm';
 import { SendLetterDto } from '../dto/letter.dto';
 import { Letter } from '../entity/letter.entity';
 
 @EntityRepository(Letter)
 export class LetterRepository extends Repository<Letter> {
-  async findAllLetters() {
-    try {
-      const letters = await this.createQueryBuilder('letters')
-        .leftJoinAndSelect('letters.sender', 'sender')
-        .leftJoinAndSelect('letters.receiver', 'receiver')
-        .getMany();
-
-      return letters;
-    } catch (e) {
-      throw new InternalServerErrorException(e);
-    }
-  }
-
   async notReadingLetter(myNo: number, youNo: number) {
     const letter = await this.createQueryBuilder('letters')
       .leftJoinAndSelect('letters.sender', 'sender')
@@ -81,7 +69,12 @@ export class LetterRepository extends Repository<Letter> {
     }
   }
 
-  async sendLetter(sender: User, receiver: User, description: string) {
+  async sendLetter(
+    sender: User,
+    receiver: User,
+    description: string,
+    mailbox: Mailbox,
+  ) {
     try {
       const { raw } = await this.createQueryBuilder('letters')
         .insert()
@@ -91,6 +84,7 @@ export class LetterRepository extends Repository<Letter> {
             sender,
             receiver,
             description,
+            mailbox,
           },
         ])
         .execute();

@@ -1,21 +1,14 @@
 import { Body, Controller, Get, Param, Post } from '@nestjs/common';
+import { MailboxesService } from 'src/mailboxes/mailboxes.service';
 import { SendLetterDto } from './dto/letter.dto';
 import { LettersService } from './letters.service';
 
 @Controller('letters')
 export class LettersController {
-  constructor(private lettersService: LettersService) {}
-
-  @Get()
-  async findAllLetters() {
-    const response = await this.lettersService.findAllLetters();
-
-    return Object.assign({
-      statusCode: 200,
-      msg: '쪽지 전체 조회가 완료되었습니다.',
-      response,
-    });
-  }
+  constructor(
+    private lettersService: LettersService,
+    private mailboxesService: MailboxesService,
+  ) {}
 
   @Get(':myNo/:youNo')
   async readingLetter(
