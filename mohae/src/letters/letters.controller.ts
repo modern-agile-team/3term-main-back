@@ -10,16 +10,6 @@ export class LettersController {
     private mailboxesService: MailboxesService,
   ) {}
 
-  @Get(':myNo/:youNo')
-  async readingLetter(
-    @Param('myNo') myNo: number,
-    @Param('youNo') youNo: number,
-  ) {
-    const response = await this.lettersService.readingLetter(myNo, youNo);
-
-    return response;
-  }
-
   @Post()
   async sendLetter(@Body() sendLetterDto: SendLetterDto) {
     const response = await this.lettersService.sendLetter(sendLetterDto);

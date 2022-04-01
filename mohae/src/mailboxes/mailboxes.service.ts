@@ -5,6 +5,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UserRepository } from 'src/auth/repository/user.repository';
+import { LetterRepository } from 'src/letters/repository/letter.repository';
 import { ErrorConfirm } from 'src/utils/error';
 import { MailboxRepository } from './repository/mailbox.repository';
 
@@ -16,6 +17,9 @@ export class MailboxesService {
 
     @InjectRepository(UserRepository)
     private userRepository: UserRepository,
+
+    @InjectRepository(LetterRepository)
+    private letterRepository: LetterRepository,
 
     private errorConfirm: ErrorConfirm,
   ) {}
@@ -62,8 +66,24 @@ export class MailboxesService {
         return this.mailboxRepository.findOneMailbox(newMailboxNo);
       }
 
-      const mailbox = await this.mailboxRepository.findOneMailbox(mailboxNo);
-      return mailbox;
+      const notReadLetter = await this.letterRepository.notReadingLetter(
+        mailboxNo,
+      );
+      this.errorConfirm.notFoundError(
+        notReadLetter,
+        '경로를 찾을 수 없습니다.',
+      );
+
+      for (const letter of notReadLetter) {
+        await this.letterRepository.updateReading(letter.no);
+      }
+
+      const letterContent = await this.letterRepository.getLetterContent(
+        myNo,
+        yourNo,
+      );
+
+      return letterContent;
     } catch (e) {
       throw e;
     }
