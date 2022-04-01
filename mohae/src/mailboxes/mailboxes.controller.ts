@@ -10,7 +10,11 @@ export class MailboxesController {
   async findAllMailboxes(@Param('no') no: number) {
     const response = await this.mailboxesService.findAllMailboxes(no);
 
-    return response;
+    return Object.assign({
+      statusCode: 200,
+      msg: '쪽지함 조회 완료',
+      response,
+    });
   }
 
   // 유저가 채팅방 없이 쪽지 버튼을 눌렀을 때 API
