@@ -1,6 +1,7 @@
 import {
   ConflictException,
   Injectable,
+  InternalServerErrorException,
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -152,6 +153,81 @@ export class AuthService {
       );
     } else if (result.affected === 1) {
       return result;
+    }
+  }
+
+  async changePassword(changePasswordDto) {
+    try {
+      const { email, nowPassword, changePassword, confirmChangePassword } =
+        changePasswordDto;
+
+      if (changePassword !== confirmChangePassword) {
+        throw new UnauthorizedException(
+          '새비밀번호화 새비밀번호 확인이 일치하지 않습니다',
+        );
+      }
+      const user = await this.userRepository.signIn(email);
+
+      if (user && (await bcrypt.compare(nowPassword, user.salt))) {
+        const salt = await bcrypt.genSalt();
+        const hashedPassword = await bcrypt.hash(changePassword, salt);
+
+        if (nowPassword === changePassword) {
+          throw new UnauthorizedException(
+            '이전의 비밀번호로는 변경하실 수 없습니다.',
+          );
+        }
+        const result = await this.userRepository.changePassword(
+          email,
+          hashedPassword,
+        );
+
+        if (result.affected) {
+          return result;
+        }
+        throw new Error('비밀번호 변경중 알 수 없는 오류입니다.');
+      }
+      throw new UnauthorizedException(
+        '아이디 또는 비밀번호가 일치하지 않습니다.',
+      );
+    } catch (e) {
+      throw e;
+    }
+  }
+  async forgetPassword(forgetPasswordDto) {
+    try {
+      const { email, changePassword, confirmChangePassword } =
+        forgetPasswordDto;
+
+      if (changePassword !== confirmChangePassword) {
+        throw new UnauthorizedException(
+          '새비밀번호화 새비밀번호 확인이 일치하지 않습니다',
+        );
+      }
+      const user = await this.userRepository.signIn(email);
+      if (user) {
+        if (await bcrypt.compare(changePassword, user.salt)) {
+          throw new UnauthorizedException(
+            '이전 비밀번호로는 변경하실 수 없습니다.',
+          );
+        }
+        const salt = await bcrypt.genSalt();
+        const hashedPassword = await bcrypt.hash(changePassword, salt);
+        const result = await this.userRepository.changePassword(
+          email,
+          hashedPassword,
+        );
+
+        if (result.affected) {
+          return result;
+        }
+        throw new UnauthorizedException(
+          '비밀번호 변경 중 알 수 없는 오류입니다.',
+        );
+      }
+      throw new UnauthorizedException('존재하지 않는 이메일 입니다.');
+    } catch (e) {
+      throw e;
     }
   }
 }

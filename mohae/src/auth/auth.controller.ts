@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   Param,
+  Patch,
   Post,
   Req,
   UseGuards,
@@ -13,8 +14,9 @@ import { DeleteResult } from 'typeorm';
 import { AuthService } from './auth.service';
 import { EmailStatusValidationPipe } from './decorator/email-user.decorator';
 import {
+  ChangePasswordDto,
   CreateUserDto,
-  SignDownDto,
+  ForgetPasswordDto,
   SignInDto,
 } from './dto/auth-credential.dto';
 import { User } from './entity/user.entity';
@@ -52,6 +54,31 @@ export class AuthController {
     return Object.assign({
       statusCode: 204,
       msg: `성공적으로 회원탈퇴가 진행되었습니다.`,
+    });
+  }
+
+  @Patch('/changepassword')
+  @UseGuards(AuthGuard())
+  async changePassword(
+    @Body() changePasswordDto: ChangePasswordDto,
+  ): Promise<void> {
+    await this.authService.changePassword(changePasswordDto);
+
+    return Object.assign({
+      statusCode: 204,
+      msg: '성공적으로 비밀번호가 변경되었습니다.',
+    });
+  }
+
+  @Patch('/forgetpassword')
+  async forgetPassword(
+    @Body() forgetPasswordDto: ForgetPasswordDto,
+  ): Promise<void> {
+    await this.authService.forgetPassword(forgetPasswordDto);
+
+    return Object.assign({
+      statusCode: 204,
+      msg: '성공적으로 비밀번호가 변경되었습니다.',
     });
   }
 

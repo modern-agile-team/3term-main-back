@@ -93,7 +93,7 @@ export class UserRepository extends Repository<User> {
 
   async clearLoginCount(userNo) {
     try {
-      return await this.createQueryBuilder()
+      await this.createQueryBuilder()
         .update(User)
         .set({ loginFailCount: 0 })
         .where('no = :no', { no: userNo })
@@ -120,6 +120,18 @@ export class UserRepository extends Repository<User> {
         .update(User)
         .set({ isLock: !isLock })
         .where('no = :no', { no: userNo })
+        .execute();
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  async changePassword(email, hashedPassword) {
+    try {
+      return await this.createQueryBuilder()
+        .update(User)
+        .set({ salt: hashedPassword })
+        .where('email = :email', { email })
         .execute();
     } catch (e) {
       throw e;
