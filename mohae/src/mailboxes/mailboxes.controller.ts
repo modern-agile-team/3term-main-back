@@ -23,11 +23,4 @@ export class MailboxesController {
 
     return response;
   }
-
-  @Get('/all/:no')
-  async searchMailboxList(@Param('no') no: number) {
-    const response = await this.mailboxesService.searchMailboxList(no);
-
-    return response;
-  }
 }

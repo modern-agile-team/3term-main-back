@@ -8,25 +8,12 @@ export class MailboxRepository extends Repository<Mailbox> {
     const mailbox = await this.createQueryBuilder('mailboxes')
       .leftJoinAndSelect('mailboxes.users', 'users')
       .leftJoinAndSelect('mailboxes.letters', 'letters')
+      .leftJoinAndSelect('letters.sender', 'sender')
+      .leftJoinAndSelect('letters.receiver', 'receiver')
       .where('users.no = :no', { no })
       .getMany();
 
     return mailbox;
-  }
-
-  async searchMailboxList(no: number) {
-    try {
-      const qb = await this.createQueryBuilder('mailboxes').leftJoinAndSelect(
-        'mailboxes.users',
-        'users',
-      );
-      console.log(qb);
-      // .where('mailboxes.no = :no', { no })
-
-      return qb;
-    } catch (e) {
-      throw e;
-    }
   }
 
   async searchMailbox(myNo, yourNo) {
@@ -38,7 +25,6 @@ export class MailboxRepository extends Repository<Mailbox> {
 
       for (const user of mailbox) {
         const { users } = user;
-
         if (!users[0] || !users[1]) {
           return 0;
         }

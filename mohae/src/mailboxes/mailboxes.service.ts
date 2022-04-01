@@ -23,12 +23,6 @@ export class MailboxesService {
     return mailbox;
   }
 
-  async searchMailboxList(no: number) {
-    const mailboxList = await this.mailboxRepository.searchMailboxList(no);
-
-    return mailboxList;
-  }
-
   async searchMailbox(myNo, yourNo) {
     if (myNo === yourNo) {
       throw new UnauthorizedException('자신에게는 채팅을 보낼 수 없습니다.');

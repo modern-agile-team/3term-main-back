@@ -58,6 +58,7 @@ export class LettersService {
         senderNo,
         receiverNo,
       );
+
       if (!mailboxNo) {
         throw new NotFoundException('해당 쪽지함을 찾을 수 없습니다.');
       }
