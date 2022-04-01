@@ -4,14 +4,14 @@ import { Mailbox } from '../entity/mailbox.entity';
 
 @EntityRepository(Mailbox)
 export class MailboxRepository extends Repository<Mailbox> {
-  async findAllMailboxes(no: number) {
+  async findAllMailboxes(loginUserNo: number) {
     try {
       const mailbox = await this.createQueryBuilder('mailboxes')
         .leftJoinAndSelect('mailboxes.users', 'users')
         .leftJoinAndSelect('mailboxes.letters', 'letters')
         .leftJoinAndSelect('letters.sender', 'sender')
         .leftJoinAndSelect('letters.receiver', 'receiver')
-        .where('users.no = :no', { no })
+        .where('users.no = :loginUserNo', { loginUserNo })
         .getMany();
 
       return mailbox;
@@ -22,7 +22,7 @@ export class MailboxRepository extends Repository<Mailbox> {
     }
   }
 
-  async searchMailbox(myNo, yourNo) {
+  async searchMailbox(loignUserNo: number, clickedUserNo: number) {
     try {
       const mailbox = await this.createQueryBuilder('mailboxes')
         .leftJoinAndSelect('mailboxes.users', 'users')
@@ -35,8 +35,8 @@ export class MailboxRepository extends Repository<Mailbox> {
           return 0;
         }
 
-        if (users[0].no === myNo || users[1].no === myNo) {
-          if (users[0].no === yourNo || users[1].no === yourNo) {
+        if (users[0].no === loignUserNo || users[1].no === loignUserNo) {
+          if (users[0].no === clickedUserNo || users[1].no === clickedUserNo) {
             return user.no;
           }
         }
@@ -72,7 +72,7 @@ export class MailboxRepository extends Repository<Mailbox> {
       const mailbox = await this.createQueryBuilder('mailboxes')
         .leftJoinAndSelect('mailboxes.users', 'users')
         .leftJoinAndSelect('mailboxes.letters', 'letters')
-        .where('mailboxes.no = :no', { no: mailboxNo })
+        .where('mailboxes.no = :mailboxNo', { mailboxNo })
         .getMany();
 
       return mailbox;

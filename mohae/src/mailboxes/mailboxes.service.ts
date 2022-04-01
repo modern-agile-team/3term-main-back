@@ -24,9 +24,11 @@ export class MailboxesService {
     private errorConfirm: ErrorConfirm,
   ) {}
 
-  async findAllMailboxes(no: number) {
+  async findAllMailboxes(loginUserNo: number) {
     try {
-      const mailbox = await this.mailboxRepository.findAllMailboxes(no);
+      const mailbox = await this.mailboxRepository.findAllMailboxes(
+        loginUserNo,
+      );
 
       return mailbox;
     } catch (e) {
@@ -34,25 +36,25 @@ export class MailboxesService {
     }
   }
 
-  async searchMailbox(myNo, yourNo) {
+  async searchMailbox(loginUserNo: number, clickedUserNo: number) {
     try {
-      if (myNo === yourNo) {
+      if (loginUserNo === clickedUserNo) {
         throw new UnauthorizedException('자신에게는 채팅을 보낼 수 없습니다.');
       }
-      const me = await this.userRepository.findOne(myNo);
-      this.errorConfirm.notFoundError(me, '내 정보 못찾음');
+      const loginUserInfo = await this.userRepository.findOne(loginUserNo);
+      this.errorConfirm.notFoundError(loginUserInfo, '내 정보 못찾음');
 
-      const you = await this.userRepository.findOne(yourNo);
-      this.errorConfirm.notFoundError(you, '너 정보 못찾음');
+      const clickedUserInfo = await this.userRepository.findOne(clickedUserNo);
+      this.errorConfirm.notFoundError(clickedUserInfo, '너 정보 못찾음');
 
       const mailboxNo = await this.mailboxRepository.searchMailbox(
-        myNo,
-        yourNo,
+        loginUserNo,
+        clickedUserNo,
       );
 
       if (!mailboxNo) {
-        const user1 = await this.userRepository.findOne(myNo);
-        const user2 = await this.userRepository.findOne(yourNo);
+        const user1 = await this.userRepository.findOne(loginUserNo);
+        const user2 = await this.userRepository.findOne(clickedUserNo);
         const newMailboxNo = await this.mailboxRepository.createMailbox();
         const relation = await this.mailboxRepository.findOne(newMailboxNo, {
           relations: ['users'],
@@ -79,8 +81,8 @@ export class MailboxesService {
       }
 
       const letterContent = await this.letterRepository.getLetterContent(
-        myNo,
-        yourNo,
+        loginUserNo,
+        clickedUserNo,
       );
 
       return letterContent;

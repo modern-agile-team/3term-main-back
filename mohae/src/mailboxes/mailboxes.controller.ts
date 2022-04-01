@@ -18,13 +18,20 @@ export class MailboxesController {
   }
 
   // 유저가 채팅방 없이 쪽지 버튼을 눌렀을 때 API
-  @Get('/:myNo/:yourNo')
+  @Get('/:loginUserNo/:clickedUserNo')
   async searchMailbox(
-    @Param('myNo') myNo: number,
-    @Param('yourNo') yourNo: number,
+    @Param('loginUserNo') loginUserNo: number,
+    @Param('clickedUserNo') clickedUserNo: number,
   ) {
-    const response = await this.mailboxesService.searchMailbox(myNo, yourNo);
+    const response = await this.mailboxesService.searchMailbox(
+      loginUserNo,
+      clickedUserNo,
+    );
 
-    return response;
+    return Object.assign({
+      statusCode: 200,
+      msg: '쪽지 전송 화면 조회 완료',
+      response,
+    });
   }
 }

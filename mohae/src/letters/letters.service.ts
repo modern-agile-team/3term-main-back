@@ -1,12 +1,10 @@
 import {
   Injectable,
-  InternalServerErrorException,
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UserRepository } from 'src/auth/repository/user.repository';
-import { Mailbox } from 'src/mailboxes/entity/mailbox.entity';
 import { MailboxRepository } from 'src/mailboxes/repository/mailbox.repository';
 import { ErrorConfirm } from 'src/utils/error';
 import { SendLetterDto } from './dto/letter.dto';
