@@ -168,15 +168,14 @@ export class AuthService {
       }
       const user = await this.userRepository.signIn(email);
 
+      if (nowPassword === changePassword) {
+        throw new UnauthorizedException(
+          '이전의 비밀번호로는 변경하실 수 없습니다.',
+        );
+      }
       if (user && (await bcrypt.compare(nowPassword, user.salt))) {
         const salt = await bcrypt.genSalt();
         const hashedPassword = await bcrypt.hash(changePassword, salt);
-
-        if (nowPassword === changePassword) {
-          throw new UnauthorizedException(
-            '이전의 비밀번호로는 변경하실 수 없습니다.',
-          );
-        }
         const result = await this.userRepository.changePassword(
           email,
           hashedPassword,
@@ -205,6 +204,7 @@ export class AuthService {
         );
       }
       const user = await this.userRepository.signIn(email);
+
       if (user) {
         if (await bcrypt.compare(changePassword, user.salt)) {
           throw new UnauthorizedException(
