@@ -70,6 +70,20 @@ export class UserRepository extends Repository<User> {
       );
     }
   }
+
+  async findOneUserinfo(no: number) {
+    try {
+      const user = await this.createQueryBuilder('users')
+        .select(['no', 'email', 'nickname', 'name'])
+        .where('no = :no', { no })
+        .getOne();
+
+      return user;
+    } catch (err) {
+      throw err;
+    }
+  }
+
   async signDown(no: number) {
     const result = await this.createQueryBuilder()
       .softDelete()
@@ -105,11 +119,13 @@ export class UserRepository extends Repository<User> {
 
   async plusLoginFailCount({ no, loginFailCount }) {
     try {
-      return await this.createQueryBuilder()
+      const { affected } = await this.createQueryBuilder()
         .update(User)
         .set({ loginFailCount: loginFailCount + 1 })
         .where('no = :no', { no })
         .execute();
+
+      return affected;
     } catch (e) {
       throw e;
     }

@@ -19,6 +19,7 @@ import { School } from 'src/schools/entity/school.entity';
 import { CategoryRepository } from 'src/categories/repository/category.repository';
 import { Category } from 'src/categories/entity/category.entity';
 import { last, timestamp } from 'rxjs';
+import { ErrorConfirm } from 'src/utils/error';
 
 const jwtConfig = config.get('jwt');
 @Injectable()
@@ -30,6 +31,8 @@ export class AuthService {
     private schoolRepository: SchoolRepository,
     private majorRepository: MajorRepository,
     private categoriesRepository: CategoryRepository,
+
+    private errorConfirm: ErrorConfirm,
   ) {}
   async signUp(createUserDto: CreateUserDto): Promise<User> {
     const { school, major, email, nickname, categories } = createUserDto;
@@ -87,20 +90,27 @@ export class AuthService {
 
     return user;
   }
+
   async signIn(signInDto: SignInDto): Promise<{ accessToken: string }> {
     try {
       const { email, password } = signInDto;
       const user = await this.userRepository.signIn(email);
+      this.errorConfirm.notFoundError(
+        user,
+        '아이디 또는 비밀번호가 일치하지 않습니다.',
+      );
       const lastLogin = user.latestLogin.getTime();
-      const currentTime = new Date().getTime();
+      // VScode에서 찍는 현재시간이 pc 시간보다 9시간 적게 나와서 일단 Date().getTime()에 9시간을 강제로 더해서 현재시간을 측정해주었음
+      const plusCurrentTime = 9 * 60 * 60 * 1000;
+      const currentTime = new Date().getTime() + plusCurrentTime;
 
-      if (user.isLock === true && currentTime >= lastLogin + 10000) {
+      if (user.isLock && currentTime >= lastLogin + 10000) {
         await this.userRepository.changeIsLock(user.no, user.isLock);
       }
       const isLockUser = await this.userRepository.signIn(email);
-
-      if (isLockUser.isLock === false) {
-        if (user && (await bcrypt.compare(password, user.salt))) {
+      const isPassword = await bcrypt.compare(password, user.salt);
+      if (!isLockUser.isLock) {
+        if (user && isPassword) {
           const payload = {
             email,
             issuer: 'modern-agile',
@@ -112,34 +122,28 @@ export class AuthService {
           const accessToken = await this.jwtService.sign(payload);
 
           return { accessToken };
-        } else {
-          const loginFailCount = await this.userRepository.plusLoginFailCount(
-            isLockUser,
-          );
-          const afterUser = await this.userRepository.signIn(email);
-
-          if (afterUser.loginFailCount >= 5) {
-            await this.userRepository.changeIsLock(
-              afterUser.no,
-              afterUser.isLock,
-            );
-          }
-
-          if (loginFailCount.affected === 1) {
-            throw new UnauthorizedException(
-              `아이디 또는 비밀번호가 일치하지 않습니다. 로그인 실패 횟수: ${afterUser.loginFailCount} `,
-            );
-          }
         }
-      }
 
-      if (user.isLock === true) {
+        await this.userRepository.plusLoginFailCount(isLockUser);
+        const afterUser = await this.userRepository.signIn(email);
+
+        if (afterUser.loginFailCount >= 5) {
+          await this.userRepository.changeIsLock(
+            afterUser.no,
+            afterUser.isLock,
+          );
+        }
+
         throw new UnauthorizedException(
-          `로그인 실패 횟수를 모두 초과 하였습니다 ${Math.floor(
-            (lastLogin + 10000 - currentTime) / 1000,
-          )}초 뒤에 다시 로그인 해주세요`,
+          `아이디 또는 비밀번호가 일치하지 않습니다. 로그인 실패 횟수: ${afterUser.loginFailCount} `,
         );
       }
+
+      throw new UnauthorizedException(
+        `로그인 실패 횟수를 모두 초과 하였습니다 ${Math.floor(
+          (lastLogin + 10000 - currentTime) / 1000,
+        )}초 뒤에 다시 로그인 해주세요`,
+      );
     } catch (e) {
       throw e;
     }
@@ -147,13 +151,12 @@ export class AuthService {
   async signDown(no: number): Promise<DeleteResult> {
     const result = await this.userRepository.signDown(no);
 
-    if (result.affected === 0) {
+    if (!result.affected) {
       throw new NotFoundException(
         `${no} 회원님의 회원탈퇴가 정상적으로 이루어 지지 않았습니다.`,
       );
-    } else if (result.affected === 1) {
-      return result;
     }
+    return result;
   }
 
   async changePassword(changePasswordDto) {
@@ -167,16 +170,15 @@ export class AuthService {
         );
       }
       const user = await this.userRepository.signIn(email);
-
-      if (user && (await bcrypt.compare(nowPassword, user.salt))) {
-        const salt = await bcrypt.genSalt();
-        const hashedPassword = await bcrypt.hash(changePassword, salt);
-
+      const isPassword = await bcrypt.compare(nowPassword, user.salt);
+      if (user && isPassword) {
         if (nowPassword === changePassword) {
           throw new UnauthorizedException(
             '이전의 비밀번호로는 변경하실 수 없습니다.',
           );
         }
+        const salt = await bcrypt.genSalt();
+        const hashedPassword = await bcrypt.hash(changePassword, salt);
         const result = await this.userRepository.changePassword(
           email,
           hashedPassword,
@@ -207,7 +209,9 @@ export class AuthService {
       const user = await this.userRepository.signIn(email);
 
       if (user) {
-        if (await bcrypt.compare(changePassword, user.salt)) {
+        const isPassword = await bcrypt.compare(changePassword, user.salt);
+
+        if (isPassword) {
           throw new UnauthorizedException(
             '이전 비밀번호로는 변경하실 수 없습니다.',
           );
