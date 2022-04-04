@@ -86,7 +86,7 @@ export class BoardRepository extends Repository<Board> {
     category: Category,
     area: object,
     createBoardDto: CreateBoardDto,
-    endTime
+    endTime: Date
   ): Promise<Board> {
     try {
       const {
@@ -139,6 +139,7 @@ export class BoardRepository extends Repository<Board> {
     category: Category,
     area: Area,
     updateBoardDto: UpdateBoardDto,
+    endTime: Date
   ): Promise<object> {
     const board = await this.findOne(no);
     if (!board) {
@@ -169,11 +170,12 @@ export class BoardRepository extends Repository<Board> {
           note1,
           note2,
           note3,
+          endDate: endTime
         })
         .where('no = :no', { no })
         .execute();
       const { affected } = updatedBoard;
-      
+
       if (!affected) {
         return { success: false };
       }

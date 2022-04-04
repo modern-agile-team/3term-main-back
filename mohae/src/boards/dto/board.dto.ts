@@ -67,7 +67,10 @@ export class CreateBoardDto extends BoardContent {
   @IsNumber()
   date: number;
 }
-export class UpdateBoardDto extends BoardContent {}
+export class UpdateBoardDto extends BoardContent {
+  @IsNumber()
+  date: number;
+}
 export class SearchBoardDto {
   // @IsString()
   // description: string;
