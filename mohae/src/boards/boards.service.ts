@@ -88,7 +88,8 @@ export class BoardsService {
       case 3:
         endTime.setFullYear(endTime.getFullYear() + 100);
         break;  
-    }  
+    }
+      
     const board = await this.boardRepository.createBoard(
       category,
       area,
