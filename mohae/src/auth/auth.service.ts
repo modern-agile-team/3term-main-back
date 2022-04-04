@@ -101,7 +101,8 @@ export class AuthService {
       );
       const lastLogin = user.latestLogin.getTime();
       // VScode에서 찍는 현재시간이 pc 시간보다 9시간 적게 나와서 일단 Date().getTime()에 9시간을 강제로 더해서 현재시간을 측정해주었음
-      const plusCurrentTime = 9 * 60 * 60 * 1000;
+      // const plusCurrentTime = 9 * 60 * 60 * 1000;
+      const plusCurrentTime = 32398362;
       const currentTime = new Date().getTime() + plusCurrentTime;
 
       if (user.isLock && currentTime >= lastLogin + 10000) {
