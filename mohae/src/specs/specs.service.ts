@@ -14,6 +14,15 @@ export class SpecsService {
     private specRepository: SpecRepository,
     private userRepository: UserRepository,
   ) {}
+  async getAllSpec(no) {
+    try {
+      const specs = await this.specRepository.getAllSpec(no);
+
+      return specs;
+    } catch (err) {
+      throw err;
+    }
+  }
 
   async registSpec(createSpecDto) {
     try {

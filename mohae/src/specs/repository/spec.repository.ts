@@ -1,9 +1,21 @@
 import { InternalServerErrorException } from '@nestjs/common';
-import { EntityRepository, Repository } from 'typeorm';
+import { EntityRepository, getConnection, Repository } from 'typeorm';
 import { Spec } from '../entity/spec.entity';
 
 @EntityRepository(Spec)
 export class SpecRepository extends Repository<Spec> {
+  async getAllSpec(no) {
+    const specs = await this.createQueryBuilder('spec').select([
+      'no',
+      'title',
+      'description',
+      'user_no',
+    ]);
+
+    console.log(specs);
+    return specs;
+  }
+
   async registSpec(title, description, photo_url, user) {
     try {
       const { raw } = await this.createQueryBuilder('spec')
