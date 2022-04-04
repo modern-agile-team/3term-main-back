@@ -17,6 +17,7 @@ import { CategoriesModule } from 'src/categories/categories.module';
 import { ErrorConfirm } from 'src/utils/error';
 import { LoginProcess } from 'src/utils/login';
 import { User } from './entity/user.entity';
+import { SpecRepository } from 'src/specs/repository/spec.repository';
 
 const jwtConfig = config.get('jwt');
 
@@ -34,6 +35,7 @@ const jwtConfig = config.get('jwt');
       SchoolRepository,
       MajorRepository,
       CategoryRepository,
+      SpecRepository,
     ]),
     SchoolsModule,
     MajorsModule,
