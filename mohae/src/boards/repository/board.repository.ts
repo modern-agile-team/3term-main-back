@@ -15,6 +15,7 @@ export class BoardRepository extends Repository<Board> {
       const board = await this.createQueryBuilder('boards')
         .leftJoinAndSelect('boards.area', 'areas')
         .leftJoinAndSelect('boards.category', 'categories')
+        .select(['boards.no','boards.title','boards.description','boards.createdAt','boards.deadLine','boards.isDeadLine','boards.thumb','boards.hit','boards.price','boards.summary','boards.target','boards.note1','boards.note2','boards.note3','areas.name','categories.name'])
         .where('boards.no = :no', { no })
         .andWhere('boards.area = areas.no')
         .andWhere('boards.category = categories.no')
@@ -42,15 +43,31 @@ export class BoardRepository extends Repository<Board> {
     } catch (e) {
       throw new InternalServerErrorException(
         `${e} ### 게시판 조회수 증가 : 알 수 없는 서버 에러입니다.`,
-      );
+        );
+      }
+    }
+
+  async closeBoard(currentTime: Date){
+    try {
+      const closedBoard = await this.createQueryBuilder()
+        .update(Board)
+        .set({ isDeadLine: true })
+        .where('deadline <= :currentTime', {currentTime})
+        .execute();
+      return closedBoard;
+    } catch(e) {
+      throw new InternalServerErrorException(
+        `${e} ### 게시판 마감 처리 : 알 수 없는 서버 에러입니다.`,
+        );
     }
   }
-
+    
   async searchAllBoards(sort: any): Promise<Board[]> {
     try {
       const filteredBoard = await this.createQueryBuilder('boards')
         .leftJoinAndSelect('boards.area', 'areas')
         .leftJoinAndSelect('boards.category', 'categories')
+        .select(['boards.no','boards.title','boards.description','boards.createdAt','boards.deadLine','boards.isDeadLine','boards.thumb','boards.hit','boards.price','boards.summary','boards.target','boards.note1','boards.note2','boards.note3','areas.name','categories.name'])
         .where('boards.area = areas.no')
         .andWhere('boards.category = categories.no')
         .orderBy('boards.no', sort)
@@ -81,6 +98,7 @@ export class BoardRepository extends Repository<Board> {
       );
     }
   }
+
 
   async createBoard(
     category: Category,

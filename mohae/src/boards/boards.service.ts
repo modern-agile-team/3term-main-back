@@ -31,6 +31,16 @@ export class BoardsService {
     const boards = await this.boardRepository.getAllBoards();
     this.errorConfirm.notFoundError(boards, '게시글을 찾을 수 없습니다.');
 
+    const currentTime = new Date()
+    currentTime.setHours(currentTime.getHours() +9);
+    
+    const {affected} = await this.boardRepository.closeBoard(currentTime)
+    if (!affected) {
+      throw new InternalServerErrorException(
+        '게시글 마감이 되지 않았습니다',
+      );
+    }
+
     return boards;
   }
 
@@ -55,6 +65,17 @@ export class BoardsService {
       );
     }
 
+    const currentTime = new Date()
+    currentTime.setHours(currentTime.getHours() +9);
+
+   
+    const {affected} = await this.boardRepository.closeBoard(currentTime)
+    if (!affected) {
+      throw new InternalServerErrorException(
+        '게시글 마감이 되지 않았습니다',
+      );
+    }
+
     return board;
   }
 
@@ -75,6 +96,8 @@ export class BoardsService {
 
     this.errorConfirm.notFoundError(area, `해당 지역을 찾을 수 없습니다.`);
     const endTime = new Date();
+    endTime.setHours(endTime.getHours()+9);
+    
     switch (deadline) {
       case 0:
         endTime.setDate(endTime.getDate() + 7);
@@ -89,7 +112,7 @@ export class BoardsService {
         endTime.setFullYear(endTime.getFullYear() + 100);
         break;  
     }
-      
+
     const board = await this.boardRepository.createBoard(
       category,
       area,
