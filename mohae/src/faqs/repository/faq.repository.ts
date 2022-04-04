@@ -63,12 +63,16 @@ export class FaqRepository extends Repository<Faq> {
   }
 
   async deleteFaq(no: number) {
-    const { affected } = await this.createQueryBuilder()
-      .softDelete()
-      .from(Faq)
-      .where('no = :no', { no })
-      .execute();
+    try {
+      const { affected } = await this.createQueryBuilder()
+        .softDelete()
+        .from(Faq)
+        .where('no = :no', { no })
+        .execute();
 
-    return affected;
+      return affected;
+    } catch (e) {
+      throw new InternalServerErrorException(e);
+    }
   }
 }
