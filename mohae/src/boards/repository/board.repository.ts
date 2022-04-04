@@ -47,14 +47,14 @@ export class BoardRepository extends Repository<Board> {
       }
     }
 
-  async deadline(currentTime: Date){
+  async closeBoard(currentTime: Date){
     try {
-    const isDeadLine = await this.createQueryBuilder()
+    const closedBoard = await this.createQueryBuilder()
         .update(Board)
         .set({ isDeadLine: true })
         .where('deadline <= :currentTime', {currentTime})
         .execute();
-      if (!isDeadLine.affected) {
+      if (!closedBoard.affected) {
         return {success:false};
       }
 

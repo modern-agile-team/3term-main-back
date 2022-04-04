@@ -34,12 +34,13 @@ export class BoardsService {
     const currentTime = new Date()
     currentTime.setHours(currentTime.getHours() +9);
     
-    const isDeadLine = await this.boardRepository.deadline(currentTime)
+    const isDeadLine = await this.boardRepository.closeBoard(currentTime)
     if (!isDeadLine) {
       throw new InternalServerErrorException(
         '게시글 마감이 되지 않았습니다',
       );
     }
+
     return boards;
   }
 
@@ -68,7 +69,7 @@ export class BoardsService {
     currentTime.setHours(currentTime.getHours() +9);
 
    
-    const isDeadLine = await this.boardRepository.deadline(currentTime)
+    const isDeadLine = await this.boardRepository.closeBoard(currentTime)
     if (!isDeadLine) {
       throw new InternalServerErrorException(
         '게시글 마감이 되지 않았습니다',
