@@ -14,7 +14,6 @@ export class SpecRepository extends Repository<Spec> {
     .where('spec.user_no = :no', {no})
     .getMany();
 
-    console.log(no);
     return specs;
   }
 
@@ -28,7 +27,7 @@ export class SpecRepository extends Repository<Spec> {
             title,
             description,
             photo_url,
-            user: user,
+            user,
           },
         ])
         .execute();
