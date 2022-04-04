@@ -14,7 +14,7 @@ export class SpecsService {
     private specRepository: SpecRepository,
     private userRepository: UserRepository,
   ) {}
-  async getAllSpec(no) {
+  async getAllSpec(no: number) {
     try {
       const specs = await this.specRepository.getAllSpec(no);
 
@@ -26,15 +26,13 @@ export class SpecsService {
 
   async registSpec(createSpecDto) {
     try {
-      const { title, description, photo_url, userNo } = createSpecDto;
+      const { userNo } = createSpecDto;
       const user = await this.userRepository.findOne(userNo, {
         relations: ['specs'],
       });
       if (user) {
         const specNo = await this.specRepository.registSpec(
-          title,
-          description,
-          photo_url,
+          createSpecDto,
           user,
         );
         const spec = await this.specRepository.findOne(specNo[0].no);

@@ -4,20 +4,29 @@ import { Spec } from '../entity/spec.entity';
 
 @EntityRepository(Spec)
 export class SpecRepository extends Repository<Spec> {
-  async getAllSpec({no}) {
-    const specs = await this.createQueryBuilder('spec')
-    .select([
-      'no',
-      'title',
-      'description',
-    ])
-    .where('spec.user_no = :no', {no})
-    .getMany();
+  async getAllSpec(no: number) {
+    try {
+      const specs = await this.createQueryBuilder('spec')
+        .leftJoinAndSelect('spec.user', 'user')
+        .select([
+          'spec.no',
+          'spec.title',
+          'spec.description',
+          'spec.photo_url',
+          'user.no',
+        ])
+        .where('user.no = :no', { no })
+        .getMany();
 
-    return specs;
+      return specs;
+    } catch (err) {
+      throw new InternalServerErrorException(
+        '스펙 전체 조회 관련 서버 에러입니다',
+      );
+    }
   }
 
-  async registSpec(title, description, photo_url, user) {
+  async registSpec({ title, description, photo_url }, user) {
     try {
       const { raw } = await this.createQueryBuilder('spec')
         .insert()
