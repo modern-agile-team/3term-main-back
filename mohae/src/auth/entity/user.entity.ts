@@ -26,6 +26,7 @@ import {
 } from 'typeorm';
 import { Letter } from 'src/letters/entity/letter.entity';
 import { Mailbox } from 'src/mailboxes/entity/mailbox.entity';
+import { Faq } from 'src/faqs/entity/faq.entity';
 
 @Entity('users')
 export class User extends BaseEntity {
@@ -155,6 +156,16 @@ export class User extends BaseEntity {
     nullable: true,
   })
   receivedLetters: Letter[];
+
+  @OneToMany((type) => Faq, (faqs) => faqs.manager, {
+    nullable: true,
+  })
+  faqs: Faq[];
+
+  @OneToMany((type) => Faq, (faqs) => faqs.modifiedManager, {
+    nullable: true,
+  })
+  modifyFaqs: Faq[];
 
   @ManyToMany((type) => Mailbox, (mailbox) => mailbox.users)
   mailboxes: Mailbox[];
