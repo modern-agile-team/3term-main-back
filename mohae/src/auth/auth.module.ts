@@ -14,8 +14,12 @@ import { MajorsModule } from 'src/majors/majors.module';
 import { JwtStrategy } from './jwt/jwt.strategy';
 import { CategoryRepository } from 'src/categories/repository/category.repository';
 import { CategoriesModule } from 'src/categories/categories.module';
+import { ErrorConfirm } from 'src/utils/error';
+import { LoginProcess } from 'src/utils/login';
+import { User } from './entity/user.entity';
 
 const jwtConfig = config.get('jwt');
+
 @Module({
   imports: [
     PassportModule.register({ defaultStrategy: 'jwt' }),
@@ -36,7 +40,7 @@ const jwtConfig = config.get('jwt');
     CategoriesModule,
   ],
   controllers: [AuthController],
-  providers: [AuthService, JwtStrategy],
+  providers: [AuthService, JwtStrategy, ErrorConfirm, LoginProcess],
   exports: [JwtStrategy, PassportModule],
 })
 export class AuthModule {}

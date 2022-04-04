@@ -2,12 +2,7 @@ import { EntityRepository, Repository } from 'typeorm';
 import { CreateUserDto } from '../dto/auth-credential.dto';
 import { User } from '../entity/user.entity';
 import * as bcrypt from 'bcryptjs';
-import { Duplex } from 'stream';
-import {
-  ConflictException,
-  InternalServerErrorException,
-} from '@nestjs/common';
-import { timeStamp } from 'console';
+import { InternalServerErrorException } from '@nestjs/common';
 
 @EntityRepository(User)
 export class UserRepository extends Repository<User> {
@@ -70,6 +65,20 @@ export class UserRepository extends Repository<User> {
       );
     }
   }
+
+  async findOneUserinfo(no: number) {
+    try {
+      const user = await this.createQueryBuilder('users')
+        .select(['no', 'email', 'nickname', 'name'])
+        .where('no = :no', { no })
+        .getOne();
+
+      return user;
+    } catch (err) {
+      throw err;
+    }
+  }
+
   async signDown(no: number) {
     const result = await this.createQueryBuilder()
       .softDelete()
@@ -93,7 +102,7 @@ export class UserRepository extends Repository<User> {
 
   async clearLoginCount(userNo) {
     try {
-      return await this.createQueryBuilder()
+      await this.createQueryBuilder()
         .update(User)
         .set({ loginFailCount: 0 })
         .where('no = :no', { no: userNo })
@@ -105,11 +114,13 @@ export class UserRepository extends Repository<User> {
 
   async plusLoginFailCount({ no, loginFailCount }) {
     try {
-      return await this.createQueryBuilder()
+      const { affected } = await this.createQueryBuilder()
         .update(User)
         .set({ loginFailCount: loginFailCount + 1 })
         .where('no = :no', { no })
         .execute();
+
+      return affected;
     } catch (e) {
       throw e;
     }
@@ -120,6 +131,18 @@ export class UserRepository extends Repository<User> {
         .update(User)
         .set({ isLock: !isLock })
         .where('no = :no', { no: userNo })
+        .execute();
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  async changePassword(email, hashedPassword) {
+    try {
+      return await this.createQueryBuilder()
+        .update(User)
+        .set({ salt: hashedPassword })
+        .where('email = :email', { email })
         .execute();
     } catch (e) {
       throw e;
