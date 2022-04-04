@@ -34,8 +34,8 @@ export class BoardsService {
     const currentTime = new Date()
     currentTime.setHours(currentTime.getHours() +9);
     
-    const isDeadLine = await this.boardRepository.closeBoard(currentTime)
-    if (!isDeadLine) {
+    const {affected} = await this.boardRepository.closeBoard(currentTime)
+    if (!affected) {
       throw new InternalServerErrorException(
         '게시글 마감이 되지 않았습니다',
       );
@@ -69,8 +69,8 @@ export class BoardsService {
     currentTime.setHours(currentTime.getHours() +9);
 
    
-    const isDeadLine = await this.boardRepository.closeBoard(currentTime)
-    if (!isDeadLine) {
+    const {affected} = await this.boardRepository.closeBoard(currentTime)
+    if (!affected) {
       throw new InternalServerErrorException(
         '게시글 마감이 되지 않았습니다',
       );
@@ -97,6 +97,7 @@ export class BoardsService {
     this.errorConfirm.notFoundError(area, `해당 지역을 찾을 수 없습니다.`);
     const endTime = new Date();
     endTime.setHours(endTime.getHours()+9);
+    
     switch (deadline) {
       case 0:
         endTime.setDate(endTime.getDate() + 7);

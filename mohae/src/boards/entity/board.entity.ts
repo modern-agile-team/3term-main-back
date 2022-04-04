@@ -49,7 +49,7 @@ export class Board extends BaseEntity {
     comment: '게시글 마감일',
     type: 'datetime'
   })
-  deadLine: Date;
+  deadline: Date;
 
   @DeleteDateColumn({
     comment: '게시글 삭제일',

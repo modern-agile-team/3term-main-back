@@ -49,16 +49,12 @@ export class BoardRepository extends Repository<Board> {
 
   async closeBoard(currentTime: Date){
     try {
-    const closedBoard = await this.createQueryBuilder()
+      const closedBoard = await this.createQueryBuilder()
         .update(Board)
         .set({ isDeadLine: true })
         .where('deadline <= :currentTime', {currentTime})
         .execute();
-      if (!closedBoard.affected) {
-        return {success:false};
-      }
-
-      return {success: true};
+      return closedBoard;
     } catch(e) {
       throw new InternalServerErrorException(
         `${e} ### 게시판 마감 처리 : 알 수 없는 서버 에러입니다.`,
@@ -136,7 +132,7 @@ export class BoardRepository extends Repository<Board> {
             note1,
             note2,
             note3,
-            deadLine: endTime
+            deadline: endTime
           },
         ])
         .execute();
@@ -192,7 +188,7 @@ export class BoardRepository extends Repository<Board> {
           note1,
           note2,
           note3,
-          deadLine: endTime
+          deadline: endTime
         })
         .where('no = :no', { no })
         .execute();
