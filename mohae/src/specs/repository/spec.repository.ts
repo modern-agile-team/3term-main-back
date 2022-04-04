@@ -1,5 +1,5 @@
 import { InternalServerErrorException } from '@nestjs/common';
-import { EntityRepository, getConnection, Repository } from 'typeorm';
+import { EntityRepository, Repository } from 'typeorm';
 import { Spec } from '../entity/spec.entity';
 
 @EntityRepository(Spec)
