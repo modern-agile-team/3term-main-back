@@ -4,7 +4,7 @@ import { Spec } from '../entity/spec.entity';
 
 @EntityRepository(Spec)
 export class SpecRepository extends Repository<Spec> {
-  async registSpec(title, description, photo_url) {
+  async registSpec(title, description, photo_url, user) {
     try {
       const { raw } = await this.createQueryBuilder('spec')
         .insert()
@@ -14,11 +14,11 @@ export class SpecRepository extends Repository<Spec> {
             title,
             description,
             photo_url,
+            user,
           },
         ])
         .execute();
-
-      if (!raw.affectedRows) {
+      if (!raw) {
         throw new InternalServerErrorException(
           '### 정상적으로 저장되지 않았습니다.',
         );

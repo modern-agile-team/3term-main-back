@@ -1,4 +1,8 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  Injectable,
+  InternalServerErrorException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UserRepository } from 'src/auth/repository/user.repository';
 import { SpecRepository } from './repository/spec.repository';
@@ -18,21 +22,23 @@ export class SpecsService {
         relations: ['specs'],
       });
       if (user) {
-        const isRegist = await this.specRepository.registSpec(
+        const specNo = await this.specRepository.registSpec(
           title,
           description,
           photo_url,
+          user,
         );
-        console.log(isRegist);
-        // const spec = await this.specRepository.getSpecNo()
-
-        //   if (isRegist) {
-        //     user.specs.push()
-        //   }
-        return new UnauthorizedException(
-          `${userNo}에 해당하는 유저가 존재하지 않습니다.`,
+        const spec = await this.specRepository.findOne(specNo[0].no);
+        if (spec) {
+          user.specs.push(spec);
+        }
+        return new InternalServerErrorException(
+          '스펙등록 중 발생한 서버에러입니다.',
         );
       }
+      return new UnauthorizedException(
+        `${userNo}에 해당하는 유저가 존재하지 않습니다.`,
+      );
     } catch (err) {
       throw err;
     }
