@@ -86,6 +86,7 @@ export class BoardRepository extends Repository<Board> {
     category: Category,
     area: object,
     createBoardDto: CreateBoardDto,
+    endTime
   ): Promise<Board> {
     try {
       const {
@@ -113,6 +114,7 @@ export class BoardRepository extends Repository<Board> {
             note1,
             note2,
             note3,
+            endDate: endTime
           },
         ])
         .execute();

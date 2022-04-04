@@ -63,7 +63,10 @@ export abstract class BoardContent {
   note3: string;
 }
 
-export class CreateBoardDto extends BoardContent {}
+export class CreateBoardDto extends BoardContent {
+  @IsNumber()
+  date: number;
+}
 export class UpdateBoardDto extends BoardContent {}
 export class SearchBoardDto {
   // @IsString()

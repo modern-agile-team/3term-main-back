@@ -59,7 +59,7 @@ export class BoardsService {
   }
 
   async createBoard(createBoardDto: CreateBoardDto): Promise<Board> {
-    const { categoryNo, areaNo } = createBoardDto;
+    const { categoryNo, areaNo, date } = createBoardDto;
     const category = await this.categoryRepository.findOne(categoryNo, {
       relations: ['boards'],
     });
@@ -74,11 +74,26 @@ export class BoardsService {
     );
 
     this.errorConfirm.notFoundError(area, `해당 지역을 찾을 수 없습니다.`);
-
+    let endTime = new Date();
+    switch (date) {
+      case 0:
+        endTime.setDate(endTime.getDate() + 7);
+        break;
+      case 1:
+        endTime.setMonth(endTime.getMonth() + 1);
+        break;
+      case 2:
+        endTime.setMonth(endTime.getMonth() + 3);
+        break;
+      case 3:
+        endTime.setFullYear(endTime.getFullYear() + 100);
+        break;  
+    }  
     const board = await this.boardRepository.createBoard(
       category,
       area,
       createBoardDto,
+      endTime,
     );
 
     category.boards.push(board);
