@@ -6,9 +6,9 @@ export class MailboxesController {
   constructor(private mailboxesService: MailboxesService) {}
 
   // 유저가 알림버튼을 클릭했을 때 API
-  @Get('/find/:no')
-  async findAllMailboxes(@Param('no') no: number) {
-    const response = await this.mailboxesService.findAllMailboxes(no);
+  @Get('/list/:loginUserNo')
+  async findAllMailboxes(@Param('loginUserNo') loginUserNo: number) {
+    const response = await this.mailboxesService.findAllMailboxes(loginUserNo);
 
     return Object.assign({
       statusCode: 200,
