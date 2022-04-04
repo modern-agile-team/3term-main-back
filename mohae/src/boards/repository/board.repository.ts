@@ -173,6 +173,7 @@ export class BoardRepository extends Repository<Board> {
         .where('no = :no', { no })
         .execute();
       const { affected } = updatedBoard;
+      
       if (!affected) {
         return { success: false };
       }
