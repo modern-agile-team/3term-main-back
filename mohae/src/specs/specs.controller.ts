@@ -20,13 +20,13 @@ export class SpecsController {
     }
   }
   @Get('/user/:no')
-  async getAllSpec(@Param() no: number) {
+  async getAllSpec(@Param('no') no: number) {
     try {
       const specs = await this.specsService.getAllSpec(no);
 
       return Object.assign({
         statusCode: 200,
-        msg: '성공적으로 스펙이 불러와졌습니다.',
+        msg: '성공적으로 스펙을 불러왔습니다.',
         specs,
       });
     } catch (err) {
