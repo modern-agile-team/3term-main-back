@@ -4,15 +4,17 @@ import { Spec } from '../entity/spec.entity';
 
 @EntityRepository(Spec)
 export class SpecRepository extends Repository<Spec> {
-  async getAllSpec(no) {
-    const specs = await this.createQueryBuilder('spec').select([
+  async getAllSpec({no}) {
+    const specs = await this.createQueryBuilder('spec')
+    .select([
       'no',
       'title',
       'description',
-      'user_no',
-    ]);
+    ])
+    .where('spec.user_no = :no', {no})
+    .getMany();
 
-    console.log(specs);
+    console.log(no);
     return specs;
   }
 
@@ -26,7 +28,7 @@ export class SpecRepository extends Repository<Spec> {
             title,
             description,
             photo_url,
-            user,
+            user: user,
           },
         ])
         .execute();
