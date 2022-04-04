@@ -26,6 +26,7 @@ import {
 } from 'typeorm';
 import { Letter } from 'src/letters/entity/letter.entity';
 import { Mailbox } from 'src/mailboxes/entity/mailbox.entity';
+import { Spec } from 'src/specs/entity/spec.entity';
 
 @Entity('users')
 export class User extends BaseEntity {
@@ -127,6 +128,8 @@ export class User extends BaseEntity {
   @OneToMany((type) => Review, (review) => review.reviewer)
   reviews: Review[];
 
+  @OneToMany((type) => Spec, (spec) => spec.user)
+  specs: Spec[];
   //
   @Column({
     comment: '로그인 실패 횟수',

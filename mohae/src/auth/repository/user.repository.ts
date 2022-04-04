@@ -7,24 +7,23 @@ import { InternalServerErrorException } from '@nestjs/common';
 @EntityRepository(User)
 export class UserRepository extends Repository<User> {
   async createUser(createUserDto: CreateUserDto, school, major): Promise<User> {
-    const { email, password, phone, nickname, manager, name, photo_url } =
-      createUserDto;
-    const salt = await bcrypt.genSalt();
-    const hashedPassword = await bcrypt.hash(password, salt);
-
-    const user = this.create({
-      email,
-      school,
-      major,
-      salt: hashedPassword,
-      name,
-      phone,
-      nickname,
-      manager,
-      photo_url,
-    });
-
     try {
+      const { email, password, phone, nickname, manager, name, photo_url } =
+        createUserDto;
+      const salt = await bcrypt.genSalt();
+      const hashedPassword = await bcrypt.hash(password, salt);
+      const user = this.create({
+        email,
+        school,
+        major,
+        salt: hashedPassword,
+        name,
+        phone,
+        nickname,
+        manager,
+        photo_url,
+      });
+
       await user.save();
       return user;
     } catch (e) {
