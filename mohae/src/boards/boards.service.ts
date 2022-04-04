@@ -59,7 +59,7 @@ export class BoardsService {
   }
 
   async createBoard(createBoardDto: CreateBoardDto): Promise<Board> {
-    const { categoryNo, areaNo } = createBoardDto;
+    const { categoryNo, areaNo, deadline } = createBoardDto;
     const category = await this.categoryRepository.findOne(categoryNo, {
       relations: ['boards'],
     });
@@ -74,11 +74,27 @@ export class BoardsService {
     );
 
     this.errorConfirm.notFoundError(area, `해당 지역을 찾을 수 없습니다.`);
-
+    const endTime = new Date();
+    switch (deadline) {
+      case 0:
+        endTime.setDate(endTime.getDate() + 7);
+        break;
+      case 1:
+        endTime.setMonth(endTime.getMonth() + 1);
+        break;
+      case 2:
+        endTime.setMonth(endTime.getMonth() + 3);
+        break;
+      case 3:
+        endTime.setFullYear(endTime.getFullYear() + 100);
+        break;  
+    }
+      
     const board = await this.boardRepository.createBoard(
       category,
       area,
       createBoardDto,
+      endTime,
     );
 
     category.boards.push(board);
@@ -105,7 +121,7 @@ export class BoardsService {
     no: number,
     updateBoardDto: UpdateBoardDto,
   ): Promise<Object> {
-    const { categoryNo, areaNo } = updateBoardDto;
+    const { categoryNo, areaNo, deadline } = updateBoardDto;
     const category = await this.categoryRepository.findOne(categoryNo, {
       relations: ['boards'],
     });
@@ -120,12 +136,29 @@ export class BoardsService {
     );
 
     this.errorConfirm.notFoundError(area, `해당 지역을 찾을 수 없습니다.`);
+    
+    const endTime = new Date();
+    switch (deadline) {
+      case 0:
+        endTime.setDate(endTime.getDate() + 7);
+        break;
+      case 1:
+        endTime.setMonth(endTime.getMonth() + 1);
+        break;
+      case 2:
+        endTime.setMonth(endTime.getMonth() + 3);
+        break;
+      case 3:
+        endTime.setFullYear(endTime.getFullYear() + 100);
+        break;  
+    }
 
     const updatedBoard = await this.boardRepository.updateBoard(
       no,
       category,
       area,
       updateBoardDto,
+      endTime
     );
 
     if (updatedBoard) {
