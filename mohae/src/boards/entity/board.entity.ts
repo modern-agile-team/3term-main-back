@@ -45,10 +45,22 @@ export class Board extends BaseEntity {
   })
   createdAt: Date | null;
 
+  @Column({
+    comment: '게시글 마감일',
+    type: 'date'
+  })
+  deadline: Date | null;
+
   @DeleteDateColumn({
     comment: '게시글 삭제일',
   })
   deletedAt: Date | null;
+
+  // @Column({
+  //   comment: '게시글 마감유무',
+  //   type: 'boolean'
+  // })
+  // isDeadline: boolean;
 
   @Column({
     type: 'int',
