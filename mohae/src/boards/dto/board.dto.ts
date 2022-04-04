@@ -65,11 +65,11 @@ export abstract class BoardContent {
 
 export class CreateBoardDto extends BoardContent {
   @IsNumber()
-  date: number;
+  deadline: number;
 }
 export class UpdateBoardDto extends BoardContent {
   @IsNumber()
-  date: number;
+  deadline: number;
 }
 export class SearchBoardDto {
   // @IsString()

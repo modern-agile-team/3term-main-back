@@ -114,7 +114,7 @@ export class BoardRepository extends Repository<Board> {
             note1,
             note2,
             note3,
-            endDate: endTime
+            deadline: endTime
           },
         ])
         .execute();
@@ -170,7 +170,7 @@ export class BoardRepository extends Repository<Board> {
           note1,
           note2,
           note3,
-          endDate: endTime
+          deadline: endTime
         })
         .where('no = :no', { no })
         .execute();
