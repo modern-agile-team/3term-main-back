@@ -1,4 +1,5 @@
 import { InternalServerErrorException } from '@nestjs/common';
+import { User } from 'src/auth/entity/user.entity';
 import { EntityRepository, Repository } from 'typeorm';
 import { CreateFaqDto, UpdateFaqDto } from '../dto/faq.dto';
 import { Faq } from '../entity/faq.entity';
@@ -7,7 +8,10 @@ import { Faq } from '../entity/faq.entity';
 export class FaqRepository extends Repository<Faq> {
   async findAllFaq(): Promise<Faq[]> {
     try {
-      const faqs = await this.createQueryBuilder('faqs').getMany();
+      const faqs = await this.createQueryBuilder('faqs')
+        .leftJoinAndSelect('faqs.manager', 'manager')
+        .leftJoinAndSelect('faqs.modifiedManager', 'modifiedManager')
+        .getMany();
 
       return faqs;
     } catch (e) {
@@ -15,8 +19,8 @@ export class FaqRepository extends Repository<Faq> {
     }
   }
 
-  async createFaq(createFaqDto: CreateFaqDto) {
-    const { title, managerNo, description } = createFaqDto;
+  async createFaq(createFaqDto: CreateFaqDto, manager: User) {
+    const { title, description } = createFaqDto;
 
     try {
       const { raw } = await this.createQueryBuilder()
@@ -25,21 +29,21 @@ export class FaqRepository extends Repository<Faq> {
         .values([
           {
             title,
-            managerNo,
-            modifiedManagerNo: managerNo,
             description,
+            manager,
+            modifiedManager: manager,
           },
         ])
         .execute();
 
-      return raw.affectedRows;
+      return raw;
     } catch (e) {
       throw new InternalServerErrorException(e);
     }
   }
 
-  async updateFaq(no: number, updateFaqDto: UpdateFaqDto) {
-    const { title, modifiedManagerNo, description } = updateFaqDto;
+  async updateFaq(no: number, updateFaqDto: UpdateFaqDto, manager: User) {
+    const { title, description } = updateFaqDto;
 
     try {
       const { affected } = await this.createQueryBuilder()
@@ -47,7 +51,7 @@ export class FaqRepository extends Repository<Faq> {
         .set({
           title,
           description,
-          modifiedManagerNo,
+          modifiedManager: manager,
         })
         .where('no = :no', { no })
         .execute();

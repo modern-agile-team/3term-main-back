@@ -1,9 +1,11 @@
+import { User } from 'src/auth/entity/user.entity';
 import {
   BaseEntity,
   Column,
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
+  ManyToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -13,19 +15,11 @@ export class Faq extends BaseEntity {
   @PrimaryGeneratedColumn()
   no: number;
 
-  @Column({
-    type: 'int',
-    comment: '관리자 번호',
-    name: 'manager_no',
-  })
-  managerNo: number;
+  @ManyToOne((type) => User, (user) => user.no, { onDelete: 'SET NULL' })
+  manager: User;
 
-  @Column({
-    type: 'int',
-    comment: '관리자 번호',
-    name: 'modified_manager_no',
-  })
-  modifiedManagerNo: number;
+  @ManyToOne((type) => User, (user) => user.no, { onDelete: 'SET NULL' })
+  modifiedManager: User;
 
   @Column({
     type: 'varchar',

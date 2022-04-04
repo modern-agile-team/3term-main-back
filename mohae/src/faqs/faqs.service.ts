@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { UserRepository } from 'src/auth/repository/user.repository';
 import { CreateFaqDto, UpdateFaqDto } from './dto/faq.dto';
 import { Faq } from './entity/faq.entity';
 import { FaqRepository } from './repository/faq.repository';
@@ -9,6 +10,9 @@ export class FaqsService {
   constructor(
     @InjectRepository(FaqRepository)
     private faqRepository: FaqRepository,
+
+    @InjectRepository(UserRepository)
+    private userRepository: UserRepository,
   ) {}
 
   async findAllFaq(): Promise<Faq[]> {
@@ -19,9 +23,21 @@ export class FaqsService {
 
   async createFaq(createFaqDto: CreateFaqDto) {
     try {
-      const createResult = await this.faqRepository.createFaq(createFaqDto);
+      const { managerNo } = createFaqDto;
+      const manager = await this.userRepository.findOne(managerNo, {
+        relations: ['faqs'],
+      });
+      const { affectedRows, insertId } = await this.faqRepository.createFaq(
+        createFaqDto,
+        manager,
+      );
+      const faqs = await this.faqRepository.findOne(insertId);
 
-      if (createResult) {
+      manager.faqs.push(faqs);
+
+      await this.userRepository.save(manager);
+
+      if (affectedRows) {
         return { success: true };
       }
 
@@ -32,7 +48,20 @@ export class FaqsService {
   }
 
   async updateFaq(no: number, updateFaqDto: UpdateFaqDto) {
-    const updateResult = this.faqRepository.updateFaq(no, updateFaqDto);
+    const { modifiedManagerNo } = updateFaqDto;
+    const manager = await this.userRepository.findOne(modifiedManagerNo, {
+      relations: ['modifyFaqs'],
+    });
+    const updateResult = this.faqRepository.updateFaq(
+      no,
+      updateFaqDto,
+      manager,
+    );
+    const faq = await this.faqRepository.findOne(no);
+
+    manager.modifyFaqs.push(faq);
+
+    await this.userRepository.save(manager);
 
     if (updateResult) {
       return { success: true };
