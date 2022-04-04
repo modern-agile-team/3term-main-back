@@ -2,15 +2,15 @@ import { InternalServerErrorException } from '@nestjs/common';
 import { User } from 'src/auth/entity/user.entity';
 import { Mailbox } from 'src/mailboxes/entity/mailbox.entity';
 import { EntityRepository, Repository } from 'typeorm';
-import { SendLetterDto } from '../dto/letter.dto';
 import { Letter } from '../entity/letter.entity';
 
 @EntityRepository(Letter)
 export class LetterRepository extends Repository<Letter> {
-  async notReadingLetter(myNo: number, youNo: number) {
+  async notReadingLetter(mailboxNo) {
     const letter = await this.createQueryBuilder('letters')
       .leftJoinAndSelect('letters.sender', 'sender')
       .leftJoinAndSelect('letters.receiver', 'receiver')
+      .leftJoinAndSelect('letters.mailbox', 'mailbox')
       .select([
         'letters.no',
         'letters.description',
@@ -20,9 +20,8 @@ export class LetterRepository extends Repository<Letter> {
         'receiver.no',
         'receiver.email',
       ])
-      .where('letters.reading_flag = :isReading', { isReading: false })
-      .andWhere('letters.sender = :youNo', { youNo })
-      .andWhere('letters.receiver = :myNo', { myNo })
+      .where('letters.mailbox = :mailboxNo', { mailboxNo })
+      .andWhere('letters.reading_flag = :isReading', { isReading: false })
       .getMany();
 
     return letter;
@@ -38,32 +37,35 @@ export class LetterRepository extends Repository<Letter> {
 
       return affected;
     } catch (e) {
-      console.log(e);
+      throw e;
     }
   }
 
-  async 전송하고받은쪽지인데함수명바꿔야함(myNo: number, youNo: number) {
+  async getLetterContent(loginUserNo: number, clickedUserNo: number) {
     try {
-      const 쪽지내용인데변수명바꿔야함 = await this.createQueryBuilder(
-        'letters',
-      )
+      const letterContent = await this.createQueryBuilder('letters')
         .leftJoinAndSelect('letters.sender', 'sender')
         .leftJoinAndSelect('letters.receiver', 'receiver')
         .select([
           'letters.no',
           'letters.description',
+          'letters.reading_flag',
           'letters.createdAt',
           'sender.no',
           'receiver.no',
         ])
-        .where('letters.sender = :youNo', { youNo })
-        .andWhere('letters.receiver = :myNo', { myNo })
-        .orWhere('letters.sender = :mySendNo', { mySendNo: myNo })
-        .andWhere('letters.receiver = :youReceivedNo', { youReceivedNo: youNo })
+        .where('letters.sender = :clickedUserNo', { clickedUserNo })
+        .andWhere('letters.receiver = :loginUserNo', { loginUserNo })
+        .orWhere('letters.sender = :loginUserNo2', {
+          loginUserNo2: loginUserNo,
+        })
+        .andWhere('letters.receiver = :clickedUserNo2', {
+          clickedUserNo2: clickedUserNo,
+        })
         .orderBy('letters.createdAt', 'ASC')
         .getMany();
 
-      return 쪽지내용인데변수명바꿔야함;
+      return letterContent;
     } catch (e) {
       throw new InternalServerErrorException(e);
     }
