@@ -52,9 +52,19 @@ export class FaqRepository extends Repository<Faq> {
         .where('no = :no', { no })
         .execute();
 
-      return { affected };
+      return affected;
     } catch (e) {
       throw new InternalServerErrorException(e);
     }
+  }
+
+  async deleteFaq(no: number) {
+    const { affected } = await this.createQueryBuilder()
+      .softDelete()
+      .from(Faq)
+      .where('no = :no', { no })
+      .execute();
+
+    return affected;
   }
 }

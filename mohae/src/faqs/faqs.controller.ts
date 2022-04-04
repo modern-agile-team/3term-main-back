@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Logger,
   Param,
@@ -47,6 +48,21 @@ export class FaqsController {
   ) {
     const response = await this.faqsService.updateFaq(no, updateFaqDto);
 
-    return response;
+    return Object.assign({
+      statusCode: 201,
+      msg: `FAQ 수정 완료`,
+      response,
+    });
+  }
+
+  @Delete('/:faqNo')
+  async deleteFaq(@Param('faqNo') no: number) {
+    const response = await this.faqsService.deleteFaq(no);
+
+    return Object.assign({
+      statusCode: 200,
+      msg: `FAQ 삭제 완료`,
+      response,
+    });
   }
 }

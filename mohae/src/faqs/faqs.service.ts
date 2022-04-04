@@ -40,4 +40,14 @@ export class FaqsService {
 
     return { success: false };
   }
+
+  async deleteFaq(no: number) {
+    const deleteFaq = await this.faqRepository.deleteFaq(no);
+
+    if (deleteFaq) {
+      return { success: true };
+    }
+
+    return { success: false };
+  }
 }
