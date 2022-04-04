@@ -16,8 +16,10 @@ import { CategoryRepository } from 'src/categories/repository/category.repositor
 import { CategoriesModule } from 'src/categories/categories.module';
 import { ErrorConfirm } from 'src/utils/error';
 import { LoginProcess } from 'src/utils/login';
+import { User } from './entity/user.entity';
 
 const jwtConfig = config.get('jwt');
+
 @Module({
   imports: [
     PassportModule.register({ defaultStrategy: 'jwt' }),
