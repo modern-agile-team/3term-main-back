@@ -18,6 +18,7 @@ import { Note } from 'src/notes/entity/note.entity';
 import { Letter } from 'src/letters/entity/letter.entity';
 import { Mailbox } from 'src/mailboxes/entity/mailbox.entity';
 import { Spec } from 'src/specs/entity/spec.entity';
+import { Notice } from 'src/notices/entity/notice.entity';
 const dbConfig = config.get('db');
 
 const { DB_HOST, DB_PORT, DB_USER, DB_PSWORD, DB_DATABASE } = process.env;
@@ -47,6 +48,7 @@ export const typeORMConfig: TypeOrmModuleOptions = {
     Letter,
     Mailbox,
     Spec,
+    Notice,
   ],
   // entities: [__dirname + '/../**/*.entity.{ts,js}'],
   synchronize: dbConfig.synchronize,
