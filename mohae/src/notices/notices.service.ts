@@ -6,6 +6,7 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { UserRepository } from 'src/auth/repository/user.repository';
 import { CreateNoticeDto, UpdateNoticeDto } from './dto/notice.dto';
+import { Notice } from './entity/notice.entity';
 import { NoticeRepository } from './repository/notice.repository';
 
 @Injectable()
@@ -18,10 +19,14 @@ export class NoticesService {
     private userRepository: UserRepository,
   ) {}
 
-  async readNotices() {
-    const notices = await this.noticeRepository.readNotices();
+  async readNotices(): Promise<Notice[]> {
+    try {
+      const notices = await this.noticeRepository.readNotices();
 
-    return notices;
+      return notices;
+    } catch (e) {
+      throw e;
+    }
   }
 
   async createNotice(createNoticeDto: CreateNoticeDto) {
@@ -30,14 +35,16 @@ export class NoticesService {
       const manager = await this.userRepository.findOne(managerNo, {
         relations: ['notices'],
       });
-      const result = await this.noticeRepository.createNotice(
+      const createdResult = await this.noticeRepository.createNotice(
         createNoticeDto,
         manager,
       );
-      if (!result.affectedRows) {
+      if (!createdResult.affectedRows) {
         return { success: false };
       }
-      const notice = await this.noticeRepository.findOne(result.insertId);
+      const notice = await this.noticeRepository.findOne(
+        createdResult.insertId,
+      );
 
       manager.notices.push(notice);
 
@@ -55,7 +62,7 @@ export class NoticesService {
       const manager = await this.userRepository.findOne(modifiedManagerNo, {
         relations: ['modifyNotices'],
       });
-      const result = await this.noticeRepository.updateNotice(
+      const updateResult = await this.noticeRepository.updateNotice(
         no,
         updateNoticeDto,
         manager,
@@ -66,7 +73,7 @@ export class NoticesService {
 
       await this.userRepository.save(manager);
 
-      return result ? { success: true } : { success: false };
+      return updateResult ? { success: true } : { success: false };
     } catch (e) {
       throw e;
     }
@@ -74,9 +81,9 @@ export class NoticesService {
 
   async deleteNotice(no: number) {
     try {
-      const result = await this.noticeRepository.deleteNotice(no);
+      const deleteResult = await this.noticeRepository.deleteNotice(no);
 
-      if (!result) {
+      if (!deleteResult) {
         throw new NotFoundException('해당 공지사항을 찾을 수 없습니다.');
       }
       return { success: true };

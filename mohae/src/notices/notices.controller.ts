@@ -8,6 +8,7 @@ import {
   Post,
 } from '@nestjs/common';
 import { CreateNoticeDto, UpdateNoticeDto } from './dto/notice.dto';
+import { Notice } from './entity/notice.entity';
 import { NoticesService } from './notices.service';
 
 @Controller('notices')
@@ -15,10 +16,14 @@ export class NoticesController {
   constructor(private noticesService: NoticesService) {}
 
   @Get()
-  async readNotices() {
+  async readNotices(): Promise<Notice[]> {
     const response = await this.noticesService.readNotices();
 
-    return response;
+    return Object.assign({
+      statusCode: 200,
+      msg: `Notice 전체 조회 완료`,
+      response,
+    });
   }
 
   @Post()

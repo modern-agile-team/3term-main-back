@@ -1,16 +1,16 @@
 import { InternalServerErrorException } from '@nestjs/common';
 import { User } from 'src/auth/entity/user.entity';
 import { EntityRepository, Repository } from 'typeorm';
-import { CreateNoticeDto } from '../dto/notice.dto';
 import { Notice } from '../entity/notice.entity';
 
 @EntityRepository(Notice)
 export class NoticeRepository extends Repository<Notice> {
-  async readNotices() {
+  async readNotices(): Promise<Notice[]> {
     try {
       const notices = this.createQueryBuilder('notices')
         .leftJoinAndSelect('notices.manager', 'manager')
         .leftJoinAndSelect('notices.modifiedManager', 'modifiedManager')
+        .orderBy('notices.updatedAt', 'DESC')
         .getMany();
 
       return notices;
