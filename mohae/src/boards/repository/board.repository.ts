@@ -35,7 +35,7 @@ export class BoardRepository extends Repository<Board> {
       .select(['boards.no','boards.title','boards.description','boards.createdAt','boards.deadLine','boards.isDeadLine','boards.thumb','boards.hit','boards.price','boards.summary','boards.target','boards.note1','boards.note2','boards.note3','areas.name','categories.name'])
       .orderBy('boards.thumb', 'DESC')
       .limit(3)
-      .getMany()
+      .getMany();
       
       return boards;
     } catch (e) {
