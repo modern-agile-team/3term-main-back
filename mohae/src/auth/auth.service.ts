@@ -76,12 +76,11 @@ export class AuthService {
       relations: ['categories'],
     });
 
-    for (const i of categoriesRepo) {
-      if (!i) {
-        continue;
+    categoriesRepo.forEach((item) => {
+      if (item) {
+        userCategory.categories.push(item);
       }
-      userCategory.categories.push(i);
-    }
+    });
 
     schoolRepo.users.push(user);
     majorRepo.users.push(user);

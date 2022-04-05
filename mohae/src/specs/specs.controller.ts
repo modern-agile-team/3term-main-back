@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Param, Patch, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+} from '@nestjs/common';
 import { CreateSpecDto, UpdateSpecDto } from './dto/spec.dto';
 import { SpecsService } from './specs.service';
 
@@ -43,6 +51,20 @@ export class SpecsController {
       return Object.assign({
         statusCode: 204,
         msg: '성공적으로 스팩이 수정되었습니다.',
+      });
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  @Delete('/:no')
+  async deleteSpec(@Param('no') specNo: number) {
+    try {
+      await this.specsService.deleteSpec(specNo);
+
+      return Object.assign({
+        statusCode: 204,
+        msg: '성공적으로 스팩을 삭제하였습니다.',
       });
     } catch (err) {
       throw err;

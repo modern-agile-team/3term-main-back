@@ -1,4 +1,5 @@
 import { InternalServerErrorException } from '@nestjs/common';
+import { onErrorResumeNext } from 'rxjs/operators';
 import { EntityRepository, Repository } from 'typeorm';
 import { Spec } from '../entity/spec.entity';
 
@@ -52,22 +53,37 @@ export class SpecRepository extends Repository<Spec> {
     }
   }
 
-  async updateSpec(specNo, updateSpec) {
+  async updateSpec(no, updateSpec) {
     try {
       const isUpdate = await this.createQueryBuilder('spec')
         .update(Spec)
         .set(updateSpec)
-        .where('no = :no', { no: specNo })
+        .where('no = :no', { no })
         .execute();
 
-      if (!isUpdate.affected) {
-        throw new InternalServerErrorException(
-          '스팩 업데이트 도중 발생한 서버에러',
-        );
-      }
-      return isUpdate;
+      return isUpdate.affected;
     } catch (err) {
-      throw err;
+      throw new InternalServerErrorException(
+        '스팩 업데이트 도중 발생한 서버에러',
+        err,
+      );
+    }
+  }
+
+  async deleteSpec(no) {
+    try {
+      const isDelete = await this.createQueryBuilder('spec')
+        .softDelete()
+        .from(Spec)
+        .where('no = :no', { no })
+        .execute();
+
+      return isDelete.affected;
+    } catch (err) {
+      throw new InternalServerErrorException(
+        '스팩 삭제 도중 발생한 서버에러',
+        err,
+      );
     }
   }
 }
