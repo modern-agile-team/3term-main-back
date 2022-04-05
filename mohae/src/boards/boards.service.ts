@@ -7,7 +7,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { CategoryRepository } from 'src/categories/repository/category.repository';
 import { AreasRepository } from 'src/areas/repository/area.repository';
 import { createQueryBuilder, DeleteResult, getConnection } from 'typeorm';
-import { CreateBoardDto, UpdateBoardDto } from './dto/board.dto';
+import { CreateBoardDto, SearchBoardDto, UpdateBoardDto } from './dto/board.dto';
 import { Board } from './entity/board.entity';
 import { BoardRepository } from './repository/board.repository';
 import { ErrorConfirm } from 'src/utils/error';
@@ -44,11 +44,11 @@ export class BoardsService {
     return boards;
   }
 
-  async searchAllBoards(sort: any): Promise<Board[]> {
-    const boards = await this.boardRepository.searchAllBoards(sort);
+  async sortAllBoards(sort: any): Promise<Board[]> {
+    const boards = await this.boardRepository.sortAllBoards(sort);
     this.errorConfirm.notFoundError(
       boards,
-      '검색한 게시글을 찾을 수 없습니다.',
+      '정렬된 게시글을 찾을 수 없습니다.',
     );
 
     return boards;
@@ -84,6 +84,13 @@ export class BoardsService {
     }
 
     return board;
+  }
+
+  async searchAllBoards(searchBoardDto:SearchBoardDto):Promise<Board[]> {
+    const boards = await this.boardRepository.searchAllBoards(searchBoardDto);
+    this.errorConfirm.notFoundError(boards, '게시글을 찾을 수 없습니다.');
+
+    return boards;
   }
 
   async createBoard(createBoardDto: CreateBoardDto): Promise<Board> {
