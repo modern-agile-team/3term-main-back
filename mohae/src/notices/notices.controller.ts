@@ -48,12 +48,20 @@ export class NoticesController {
 
   @Delete('/:noticeNo')
   async deleteNotice(@Param('noticeNo') no: number) {
-    const response = await this.noticesService.deleteNotice(no);
+    const { success } = await this.noticesService.deleteNotice(no);
+
+    if (success) {
+      return Object.assign({
+        statusCode: 200,
+        msg: `Notice 삭제 완료`,
+        success,
+      });
+    }
 
     return Object.assign({
-      statusCode: 200,
-      msg: `Notice 삭제 완료`,
-      response,
+      statusCode: 500,
+      msg: `Notice 삭제 실패`,
+      success,
     });
   }
 }

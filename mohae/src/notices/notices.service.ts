@@ -46,8 +46,16 @@ export class NoticesService {
   }
 
   async deleteNotice(no: number) {
-    const result = await this.noticeRepository.deleteNotice(no);
+    try {
+      const result = await this.noticeRepository.deleteNotice(no);
 
-    return result;
+      if (result) {
+        return { success: true };
+      }
+
+      return { success: false };
+    } catch (e) {
+      throw e;
+    }
   }
 }

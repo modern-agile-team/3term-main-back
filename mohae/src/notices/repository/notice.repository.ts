@@ -44,6 +44,19 @@ export class NoticeRepository extends Repository<Notice> {
   }
 
   async deleteNotice(no: number) {
-    const result = 0;
+    try {
+      const { affected } = await this.createQueryBuilder()
+        .softDelete()
+        .from(Notice)
+        .where('no = :no', { no })
+        .execute();
+
+      return affected;
+    } catch (e) {
+      throw new InternalServerErrorException(
+        e,
+        '### 공지사항 삭제 에러 : 알 수 없는 서버 에러엡니다.',
+      );
+    }
   }
 }
