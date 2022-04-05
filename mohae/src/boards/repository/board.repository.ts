@@ -27,7 +27,7 @@ export class BoardRepository extends Repository<Board> {
     }
   }
 
-  async popularBoards(): Promise<Board[]> {
+  async readHotBoards(): Promise<Board[]> {
     try {
       const boards = await this.createQueryBuilder('boards')
       .leftJoinAndSelect('boards.area','areas')

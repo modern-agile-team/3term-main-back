@@ -50,9 +50,9 @@ export class BoardsController {
     });
   }
 
-  @Get('/popular')
-  async popularBoards(): Promise<Board[]> {
-    const response = await this.boardService.popularBoards();
+  @Get('/hot')
+  async readHotBoards(): Promise<Board[]> {
+    const response = await this.boardService.readHotBoards();
 
     return Object.assign({
       statusCode: 200,
