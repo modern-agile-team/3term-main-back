@@ -2,10 +2,12 @@ import { User } from 'src/auth/entity/user.entity';
 import {
   BaseEntity,
   Column,
+  CreateDateColumn,
   Entity,
   JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
+  UpdateDateColumn,
 } from 'typeorm';
 
 @Entity('spec')
@@ -30,6 +32,17 @@ export class Spec extends BaseEntity {
     comment: '스펙 관련 사진 url',
   })
   photo_url: string;
+
+  @CreateDateColumn({
+    name: 'create_at',
+    comment: '스팩 등록 시간',
+  })
+  createdAt: Date;
+
+  @UpdateDateColumn({
+    comment: '마지막 스팩 업데이트 시간',
+  })
+  latestUpdateSpec: Date;
 
   @ManyToOne((type) => User, (user) => user.no, {
     eager: true,

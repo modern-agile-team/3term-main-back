@@ -5,6 +5,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UserRepository } from 'src/auth/repository/user.repository';
+import { UpdateSpecDto } from './dto/spec.dto';
 import { SpecRepository } from './repository/spec.repository';
 
 @Injectable()
@@ -35,7 +36,9 @@ export class SpecsService {
           createSpecDto,
           user,
         );
+        // registSpec 해서 가져온 specNO 값은 [{no : 새로 생성된 스팩 고유번호}] 이런식으로 넘어옴.
         const spec = await this.specRepository.findOne(specNo[0].no);
+
         if (spec) {
           user.specs.push(spec);
         }
@@ -46,6 +49,16 @@ export class SpecsService {
       return new UnauthorizedException(
         `${userNo}에 해당하는 유저가 존재하지 않습니다.`,
       );
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  async updateSpec(specNo, updateSpec) {
+    try {
+      const isupdate = await this.specRepository.updateSpec(specNo, updateSpec);
+
+      return isupdate;
     } catch (err) {
       throw err;
     }

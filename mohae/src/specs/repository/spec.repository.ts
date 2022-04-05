@@ -1,5 +1,5 @@
 import { InternalServerErrorException } from '@nestjs/common';
-import { EntityRepository, getConnection, Repository } from 'typeorm';
+import { EntityRepository, Repository } from 'typeorm';
 import { Spec } from '../entity/spec.entity';
 
 @EntityRepository(Spec)
@@ -40,12 +40,32 @@ export class SpecRepository extends Repository<Spec> {
           },
         ])
         .execute();
+
       if (!raw) {
         throw new InternalServerErrorException(
           '### 정상적으로 저장되지 않았습니다.',
         );
       }
       return raw;
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  async updateSpec(specNo, updateSpec) {
+    try {
+      const isUpdate = await this.createQueryBuilder('spec')
+        .update(Spec)
+        .set(updateSpec)
+        .where('no = :no', { no: specNo })
+        .execute();
+
+      if (!isUpdate.affected) {
+        throw new InternalServerErrorException(
+          '스팩 업데이트 도중 발생한 서버에러',
+        );
+      }
+      return isUpdate;
     } catch (err) {
       throw err;
     }
