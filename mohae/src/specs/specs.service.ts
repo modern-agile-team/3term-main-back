@@ -36,7 +36,7 @@ export class SpecsService {
           createSpecDto,
           user,
         );
-        // registSpec 해서 가져온 specNO 값은 [{no : 새로 생성된 스팩 고유번호}] 이런식으로 넘어옴
+        // registSpec 해서 가져온 specNO 값은 [{no : 새로 생성된 스팩 고유번호}] 이런식으로 넘어옴.
         const spec = await this.specRepository.findOne(specNo[0].no);
 
         if (spec) {
