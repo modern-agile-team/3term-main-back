@@ -87,6 +87,7 @@ export class BoardRepository extends Repository<Board> {
       .leftJoinAndSelect('boards.category', 'categories')
       .select(['boards.no','boards.title','boards.description','boards.createdAt','boards.deadLine','boards.isDeadLine','boards.thumb','boards.hit','boards.price','boards.summary','boards.target','boards.note1','boards.note2','boards.note3','areas.name','categories.name'])
       .where('boards.title like :title', {title: `%${title}%`})
+      .orderBy('boards.no','DESC')
       .getMany();
 
       return boards;
