@@ -57,8 +57,27 @@ export class SpecsService {
   async updateSpec(specNo, updateSpec) {
     try {
       const isupdate = await this.specRepository.updateSpec(specNo, updateSpec);
-
+      if (!isupdate) {
+        throw new InternalServerErrorException(
+          '스팩 업데이트가 제대로 이루어지지 않았습니다.',
+        );
+      }
       return isupdate;
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  async deleteSpec(specNo) {
+    try {
+      const isDelete = await this.specRepository.deleteSpec(specNo);
+
+      if (!isDelete) {
+        throw new InternalServerErrorException(
+          '스팩 삭제가 제대로 이루어지지 않았습니다.',
+        );
+      }
+      return isDelete;
     } catch (err) {
       throw err;
     }
