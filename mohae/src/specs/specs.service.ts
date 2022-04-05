@@ -63,4 +63,14 @@ export class SpecsService {
       throw err;
     }
   }
+
+  async deleteSpec(specNo) {
+    try {
+      const isDelete = await this.specRepository.deleteSpec(specNo);
+
+      return isDelete;
+    } catch (err) {
+      throw err;
+    }
+  }
 }
