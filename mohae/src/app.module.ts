@@ -17,6 +17,7 @@ import { NotesModule } from './notes/notes.module';
 import { LettersModule } from './letters/letters.module';
 import { MailboxesModule } from './mailboxes/mailboxes.module';
 import { EmailModule } from './email/email.module';
+import { NoticesModule } from './notices/notices.module';
 import { SpecsModule } from './specs/specs.module';
 
 @Module({
@@ -36,6 +37,7 @@ import { SpecsModule } from './specs/specs.module';
     LettersModule,
     MailboxesModule,
     EmailModule,
+    NoticesModule,
     SpecsModule,
   ],
   controllers: [AppController],

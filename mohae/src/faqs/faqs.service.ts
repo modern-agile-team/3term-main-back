@@ -18,10 +18,14 @@ export class FaqsService {
     private errorConfirm: ErrorConfirm,
   ) {}
 
-  async findAllFaq(): Promise<Faq[]> {
-    const faqs = await this.faqRepository.findAllFaq();
+  async readFaqs(): Promise<Faq[]> {
+    try {
+      const faqs = await this.faqRepository.readFaqs();
 
-    return faqs;
+      return faqs;
+    } catch (e) {
+      throw e;
+    }
   }
 
   async createFaq(createFaqDto: CreateFaqDto) {
