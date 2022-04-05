@@ -10,3 +10,14 @@ export class CreateNoticeDto {
   @IsString()
   description: string;
 }
+
+export class UpdateNoticeDto {
+  @IsNumber()
+  modifiedManagerNo: number;
+
+  @IsString()
+  title: string;
+
+  @IsString()
+  description: string;
+}

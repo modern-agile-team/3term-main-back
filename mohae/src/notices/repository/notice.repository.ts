@@ -1,11 +1,12 @@
 import { InternalServerErrorException } from '@nestjs/common';
+import { User } from 'src/auth/entity/user.entity';
 import { EntityRepository, Repository } from 'typeorm';
 import { CreateNoticeDto } from '../dto/notice.dto';
 import { Notice } from '../entity/notice.entity';
 
 @EntityRepository(Notice)
 export class NoticeRepository extends Repository<Notice> {
-  async getAllNotices() {
+  async readNotices() {
     try {
       const notices = this.createQueryBuilder('notices')
         .leftJoinAndSelect('notices.manager', 'manager')
@@ -21,7 +22,7 @@ export class NoticeRepository extends Repository<Notice> {
     }
   }
 
-  async createNotice({ title, description }, manager) {
+  async createNotice({ title, description }, manager: User) {
     try {
       const { raw } = await this.createQueryBuilder('notices')
         .insert()
@@ -40,6 +41,24 @@ export class NoticeRepository extends Repository<Notice> {
         e,
         '### 공지사항 작성 에러 : 알 수 업는 서버 에러입니다.',
       );
+    }
+  }
+
+  async updateNotice(no: number, { title, description }, manager: User) {
+    try {
+      const { affected } = await this.createQueryBuilder()
+        .update(Notice)
+        .set({
+          title,
+          description,
+          modifiedManager: manager,
+        })
+        .where('no = :no', { no })
+        .execute();
+
+      return affected;
+    } catch (e) {
+      throw new InternalServerErrorException(e);
     }
   }
 

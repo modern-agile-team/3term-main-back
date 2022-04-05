@@ -7,7 +7,7 @@ import {
   Patch,
   Post,
 } from '@nestjs/common';
-import { CreateNoticeDto } from './dto/notice.dto';
+import { CreateNoticeDto, UpdateNoticeDto } from './dto/notice.dto';
 import { NoticesService } from './notices.service';
 
 @Controller('notices')
@@ -15,8 +15,8 @@ export class NoticesController {
   constructor(private noticesService: NoticesService) {}
 
   @Get()
-  async getAllNotices() {
-    const response = await this.noticesService.getAllNotices();
+  async readNotices() {
+    const response = await this.noticesService.readNotices();
 
     return response;
   }
@@ -32,35 +32,30 @@ export class NoticesController {
     });
   }
 
-  // @Patch('/:noticeNo')
-  // async updateFaq(
-  //   @Param('noticeNo') no: number,
-  //   @Body() updateFaqDto: UpdateFaqDto,
-  // ) {
-  //   const response = await this.faqsService.updateFaq(no, updateFaqDto);
+  @Patch('/:noticeNo')
+  async updateNotice(
+    @Param('noticeNo') no: number,
+    @Body() UpdateNoticeDto: UpdateNoticeDto,
+  ) {
+    const response = await this.noticesService.updateNotice(
+      no,
+      UpdateNoticeDto,
+    );
 
-  //   return Object.assign({
-  //     statusCode: 201,
-  //     msg: `Notice 수정 완료`,
-  //     response,
-  //   });
-  // }
+    return Object.assign({
+      statusCode: 201,
+      msg: `Notice 수정 완료`,
+      response,
+    });
+  }
 
   @Delete('/:noticeNo')
   async deleteNotice(@Param('noticeNo') no: number) {
     const { success } = await this.noticesService.deleteNotice(no);
 
-    if (success) {
-      return Object.assign({
-        statusCode: 200,
-        msg: `Notice 삭제 완료`,
-        success,
-      });
-    }
-
     return Object.assign({
-      statusCode: 500,
-      msg: `Notice 삭제 실패`,
+      statusCode: 200,
+      msg: `Notice 삭제 완료`,
       success,
     });
   }
