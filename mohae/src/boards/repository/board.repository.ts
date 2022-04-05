@@ -92,7 +92,7 @@ export class BoardRepository extends Repository<Board> {
       return boards;
     } catch(e) {
       throw new InternalServerErrorException(
-        `${e} ### 게시판 검색 : 알 수 없는 서버 에러입니다.`,
+        `${e} ### 게시글 검색 : 알 수 없는 서버 에러입니다.`,
       );
     }
   }
