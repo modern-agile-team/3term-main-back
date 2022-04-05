@@ -1,4 +1,5 @@
 import { InternalServerErrorException } from '@nestjs/common';
+import { onErrorResumeNext } from 'rxjs/operators';
 import { EntityRepository, Repository } from 'typeorm';
 import { Spec } from '../entity/spec.entity';
 
@@ -60,14 +61,12 @@ export class SpecRepository extends Repository<Spec> {
         .where('no = :no', { no })
         .execute();
 
-      if (!isUpdate.affected) {
-        throw new InternalServerErrorException(
-          '스팩 업데이트 도중 발생한 서버에러',
-        );
-      }
-      return isUpdate;
+      return isUpdate.affected;
     } catch (err) {
-      throw err;
+      throw new InternalServerErrorException(
+        '스팩 업데이트 도중 발생한 서버에러',
+        err,
+      );
     }
   }
 
@@ -79,15 +78,12 @@ export class SpecRepository extends Repository<Spec> {
         .where('no = :no', { no })
         .execute();
 
-      if (!isDelete.affected) {
-        throw new InternalServerErrorException(
-          '스팩 삭제 도중 발생한 서버에러',
-        );
-      }
-
-      return isDelete;
+      return isDelete.affected;
     } catch (err) {
-      throw err;
+      throw new InternalServerErrorException(
+        '스팩 삭제 도중 발생한 서버에러',
+        err,
+      );
     }
   }
 }

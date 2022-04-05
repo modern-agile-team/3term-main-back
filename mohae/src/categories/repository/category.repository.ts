@@ -1,4 +1,6 @@
 import { InternalServerErrorException } from '@nestjs/common';
+import { ConstraintMetadata } from 'class-validator/types/metadata/ConstraintMetadata';
+import { filter } from 'rxjs';
 import { EntityRepository, Repository } from 'typeorm';
 import { Category } from '../entity/category.entity';
 
@@ -59,15 +61,17 @@ export class CategoryRepository extends Repository<Category> {
   }
   async saveUsers(categories, user) {
     try {
-      const filterCategory = categories.filter(
+      const filterdCategory = categories.filter(
         (category) => category !== undefined,
       );
 
-      for (const i of filterCategory) {
-        const saveUser = await this.findOne(i.no, { relations: ['users'] });
-        saveUser.users.push(user);
-        this.save(saveUser);
-      }
+      filterdCategory.forEach(async (item) => {
+        const oneCategory = await this.findOne(item.no, {
+          relations: ['users'],
+        });
+        oneCategory.users.push(user);
+        this.save(oneCategory);
+      });
     } catch (e) {
       throw e;
     }
