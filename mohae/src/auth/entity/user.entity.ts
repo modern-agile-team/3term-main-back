@@ -28,6 +28,7 @@ import { Letter } from 'src/letters/entity/letter.entity';
 import { Mailbox } from 'src/mailboxes/entity/mailbox.entity';
 import { Spec } from 'src/specs/entity/spec.entity';
 import { Faq } from 'src/faqs/entity/faq.entity';
+import { Notice } from 'src/notices/entity/notice.entity';
 
 @Entity('users')
 export class User extends BaseEntity {
@@ -169,6 +170,16 @@ export class User extends BaseEntity {
     nullable: true,
   })
   modifyFaqs: Faq[];
+
+  @OneToMany((type) => Notice, (notices) => notices.manager, {
+    nullable: true,
+  })
+  notices: Faq[];
+
+  @OneToMany((type) => Notice, (notices) => notices.modifiedManager, {
+    nullable: true,
+  })
+  modifyNotices: Faq[];
 
   @ManyToMany((type) => Mailbox, (mailbox) => mailbox.users)
   mailboxes: Mailbox[];

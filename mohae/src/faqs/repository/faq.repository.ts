@@ -6,7 +6,7 @@ import { Faq } from '../entity/faq.entity';
 
 @EntityRepository(Faq)
 export class FaqRepository extends Repository<Faq> {
-  async findAllFaq(): Promise<Faq[]> {
+  async readFaqs(): Promise<Faq[]> {
     try {
       const faqs = await this.createQueryBuilder('faqs')
         .leftJoinAndSelect('faqs.manager', 'manager')
@@ -19,9 +19,7 @@ export class FaqRepository extends Repository<Faq> {
     }
   }
 
-  async createFaq(createFaqDto: CreateFaqDto, manager: User) {
-    const { title, description } = createFaqDto;
-
+  async createFaq({ title, description }, manager: User) {
     try {
       const { raw } = await this.createQueryBuilder()
         .insert()
@@ -42,9 +40,7 @@ export class FaqRepository extends Repository<Faq> {
     }
   }
 
-  async updateFaq(no: number, updateFaqDto: UpdateFaqDto, manager: User) {
-    const { title, description } = updateFaqDto;
-
+  async updateFaq(no: number, { title, description }, manager: User) {
     try {
       const { affected } = await this.createQueryBuilder()
         .update(Faq)

@@ -20,8 +20,8 @@ export class FaqsController {
   constructor(private faqsService: FaqsService) {}
 
   @Get()
-  async findAllFaq(): Promise<Faq[]> {
-    const response = await this.faqsService.findAllFaq();
+  async readFaqs(): Promise<Faq[]> {
+    const response = await this.faqsService.readFaqs();
 
     return Object.assign({
       statusCode: 200,
