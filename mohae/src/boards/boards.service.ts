@@ -54,6 +54,13 @@ export class BoardsService {
     return boards;
   }
 
+  async readHotBoards(): Promise<Board[]> {
+    const boards = await this.boardRepository.readHotBoards();
+    this.errorConfirm.notFoundError(boards, '게시글을 찾을 수 없습니다.');
+
+    return boards;
+  }
+
   async getByOneBoard(no: number): Promise<Board> {
     const board = await this.boardRepository.getByOneBoard(no);
     this.errorConfirm.notFoundError(board, `해당 게시글을 찾을 수 없습니다.`);

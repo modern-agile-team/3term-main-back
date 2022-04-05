@@ -27,6 +27,22 @@ export class BoardRepository extends Repository<Board> {
     }
   }
 
+  async readHotBoards(): Promise<Board[]> {
+    try {
+      const boards = await this.createQueryBuilder('boards')
+      .leftJoinAndSelect('boards.area','areas')
+      .leftJoinAndSelect('boards.category','categories')
+      .select(['boards.no','boards.title','boards.description','boards.createdAt','boards.deadLine','boards.isDeadLine','boards.thumb','boards.hit','boards.price','boards.summary','boards.target','boards.note1','boards.note2','boards.note3','areas.name','categories.name'])
+      .orderBy('boards.thumb', 'DESC')
+      .limit(3)
+      .getMany();
+      
+      return boards;
+    } catch (e) {
+      `${e} ### 인기 게시판 순위 조회 : 알 수 없는 서버 에러입니다.`;
+    }
+  }
+
   async addBoardHit(no: number, { hit }) {
     try {
       const boardHit = await this.createQueryBuilder()
