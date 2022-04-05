@@ -50,6 +50,17 @@ export class BoardsController {
     });
   }
 
+  @Get('/popular')
+  async popularBoards(): Promise<Board[]> {
+    const response = await this.boardService.popularBoards();
+
+    return Object.assign({
+      statusCode: 200,
+      msg: '인기 게시글 조회가 완료되었습니다.',
+      response,
+    });
+  }
+
   @Get('/:no')
   async getByOneBoard(@Param('no') no: number): Promise<Board> {
     const response = await this.boardService.getByOneBoard(no);
@@ -60,7 +71,7 @@ export class BoardsController {
       response,
     });
   }
-
+  
   @Post()
   @UsePipes(ValidationPipe)
   @ApiOperation({
