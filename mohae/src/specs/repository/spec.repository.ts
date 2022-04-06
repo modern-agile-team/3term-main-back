@@ -27,6 +27,28 @@ export class SpecRepository extends Repository<Spec> {
     }
   }
 
+  async getOneSpec(no: number) {
+    try {
+      const spec = await this.createQueryBuilder('spec')
+        .select([
+          'spec.no',
+          'spec.title',
+          'spec.description',
+          'spec.photo_url',
+          'spec.createdAt',
+          'spec.latestUpdateSpec',
+        ])
+        .where('spec.no = :no', { no })
+        .getOne();
+
+      return spec;
+    } catch (err) {
+      throw new InternalServerErrorException(
+        '스펙 상세 조회 관련 서버 에러입니다',
+      );
+    }
+  }
+
   async registSpec({ title, description, photo_url }, user) {
     try {
       const { raw } = await this.createQueryBuilder('spec')
@@ -55,13 +77,13 @@ export class SpecRepository extends Repository<Spec> {
 
   async updateSpec(no, updateSpec) {
     try {
-      const isUpdate = await this.createQueryBuilder('spec')
+      const { affected } = await this.createQueryBuilder('spec')
         .update(Spec)
         .set(updateSpec)
         .where('no = :no', { no })
         .execute();
 
-      return isUpdate.affected;
+      return affected;
     } catch (err) {
       throw new InternalServerErrorException(
         '스팩 업데이트 도중 발생한 서버에러',
@@ -72,13 +94,13 @@ export class SpecRepository extends Repository<Spec> {
 
   async deleteSpec(no) {
     try {
-      const isDelete = await this.createQueryBuilder('spec')
+      const { affected } = await this.createQueryBuilder('spec')
         .softDelete()
         .from(Spec)
         .where('no = :no', { no })
         .execute();
 
-      return isDelete.affected;
+      return affected;
     } catch (err) {
       throw new InternalServerErrorException(
         '스팩 삭제 도중 발생한 서버에러',

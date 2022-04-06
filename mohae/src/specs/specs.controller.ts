@@ -29,6 +29,21 @@ export class SpecsController {
     }
   }
 
+  @Get('user/spec/:no')
+  async getOneSpec(@Param('no') no: number) {
+    try {
+      const spec = await this.specsService.getOneSpec(no);
+
+      return Object.assign({
+        statusCode: 200,
+        msg: '성공적으로 스펙을 불러왔습니다.',
+        spec,
+      });
+    } catch (err) {
+      throw err;
+    }
+  }
+
   @Post('/regist')
   async registSpec(@Body() createSpecDto: CreateSpecDto) {
     try {

@@ -65,13 +65,13 @@ export class CategoryRepository extends Repository<Category> {
         (category) => category !== undefined,
       );
 
-      filterdCategory.forEach(async (item) => {
-        const oneCategory = await this.findOne(item.no, {
+      for (const category of filterdCategory) {
+        const saveUser = await this.findOne(category.no, {
           relations: ['users'],
         });
-        oneCategory.users.push(user);
-        this.save(oneCategory);
-      });
+        saveUser.users.push(user);
+        this.save(saveUser);
+      }
     } catch (e) {
       throw e;
     }
