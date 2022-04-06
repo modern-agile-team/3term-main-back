@@ -5,7 +5,7 @@ import { BoardRepository } from 'src/boards/repository/board.repository';
 import { ErrorConfirm } from 'src/utils/error';
 import { CreateReportDto } from './dto/report.dto';
 import {
-  ReportCheckBox,
+  ReportCheckbox,
   ReportedBoard,
   ReportedUser,
 } from './entity/report.entity';
@@ -36,15 +36,16 @@ export class ReportsService {
     private errorConfirm: ErrorConfirm,
   ) {}
 
-  async findAllCheckbox(): Promise<ReportCheckBox[]> {
-    const checkedReport = await this.reportCheckBoxRepository.findAllCheckbox();
+  async readAllCheckboxes(): Promise<ReportCheckbox[]> {
+    const checkedReport =
+      await this.reportCheckBoxRepository.readAllCheckboxes();
 
     return checkedReport;
   }
 
-  async findOneReportedBoard(no: number): Promise<ReportedBoard> {
+  async readOneReportedBoard(no: number): Promise<ReportedBoard> {
     try {
-      const report = await this.reportedBoardRepository.findOneReportedBoard(
+      const report = await this.reportedBoardRepository.readOneReportedBoard(
         no,
       );
 
@@ -59,9 +60,9 @@ export class ReportsService {
     }
   }
 
-  async findOneReportedUser(no: number): Promise<ReportedUser> {
+  async readOneReportedUser(no: number): Promise<ReportedUser> {
     try {
-      const report = await this.reportedUserRepository.findOneReportedUser(no);
+      const report = await this.reportedUserRepository.readOneReportedUser(no);
 
       this.errorConfirm.notFoundError(
         report,
@@ -109,7 +110,7 @@ export class ReportsService {
               );
 
             const boardReportRelation =
-              await this.reportedBoardRepository.findOneBoardReportRelation(
+              await this.reportedBoardRepository.readOneBoardReportRelation(
                 createdBoardReport.no,
               );
 
@@ -152,7 +153,7 @@ export class ReportsService {
             await this.reportedUserRepository.createUserReport(createReportDto);
 
           const userReportCheck =
-            await this.reportedUserRepository.findOneReportUserRelation(
+            await this.reportedUserRepository.readOneReportUserRelation(
               createdUserReport.no,
             );
 

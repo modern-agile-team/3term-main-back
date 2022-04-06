@@ -7,7 +7,7 @@ import { Category } from 'src/categories/entity/category.entity';
 import { Faq } from 'src/faqs/entity/faq.entity';
 import { Major } from 'src/majors/entity/major.entity';
 import {
-  ReportCheckBox,
+  ReportCheckbox,
   ReportContent,
   ReportedBoard,
   ReportedUser,
@@ -41,7 +41,7 @@ export const typeORMConfig: TypeOrmModuleOptions = {
     ReportContent,
     ReportedUser,
     ReportedBoard,
-    ReportCheckBox,
+    ReportCheckbox,
     Review,
     School,
     Note,

@@ -2,14 +2,14 @@ import { InternalServerErrorException } from '@nestjs/common';
 import { EntityRepository, Repository } from 'typeorm';
 import { CreateReportDto } from '../dto/report.dto';
 import {
-  ReportCheckBox,
+  ReportCheckbox,
   ReportedBoard,
   ReportedUser,
 } from '../entity/report.entity';
 
 @EntityRepository(ReportedBoard)
 export class ReportedBoardRepository extends Repository<ReportedBoard> {
-  async findOneReportedBoard(no: number): Promise<ReportedBoard> {
+  async readOneReportedBoard(no: number): Promise<ReportedBoard> {
     try {
       const reportBoard = await this.createQueryBuilder('reported_boards')
         .leftJoinAndSelect('reported_boards.reportUser', 'reportUser')
@@ -26,7 +26,7 @@ export class ReportedBoardRepository extends Repository<ReportedBoard> {
     }
   }
 
-  async findOneBoardReportRelation(no: number): Promise<any[]> {
+  async readOneBoardReportRelation(no: number): Promise<any[]> {
     try {
       const relation = await this.createQueryBuilder()
         .relation(ReportedBoard, 'checks')
@@ -63,7 +63,7 @@ export class ReportedBoardRepository extends Repository<ReportedBoard> {
 
 @EntityRepository(ReportedUser)
 export class ReportedUserRepository extends Repository<ReportedUser> {
-  async findOneReportedUser(no: number): Promise<ReportedUser> {
+  async readOneReportedUser(no: number): Promise<ReportedUser> {
     try {
       const reportUser = await this.createQueryBuilder('reported_users')
         .leftJoinAndSelect('reported_users.reportUser', 'reportUser')
@@ -80,7 +80,7 @@ export class ReportedUserRepository extends Repository<ReportedUser> {
     }
   }
 
-  async findOneReportUserRelation(no: number) {
+  async readOneReportUserRelation(no: number) {
     try {
       const relation = await this.createQueryBuilder()
         .relation(ReportedUser, 'reportUser')
@@ -95,7 +95,7 @@ export class ReportedUserRepository extends Repository<ReportedUser> {
     }
   }
 
-  async findOneUserReportCheckRelation(no: number): Promise<any[]> {
+  async readOneUserReportCheckRelation(no: number): Promise<any[]> {
     try {
       const relation = await this.createQueryBuilder()
         .relation(ReportedUser, 'checks')
@@ -129,9 +129,9 @@ export class ReportedUserRepository extends Repository<ReportedUser> {
   }
 }
 
-@EntityRepository(ReportCheckBox)
-export class ReportCheckBoxRepository extends Repository<ReportCheckBox> {
-  async findAllCheckbox(): Promise<ReportCheckBox[]> {
+@EntityRepository(ReportCheckbox)
+export class ReportCheckBoxRepository extends Repository<ReportCheckbox> {
+  async readAllCheckboxes(): Promise<ReportCheckbox[]> {
     try {
       const checkedReport = this.createQueryBuilder('report_checkboxes')
         .leftJoinAndSelect('report_checkboxes.reportedBoards', 'reportedBoard')
