@@ -5,7 +5,11 @@ import {
 import { Area } from 'src/areas/entity/areas.entity';
 import { Category } from 'src/categories/entity/category.entity';
 import { DeleteResult, EntityRepository, Repository } from 'typeorm';
-import { CreateBoardDto, SearchBoardDto, UpdateBoardDto } from '../dto/board.dto';
+import {
+  CreateBoardDto,
+  SearchBoardDto,
+  UpdateBoardDto,
+} from '../dto/board.dto';
 import { Board } from '../entity/board.entity';
 
 @EntityRepository(Board)
@@ -15,7 +19,24 @@ export class BoardRepository extends Repository<Board> {
       const board = await this.createQueryBuilder('boards')
         .leftJoinAndSelect('boards.area', 'areas')
         .leftJoinAndSelect('boards.category', 'categories')
-        .select(['boards.no','boards.title','boards.description','boards.createdAt','boards.deadLine','boards.isDeadLine','boards.thumb','boards.hit','boards.price','boards.summary','boards.target','boards.note1','boards.note2','boards.note3','areas.name','categories.name'])
+        .select([
+          'boards.no',
+          'boards.title',
+          'boards.description',
+          'boards.createdAt',
+          'boards.deadLine',
+          'boards.isDeadLine',
+          'boards.thumb',
+          'boards.hit',
+          'boards.price',
+          'boards.summary',
+          'boards.target',
+          'boards.note1',
+          'boards.note2',
+          'boards.note3',
+          'areas.name',
+          'categories.name',
+        ])
         .where('boards.no = :no', { no })
         .andWhere('boards.area = areas.no')
         .andWhere('boards.category = categories.no')
@@ -30,13 +51,30 @@ export class BoardRepository extends Repository<Board> {
   async readHotBoards(): Promise<Board[]> {
     try {
       const boards = await this.createQueryBuilder('boards')
-      .leftJoinAndSelect('boards.area','areas')
-      .leftJoinAndSelect('boards.category','categories')
-      .select(['boards.no','boards.title','boards.description','boards.createdAt','boards.deadLine','boards.isDeadLine','boards.thumb','boards.hit','boards.price','boards.summary','boards.target','boards.note1','boards.note2','boards.note3','areas.name','categories.name'])
-      .orderBy('boards.thumb', 'DESC')
-      .limit(3)
-      .getMany();
-      
+        .leftJoinAndSelect('boards.area', 'areas')
+        .leftJoinAndSelect('boards.category', 'categories')
+        .select([
+          'boards.no',
+          'boards.title',
+          'boards.description',
+          'boards.createdAt',
+          'boards.deadLine',
+          'boards.isDeadLine',
+          'boards.thumb',
+          'boards.hit',
+          'boards.price',
+          'boards.summary',
+          'boards.target',
+          'boards.note1',
+          'boards.note2',
+          'boards.note3',
+          'areas.name',
+          'categories.name',
+        ])
+        .orderBy('boards.thumb', 'DESC')
+        .limit(3)
+        .getMany();
+
       return boards;
     } catch (e) {
       `${e} ### 인기 게시판 순위 조회 : 알 수 없는 서버 에러입니다.`;
@@ -59,51 +97,85 @@ export class BoardRepository extends Repository<Board> {
     } catch (e) {
       throw new InternalServerErrorException(
         `${e} ### 게시판 조회수 증가 : 알 수 없는 서버 에러입니다.`,
-        );
-      }
+      );
     }
+  }
 
-  async closeBoard(currentTime: Date){
+  async closeBoard(currentTime: Date) {
     try {
       const closedBoard = await this.createQueryBuilder()
         .update(Board)
         .set({ isDeadLine: true })
-        .where('deadline <= :currentTime', {currentTime})
+        .where('deadline <= :currentTime', { currentTime })
         .execute();
       return closedBoard;
-    } catch(e) {
+    } catch (e) {
       throw new InternalServerErrorException(
         `${e} ### 게시판 마감 처리 : 알 수 없는 서버 에러입니다.`,
       );
     }
   }
-   
-  async searchAllBoards(searchBoardDto:SearchBoardDto): Promise<Board[]> {
+
+  async searchAllBoards(searchBoardDto: SearchBoardDto): Promise<Board[]> {
     try {
-      const {title} = searchBoardDto;
+      const { title } = searchBoardDto;
 
       const boards = await this.createQueryBuilder('boards')
-      .leftJoinAndSelect('boards.area', 'areas')
-      .leftJoinAndSelect('boards.category', 'categories')
-      .select(['boards.no','boards.title','boards.description','boards.createdAt','boards.deadLine','boards.isDeadLine','boards.thumb','boards.hit','boards.price','boards.summary','boards.target','boards.note1','boards.note2','boards.note3','areas.name','categories.name'])
-      .where('boards.title like :title', {title: `%${title}%`})
-      .orderBy('boards.no','DESC')
-      .getMany();
+        .leftJoinAndSelect('boards.area', 'areas')
+        .leftJoinAndSelect('boards.category', 'categories')
+        .select([
+          'boards.no',
+          'boards.title',
+          'boards.description',
+          'boards.createdAt',
+          'boards.deadLine',
+          'boards.isDeadLine',
+          'boards.thumb',
+          'boards.hit',
+          'boards.price',
+          'boards.summary',
+          'boards.target',
+          'boards.note1',
+          'boards.note2',
+          'boards.note3',
+          'areas.name',
+          'categories.name',
+        ])
+        .where('boards.title like :title', { title: `%${title}%` })
+        .orderBy('boards.no', 'DESC')
+        .getMany();
 
       return boards;
-    } catch(e) {
+    } catch (e) {
       throw new InternalServerErrorException(
         `${e} ### 게시글 검색 : 알 수 없는 서버 에러입니다.`,
       );
     }
   }
 
-  async sortAllBoards(sort: any): Promise<Board[]> {
+  async sortfilteredBoards(sort: any): Promise<Board[]> {
     try {
       const filteredBoard = await this.createQueryBuilder('boards')
         .leftJoinAndSelect('boards.area', 'areas')
         .leftJoinAndSelect('boards.category', 'categories')
-        .select(['boards.no','boards.title','boards.description','boards.createdAt','boards.deadLine','boards.isDeadLine','boards.thumb','boards.hit','boards.price','boards.summary','boards.target','boards.note1','boards.note2','boards.note3','areas.name','categories.name'])
+        .select([
+          'boards.no',
+          'boards.title',
+          'boards.description',
+          'boards.createdAt',
+          'boards.deadLine',
+          'boards.isDeadLine',
+          'boards.thumb',
+          'boards.hit',
+          'boards.price',
+          'boards.summary',
+          'boards.target',
+          'boards.note1',
+          'boards.note2',
+          'boards.note3',
+          'areas.name',
+          'categories.name',
+        ])
         .where('boards.area = areas.no')
         .andWhere('boards.category = categories.no')
         .orderBy('boards.no', sort)
@@ -135,12 +207,11 @@ export class BoardRepository extends Repository<Board> {
     }
   }
 
-
   async createBoard(
     category: Category,
     area: object,
     createBoardDto: CreateBoardDto,
-    endTime: Date
+    endTime: Date,
   ): Promise<Board> {
     try {
       const {
@@ -168,7 +239,7 @@ export class BoardRepository extends Repository<Board> {
             note1,
             note2,
             note3,
-            deadline: endTime
+            deadline: endTime,
           },
         ])
         .execute();
@@ -193,7 +264,7 @@ export class BoardRepository extends Repository<Board> {
     category: Category,
     area: Area,
     updateBoardDto: UpdateBoardDto,
-    endTime: Date
+    endTime: Date,
   ): Promise<object> {
     const board = await this.findOne(no);
     if (!board) {
@@ -224,7 +295,7 @@ export class BoardRepository extends Repository<Board> {
           note1,
           note2,
           note3,
-          deadline: endTime
+          deadline: endTime,
         })
         .where('no = :no', { no })
         .execute();

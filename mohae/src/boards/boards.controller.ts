@@ -39,9 +39,9 @@ export class BoardsController {
     });
   }
 
-  @Get('/sort')
-  async sortAllBoards(@Query('sort') sort: any): Promise<Board[]> {
-    const response = await this.boardService.sortAllBoards(sort);
+  @Get('/search')
+  async sortfilteredBoards(@Query('sort') sort: any): Promise<Board[]> {
+    const response = await this.boardService.sortfilteredBoards(sort);
 
     return Object.assign({
       statusCode: 200,
@@ -71,7 +71,7 @@ export class BoardsController {
       response,
     });
   }
-  
+
   @Post()
   @UsePipes(ValidationPipe)
   @ApiOperation({
@@ -102,7 +102,9 @@ export class BoardsController {
   }
 
   @Post('search')
-  async searchAllBoards(@Body() searchBoardDto: SearchBoardDto): Promise<Board[]> {
+  async searchAllBoards(
+    @Body() searchBoardDto: SearchBoardDto,
+  ): Promise<Board[]> {
     const response = await this.boardService.searchAllBoards(searchBoardDto);
 
     return Object.assign({
