@@ -1,7 +1,9 @@
 import { UserRepository } from 'src/auth/repository/user.repository';
 import { ErrorConfirm } from 'src/utils/error';
 import Mail = require('nodemailer/lib/mailer');
+// import Mail = require('nodemailer/lib/mailer');
 import * as nodemailer from 'nodemailer';
+// import * as nodemailer from 'nodemailer'
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import * as config from 'config';
 

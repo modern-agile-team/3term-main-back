@@ -7,7 +7,11 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { CategoryRepository } from 'src/categories/repository/category.repository';
 import { AreasRepository } from 'src/areas/repository/area.repository';
 import { createQueryBuilder, DeleteResult, getConnection } from 'typeorm';
-import { CreateBoardDto, SearchBoardDto, UpdateBoardDto } from './dto/board.dto';
+import {
+  CreateBoardDto,
+  SearchBoardDto,
+  UpdateBoardDto,
+} from './dto/board.dto';
 import { Board } from './entity/board.entity';
 import { BoardRepository } from './repository/board.repository';
 import { ErrorConfirm } from 'src/utils/error';
@@ -31,21 +35,19 @@ export class BoardsService {
     const boards = await this.boardRepository.getAllBoards();
     this.errorConfirm.notFoundError(boards, '게시글을 찾을 수 없습니다.');
 
-    const currentTime = new Date()
-    currentTime.setHours(currentTime.getHours() +9);
-    
-    const {affected} = await this.boardRepository.closeBoard(currentTime)
+    const currentTime = new Date();
+    currentTime.setHours(currentTime.getHours() + 9);
+
+    const { affected } = await this.boardRepository.closeBoard(currentTime);
     if (!affected) {
-      throw new InternalServerErrorException(
-        '게시글 마감이 되지 않았습니다',
-      );
+      throw new InternalServerErrorException('게시글 마감이 되지 않았습니다');
     }
 
     return boards;
   }
 
-  async sortAllBoards(sort: any): Promise<Board[]> {
-    const boards = await this.boardRepository.sortAllBoards(sort);
+  async sortfilteredBoards(sort: any): Promise<Board[]> {
+    const boards = await this.boardRepository.sortfilteredBoards(sort);
     this.errorConfirm.notFoundError(
       boards,
       '정렬된 게시글을 찾을 수 없습니다.',
@@ -72,21 +74,18 @@ export class BoardsService {
       );
     }
 
-    const currentTime = new Date()
-    currentTime.setHours(currentTime.getHours() +9);
+    const currentTime = new Date();
+    currentTime.setHours(currentTime.getHours() + 9);
 
-   
-    const {affected} = await this.boardRepository.closeBoard(currentTime)
+    const { affected } = await this.boardRepository.closeBoard(currentTime);
     if (!affected) {
-      throw new InternalServerErrorException(
-        '게시글 마감이 되지 않았습니다',
-      );
+      throw new InternalServerErrorException('게시글 마감이 되지 않았습니다');
     }
 
     return board;
   }
 
-  async searchAllBoards(searchBoardDto:SearchBoardDto):Promise<Board[]> {
+  async searchAllBoards(searchBoardDto: SearchBoardDto): Promise<Board[]> {
     const boards = await this.boardRepository.searchAllBoards(searchBoardDto);
     this.errorConfirm.notFoundError(boards, '게시글을 찾을 수 없습니다.');
 
@@ -110,8 +109,8 @@ export class BoardsService {
 
     this.errorConfirm.notFoundError(area, `해당 지역을 찾을 수 없습니다.`);
     const endTime = new Date();
-    endTime.setHours(endTime.getHours()+9);
-    
+    endTime.setHours(endTime.getHours() + 9);
+
     switch (deadline) {
       case 0:
         endTime.setDate(endTime.getDate() + 7);
@@ -124,7 +123,7 @@ export class BoardsService {
         break;
       case 3:
         endTime.setFullYear(endTime.getFullYear() + 100);
-        break;  
+        break;
     }
 
     const board = await this.boardRepository.createBoard(
@@ -173,7 +172,7 @@ export class BoardsService {
     );
 
     this.errorConfirm.notFoundError(area, `해당 지역을 찾을 수 없습니다.`);
-    
+
     const endTime = new Date();
     switch (deadline) {
       case 0:
@@ -187,7 +186,7 @@ export class BoardsService {
         break;
       case 3:
         endTime.setFullYear(endTime.getFullYear() + 100);
-        break;  
+        break;
     }
 
     const updatedBoard = await this.boardRepository.updateBoard(
@@ -195,7 +194,7 @@ export class BoardsService {
       category,
       area,
       updateBoardDto,
-      endTime
+      endTime,
     );
 
     if (updatedBoard) {
