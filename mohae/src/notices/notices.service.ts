@@ -58,8 +58,9 @@ export class NoticesService {
 
   async updateNotice(no: number, updateNoticeDto: UpdateNoticeDto) {
     try {
-      const { modifiedManagerNo } = updateNoticeDto;
-      const manager = await this.userRepository.findOne(modifiedManagerNo, {
+      const { managerNo } = updateNoticeDto;
+      console.log(updateNoticeDto);
+      const manager = await this.userRepository.findOne(managerNo, {
         relations: ['modifyNotices'],
       });
       const updateResult = await this.noticeRepository.updateNotice(
