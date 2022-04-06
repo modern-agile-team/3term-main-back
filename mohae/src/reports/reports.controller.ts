@@ -5,9 +5,11 @@ import {
   Logger,
   Param,
   Post,
+  UseGuards,
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { CreateReportDto } from './dto/report.dto';
 import {
@@ -18,6 +20,7 @@ import {
 import { ReportsService } from './reports.service';
 
 @Controller('reports')
+@UseGuards(AuthGuard())
 @ApiTags('Reports')
 export class ReportsController {
   private logger = new Logger('ReportsController');
