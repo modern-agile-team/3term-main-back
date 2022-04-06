@@ -72,10 +72,12 @@ export class UpdateBoardDto extends BoardContent {
   deadline: number;
 }
 export class SearchBoardDto {
+  @IsString()
+  title: string;
   // @IsString()
   // description: string;
-  @IsString()
-  sort: 'DESC' | 'ASC';
+  // @IsString()
+  // sort: 'DESC' | 'ASC';
   // @IsNumber()
   // price1: number;
   // @IsNumber()
