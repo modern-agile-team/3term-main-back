@@ -5,7 +5,7 @@ import {
 import { Area } from 'src/areas/entity/areas.entity';
 import { Category } from 'src/categories/entity/category.entity';
 import { DeleteResult, EntityRepository, Repository } from 'typeorm';
-import { CreateBoardDto, UpdateBoardDto } from '../dto/board.dto';
+import { CreateBoardDto, SearchBoardDto, UpdateBoardDto } from '../dto/board.dto';
 import { Board } from '../entity/board.entity';
 
 @EntityRepository(Board)
@@ -74,11 +74,31 @@ export class BoardRepository extends Repository<Board> {
     } catch(e) {
       throw new InternalServerErrorException(
         `${e} ### 게시판 마감 처리 : 알 수 없는 서버 에러입니다.`,
-        );
+      );
     }
   }
-    
-  async searchAllBoards(sort: any): Promise<Board[]> {
+   
+  async searchAllBoards(searchBoardDto:SearchBoardDto): Promise<Board[]> {
+    try {
+      const {title} = searchBoardDto;
+
+      const boards = await this.createQueryBuilder('boards')
+      .leftJoinAndSelect('boards.area', 'areas')
+      .leftJoinAndSelect('boards.category', 'categories')
+      .select(['boards.no','boards.title','boards.description','boards.createdAt','boards.deadLine','boards.isDeadLine','boards.thumb','boards.hit','boards.price','boards.summary','boards.target','boards.note1','boards.note2','boards.note3','areas.name','categories.name'])
+      .where('boards.title like :title', {title: `%${title}%`})
+      .orderBy('boards.no','DESC')
+      .getMany();
+
+      return boards;
+    } catch(e) {
+      throw new InternalServerErrorException(
+        `${e} ### 게시글 검색 : 알 수 없는 서버 에러입니다.`,
+      );
+    }
+  }
+
+  async sortAllBoards(sort: any): Promise<Board[]> {
     try {
       const filteredBoard = await this.createQueryBuilder('boards')
         .leftJoinAndSelect('boards.area', 'areas')

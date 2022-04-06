@@ -39,9 +39,9 @@ export class BoardsController {
     });
   }
 
-  @Get('/search')
-  async searchBoard(@Query('sort') sort: any): Promise<Board[]> {
-    const response = await this.boardService.searchAllBoards(sort);
+  @Get('/sort')
+  async sortAllBoards(@Query('sort') sort: any): Promise<Board[]> {
+    const response = await this.boardService.sortAllBoards(sort);
 
     return Object.assign({
       statusCode: 200,
@@ -97,6 +97,17 @@ export class BoardsController {
     return Object.assign({
       statusCode: 201,
       msg: '게시글 생성이 완료되었습니다.',
+      response,
+    });
+  }
+
+  @Post('search')
+  async searchAllBoards(@Body() searchBoardDto: SearchBoardDto): Promise<Board[]> {
+    const response = await this.boardService.searchAllBoards(searchBoardDto);
+
+    return Object.assign({
+      statusCode: 200,
+      msg: '검색에 관한 게시글 조회가 완료되었습니다.',
       response,
     });
   }
