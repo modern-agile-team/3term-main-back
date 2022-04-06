@@ -4,6 +4,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { throwIfEmpty } from 'rxjs';
 import { UserRepository } from 'src/auth/repository/user.repository';
 import { UpdateSpecDto } from './dto/spec.dto';
 import { SpecRepository } from './repository/spec.repository';
@@ -20,6 +21,16 @@ export class SpecsService {
       const specs = await this.specRepository.getAllSpec(no);
 
       return specs;
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  async getOneSpec(no: number) {
+    try {
+      const spec = await this.specRepository.getOneSpec(no);
+
+      return spec;
     } catch (err) {
       throw err;
     }
