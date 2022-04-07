@@ -16,7 +16,7 @@ import {
 } from 'typeorm';
 
 @Entity('report_checkboxes')
-export class ReportCheckBox extends BaseEntity {
+export class ReportCheckbox extends BaseEntity {
   @PrimaryGeneratedColumn()
   no: number;
 
@@ -64,9 +64,9 @@ export class ReportedBoard extends ReportContent {
   })
   reportedBoard: Board;
 
-  @ManyToMany((type) => ReportCheckBox, (checks) => checks.reportedBoards)
+  @ManyToMany((type) => ReportCheckbox, (checks) => checks.reportedBoards)
   @JoinTable({ name: 'board_report_checks' })
-  checks: ReportCheckBox[];
+  checks: ReportCheckbox[];
 
   @ManyToOne((type) => User, (user) => user.no, {
     onDelete: 'SET NULL',
@@ -83,9 +83,9 @@ export class ReportedUser extends ReportContent {
   @JoinColumn({ name: 'reported_user_no' })
   reportedUser: User;
 
-  @ManyToMany((type) => ReportCheckBox, (checks) => checks.reportedUsers)
+  @ManyToMany((type) => ReportCheckbox, (checks) => checks.reportedUsers)
   @JoinTable({ name: 'user_report_checks' })
-  checks: ReportCheckBox[];
+  checks: ReportCheckbox[];
 
   @ManyToOne((type) => User, (user) => user.no, {
     onDelete: 'SET NULL',
