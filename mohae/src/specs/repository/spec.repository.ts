@@ -9,14 +9,16 @@ export class SpecRepository extends Repository<Spec> {
     try {
       const specs = await this.createQueryBuilder('spec')
         .leftJoinAndSelect('spec.user', 'user')
+        .leftJoinAndSelect('spec.specPhoto', 'specPhoto')
         .select([
           'spec.no',
           'spec.title',
           'spec.description',
-          'spec.photo_url',
+          'specPhoto.photo_url',
           'user.no',
         ])
         .where('user.no = :no', { no })
+        .andWhere('spec.no = specPhoto.spec')
         .getMany();
 
       return specs;
@@ -30,26 +32,30 @@ export class SpecRepository extends Repository<Spec> {
   async getOneSpec(no: number) {
     try {
       const spec = await this.createQueryBuilder('spec')
+        .leftJoinAndSelect('spec.specPhoto', 'specPhoto')
         .select([
           'spec.no',
           'spec.title',
           'spec.description',
-          'spec.photo_url',
+          'specPhoto.photo_url',
           'spec.createdAt',
           'spec.latestUpdateSpec',
         ])
         .where('spec.no = :no', { no })
+        .andWhere('spec.no = specPhoto.spec')
         .getOne();
 
+      //근데 이렇게 짜면 specphoto url이 undefined인 경우에 상세조회 안불러와진다
       return spec;
     } catch (err) {
       throw new InternalServerErrorException(
         '스펙 상세 조회 관련 서버 에러입니다',
+        err,
       );
     }
   }
 
-  async registSpec({ title, description, photo_url }, user) {
+  async registSpec({ title, description }, user) {
     try {
       const { raw } = await this.createQueryBuilder('spec')
         .insert()
@@ -58,7 +64,6 @@ export class SpecRepository extends Repository<Spec> {
           {
             title,
             description,
-            photo_url,
             user,
           },
         ])

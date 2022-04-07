@@ -27,7 +27,6 @@ export class UserRepository extends Repository<User> {
       await user.save();
       return user;
     } catch (e) {
-      console.log(e);
       throw new InternalServerErrorException(
         '서버에러입니다 서버 담당자에게 말해주세요',
       );

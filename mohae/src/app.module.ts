@@ -19,6 +19,7 @@ import { MailboxesModule } from './mailboxes/mailboxes.module';
 import { EmailModule } from './email/email.module';
 import { NoticesModule } from './notices/notices.module';
 import { SpecsModule } from './specs/specs.module';
+import { PhotoModule } from './photo/photo.module';
 
 @Module({
   imports: [
@@ -39,6 +40,7 @@ import { SpecsModule } from './specs/specs.module';
     EmailModule,
     NoticesModule,
     SpecsModule,
+    PhotoModule,
   ],
   controllers: [AppController],
   providers: [AppService],
