@@ -6,7 +6,11 @@ import {
   Param,
   Patch,
   Post,
+  UseGuards,
 } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
+import { Role } from 'src/decorators/roles.decorator';
+import { RolesGuard } from 'src/guards/roles.guard';
 import { CreateNoticeDto, UpdateNoticeDto } from './dto/notice.dto';
 import { Notice } from './entity/notice.entity';
 import { NoticesService } from './notices.service';
@@ -27,6 +31,9 @@ export class NoticesController {
   }
 
   @Post()
+  @Role(true)
+  @UseGuards(RolesGuard)
+  @UseGuards(AuthGuard())
   async createNotice(@Body() createNoticeDto: CreateNoticeDto) {
     const response = await this.noticesService.createNotice(createNoticeDto);
 
@@ -38,6 +45,9 @@ export class NoticesController {
   }
 
   @Patch('/:noticeNo')
+  @Role(true)
+  @UseGuards(RolesGuard)
+  @UseGuards(AuthGuard())
   async updateNotice(
     @Param('noticeNo') no: number,
     @Body() UpdateNoticeDto: UpdateNoticeDto,
@@ -55,6 +65,9 @@ export class NoticesController {
   }
 
   @Delete('/:noticeNo')
+  @Role(true)
+  @UseGuards(RolesGuard)
+  @UseGuards(AuthGuard())
   async deleteNotice(@Param('noticeNo') no: number) {
     const { success } = await this.noticesService.deleteNotice(no);
 

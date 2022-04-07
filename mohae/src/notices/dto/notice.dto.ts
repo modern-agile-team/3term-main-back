@@ -1,4 +1,4 @@
-import { IsNumber, IsString } from 'class-validator';
+import { IsNumber, IsOptional, IsString } from 'class-validator';
 
 export class CreateNoticeDto {
   @IsNumber()
@@ -13,7 +13,7 @@ export class CreateNoticeDto {
 
 export class UpdateNoticeDto {
   @IsNumber()
-  modifiedManagerNo: number;
+  managerNo: number;
 
   @IsString()
   title: string;
