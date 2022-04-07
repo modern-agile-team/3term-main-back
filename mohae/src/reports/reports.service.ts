@@ -123,17 +123,17 @@ export class ReportsService {
                 createdBoardReportNo,
               );
 
-            checkInfo.forEach(async (el) => {
-              boardReportRelation.push(await el);
+            checkInfo.forEach(async (checkNo) => {
+              boardReportRelation.push(await checkNo);
             });
             board.reports.push(newBoardReport);
             boardReporter.boardReport.push(newBoardReport);
 
             await this.boardRepository.save(board);
             await this.userRepository.save(boardReporter);
-            checkInfo.forEach(async (el) => {
+            checkInfo.forEach(async (checkNo) => {
               this.reportCheckBoxRepository.saveChecks(
-                await el,
+                await checkNo,
                 newBoardReport,
                 checkboxRelation,
               );
@@ -160,27 +160,34 @@ export class ReportsService {
             '신고자를 찾을 수 없습니다.',
           );
 
-          const createdUserReport =
+          const createdUserReportNo =
             await this.reportedUserRepository.createUserReport(createReportDto);
 
-          const userReportCheck =
+          const userReportRelation =
             await this.reportedUserRepository.readOneReportUserRelation(
-              createdUserReport.no,
+              createdUserReportNo,
             );
 
-          // userReportCheck.push(checkInfo.first);
-          // userReportCheck.push(checkInfo.second);
-          // userReportCheck.push(checkInfo.third);
-          user.reports.push(createdUserReport);
-          userReporter.userReport.push(createdUserReport);
+          const newUserReport =
+            await this.reportedUserRepository.readOneReportedUser(
+              createdUserReportNo,
+            );
+
+          checkInfo.forEach(async (checkNo) => {
+            userReportRelation.push(await checkNo);
+          });
+          user.reports.push(newUserReport);
+          userReporter.userReport.push(newUserReport);
 
           await this.userRepository.save(user);
           await this.userRepository.save(userReporter);
-          await this.reportCheckBoxRepository.saveChecks(
-            checkInfo,
-            createdUserReport,
-            checkboxRelation,
-          );
+          checkInfo.forEach(async (checkNo) => {
+            this.reportCheckBoxRepository.saveChecks(
+              await checkNo,
+              newUserReport,
+              checkboxRelation,
+            );
+          });
 
           return user;
         default:
