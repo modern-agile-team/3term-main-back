@@ -59,7 +59,7 @@ export class NoticesService {
   async updateNotice(no: number, updateNoticeDto: UpdateNoticeDto) {
     try {
       const { managerNo } = updateNoticeDto;
-      console.log(updateNoticeDto);
+
       const manager = await this.userRepository.findOne(managerNo, {
         relations: ['modifyNotices'],
       });
@@ -85,7 +85,7 @@ export class NoticesService {
       const deleteResult = await this.noticeRepository.deleteNotice(no);
 
       if (!deleteResult) {
-        throw new NotFoundException('해당 공지사항을 찾을 수 없습니다.');
+        throw new InternalServerErrorException('공지 삭제 실패');
       }
       return { success: true };
     } catch (e) {
