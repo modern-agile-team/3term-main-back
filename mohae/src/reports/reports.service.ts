@@ -77,9 +77,13 @@ export class ReportsService {
 
   async createReport(createReportDto: CreateReportDto) {
     const { head, headNo, reportUserNo, checks } = createReportDto;
-    const checkInfo = await this.reportCheckBoxRepository.selectCheckConfirm(
-      checks,
-    );
+
+    const checkInfo = checks.map(async (el) => {
+      const info = await this.reportCheckBoxRepository.selectCheckConfirm2(el);
+
+      return info;
+    });
+
     const checkboxRelation =
       head === 'user' ? 'reportedUsers' : 'reportedBoards';
     try {
@@ -104,29 +108,36 @@ export class ReportsService {
               '신고자를 찾을 수 없습니다.',
             );
 
-            const createdBoardReport =
+            const createdBoardReportNo =
               await this.reportedBoardRepository.createBoardReport(
                 createReportDto,
               );
 
             const boardReportRelation =
               await this.reportedBoardRepository.readOneBoardReportRelation(
-                createdBoardReport.no,
+                createdBoardReportNo,
               );
 
-            boardReportRelation.push(checkInfo.first);
-            boardReportRelation.push(checkInfo.second);
-            boardReportRelation.push(checkInfo.third);
-            board.reports.push(createdBoardReport);
-            boardReporter.boardReport.push(createdBoardReport);
+            const newBoardReport =
+              await this.reportedBoardRepository.readOneReportedBoard(
+                createdBoardReportNo,
+              );
+
+            checkInfo.forEach(async (el) => {
+              boardReportRelation.push(await el);
+            });
+            board.reports.push(newBoardReport);
+            boardReporter.boardReport.push(newBoardReport);
 
             await this.boardRepository.save(board);
             await this.userRepository.save(boardReporter);
-            await this.reportCheckBoxRepository.saveChecks(
-              checkInfo,
-              createdBoardReport,
-              checkboxRelation,
-            );
+            checkInfo.forEach(async (el) => {
+              this.reportCheckBoxRepository.saveChecks(
+                await el,
+                newBoardReport,
+                checkboxRelation,
+              );
+            });
 
             return board;
           } catch (e) {
@@ -157,9 +168,9 @@ export class ReportsService {
               createdUserReport.no,
             );
 
-          userReportCheck.push(checkInfo.first);
-          userReportCheck.push(checkInfo.second);
-          userReportCheck.push(checkInfo.third);
+          // userReportCheck.push(checkInfo.first);
+          // userReportCheck.push(checkInfo.second);
+          // userReportCheck.push(checkInfo.third);
           user.reports.push(createdUserReport);
           userReporter.userReport.push(createdUserReport);
 

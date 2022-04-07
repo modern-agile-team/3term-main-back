@@ -20,7 +20,7 @@ export abstract class CreateReportDto {
   })
   @IsNotEmpty()
   @IsString()
-  head: string;
+  head: 'user' | 'board';
 
   @ApiProperty({
     example: 3,

@@ -41,18 +41,24 @@ export class ReportedBoardRepository extends Repository<ReportedBoard> {
     }
   }
 
-  async createBoardReport(
-    createReportDto: CreateReportDto,
-  ): Promise<ReportedBoard> {
+  async createBoardReport(createReportDto: CreateReportDto) {
     const { description } = createReportDto;
 
     try {
-      const reportedBoard = this.create({
-        description,
-      });
+      const { raw } = await this.createQueryBuilder('reported_boards')
+        .insert()
+        .into(ReportedBoard)
+        .values({ description })
+        .execute();
+      const { insertId, affectedRows } = raw;
 
-      await reportedBoard.save();
-      return reportedBoard;
+      if (!affectedRows) {
+        throw new InternalServerErrorException(
+          '게시글 신고가 접수되지 않았습니다.',
+        );
+      }
+
+      return insertId;
     } catch (e) {
       throw new InternalServerErrorException(
         `${e} ### 게시글 신고 : 알 수 없는 서버 에러입니다.`,
@@ -154,20 +160,31 @@ export class ReportCheckBoxRepository extends Repository<ReportCheckbox> {
 
   async selectCheckConfirm(checks: Array<number>) {
     try {
-      const checkInfo = {
-        first: await this.createQueryBuilder('report_checkboxes')
-          .select()
-          .where('report_checkboxes.no = :no', { no: checks[0] })
-          .getOne(),
-        second: await this.createQueryBuilder('report_checkboxes')
-          .select()
-          .where('report_checkboxes.no = :no', { no: checks[1] })
-          .getOne(),
-        third: await this.createQueryBuilder('report_checkboxes')
-          .select()
-          .where('report_checkboxes.no = :no', { no: checks[2] })
-          .getOne(),
-      };
+      const checkInfo = [];
+
+      // checks.forEach(async (no) => {
+      //   const info = await this.createQueryBuilder('report_checkboxes')
+      //     .select()
+      //     .where('report_checkboxes.no = :no', { no })
+      //     .getOne();
+      //   console.log(no, info);
+      //   checkInfo.push(info);
+      //   console.log('rr', checkInfo);
+      // });
+      // const checkInfo = {
+      //   first: await this.createQueryBuilder('report_checkboxes')
+      //     .select()
+      //     .where('report_checkboxes.no = :no', { no: checks[0] })
+      //     .getOne(),
+      //   second: await this.createQueryBuilder('report_checkboxes')
+      //     .select()
+      //     .where('report_checkboxes.no = :no', { no: checks[1] })
+      //     .getOne(),
+      //   third: await this.createQueryBuilder('report_checkboxes')
+      //     .select()
+      //     .where('report_checkboxes.no = :no', { no: checks[2] })
+      //     .getOne(),
+      // };
 
       return checkInfo;
     } catch (e) {
@@ -175,29 +192,29 @@ export class ReportCheckBoxRepository extends Repository<ReportCheckbox> {
     }
   }
 
-  async saveChecks(checks, newReport, relationName: string) {
+  async selectCheckConfirm2(no: number) {
     try {
-      const { first, second, third } = checks;
-      const saveCheck = {
-        firstCheck: await this.findOne(first.no, {
-          relations: [relationName],
-        }),
-        secondCheck: await this.findOne(second.no, {
-          relations: [relationName],
-        }),
-        thirdCheck: await this.findOne(third.no, {
-          relations: [relationName],
-        }),
-      };
-      const { firstCheck, secondCheck, thirdCheck } = saveCheck;
+      const checkInfo = await this.createQueryBuilder('report_checkboxes')
+        .select()
+        .where('report_checkboxes.no = :no', { no })
+        .getOne();
 
-      firstCheck[relationName].push(newReport);
-      secondCheck[relationName].push(newReport);
-      thirdCheck[relationName].push(newReport);
+      return checkInfo;
+    } catch (e) {
+      throw new InternalServerErrorException(e);
+    }
+  }
 
-      this.save(firstCheck);
-      this.save(secondCheck);
-      this.save(thirdCheck);
+  async saveChecks(checks, newBoardReport, relationName: string) {
+    try {
+      const { no } = checks;
+      const relation = await this.findOne(no, {
+        relations: [relationName],
+      });
+
+      relation[relationName].push(newBoardReport);
+
+      this.save(relation);
     } catch (e) {
       throw new InternalServerErrorException(
         `${e} ### 체크 박스 저장 : 알 수 없는 서버 에러입니다.`,
