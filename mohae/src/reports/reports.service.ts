@@ -112,12 +112,10 @@ export class ReportsService {
               await this.reportedBoardRepository.createBoardReport(
                 createReportDto,
               );
-
             const boardReportRelation =
               await this.reportedBoardRepository.readOneReportBoardRelation(
                 createdBoardReportNo,
               );
-
             const newBoardReport =
               await this.reportedBoardRepository.readOneReportedBoard(
                 createdBoardReportNo,
@@ -161,7 +159,6 @@ export class ReportsService {
                 relations: ['userReport'],
               },
             );
-
             this.errorConfirm.notFoundError(
               userReporter,
               '신고자를 찾을 수 없습니다.',
@@ -171,12 +168,10 @@ export class ReportsService {
               await this.reportedUserRepository.createUserReport(
                 createReportDto,
               );
-
             const userReportRelation =
               await this.reportedUserRepository.readOneReportUserRelation(
                 createdUserReportNo,
               );
-
             const newUserReport =
               await this.reportedUserRepository.readOneReportedUser(
                 createdUserReportNo,
@@ -185,14 +180,11 @@ export class ReportsService {
             checkInfo.forEach(async (checkNo) => {
               userReportRelation.push(await checkNo);
             });
-
             user.reports.push(newUserReport);
-
             userReporter.userReport.push(newUserReport);
 
             await this.userRepository.save(user);
             await this.userRepository.save(userReporter);
-
             checkInfo.forEach(async (checkNo) => {
               this.reportCheckBoxRepository.saveChecks(
                 await checkNo,
