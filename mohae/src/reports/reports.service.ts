@@ -77,9 +77,13 @@ export class ReportsService {
 
   async createReport(createReportDto: CreateReportDto) {
     const { head, headNo, reportUserNo, checks } = createReportDto;
-    const checkInfo = await this.reportCheckBoxRepository.selectCheckConfirm(
-      checks,
-    );
+
+    const checkInfo = checks.map(async (el) => {
+      const info = await this.reportCheckBoxRepository.selectCheckConfirm(el);
+
+      return info;
+    });
+
     const checkboxRelation =
       head === 'user' ? 'reportedUsers' : 'reportedBoards';
     try {
@@ -92,7 +96,7 @@ export class ReportsService {
             });
             this.errorConfirm.notFoundError(
               board,
-              '해당 게시글이 존재하지 않습니다.',
+              '신고하려는 게시글이 존재하지 않습니다.',
             );
 
             const boardReporter = await this.userRepository.findOne(
@@ -104,29 +108,34 @@ export class ReportsService {
               '신고자를 찾을 수 없습니다.',
             );
 
-            const createdBoardReport =
+            const createdBoardReportNo =
               await this.reportedBoardRepository.createBoardReport(
                 createReportDto,
               );
-
             const boardReportRelation =
-              await this.reportedBoardRepository.readOneBoardReportRelation(
-                createdBoardReport.no,
+              await this.reportedBoardRepository.readOneReportBoardRelation(
+                createdBoardReportNo,
+              );
+            const newBoardReport =
+              await this.reportedBoardRepository.readOneReportedBoard(
+                createdBoardReportNo,
               );
 
-            boardReportRelation.push(checkInfo.first);
-            boardReportRelation.push(checkInfo.second);
-            boardReportRelation.push(checkInfo.third);
-            board.reports.push(createdBoardReport);
-            boardReporter.boardReport.push(createdBoardReport);
+            checkInfo.forEach(async (checkNo) => {
+              boardReportRelation.push(await checkNo);
+            });
+            board.reports.push(newBoardReport);
+            boardReporter.boardReport.push(newBoardReport);
 
             await this.boardRepository.save(board);
             await this.userRepository.save(boardReporter);
-            await this.reportCheckBoxRepository.saveChecks(
-              checkInfo,
-              createdBoardReport,
-              checkboxRelation,
-            );
+            checkInfo.forEach(async (checkNo) => {
+              this.reportCheckBoxRepository.saveChecks(
+                await checkNo,
+                newBoardReport,
+                checkboxRelation,
+              );
+            });
 
             return board;
           } catch (e) {
@@ -135,43 +144,59 @@ export class ReportsService {
 
         // 유저 신고일 때의 로직
         case 'user':
-          const user = await this.userRepository.findOne(headNo, {
-            relations: ['reports'],
-          });
-          this.errorConfirm.notFoundError(user, '유저가 존재하지 않습니다.');
-
-          const userReporter = await this.userRepository.findOne(reportUserNo, {
-            relations: ['userReport'],
-          });
-
-          this.errorConfirm.notFoundError(
-            userReporter,
-            '신고자를 찾을 수 없습니다.',
-          );
-
-          const createdUserReport =
-            await this.reportedUserRepository.createUserReport(createReportDto);
-
-          const userReportCheck =
-            await this.reportedUserRepository.readOneReportUserRelation(
-              createdUserReport.no,
+          try {
+            const user = await this.userRepository.findOne(headNo, {
+              relations: ['reports'],
+            });
+            this.errorConfirm.notFoundError(
+              user,
+              '신고하려는 유저가 존재하지 않습니다.',
             );
 
-          userReportCheck.push(checkInfo.first);
-          userReportCheck.push(checkInfo.second);
-          userReportCheck.push(checkInfo.third);
-          user.reports.push(createdUserReport);
-          userReporter.userReport.push(createdUserReport);
+            const userReporter = await this.userRepository.findOne(
+              reportUserNo,
+              {
+                relations: ['userReport'],
+              },
+            );
+            this.errorConfirm.notFoundError(
+              userReporter,
+              '신고자를 찾을 수 없습니다.',
+            );
 
-          await this.userRepository.save(user);
-          await this.userRepository.save(userReporter);
-          await this.reportCheckBoxRepository.saveChecks(
-            checkInfo,
-            createdUserReport,
-            checkboxRelation,
-          );
+            const createdUserReportNo =
+              await this.reportedUserRepository.createUserReport(
+                createReportDto,
+              );
+            const userReportRelation =
+              await this.reportedUserRepository.readOneReportUserRelation(
+                createdUserReportNo,
+              );
+            const newUserReport =
+              await this.reportedUserRepository.readOneReportedUser(
+                createdUserReportNo,
+              );
 
-          return user;
+            checkInfo.forEach(async (checkNo) => {
+              userReportRelation.push(await checkNo);
+            });
+            user.reports.push(newUserReport);
+            userReporter.userReport.push(newUserReport);
+
+            await this.userRepository.save(user);
+            await this.userRepository.save(userReporter);
+            checkInfo.forEach(async (checkNo) => {
+              this.reportCheckBoxRepository.saveChecks(
+                await checkNo,
+                newUserReport,
+                checkboxRelation,
+              );
+            });
+
+            return user;
+          } catch (e) {
+            throw e;
+          }
         default:
           this.errorConfirm.notFoundError('', '해당 경로를 찾을 수 없습니다.');
       }
