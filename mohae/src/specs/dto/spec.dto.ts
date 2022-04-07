@@ -1,4 +1,4 @@
-import { IsNumber, IsOptional, IsString } from 'class-validator';
+import { IsArray, IsNumber, IsOptional, IsString } from 'class-validator';
 import { IsNull } from 'typeorm';
 
 export class CreateSpecDto {
@@ -8,8 +8,8 @@ export class CreateSpecDto {
   @IsString()
   description: string;
 
-  @IsString()
-  photo_url?: string;
+  @IsArray()
+  specPhoto?: [];
 
   @IsNumber()
   userNo: number;
