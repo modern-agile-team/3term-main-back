@@ -79,7 +79,7 @@ export class ReportsService {
     const { head, headNo, reportUserNo, checks } = createReportDto;
 
     const checkInfo = checks.map(async (el) => {
-      const info = await this.reportCheckBoxRepository.selectCheckConfirm2(el);
+      const info = await this.reportCheckBoxRepository.selectCheckConfirm(el);
 
       return info;
     });
@@ -96,7 +96,7 @@ export class ReportsService {
             });
             this.errorConfirm.notFoundError(
               board,
-              '해당 게시글이 존재하지 않습니다.',
+              '신고하려는 게시글이 존재하지 않습니다.',
             );
 
             const boardReporter = await this.userRepository.findOne(
@@ -114,7 +114,7 @@ export class ReportsService {
               );
 
             const boardReportRelation =
-              await this.reportedBoardRepository.readOneBoardReportRelation(
+              await this.reportedBoardRepository.readOneReportBoardRelation(
                 createdBoardReportNo,
               );
 
@@ -146,50 +146,65 @@ export class ReportsService {
 
         // 유저 신고일 때의 로직
         case 'user':
-          const user = await this.userRepository.findOne(headNo, {
-            relations: ['reports'],
-          });
-          this.errorConfirm.notFoundError(user, '유저가 존재하지 않습니다.');
-
-          const userReporter = await this.userRepository.findOne(reportUserNo, {
-            relations: ['userReport'],
-          });
-
-          this.errorConfirm.notFoundError(
-            userReporter,
-            '신고자를 찾을 수 없습니다.',
-          );
-
-          const createdUserReportNo =
-            await this.reportedUserRepository.createUserReport(createReportDto);
-
-          const userReportRelation =
-            await this.reportedUserRepository.readOneReportUserRelation(
-              createdUserReportNo,
+          try {
+            const user = await this.userRepository.findOne(headNo, {
+              relations: ['reports'],
+            });
+            this.errorConfirm.notFoundError(
+              user,
+              '신고하려는 유저가 존재하지 않습니다.',
             );
 
-          const newUserReport =
-            await this.reportedUserRepository.readOneReportedUser(
-              createdUserReportNo,
+            const userReporter = await this.userRepository.findOne(
+              reportUserNo,
+              {
+                relations: ['userReport'],
+              },
             );
 
-          checkInfo.forEach(async (checkNo) => {
-            userReportRelation.push(await checkNo);
-          });
-          user.reports.push(newUserReport);
-          userReporter.userReport.push(newUserReport);
-
-          await this.userRepository.save(user);
-          await this.userRepository.save(userReporter);
-          checkInfo.forEach(async (checkNo) => {
-            this.reportCheckBoxRepository.saveChecks(
-              await checkNo,
-              newUserReport,
-              checkboxRelation,
+            this.errorConfirm.notFoundError(
+              userReporter,
+              '신고자를 찾을 수 없습니다.',
             );
-          });
 
-          return user;
+            const createdUserReportNo =
+              await this.reportedUserRepository.createUserReport(
+                createReportDto,
+              );
+
+            const userReportRelation =
+              await this.reportedUserRepository.readOneReportUserRelation(
+                createdUserReportNo,
+              );
+
+            const newUserReport =
+              await this.reportedUserRepository.readOneReportedUser(
+                createdUserReportNo,
+              );
+
+            checkInfo.forEach(async (checkNo) => {
+              userReportRelation.push(await checkNo);
+            });
+
+            user.reports.push(newUserReport);
+
+            userReporter.userReport.push(newUserReport);
+
+            await this.userRepository.save(user);
+            await this.userRepository.save(userReporter);
+
+            checkInfo.forEach(async (checkNo) => {
+              this.reportCheckBoxRepository.saveChecks(
+                await checkNo,
+                newUserReport,
+                checkboxRelation,
+              );
+            });
+
+            return user;
+          } catch (e) {
+            throw e;
+          }
         default:
           this.errorConfirm.notFoundError('', '해당 경로를 찾을 수 없습니다.');
       }

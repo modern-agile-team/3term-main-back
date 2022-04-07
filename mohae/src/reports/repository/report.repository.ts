@@ -13,7 +13,7 @@ export class ReportedBoardRepository extends Repository<ReportedBoard> {
     try {
       const reportBoard = await this.createQueryBuilder('reported_boards')
         .leftJoinAndSelect('reported_boards.reportUser', 'reportUser')
-        .leftJoinAndSelect('reported_boards.reportedBoard', 'boards')
+        .leftJoinAndSelect('reported_boards.reportedBoard', 'reportedBoard')
         .leftJoinAndSelect('reported_boards.checks', 'checks')
         .where('reported_boards.no = :no', { no })
         .getOne();
@@ -26,7 +26,7 @@ export class ReportedBoardRepository extends Repository<ReportedBoard> {
     }
   }
 
-  async readOneBoardReportRelation(no: number): Promise<any[]> {
+  async readOneReportBoardRelation(no: number): Promise<any[]> {
     try {
       const relation = await this.createQueryBuilder()
         .relation(ReportedBoard, 'checks')
@@ -165,41 +165,7 @@ export class ReportCheckBoxRepository extends Repository<ReportCheckbox> {
     }
   }
 
-  async selectCheckConfirm(checks: Array<number>) {
-    try {
-      const checkInfo = [];
-
-      // checks.forEach(async (no) => {
-      //   const info = await this.createQueryBuilder('report_checkboxes')
-      //     .select()
-      //     .where('report_checkboxes.no = :no', { no })
-      //     .getOne();
-      //   console.log(no, info);
-      //   checkInfo.push(info);
-      //   console.log('rr', checkInfo);
-      // });
-      // const checkInfo = {
-      //   first: await this.createQueryBuilder('report_checkboxes')
-      //     .select()
-      //     .where('report_checkboxes.no = :no', { no: checks[0] })
-      //     .getOne(),
-      //   second: await this.createQueryBuilder('report_checkboxes')
-      //     .select()
-      //     .where('report_checkboxes.no = :no', { no: checks[1] })
-      //     .getOne(),
-      //   third: await this.createQueryBuilder('report_checkboxes')
-      //     .select()
-      //     .where('report_checkboxes.no = :no', { no: checks[2] })
-      //     .getOne(),
-      // };
-
-      return checkInfo;
-    } catch (e) {
-      throw new InternalServerErrorException(e);
-    }
-  }
-
-  async selectCheckConfirm2(no: number) {
+  async selectCheckConfirm(no: number) {
     try {
       const checkInfo = await this.createQueryBuilder('report_checkboxes')
         .select()
@@ -212,14 +178,14 @@ export class ReportCheckBoxRepository extends Repository<ReportCheckbox> {
     }
   }
 
-  async saveChecks(checks, newBoardReport, relationName: string) {
+  async saveChecks(checks, newReport, relationName: string) {
     try {
       const { no } = checks;
       const relation = await this.findOne(no, {
         relations: [relationName],
       });
 
-      relation[relationName].push(newBoardReport);
+      relation[relationName].push(newReport);
 
       this.save(relation);
     } catch (e) {
