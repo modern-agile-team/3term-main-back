@@ -16,8 +16,9 @@ export class SpecPhoto extends BaseEntity {
   @Column({
     type: 'varchar',
     comment: '스펙 url',
+    default: null,
   })
-  photo_url: string;
+  photo_url: string | null;
 
   @ManyToOne((type) => Spec, (spec) => spec.specPhoto, {
     onDelete: 'SET NULL',

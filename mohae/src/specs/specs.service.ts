@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Injectable,
   InternalServerErrorException,
   UnauthorizedException,
@@ -53,14 +54,18 @@ export class SpecsService {
         const spec = await this.specRepository.findOne(specNo[0].no, {
           relations: ['specPhoto'],
         });
+        if (specPhoto.length === 0) {
+          throw new BadRequestException(
+            '스펙의 사진이 없다면 null 이라도 넣어주셔야 스펙 등록이 가능합니다.',
+          );
+        }
 
         for (const photo of specPhoto) {
           const specPhotoNo = await this.specPhotoRepository.saveSpecPhoto(
             photo,
-            //spec를 집어 넣어주는 것이 point
+            //spec를 집어 넣어주는 것이 point 이때 photo_url 이 없다면?
             spec,
           );
-
           const specPhotoRepo = await this.specPhotoRepository.findOne(
             specPhotoNo[0].no,
           );
