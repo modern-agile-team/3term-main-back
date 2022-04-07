@@ -1,4 +1,6 @@
+import { publishReplay } from 'rxjs';
 import { User } from 'src/auth/entity/user.entity';
+import { SpecPhoto } from 'src/photo/entity/photo.entity';
 import {
   BaseEntity,
   Column,
@@ -7,6 +9,7 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -28,11 +31,10 @@ export class Spec extends BaseEntity {
   })
   description: string;
 
-  @Column({
-    type: 'varchar',
-    comment: '스펙 관련 사진 url',
+  @OneToMany((type) => SpecPhoto, (photo) => photo.spec, {
+    nullable: true,
   })
-  photo_url: string;
+  specPhoto: SpecPhoto[];
 
   @CreateDateColumn({
     name: 'create_at',
