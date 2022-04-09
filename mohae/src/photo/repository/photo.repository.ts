@@ -22,4 +22,24 @@ export class SpecPhotoRepository extends Repository<SpecPhoto> {
       throw err;
     }
   }
+
+  async updatePhoto(no, new_url) {
+    try {
+      const { affected } = await this.createQueryBuilder('specPhoto')
+        .update(SpecPhoto)
+        .set({ photo_url: new_url })
+        .where('no = :no', { no })
+        .execute();
+
+      if (!affected) {
+        throw new InternalServerErrorException(
+          '스펙 사진 업데이트 중 오류가 발생 하였습니다.(아마 specPhoto no 문제일 가능성 매우높음)',
+        );
+      }
+
+      return affected;
+    } catch (err) {
+      throw err;
+    }
+  }
 }

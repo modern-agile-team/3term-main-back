@@ -38,6 +38,7 @@ export class SpecRepository extends Repository<Spec> {
           'spec.title',
           'spec.description',
           'specPhoto.photo_url',
+          'specPhoto.no',
           'spec.createdAt',
           'spec.latestUpdateSpec',
         ])
@@ -80,11 +81,11 @@ export class SpecRepository extends Repository<Spec> {
     }
   }
 
-  async updateSpec(no, updateSpec) {
+  async updateSpec(no, deletedNullSpec) {
     try {
       const { affected } = await this.createQueryBuilder('spec')
         .update(Spec)
-        .set(updateSpec)
+        .set(deletedNullSpec)
         .where('no = :no', { no })
         .execute();
 
