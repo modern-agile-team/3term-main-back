@@ -205,7 +205,10 @@ export class BoardsService {
     );
 
     this.errorConfirm.notFoundError(area, `해당 지역을 찾을 수 없습니다.`);
+
     const board = await this.boardRepository.findOne(no);
+    this.errorConfirm.notFoundError(board, `해당 게시글을 찾을 수 없습니다.`);
+
     const endTime = new Date(board.deadline);
     switch (deadline) {
       case 0:
