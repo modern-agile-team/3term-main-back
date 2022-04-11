@@ -1,7 +1,6 @@
 import {
   ConflictException,
   Injectable,
-  InternalServerErrorException,
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -15,10 +14,7 @@ import { SchoolRepository } from 'src/schools/repository/school.repository';
 import { DeleteResult } from 'typeorm';
 import { MajorRepository } from 'src/majors/repository/major.repository';
 import * as config from 'config';
-import { School } from 'src/schools/entity/school.entity';
 import { CategoryRepository } from 'src/categories/repository/category.repository';
-import { Category } from 'src/categories/entity/category.entity';
-import { last, timestamp } from 'rxjs';
 import { ErrorConfirm } from 'src/utils/error';
 
 const jwtConfig = config.get('jwt');

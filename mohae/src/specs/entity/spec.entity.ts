@@ -54,7 +54,7 @@ export class Spec extends BaseEntity {
   latestUpdateSpec: Date;
 
   @ManyToOne((type) => User, (user) => user.no, {
-    eager: true,
+    // eager: true,
     onDelete: 'SET NULL',
   })
   @JoinColumn({ name: 'user_no' })
