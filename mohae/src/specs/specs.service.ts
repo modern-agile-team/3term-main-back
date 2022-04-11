@@ -8,6 +8,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { throwIfEmpty } from 'rxjs';
 import { UserRepository } from 'src/auth/repository/user.repository';
 import { SpecPhotoRepository } from 'src/photo/repository/photo.repository';
+import { UpdateResult } from 'typeorm';
 import { UpdateSpecDto } from './dto/spec.dto';
 import { SpecRepository } from './repository/spec.repository';
 
@@ -90,13 +91,35 @@ export class SpecsService {
   // specphotourl 변경되어 들어갈 수 있도록 수정!
   async updateSpec(specNo, updateSpec) {
     try {
-      const isupdate = await this.specRepository.updateSpec(specNo, updateSpec);
-      if (!isupdate) {
+      const specKeys = Object.keys(updateSpec);
+      const deletedNullSpec = {};
+
+      specKeys.forEach((item) => {
+        updateSpec[item] ? (deletedNullSpec[item] = updateSpec[item]) : 0;
+      });
+
+      if (deletedNullSpec['photo_url']) {
+        const specPhotoNo = Object.values(deletedNullSpec['photo_url']);
+
+        function getKeyByValue(object, value) {
+          return Object.keys(object).find((key) => object[key] === value);
+        }
+        for (const no of specPhotoNo) {
+          const new_url = getKeyByValue(deletedNullSpec['photo_url'], no);
+          await this.specPhotoRepository.updatePhoto(no, new_url);
+        }
+        delete deletedNullSpec['photo_url'];
+      }
+      const isUpdate = await this.specRepository.updateSpec(
+        specNo,
+        deletedNullSpec,
+      );
+      if (!isUpdate) {
         throw new InternalServerErrorException(
           '스팩 업데이트가 제대로 이루어지지 않았습니다.',
         );
       }
-      return isupdate;
+      return isUpdate;
     } catch (err) {
       throw err;
     }
