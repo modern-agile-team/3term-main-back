@@ -116,7 +116,7 @@ export class BoardRepository extends Repository<Board> {
       return { success: true };
     } catch (e) {
       throw new InternalServerErrorException(
-        `${e} ### 게시판 마감 취소 : 알 수 없는 서버 에러입니다.`,
+        `${e} ### 게시판 활성화 : 알 수 없는 서버 에러입니다.`,
       );
     }
   }
@@ -136,7 +136,7 @@ export class BoardRepository extends Repository<Board> {
       return { success: true };
     } catch (e) {
       throw new InternalServerErrorException(
-        `${e} ### 게시판 마감 : 알 수 없는 서버 에러입니다.`,
+        `${e} ### 게시판 비활성화 : 알 수 없는 서버 에러입니다.`,
       );
     }
   }
