@@ -62,8 +62,8 @@ export class BoardsController {
   }
 
   @Patch('/cancel/:no')
-  async cancelBoardDeadline(@Param('no') no: number): Promise<object> {
-    const response = await this.boardService.cancelBoardDeadline(no);
+  async cancelClosedBoard(@Param('no') no: number): Promise<object> {
+    const response = await this.boardService.cancelClosedBoard(no);
 
     return Object.assign({
       statusCode: 200,

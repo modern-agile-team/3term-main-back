@@ -101,19 +101,15 @@ export class BoardRepository extends Repository<Board> {
     }
   }
 
-  async cancelBoardDeadline(no: number): Promise<object> {
+  async cancelClosedBoard(no: number): Promise<object> {
     try {
-      const { affected } = await this.createQueryBuilder()
+      const affected = await this.createQueryBuilder()
         .update(Board)
         .set({ isDeadline: false })
         .where('no = :no', { no })
         .execute();
 
-      if (!affected) {
-        return { success: false };
-      }
-
-      return { success: true };
+      return affected;
     } catch (e) {
       throw new InternalServerErrorException(
         `${e} ### 게시판 활성화 : 알 수 없는 서버 에러입니다.`,
@@ -141,7 +137,7 @@ export class BoardRepository extends Repository<Board> {
     }
   }
 
-  async boardClosing(currentTime: Date) {
+  async closingBoard(currentTime: Date) {
     try {
       const closedBoard = await this.createQueryBuilder()
         .update(Board)
