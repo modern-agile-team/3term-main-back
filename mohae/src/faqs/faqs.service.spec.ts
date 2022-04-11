@@ -14,6 +14,7 @@ const MockFaqRepository = () => ({
   readFaqs: jest.fn(),
   createFaq: jest.fn(),
   updateFaq: jest.fn(),
+  deleteFaq: jest.fn(),
 });
 const MockUserRepository = () => ({
   findOne: jest.fn(),
@@ -108,6 +109,10 @@ describe('FaqsService', () => {
       // 리턴된 값이 true를 기대
       expect(success).toBeTruthy();
     });
+    it.todo('매니저가 아닌 경우');
+    it.todo('제목 길이가 벗어난 경우');
+    it.todo('내용 길이가 벗어난 경우');
+    it.todo('생성 결과가 0으로 리턴될 경우');
   });
 
   describe('updateFaq', () => {
@@ -131,5 +136,25 @@ describe('FaqsService', () => {
 
       expect(success).toBeTruthy();
     });
+
+    it.todo('매니저가 아닌 경우');
+    it.todo('수정할 FAQ가 없을 경우');
+    it.todo('수정한 관리자가 없을 경우');
+    it.todo('제목 길이가 벗어난 경우');
+    it.todo('내용 길이가 벗어난 경우');
+    it.todo('수정 결과가 0으로 리턴될 경우');
+  });
+
+  describe('deleteFaq', () => {
+    it('FAQ 삭제', async () => {
+      faqRepository['deleteFaq'].mockResolvedValue(1);
+
+      const { success } = await faqService.deleteFaq(1);
+
+      expect(success).toBeTruthy();
+    });
+
+    it.todo('삭제할 Faq가 없는 경우');
+    it.todo('삭제한 매니저 저장?');
   });
 });
