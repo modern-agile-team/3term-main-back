@@ -111,8 +111,25 @@ describe('FaqsService', () => {
   });
 
   describe('updateFaq', () => {
+    beforeEach(async () => {
+      // userRepository에 가상 유저 데이터
+      userRepository['findOne'].mockResolvedValue({
+        no: 1,
+        name: '운영자1',
+        modifyFaqs: [],
+      });
+
+      // faqRepository 내에 있는 createFaq 가상 리턴값
+      faqRepository['updateFaq'].mockResolvedValue(1);
+    });
     it('FAQ 수정', async () => {
-      const success = true;
+      const { success } = await faqService.updateFaq(1, {
+        title: '제목',
+        modifiedManagerNo: 1,
+        description: '내용',
+      });
+
+      expect(success).toBeTruthy();
     });
   });
 });
