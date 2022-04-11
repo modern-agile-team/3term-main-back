@@ -22,6 +22,7 @@ export class FaqsService {
     try {
       const faqs = await this.faqRepository.readFaqs();
 
+      this.errorConfirm.notFoundError(faqs, '자주 묻는 질문이 없습니다.');
       return faqs;
     } catch (e) {
       throw e;
@@ -34,6 +35,7 @@ export class FaqsService {
       const manager = await this.userRepository.findOne(managerNo, {
         relations: ['faqs'],
       });
+
       this.errorConfirm.notFoundError(
         manager,
         '해당 매니저를 찾을 수 없습니다.',
@@ -42,9 +44,10 @@ export class FaqsService {
         createFaqDto,
         manager,
       );
-      const faqs = await this.faqRepository.findOne(insertId);
 
-      manager.faqs.push(faqs);
+      const faq = await this.faqRepository.findOne(insertId);
+
+      manager.faqs.push(faq);
 
       await this.userRepository.save(manager);
 
@@ -52,7 +55,7 @@ export class FaqsService {
         return { success: true };
       }
 
-      return { success: false, msg: '해당 FAQ가 수정되지 않았습니다.' };
+      return { success: false, msg: '해당 FAQ가 생성되지 않았습니다.' };
     } catch (e) {
       throw e;
     }

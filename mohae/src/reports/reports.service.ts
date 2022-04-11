@@ -185,6 +185,7 @@ export class ReportsService {
 
             await this.userRepository.save(user);
             await this.userRepository.save(userReporter);
+
             checkInfo.forEach(async (checkNo) => {
               this.reportCheckBoxRepository.saveChecks(
                 await checkNo,
