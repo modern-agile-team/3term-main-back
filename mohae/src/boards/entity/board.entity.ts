@@ -47,7 +47,7 @@ export class Board extends BaseEntity {
 
   @Column({
     comment: '게시글 마감일',
-    type: 'datetime'
+    type: 'datetime',
   })
   deadline: Date;
 
@@ -59,9 +59,9 @@ export class Board extends BaseEntity {
   @Column({
     comment: '게시글 마감유무',
     type: 'boolean',
-    default: false
+    default: false,
   })
-  isDeadLine: boolean;
+  isDeadline: boolean;
 
   @Column({
     type: 'int',

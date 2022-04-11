@@ -38,7 +38,7 @@ export class BoardsService {
     const currentTime = new Date();
     currentTime.setHours(currentTime.getHours() + 9);
 
-    const { affected } = await this.boardRepository.closeBoard(currentTime);
+    const { affected } = await this.boardRepository.boardClosing(currentTime);
     if (!affected) {
       throw new InternalServerErrorException('게시글 마감이 되지 않았습니다');
     }
@@ -77,12 +77,45 @@ export class BoardsService {
     const currentTime = new Date();
     currentTime.setHours(currentTime.getHours() + 9);
 
-    const { affected } = await this.boardRepository.closeBoard(currentTime);
+    const { affected } = await this.boardRepository.boardClosing(currentTime);
     if (!affected) {
       throw new InternalServerErrorException('게시글 마감이 되지 않았습니다');
     }
 
     return board;
+  }
+
+  async boardClosed(no: number): Promise<object> {
+    const board = await this.boardRepository.findOne(no);
+    this.errorConfirm.notFoundError(board, '게시글을 찾을 수 없습니다.');
+    if (board.isDeadline) {
+      throw new InternalServerErrorException('마감된 게시글 입니다.');
+    }
+
+    const result = await this.boardRepository.boardClosed(no);
+    if (!result) {
+      throw new InternalServerErrorException('게시글 마감이 되지 않았습니다');
+    }
+
+    return { success: true };
+  }
+
+  async cancelBoardDeadline(no: number): Promise<Object> {
+    const board = await this.boardRepository.findOne(no);
+    this.errorConfirm.notFoundError(board, `해당 게시글을 찾을 수 없습니다.`);
+    if (!board.isDeadline) {
+      throw new InternalServerErrorException('활성화된 게시글 입니다.');
+    }
+
+    const result = await this.boardRepository.cancelBoardDeadline(no);
+
+    if (!result) {
+      throw new InternalServerErrorException(
+        '게시글 마감 취소가 되지 않았습니다.',
+      );
+    }
+
+    return { success: true };
   }
 
   async searchAllBoards(searchBoardDto: SearchBoardDto): Promise<Board[]> {
@@ -172,8 +205,8 @@ export class BoardsService {
     );
 
     this.errorConfirm.notFoundError(area, `해당 지역을 찾을 수 없습니다.`);
-
-    const endTime = new Date();
+    const board = await this.boardRepository.findOne(no);
+    const endTime = new Date(board.deadline);
     switch (deadline) {
       case 0:
         endTime.setDate(endTime.getDate() + 7);

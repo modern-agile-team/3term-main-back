@@ -61,6 +61,28 @@ export class BoardsController {
     });
   }
 
+  @Patch('/cancel/:no')
+  async cancelBoardDeadline(@Param('no') no: number): Promise<object> {
+    const response = await this.boardService.cancelBoardDeadline(no);
+
+    return Object.assign({
+      statusCode: 200,
+      msg: '게시글 마감 취소가 완료되었습니다.',
+      response,
+    });
+  }
+
+  @Patch('/close/:no')
+  async boardClosed(@Param('no') no: number): Promise<object> {
+    const response = await this.boardService.boardClosed(no);
+
+    return Object.assign({
+      statusCode: 200,
+      msg: '게시글 마감이 완료되었습니다.',
+      response,
+    });
+  }
+
   @Get('/:no')
   async getByOneBoard(@Param('no') no: number): Promise<Board> {
     const response = await this.boardService.getByOneBoard(no);
