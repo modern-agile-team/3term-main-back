@@ -51,8 +51,7 @@ export class SpecsService {
           createSpecDto,
           user,
         );
-        // registSpec 해서 가져온 specNO 값은 [{no : 새로 생성된 스팩 고유번호}] 이런식으로 넘어옴.
-        const spec = await this.specRepository.findOne(specNo[0].no, {
+        const spec = await this.specRepository.findOne(specNo, {
           relations: ['specPhoto'],
         });
         if (specPhoto.length === 0) {
@@ -64,11 +63,10 @@ export class SpecsService {
         for (const photo of specPhoto) {
           const specPhotoNo = await this.specPhotoRepository.saveSpecPhoto(
             photo,
-            //spec를 집어 넣어주는 것이 point 이때 photo_url 이 없다면?
             spec,
           );
           const specPhotoRepo = await this.specPhotoRepository.findOne(
-            specPhotoNo[0].no,
+            specPhotoNo,
           );
           spec.specPhoto.push(specPhotoRepo);
         }

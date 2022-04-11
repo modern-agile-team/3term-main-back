@@ -46,7 +46,6 @@ export class SpecRepository extends Repository<Spec> {
         .andWhere('spec.no = specPhoto.spec')
         .getOne();
 
-      //근데 이렇게 짜면 specphoto url이 undefined인 경우에 상세조회 안불러와진다
       return spec;
     } catch (err) {
       throw new InternalServerErrorException(
@@ -70,14 +69,11 @@ export class SpecRepository extends Repository<Spec> {
         ])
         .execute();
 
-      if (!raw) {
-        throw new InternalServerErrorException(
-          '### 정상적으로 저장되지 않았습니다.',
-        );
-      }
-      return raw;
+      return raw.insertId;
     } catch (err) {
-      throw err;
+      throw new InternalServerErrorException(
+        '### 정상적으로 저장되지 않았습니다.',
+      );
     }
   }
 

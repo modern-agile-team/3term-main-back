@@ -12,14 +12,11 @@ export class SpecPhotoRepository extends Repository<SpecPhoto> {
         .values([{ photo_url, spec }])
         .execute();
 
-      if (!raw) {
-        throw new InternalServerErrorException(
-          '### 정상적으로 저장되지 않았습니다.',
-        );
-      }
-      return raw;
+      return raw.insertId;
     } catch (err) {
-      throw err;
+      throw new InternalServerErrorException(
+        '### 정상적으로 저장되지 않았습니다.',
+      );
     }
   }
 
