@@ -75,7 +75,7 @@ export class SpecsService {
           user.specs.push(spec);
         }
         return new InternalServerErrorException(
-          '스펙등록 중 발생한 서버에러입니다.',
+          '스펙등록 중 발생한 서버 에러입니다.',
         );
       }
       return new UnauthorizedException(
