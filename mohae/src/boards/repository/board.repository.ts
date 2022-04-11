@@ -101,13 +101,50 @@ export class BoardRepository extends Repository<Board> {
     }
   }
 
-  async closeBoard(currentTime: Date) {
+  async cancelClosedBoard(no: number): Promise<object> {
+    try {
+      const affected = await this.createQueryBuilder()
+        .update(Board)
+        .set({ isDeadline: false })
+        .where('no = :no', { no })
+        .execute();
+
+      return affected;
+    } catch (e) {
+      throw new InternalServerErrorException(
+        `${e} ### 게시판 활성화 : 알 수 없는 서버 에러입니다.`,
+      );
+    }
+  }
+
+  async boardClosed(no: number): Promise<object> {
+    try {
+      const { affected } = await this.createQueryBuilder()
+        .update(Board)
+        .set({ isDeadline: true })
+        .where('no = :no', { no })
+        .execute();
+
+      if (!affected) {
+        return { success: false };
+      }
+
+      return { success: true };
+    } catch (e) {
+      throw new InternalServerErrorException(
+        `${e} ### 게시판 비활성화 : 알 수 없는 서버 에러입니다.`,
+      );
+    }
+  }
+
+  async closingBoard(currentTime: Date) {
     try {
       const closedBoard = await this.createQueryBuilder()
         .update(Board)
-        .set({ isDeadLine: true })
+        .set({ isDeadline: true })
         .where('deadline <= :currentTime', { currentTime })
         .execute();
+
       return closedBoard;
     } catch (e) {
       throw new InternalServerErrorException(
