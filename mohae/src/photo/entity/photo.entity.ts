@@ -22,7 +22,6 @@ export class SpecPhoto extends BaseEntity {
 
   @ManyToOne((type) => Spec, (spec) => spec.specPhoto, {
     onDelete: 'SET NULL',
-    eager: true,
   })
   @JoinColumn({ name: 'spec_no' })
   spec: Spec;
