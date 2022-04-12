@@ -125,20 +125,31 @@ describe('FaqsService', () => {
 
       const { success } = await faqService.createFaq(createFaqDto);
 
+      // 리턴된 값이 false를 기대
       expect(success).toBeFalsy();
     });
 
     it('FAQ 생성자가 없을 경우', async () => {
-      faqRepository['createFaq'].mockResolvedValue({
-        affectedRows: 0,
-      });
-      const { success } = await faqService.createFaq({
-        managerNo: 2,
+      // 매니저가 존재하지 않을 경우
+      userRepository['findOne'].mockResolvedValue(undefined);
+      // 유저 생성 더미값
+      const createFaqDto: CreateFaqDto = {
+        managerNo: 1,
         title: 'title',
-        description: 'description',
-      });
+        description: 'desc',
+      };
 
-      expect(success).toBeFalsy();
+      try {
+        await faqService.createFaq(createFaqDto);
+      } catch (e) {
+        console.log(e);
+        expect(e).toBeInstanceOf(NotFoundException);
+        expect(e.response).toStrictEqual({
+          statusCode: 404,
+          message: '해당 매니저를 찾을 수 없습니다.',
+          error: 'Not Found',
+        });
+      }
     });
   });
 
