@@ -3,6 +3,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AreasModule } from 'src/areas/areas.module';
 import { AreasRepository } from 'src/areas/repository/area.repository';
 import { AuthModule } from 'src/auth/auth.module';
+import { UserRepository } from 'src/auth/repository/user.repository';
 import { CategoriesModule } from 'src/categories/categories.module';
 import { CategoriesService } from 'src/categories/categories.service';
 import { CategoryRepository } from 'src/categories/repository/category.repository';
@@ -19,6 +20,7 @@ import { BoardRepository } from './repository/board.repository';
       ReviewRepository,
       CategoryRepository,
       AreasRepository,
+      UserRepository,
     ]),
     CategoriesModule,
     AreasModule,

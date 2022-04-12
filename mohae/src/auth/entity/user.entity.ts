@@ -29,6 +29,7 @@ import { Mailbox } from 'src/mailboxes/entity/mailbox.entity';
 import { Spec } from 'src/specs/entity/spec.entity';
 import { Faq } from 'src/faqs/entity/faq.entity';
 import { Notice } from 'src/notices/entity/notice.entity';
+import { Board } from 'src/boards/entity/board.entity';
 
 @Entity('users')
 export class User extends BaseEntity {
@@ -46,6 +47,11 @@ export class User extends BaseEntity {
     comment: '회원 개인 프로필사진',
   })
   photo_url: string;
+
+  @OneToMany((type) => Board, (board) => board.user, {
+    onDelete: 'SET NULL',
+  })
+  boards: Board[];
 
   @ManyToOne((type) => School, (school) => school.no, {
     eager: true,

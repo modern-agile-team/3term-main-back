@@ -66,6 +66,9 @@ export abstract class BoardContent {
 export class CreateBoardDto extends BoardContent {
   @IsNumber()
   deadline: number;
+
+  @IsNumber()
+  userNo: number;
 }
 export class UpdateBoardDto extends BoardContent {
   @IsNumber()
