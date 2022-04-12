@@ -23,6 +23,7 @@ export class BoardRepository extends Repository<Board> {
         .leftJoinAndSelect('boards.user', 'users')
         .select([
           'users.no',
+          'users.name',
           'users.nickname',
           // 'users.major_no',
           'boards.no',
