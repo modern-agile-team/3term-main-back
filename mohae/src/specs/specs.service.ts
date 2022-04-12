@@ -119,7 +119,7 @@ export class SpecsService {
           const judgeNo = await this.specPhotoRepository.getSpecNo(photoNo);
           if (judgeNo !== specNo)
             throw new UnauthorizedException(
-              '스펙 번호와 스펙사진의 스펙 번호가 맞지 않습니다.',
+              '스펙 번호와 스펙사진의 스펙번호가 맞지 않습니다.',
             );
         }
 
