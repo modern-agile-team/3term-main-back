@@ -15,6 +15,7 @@ import {
 import { Board } from './entity/board.entity';
 import { BoardRepository } from './repository/board.repository';
 import { ErrorConfirm } from 'src/utils/error';
+import { UserRepository } from 'src/auth/repository/user.repository';
 
 @Injectable()
 export class BoardsService {
@@ -27,6 +28,9 @@ export class BoardsService {
 
     @InjectRepository(CategoryRepository)
     private categoryRepository: CategoryRepository,
+
+    @InjectRepository(UserRepository)
+    private userRepository: UserRepository,
 
     private errorConfirm: ErrorConfirm,
   ) {}
@@ -126,12 +130,16 @@ export class BoardsService {
   }
 
   async createBoard(createBoardDto: CreateBoardDto): Promise<Board> {
-    const { categoryNo, areaNo, deadline } = createBoardDto;
+    const { categoryNo, areaNo, deadline, userNo } = createBoardDto;
     const category = await this.categoryRepository.findOne(categoryNo, {
       relations: ['boards'],
     });
 
     const area = await this.areaRepository.findOne(areaNo, {
+      relations: ['boards'],
+    });
+
+    const user = await this.userRepository.findOne(userNo, {
       relations: ['boards'],
     });
 
@@ -141,6 +149,9 @@ export class BoardsService {
     );
 
     this.errorConfirm.notFoundError(area, `해당 지역을 찾을 수 없습니다.`);
+
+    this.errorConfirm.notFoundError(user, `해당 회원을 찾을 수 없습니다.`);
+
     const endTime = new Date();
     endTime.setHours(endTime.getHours() + 9);
 
@@ -162,6 +173,7 @@ export class BoardsService {
     const board = await this.boardRepository.createBoard(
       category,
       area,
+      user,
       createBoardDto,
       endTime,
     );
