@@ -1,4 +1,5 @@
 import { Area } from 'src/areas/entity/areas.entity';
+import { User } from 'src/auth/entity/user.entity';
 import { Category } from 'src/categories/entity/category.entity';
 import { ReportedBoard } from 'src/reports/entity/report.entity';
 import { Review } from 'src/reviews/entity/review.entity';
@@ -28,6 +29,11 @@ export class Board extends BaseEntity {
     nullable: true,
   })
   reviews: Review[];
+
+  @ManyToOne((type) => User, (user) => user.boards, {
+    onDelete: 'SET NULL',
+  })
+  user: User;
 
   @Column({
     type: 'varchar',
