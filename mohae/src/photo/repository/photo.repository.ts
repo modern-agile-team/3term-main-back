@@ -39,4 +39,18 @@ export class SpecPhotoRepository extends Repository<SpecPhoto> {
       throw err;
     }
   }
+
+  async getSpecNo(no) {
+    try {
+      const { spec } = await this.createQueryBuilder('specPhoto')
+        .leftJoinAndSelect('specPhoto.spec', 'spec')
+        .select(['specPhoto.no', 'spec.no'])
+        .where('specPhoto.no = :no', { no })
+        .getOne();
+
+      return spec.no;
+    } catch (err) {
+      throw err;
+    }
+  }
 }
