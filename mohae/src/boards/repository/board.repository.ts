@@ -3,6 +3,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { Area } from 'src/areas/entity/areas.entity';
+import { User } from 'src/auth/entity/user.entity';
 import { Category } from 'src/categories/entity/category.entity';
 import { DeleteResult, EntityRepository, Repository } from 'typeorm';
 import {
@@ -19,7 +20,12 @@ export class BoardRepository extends Repository<Board> {
       const board = await this.createQueryBuilder('boards')
         .leftJoinAndSelect('boards.area', 'areas')
         .leftJoinAndSelect('boards.category', 'categories')
+        .leftJoinAndSelect('boards.user', 'users')
         .select([
+          'users.no',
+          'users.name',
+          'users.nickname',
+          // 'users.major_no',
           'boards.no',
           'boards.title',
           'boards.description',
@@ -247,6 +253,7 @@ export class BoardRepository extends Repository<Board> {
   async createBoard(
     category: Category,
     area: object,
+    user: User,
     createBoardDto: CreateBoardDto,
     endTime: Date,
   ): Promise<Board> {
@@ -273,6 +280,7 @@ export class BoardRepository extends Repository<Board> {
             target,
             category,
             area,
+            user,
             note1,
             note2,
             note3,
