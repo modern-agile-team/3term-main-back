@@ -12,14 +12,11 @@ export class SpecPhotoRepository extends Repository<SpecPhoto> {
         .values([{ photo_url, spec }])
         .execute();
 
-      if (!raw) {
-        throw new InternalServerErrorException(
-          '### 정상적으로 저장되지 않았습니다.',
-        );
-      }
-      return raw;
+      return raw.insertId;
     } catch (err) {
-      throw err;
+      throw new InternalServerErrorException(
+        '### 정상적으로 저장되지 않았습니다.',
+      );
     }
   }
 
@@ -38,6 +35,20 @@ export class SpecPhotoRepository extends Repository<SpecPhoto> {
       }
 
       return affected;
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  async getSpecNo(no) {
+    try {
+      const { spec } = await this.createQueryBuilder('specPhoto')
+        .leftJoinAndSelect('specPhoto.spec', 'spec')
+        .select(['specPhoto.no', 'spec.no'])
+        .where('specPhoto.no = :no', { no })
+        .getOne();
+
+      return spec.no;
     } catch (err) {
       throw err;
     }
