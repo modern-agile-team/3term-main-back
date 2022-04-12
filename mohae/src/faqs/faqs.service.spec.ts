@@ -5,7 +5,6 @@ import { UserRepository } from 'src/auth/repository/user.repository';
 import { ErrorConfirm } from 'src/utils/error';
 import { Repository } from 'typeorm';
 import { CreateFaqDto } from './dto/faq.dto';
-import { Faq } from './entity/faq.entity';
 import { FaqsService } from './faqs.service';
 import { FaqRepository } from './repository/faq.repository';
 
@@ -90,29 +89,57 @@ describe('FaqsService', () => {
         name: 'test',
         faqs: [],
       });
+    });
 
+    it('FAQ 생성', async () => {
       // faqRepository 내에 있는 createFaq 가상 리턴값
       faqRepository['createFaq'].mockResolvedValue({
         affectedRows: 1,
         insertId: 1,
       });
-    });
 
-    it('FAQ 생성', async () => {
-      // createFaq Dto로 들어가는 값
-      const { success } = await faqService.createFaq({
+      // 유저 생성 더미값
+      const createFaqDto: CreateFaqDto = {
         managerNo: 1,
         title: 'title',
         description: 'desc',
-      });
+      };
+
+      // createFaq Dto로 들어가는 값
+      const { success } = await faqService.createFaq(createFaqDto);
 
       // 리턴된 값이 true를 기대
       expect(success).toBeTruthy();
     });
-    it.todo('매니저가 아닌 경우');
-    it.todo('제목 길이가 벗어난 경우');
-    it.todo('내용 길이가 벗어난 경우');
-    it.todo('생성 결과가 0으로 리턴될 경우');
+
+    it('FAQ 생성 결과가 0으로 리턴될 경우', async () => {
+      faqRepository['createFaq'].mockResolvedValue({
+        affectedRows: 0,
+      });
+      // 유저 생성 더미값
+      const createFaqDto: CreateFaqDto = {
+        managerNo: 1,
+        title: 'title',
+        description: 'desc',
+      };
+
+      const { success } = await faqService.createFaq(createFaqDto);
+
+      expect(success).toBeFalsy();
+    });
+
+    it('FAQ 생성자가 없을 경우', async () => {
+      faqRepository['createFaq'].mockResolvedValue({
+        affectedRows: 0,
+      });
+      const { success } = await faqService.createFaq({
+        managerNo: 2,
+        title: 'title',
+        description: 'description',
+      });
+
+      expect(success).toBeFalsy();
+    });
   });
 
   describe('updateFaq', () => {
