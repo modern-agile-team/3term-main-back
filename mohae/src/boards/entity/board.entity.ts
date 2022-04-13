@@ -13,6 +13,7 @@ import {
   OneToMany,
   PrimaryGeneratedColumn,
   Timestamp,
+  UpdateDateColumn,
 } from 'typeorm';
 
 @Entity('boards')
@@ -83,6 +84,11 @@ export class Board extends BaseEntity {
     comment: '게시글 생성일',
   })
   createdAt: Date | null;
+
+  @UpdateDateColumn({
+    comment: '게시글 수정일',
+  })
+  updatedAt: Date | null;
 
   @Column({
     comment: '게시글 마감일',
