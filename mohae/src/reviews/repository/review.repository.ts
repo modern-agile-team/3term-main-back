@@ -24,11 +24,11 @@ export class ReviewRepository extends Repository<Review> {
 
   async findAllReview(): Promise<Review[]> {
     try {
-      const reviews = await this.createQueryBuilder('reviews')
-        .leftJoinAndSelect('reviews.board', 'boards')
-        .where('reviews.board = boards.no')
-        .getMany();
-
+      // const reviews = await this.createQueryBuilder('reviews')
+      //   .leftJoinAndSelect('reviews.board', 'boards')
+      //   .leftJoinAndSelect('reviews.reviewer', 'reviewer')
+      //   .getMany();
+      const reviews = await this.find();
       return reviews;
     } catch (e) {
       throw new InternalServerErrorException(

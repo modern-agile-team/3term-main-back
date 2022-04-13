@@ -6,8 +6,10 @@ import {
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
+  JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
+  RelationId,
   UpdateDateColumn,
 } from 'typeorm';
 
@@ -28,13 +30,19 @@ export class Review extends BaseEntity {
   })
   readonly rating: number;
 
+  @RelationId((review: Review) => review.reviewer)
+  reviewerNo: number;
+
+  @RelationId((review: Review) => review.board)
+  boardNo: number;
+
   /* 게시글 리뷰 Relations */
-  @ManyToOne((type) => Board, (board) => board.no, {
+  @ManyToOne((type) => Board, (board) => board.reviews, {
     onDelete: 'SET NULL',
   })
   board: Board;
 
-  @ManyToOne((type) => User, (user) => user.no)
+  @ManyToOne((type) => User, (user) => user.reviews)
   reviewer: User;
 
   /* 게시글 리뷰 Timestamps */
