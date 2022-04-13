@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
@@ -221,7 +222,8 @@ export class BoardsService {
     const board = await this.boardRepository.findOne(no);
     this.errorConfirm.notFoundError(board, `해당 게시글을 찾을 수 없습니다.`);
 
-    const endTime = new Date(board.deadline);
+    const endTime = new Date(board.createdAt);
+
     switch (deadline) {
       case 0:
         endTime.setDate(endTime.getDate() + 7);
@@ -235,6 +237,13 @@ export class BoardsService {
       case 3:
         endTime.setFullYear(endTime.getFullYear() + 100);
         break;
+    }
+
+    const currentTime = new Date();
+    currentTime.setHours(currentTime.getHours() + 9);
+
+    if (endTime <= currentTime) {
+      throw new BadRequestException('다른 기간을 선택해 주십시오');
     }
 
     const updatedBoard = await this.boardRepository.updateBoard(

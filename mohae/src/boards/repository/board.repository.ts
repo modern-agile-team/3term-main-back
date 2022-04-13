@@ -21,11 +21,15 @@ export class BoardRepository extends Repository<Board> {
         .leftJoinAndSelect('boards.area', 'areas')
         .leftJoinAndSelect('boards.category', 'categories')
         .leftJoinAndSelect('boards.user', 'users')
+        .leftJoinAndSelect('users.school', 'school')
+        .leftJoinAndSelect('users.major', 'major')
         .select([
           'users.no',
           'users.name',
           'users.nickname',
-          // 'users.major_no',
+          'users.photo_url',
+          'school.name',
+          'major.name',
           'boards.no',
           'boards.title',
           'boards.description',
