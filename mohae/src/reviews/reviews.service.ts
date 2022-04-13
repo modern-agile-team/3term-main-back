@@ -22,9 +22,9 @@ export class ReviewsService {
     private errorConfirm: ErrorConfirm,
   ) {}
 
-  async findAllReview(): Promise<Review[]> {
+  async readAllReview(): Promise<Review[]> {
     try {
-      const reviews = await this.reviewRepository.findAllReview();
+      const reviews = await this.reviewRepository.readAllReview();
 
       return reviews;
     } catch (e) {
@@ -32,13 +32,17 @@ export class ReviewsService {
     }
   }
 
-  async findOneReview(no: number): Promise<Review> {
+  async readUserReviews(no: number) {
     try {
-      const review = await this.reviewRepository.findOneReview(no);
+      const reviews = await this.reviewRepository.readUserReviews(no);
+      this.errorConfirm.notFoundError(reviews, '해당 리뷰를 찾을 수 없습니다.');
 
-      this.errorConfirm.notFoundError(review, '해당 리뷰를 찾을 수 없습니다.');
+      const rating =
+        reviews.reduce((result, review) => {
+          return result + review.rating;
+        }, 0) / reviews.length;
 
-      return review;
+      return { reviews, rating: rating.toFixed(1) };
     } catch (e) {
       throw e;
     }

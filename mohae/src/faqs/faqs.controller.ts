@@ -59,7 +59,7 @@ export class FaqsController {
     const response = await this.faqsService.updateFaq(no, updateFaqDto);
 
     return Object.assign({
-      statusCode: 201,
+      statusCode: 204,
       msg: `FAQ 수정 완료`,
       response,
     });
@@ -73,7 +73,7 @@ export class FaqsController {
     const response = await this.faqsService.deleteFaq(no);
 
     return Object.assign({
-      statusCode: 200,
+      statusCode: 204,
       msg: `FAQ 삭제 완료`,
       response,
     });
