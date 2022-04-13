@@ -172,20 +172,20 @@ export class User extends BaseEntity {
   })
   faqs: Faq[];
 
-  @OneToMany((type) => Faq, (faqs) => faqs.modifiedManager, {
+  @OneToMany((type) => Faq, (faqs) => faqs.lastEditor, {
     nullable: true,
   })
-  modifyFaqs: Faq[];
+  modifiedFaqs: Faq[];
 
   @OneToMany((type) => Notice, (notices) => notices.manager, {
     nullable: true,
   })
-  notices: Faq[];
+  notices: Notice[];
 
-  @OneToMany((type) => Notice, (notices) => notices.modifiedManager, {
+  @OneToMany((type) => Notice, (notices) => notices.lastEditor, {
     nullable: true,
   })
-  modifyNotices: Faq[];
+  modifiedNotices: Notice[];
 
   @ManyToMany((type) => Mailbox, (mailbox) => mailbox.users)
   mailboxes: Mailbox[];
