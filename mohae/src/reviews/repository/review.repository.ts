@@ -48,13 +48,26 @@ export class ReviewRepository extends Repository<Review> {
     }
   }
 
-  async readOneReview(no: number): Promise<Review> {
+  async readUserReviews(no: number): Promise<Review[]> {
     try {
       const review = await this.createQueryBuilder('reviews')
-        .leftJoinAndSelect('reviews.board', 'boards')
-        .leftJoinAndSelect('reviews.reviewer', 'user')
-        .where('reviews.no = :no', { no })
-        .getOne();
+        .leftJoinAndSelect('reviews.board', 'board')
+        .leftJoinAndSelect('reviews.reviewer', 'reviewer')
+        .leftJoinAndSelect('board.user', 'user')
+        .select([
+          'reviews.no',
+          'reviews.reviewer',
+          'reviews.description',
+          'reviews.rating',
+          'reviews.createdAt',
+          'board.no',
+          'board.title',
+          'reviewer.no',
+          'reviewer.nickname',
+          'reviewer.photo_url',
+        ])
+        .where('user.no = :no', { no })
+        .getMany();
 
       return review;
     } catch (e) {

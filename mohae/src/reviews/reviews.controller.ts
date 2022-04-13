@@ -25,16 +25,16 @@ export class ReviewsController {
   }
 
   @ApiOperation({
-    summary: '리뷰 상세(선택) 조회',
-    description: '리뷰 상세(선택) 조회 API',
+    summary: '마이페이지에 나타나는 유저 리뷰',
+    description: '마이페이지에 나타나는 유저 리뷰 조회 API',
   })
-  @Get(':no')
-  async readOneReview(@Param('no') no: number): Promise<Review> {
-    const response = await this.reviewService.readOneReview(no);
+  @Get(':userNo')
+  async readUserReviews(@Param('userNo') no: number) {
+    const response = await this.reviewService.readUserReviews(no);
 
     return Object.assign({
       statusCode: 200,
-      msg: `${no}번 리뷰가 조회되었습니다.`,
+      msg: `${no} 유저의 리뷰가 조회되었습니다.`,
       response,
     });
   }
