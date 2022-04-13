@@ -20,21 +20,6 @@ export class Board extends BaseEntity {
   @PrimaryGeneratedColumn()
   no: number;
 
-  @OneToMany((type) => ReportedBoard, (report) => report.reportedBoard, {
-    nullable: true,
-  })
-  reports: ReportedBoard[];
-
-  @OneToMany((type) => Review, (review) => review.board, {
-    nullable: true,
-  })
-  reviews: Review[];
-
-  @ManyToOne((type) => User, (user) => user.boards, {
-    onDelete: 'SET NULL',
-  })
-  user: User;
-
   @Column({
     type: 'varchar',
     length: 30,
@@ -45,22 +30,6 @@ export class Board extends BaseEntity {
     type: 'mediumtext',
   })
   description: string;
-
-  @CreateDateColumn({
-    comment: '게시글 생성일',
-  })
-  createdAt: Date | null;
-
-  @Column({
-    comment: '게시글 마감일',
-    type: 'datetime',
-  })
-  deadline: Date;
-
-  @DeleteDateColumn({
-    comment: '게시글 삭제일',
-  })
-  deletedAt: Date | null;
 
   @Column({
     comment: '게시글 마감유무',
@@ -92,21 +61,6 @@ export class Board extends BaseEntity {
   summary: string;
 
   @Column({
-    type: 'boolean',
-  })
-  target: boolean;
-
-  @ManyToOne((type) => Category, (category) => category.no, {
-    onDelete: 'SET NULL',
-  })
-  category: Category;
-
-  @ManyToOne((type) => Area, (area) => area.no, {
-    onDelete: 'SET NULL',
-  })
-  area: Area;
-
-  @Column({
     type: 'mediumtext',
   })
   note1: string;
@@ -120,4 +74,49 @@ export class Board extends BaseEntity {
     type: 'mediumtext',
   })
   note3: string;
+  @Column({
+    type: 'boolean',
+  })
+  target: boolean;
+
+  @CreateDateColumn({
+    comment: '게시글 생성일',
+  })
+  createdAt: Date | null;
+
+  @Column({
+    comment: '게시글 마감일',
+    type: 'datetime',
+  })
+  deadline: Date;
+
+  @DeleteDateColumn({
+    comment: '게시글 삭제일',
+  })
+  deletedAt: Date | null;
+
+  @OneToMany((type) => ReportedBoard, (report) => report.reportedBoard, {
+    nullable: true,
+  })
+  reports: ReportedBoard[];
+
+  @OneToMany((type) => Review, (review) => review.board, {
+    nullable: true,
+  })
+  reviews: Review[];
+
+  @ManyToOne((type) => User, (user) => user.boards, {
+    onDelete: 'SET NULL',
+  })
+  user: User;
+
+  @ManyToOne((type) => Category, (category) => category.no, {
+    onDelete: 'SET NULL',
+  })
+  category: Category;
+
+  @ManyToOne((type) => Area, (area) => area.no, {
+    onDelete: 'SET NULL',
+  })
+  area: Area;
 }
