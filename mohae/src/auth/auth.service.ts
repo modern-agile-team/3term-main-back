@@ -36,13 +36,14 @@ export class AuthService {
     const schoolRepo = await this.schoolRepository.findOne(school, {
       relations: ['users'],
     });
+
     const majorRepo = await this.majorRepository.findOne(major, {
       relations: ['users'],
     });
     const categoriesRepo = await this.categoriesRepository.selectCategory(
       categories,
     );
-
+    console.log(categoriesRepo);
     const stringEmail = 'email';
     const stringNickname = 'nickname';
 
@@ -78,8 +79,8 @@ export class AuthService {
       }
     });
 
-    schoolRepo.users.push(user);
-    majorRepo.users.push(user);
+    // schoolRepo.users.push(user);
+    // majorRepo.users.push(user);
 
     await this.categoriesRepository.saveUsers(categoriesRepo, userCategory);
 

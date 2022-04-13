@@ -31,11 +31,6 @@ export class Spec extends BaseEntity {
   })
   description: string;
 
-  @OneToMany((type) => SpecPhoto, (photo) => photo.spec, {
-    nullable: true,
-  })
-  specPhoto: SpecPhoto[];
-
   @CreateDateColumn({
     name: 'create_at',
     comment: '스팩 등록 시간',
@@ -52,6 +47,11 @@ export class Spec extends BaseEntity {
     comment: '마지막 스팩 업데이트 시간',
   })
   latestUpdateSpec: Date;
+
+  @OneToMany((type) => SpecPhoto, (photo) => photo.spec, {
+    nullable: true,
+  })
+  specPhoto: SpecPhoto[];
 
   @ManyToOne((type) => User, (user) => user.no, {
     // eager: true,

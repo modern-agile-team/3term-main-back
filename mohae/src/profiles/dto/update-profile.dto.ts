@@ -1,4 +1,4 @@
-import { IsNumber, IsString } from 'class-validator';
+import { IsArray, IsNumber, IsString } from 'class-validator';
 
 export class UpdateProfileDto {
   @IsString()
@@ -12,6 +12,9 @@ export class UpdateProfileDto {
 
   @IsNumber()
   major?: number;
+
+  @IsArray()
+  categories: [];
 
   @IsString()
   photo_url?: string;

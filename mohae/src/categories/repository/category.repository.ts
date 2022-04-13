@@ -1,6 +1,4 @@
 import { InternalServerErrorException } from '@nestjs/common';
-import { ConstraintMetadata } from 'class-validator/types/metadata/ConstraintMetadata';
-import { filter } from 'rxjs';
 import { EntityRepository, Repository } from 'typeorm';
 import { Category } from '../entity/category.entity';
 

@@ -48,29 +48,6 @@ export class User extends BaseEntity {
   })
   photo_url: string;
 
-  @OneToMany((type) => Board, (board) => board.user, {
-    onDelete: 'SET NULL',
-  })
-  boards: Board[];
-
-  @ManyToOne((type) => School, (school) => school.no, {
-    eager: true,
-    onDelete: 'SET NULL',
-  })
-  @JoinColumn({ name: 'school_no' })
-  school: School;
-
-  @ManyToOne((type) => Major, (major) => major.no, {
-    eager: true,
-    onDelete: 'SET NULL',
-  })
-  @JoinColumn({ name: 'major_no' })
-  major: Major;
-
-  @ManyToMany((type) => Category, (category) => category.users)
-  @JoinTable({ name: 'user_in_category' })
-  categories: Category[];
-
   @Column({
     unique: true,
     type: 'varchar',
@@ -103,42 +80,6 @@ export class User extends BaseEntity {
   })
   salt: string;
 
-  @DeleteDateColumn({
-    name: 'delete_at',
-    comment: '삭제일',
-  })
-  deletedAt: Date | null;
-
-  @CreateDateColumn({
-    name: 'create_at',
-    comment: '회원가입 시간',
-  })
-  createdAt: Date;
-
-  @OneToMany((type) => ReportedUser, (user) => user.reportedUser, {
-    nullable: true,
-    eager: true,
-  })
-  reports: ReportedUser[];
-
-  @OneToMany((type) => ReportedUser, (user) => user.reportUser, {
-    nullable: true,
-    eager: true,
-  })
-  userReport: ReportedUser[];
-
-  @OneToMany((type) => ReportedBoard, (board) => board.reportUser, {
-    nullable: true,
-    eager: true,
-  })
-  boardReport: ReportedBoard[];
-
-  @OneToMany((type) => Review, (review) => review.reviewer)
-  reviews: Review[];
-
-  @OneToMany((type) => Spec, (spec) => spec.user)
-  specs: Spec[];
-  //
   @Column({
     comment: '로그인 실패 횟수',
     default: 0,
@@ -156,6 +97,23 @@ export class User extends BaseEntity {
     comment: '마지막으로 로그인을 시도한 시간',
   })
   latestLogin: Date;
+
+  @DeleteDateColumn({
+    name: 'delete_at',
+    comment: '삭제일',
+  })
+  deletedAt: Date | null;
+
+  @CreateDateColumn({
+    name: 'create_at',
+    comment: '회원가입 시간',
+  })
+  createdAt: Date;
+
+  @OneToMany((type) => Board, (board) => board.user, {
+    onDelete: 'SET NULL',
+  })
+  boards: Board[];
 
   @OneToMany((type) => Letter, (letter) => letter.sender, {
     nullable: true,
@@ -186,6 +144,48 @@ export class User extends BaseEntity {
     nullable: true,
   })
   modifyNotices: Faq[];
+
+  @OneToMany((type) => ReportedUser, (user) => user.reportedUser, {
+    nullable: true,
+    eager: true,
+  })
+  reports: ReportedUser[];
+
+  @OneToMany((type) => ReportedUser, (user) => user.reportUser, {
+    nullable: true,
+    eager: true,
+  })
+  userReport: ReportedUser[];
+
+  @OneToMany((type) => ReportedBoard, (board) => board.reportUser, {
+    nullable: true,
+    eager: true,
+  })
+  boardReport: ReportedBoard[];
+
+  @OneToMany((type) => Review, (review) => review.reviewer)
+  reviews: Review[];
+
+  @OneToMany((type) => Spec, (spec) => spec.user)
+  specs: Spec[];
+
+  @ManyToOne((type) => School, (school) => school.no, {
+    eager: true,
+    onDelete: 'SET NULL',
+  })
+  @JoinColumn({ name: 'school_no' })
+  school: School;
+
+  @ManyToOne((type) => Major, (major) => major.no, {
+    eager: true,
+    onDelete: 'SET NULL',
+  })
+  @JoinColumn({ name: 'major_no' })
+  major: Major;
+
+  @ManyToMany((type) => Category, (category) => category.users)
+  @JoinTable({ name: 'user_in_category' })
+  categories: Category[];
 
   @ManyToMany((type) => Mailbox, (mailbox) => mailbox.users)
   mailboxes: Mailbox[];
