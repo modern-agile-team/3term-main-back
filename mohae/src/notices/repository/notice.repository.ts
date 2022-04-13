@@ -9,7 +9,7 @@ export class NoticeRepository extends Repository<Notice> {
     try {
       const notices = this.createQueryBuilder('notices')
         .leftJoinAndSelect('notices.manager', 'manager')
-        .leftJoinAndSelect('notices.modifiedManager', 'modifiedManager')
+        .leftJoinAndSelect('notices.lastEditor', 'lastEditor')
         .orderBy('notices.updatedAt', 'DESC')
         .getMany();
 
@@ -29,7 +29,7 @@ export class NoticeRepository extends Repository<Notice> {
         .into(Notice)
         .values({
           manager,
-          modifiedManager: manager,
+          lastEditor: manager,
           title,
           description,
         })
@@ -51,7 +51,7 @@ export class NoticeRepository extends Repository<Notice> {
         .set({
           title,
           description,
-          modifiedManager: manager,
+          lastEditor: manager,
         })
         .where('no = :no', { no })
         .execute();

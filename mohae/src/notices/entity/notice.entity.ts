@@ -15,12 +15,6 @@ export class Notice extends BaseEntity {
   @PrimaryGeneratedColumn()
   no: number;
 
-  @ManyToOne((type) => User, (user) => user.no, { onDelete: 'SET NULL' })
-  manager: User;
-
-  @ManyToOne((type) => User, (user) => user.no, { onDelete: 'SET NULL' })
-  modifiedManager: User;
-
   @Column({
     type: 'varchar',
     length: 30,
@@ -34,6 +28,7 @@ export class Notice extends BaseEntity {
   })
   description: string;
 
+  /* 생성, 수정, 삭제 시간 */
   @CreateDateColumn({
     comment: '공지사항 작성일',
   })
@@ -48,4 +43,11 @@ export class Notice extends BaseEntity {
     comment: 'FAQ 삭제일',
   })
   deletedAt: Date | null;
+
+  /* 공지사항 외래키 */
+  @ManyToOne((type) => User, (user) => user.no, { onDelete: 'SET NULL' })
+  manager: User;
+
+  @ManyToOne((type) => User, (user) => user.no, { onDelete: 'SET NULL' })
+  lastEditor: User;
 }

@@ -180,12 +180,12 @@ export class User extends BaseEntity {
   @OneToMany((type) => Notice, (notices) => notices.manager, {
     nullable: true,
   })
-  notices: Faq[];
+  notices: Notice[];
 
-  @OneToMany((type) => Notice, (notices) => notices.modifiedManager, {
+  @OneToMany((type) => Notice, (notices) => notices.lastEditor, {
     nullable: true,
   })
-  modifyNotices: Faq[];
+  modifiedNotices: Notice[];
 
   @ManyToMany((type) => Mailbox, (mailbox) => mailbox.users)
   mailboxes: Mailbox[];
