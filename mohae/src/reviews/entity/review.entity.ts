@@ -6,7 +6,6 @@ import {
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
-  JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
   RelationId,
@@ -48,13 +47,17 @@ export class Review extends BaseEntity {
 
   /* 게시글 리뷰 Timestamps */
   @CreateDateColumn({
-    comment: '리뷰 작성하면 시간 입력',
+    comment: '리뷰 작성 시간',
   })
   readonly createdAt: Date;
 
-  @UpdateDateColumn()
+  @UpdateDateColumn({
+    comment: '리뷰 수정 시간인데 혹시 몰라 생성해둠',
+  })
   readonly updatedAt: Date;
 
-  @DeleteDateColumn()
+  @DeleteDateColumn({
+    comment: '리뷰 삭제 시간',
+  })
   readonly deletedAt: Date;
 }
