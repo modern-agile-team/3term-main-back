@@ -7,9 +7,9 @@ import { Faq } from '../entity/faq.entity';
 export class FaqRepository extends Repository<Faq> {
   async readFaqs(): Promise<Faq[]> {
     try {
-      const faqs = await this.createQueryBuilder()
-        .leftJoinAndSelect('faqs.manager', 'manager')
-        .leftJoinAndSelect('faqs.lastEditor', 'lastEditor')
+      const faqs = await this.createQueryBuilder('faqs')
+        .select(['faqs.no', 'faqs.title', 'faqs.description', 'faqs.createdAt'])
+        .orderBy('faqs.updatedAt', 'DESC')
         .getMany();
 
       return faqs;
