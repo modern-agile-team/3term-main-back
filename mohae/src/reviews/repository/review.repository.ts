@@ -22,13 +22,24 @@ export class ReviewRepository extends Repository<Review> {
     }
   }
 
-  async findAllReview(): Promise<Review[]> {
+  async readAllReview(): Promise<Review[]> {
     try {
-      // const reviews = await this.createQueryBuilder('reviews')
-      //   .leftJoinAndSelect('reviews.board', 'boards')
-      //   .leftJoinAndSelect('reviews.reviewer', 'reviewer')
-      //   .getMany();
-      const reviews = await this.find();
+      const reviews = await this.createQueryBuilder('reviews')
+        .leftJoinAndSelect('reviews.board', 'board')
+        .leftJoinAndSelect('reviews.reviewer', 'reviewer')
+        .select([
+          'reviews.no',
+          'reviews.reviewer',
+          'reviews.description',
+          'reviews.createdAt',
+          'board.no',
+          'board.title',
+          'reviewer.no',
+          'reviewer.nickname',
+          'reviewer.photo_url',
+        ])
+        .getMany();
+
       return reviews;
     } catch (e) {
       throw new InternalServerErrorException(
@@ -37,7 +48,7 @@ export class ReviewRepository extends Repository<Review> {
     }
   }
 
-  async findOneReview(no: number): Promise<Review> {
+  async readOneReview(no: number): Promise<Review> {
     try {
       const review = await this.createQueryBuilder('reviews')
         .leftJoinAndSelect('reviews.board', 'boards')

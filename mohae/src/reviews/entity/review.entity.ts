@@ -30,6 +30,7 @@ export class Review extends BaseEntity {
   })
   readonly rating: number;
 
+  /* 외래키 값 표시할 컬럼 */
   @RelationId((review: Review) => review.reviewer)
   reviewerNo: number;
 
@@ -49,11 +50,11 @@ export class Review extends BaseEntity {
   @CreateDateColumn({
     comment: '리뷰 작성하면 시간 입력',
   })
-  readonly in_date: Date;
+  readonly createdAt: Date;
 
   @UpdateDateColumn()
-  readonly updated_date: Date;
+  readonly updatedAt: Date;
 
   @DeleteDateColumn()
-  readonly delete_date: Date;
+  readonly deletedAt: Date;
 }

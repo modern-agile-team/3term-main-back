@@ -14,8 +14,8 @@ export class ReviewsController {
     description: '리뷰 전체 조회 API',
   })
   @Get()
-  async findAllReview(): Promise<Review[]> {
-    const response = await this.reviewService.findAllReview();
+  async readAllReview(): Promise<Review[]> {
+    const response = await this.reviewService.readAllReview();
 
     return Object.assign({
       statusCode: 200,
@@ -29,8 +29,8 @@ export class ReviewsController {
     description: '리뷰 상세(선택) 조회 API',
   })
   @Get(':no')
-  async findOneReview(@Param('no') no: number): Promise<Review> {
-    const response = await this.reviewService.findOneReview(no);
+  async readOneReview(@Param('no') no: number): Promise<Review> {
+    const response = await this.reviewService.readOneReview(no);
 
     return Object.assign({
       statusCode: 200,
