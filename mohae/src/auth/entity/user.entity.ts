@@ -172,10 +172,10 @@ export class User extends BaseEntity {
   })
   faqs: Faq[];
 
-  @OneToMany((type) => Faq, (faqs) => faqs.modifiedManager, {
+  @OneToMany((type) => Faq, (faqs) => faqs.lastEditor, {
     nullable: true,
   })
-  modifyFaqs: Faq[];
+  modifiedFaqs: Faq[];
 
   @OneToMany((type) => Notice, (notices) => notices.manager, {
     nullable: true,

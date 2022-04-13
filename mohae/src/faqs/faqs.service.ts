@@ -66,7 +66,7 @@ export class FaqsService {
 
     try {
       const manager = await this.userRepository.findOne(modifiedManagerNo, {
-        relations: ['modifyFaqs'],
+        relations: ['modifiedFaqs'],
       });
       this.errorConfirm.notFoundError(
         manager,
@@ -79,7 +79,7 @@ export class FaqsService {
       );
       const faq = await this.faqRepository.findOne(no);
 
-      manager.modifyFaqs.push(faq);
+      manager.modifiedFaqs.push(faq);
 
       await this.userRepository.save(manager);
 

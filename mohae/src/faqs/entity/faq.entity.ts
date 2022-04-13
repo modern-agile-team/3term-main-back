@@ -15,12 +15,6 @@ export class Faq extends BaseEntity {
   @PrimaryGeneratedColumn()
   no: number;
 
-  @ManyToOne((type) => User, (user) => user.no, { onDelete: 'SET NULL' })
-  manager: User;
-
-  @ManyToOne((type) => User, (user) => user.no, { onDelete: 'SET NULL' })
-  modifiedManager: User;
-
   @Column({
     type: 'varchar',
     length: 30,
@@ -48,4 +42,10 @@ export class Faq extends BaseEntity {
     comment: 'FAQ 삭제일',
   })
   deletedAt: Date | null;
+
+  @ManyToOne((type) => User, (user) => user.no, { onDelete: 'SET NULL' })
+  manager: User;
+
+  @ManyToOne((type) => User, (user) => user.no, { onDelete: 'SET NULL' })
+  lastEditor: User;
 }
