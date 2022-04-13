@@ -7,6 +7,7 @@ import {
   Entity,
   ManyToOne,
   PrimaryGeneratedColumn,
+  RelationId,
   UpdateDateColumn,
 } from 'typeorm';
 
@@ -44,10 +45,17 @@ export class Notice extends BaseEntity {
   })
   deletedAt: Date | null;
 
+  /* 관리자 번호 */
+  @RelationId((notice: Notice) => notice.manager)
+  managerNo: number;
+
+  @RelationId((notice: Notice) => notice.lastEditor)
+  lastEditorNo: number;
+
   /* 공지사항 외래키 */
   @ManyToOne((type) => User, (user) => user.no, { onDelete: 'SET NULL' })
   manager: User;
 
-  // @ManyToOne((type) => User, (user) => user.no, { onDelete: 'SET NULL' })
+  @ManyToOne((type) => User, (user) => user.no, { onDelete: 'SET NULL' })
   lastEditor: User;
 }

@@ -8,8 +8,12 @@ export class NoticeRepository extends Repository<Notice> {
   async readNotices(): Promise<Notice[]> {
     try {
       const notices = this.createQueryBuilder('notices')
-        .leftJoinAndSelect('notices.manager', 'manager')
-        .leftJoinAndSelect('notices.lastEditor', 'lastEditor')
+        .select([
+          'notices.no',
+          'notices.title',
+          'notices.description',
+          'notices.createdAt',
+        ])
         .orderBy('notices.updatedAt', 'DESC')
         .getMany();
 
