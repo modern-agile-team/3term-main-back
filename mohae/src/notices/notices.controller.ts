@@ -58,7 +58,7 @@ export class NoticesController {
     );
 
     return Object.assign({
-      statusCode: 201,
+      statusCode: 204,
       msg: `Notice 수정 완료`,
       response,
     });
@@ -72,7 +72,7 @@ export class NoticesController {
     const { success } = await this.noticesService.deleteNotice(no);
 
     return Object.assign({
-      statusCode: 200,
+      statusCode: 204,
       msg: `Notice 삭제 완료`,
       success,
     });
