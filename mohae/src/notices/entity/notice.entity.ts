@@ -48,6 +48,6 @@ export class Notice extends BaseEntity {
   @ManyToOne((type) => User, (user) => user.no, { onDelete: 'SET NULL' })
   manager: User;
 
-  @ManyToOne((type) => User, (user) => user.no, { onDelete: 'SET NULL' })
+  // @ManyToOne((type) => User, (user) => user.no, { onDelete: 'SET NULL' })
   lastEditor: User;
 }

@@ -7,9 +7,9 @@ import { Faq } from '../entity/faq.entity';
 export class FaqRepository extends Repository<Faq> {
   async readFaqs(): Promise<Faq[]> {
     try {
-      const faqs = await this.createQueryBuilder('faqs')
+      const faqs = await this.createQueryBuilder()
         .leftJoinAndSelect('faqs.manager', 'manager')
-        .leftJoinAndSelect('faqs.modifiedManager', 'modifiedManager')
+        .leftJoinAndSelect('faqs.lastEditor', 'lastEditor')
         .getMany();
 
       return faqs;
