@@ -29,22 +29,6 @@ export class Review extends BaseEntity {
   })
   readonly rating: number;
 
-  /* 외래키 값 표시할 컬럼 */
-  @RelationId((review: Review) => review.reviewer)
-  reviewerNo: number;
-
-  @RelationId((review: Review) => review.board)
-  boardNo: number;
-
-  /* 게시글 리뷰 Relations */
-  @ManyToOne((type) => Board, (board) => board.reviews, {
-    onDelete: 'SET NULL',
-  })
-  board: Board;
-
-  @ManyToOne((type) => User, (user) => user.reviews)
-  reviewer: User;
-
   /* 게시글 리뷰 Timestamps */
   @CreateDateColumn({
     comment: '리뷰 작성 시간',
@@ -60,4 +44,20 @@ export class Review extends BaseEntity {
     comment: '리뷰 삭제 시간',
   })
   readonly deletedAt: Date;
+
+  /* 리뷰 작성자 번호 및 게시글 번호 */
+  @RelationId((review: Review) => review.reviewer)
+  reviewerNo: number;
+
+  @RelationId((review: Review) => review.board)
+  boardNo: number;
+
+  /* 게시글 리뷰 Relations */
+  @ManyToOne((type) => Board, (board) => board.reviews, {
+    onDelete: 'SET NULL',
+  })
+  board: Board;
+
+  @ManyToOne((type) => User, (user) => user.reviews)
+  reviewer: User;
 }
