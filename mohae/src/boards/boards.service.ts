@@ -2,12 +2,11 @@ import {
   BadRequestException,
   Injectable,
   InternalServerErrorException,
-  NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CategoryRepository } from 'src/categories/repository/category.repository';
 import { AreasRepository } from 'src/areas/repository/area.repository';
-import { createQueryBuilder, DeleteResult, getConnection } from 'typeorm';
+import { DeleteResult} from 'typeorm';
 import {
   CreateBoardDto,
   SearchBoardDto,
@@ -17,7 +16,6 @@ import { Board } from './entity/board.entity';
 import { BoardRepository } from './repository/board.repository';
 import { ErrorConfirm } from 'src/utils/error';
 import { UserRepository } from 'src/auth/repository/user.repository';
-import e from 'express';
 
 @Injectable()
 export class BoardsService {
