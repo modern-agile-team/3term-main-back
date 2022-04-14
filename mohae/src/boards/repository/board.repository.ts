@@ -200,7 +200,7 @@ export class BoardRepository extends Repository<Board> {
     }
   }
 
-  async filteredBoards(sort: any, areaNo:number, categoryNo:number, max:number, min:number, target:Boolean, endTime: Date, currentTime: Date): Promise<Board[]> {
+  async filteredBoards(sort: any, popular: string, areaNo:number, categoryNo:number, max:number, min:number, target:Boolean, date:string, endTime: Date, currentTime: Date, free:string): Promise<Board[]> {
     try {
       const boardFiltering = this.createQueryBuilder('boards')
         .leftJoinAndSelect('boards.area', 'areas')
@@ -224,16 +224,19 @@ export class BoardRepository extends Repository<Board> {
           'categories.name',
         ])
         .orderBy('boards.no', sort)
-        if (areaNo) boardFiltering.where('boards.area = :areaNo', {areaNo})
+
+        if (areaNo) boardFiltering.andWhere('boards.area = :areaNo', {areaNo})
         if (categoryNo) boardFiltering.andWhere('boards.category = :categoryNo', {categoryNo})
         if (max) boardFiltering.andWhere('boards.price < :max', {max})
         if (min) boardFiltering.andWhere('boards.price >= :min', {min})
         if (target) boardFiltering.andWhere('boards.target = :target', {target})
-        if (endTime) {
+        if (date) {
           boardFiltering.andWhere('boards.deadline < :endTime', {endTime})
           boardFiltering.andWhere('boards.deadline > :currentTime', {currentTime})
         }
-        
+        if (free) boardFiltering.andWhere('boards.price = 0')
+        if (popular) boardFiltering.orderBy('boards.hit', 'DESC')
+
       return await boardFiltering.getMany();
     } catch (e) {
       throw new InternalServerErrorException(

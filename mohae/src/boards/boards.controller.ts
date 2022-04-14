@@ -41,9 +41,9 @@ export class BoardsController {
 
   @Get('/search')
   async filteredBoards(@Query() paginationQuery): Promise<Board[]> {
-    const {sort, areaNo, categoryNo, max, min, target, date} = paginationQuery; 
+    const {sort, popular, areaNo, categoryNo, max, min, target, date, free} = paginationQuery; 
     
-    const response = await this.boardService.filteredBoards(sort, areaNo, categoryNo, max, min, target, date);
+    const response = await this.boardService.filteredBoards(sort, popular, areaNo, categoryNo, max, min, target, date, free);
 
     return Object.assign({
       statusCode: 200,

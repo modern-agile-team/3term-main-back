@@ -52,7 +52,7 @@ export class BoardsService {
     return boards;
   }
 
-  async filteredBoards(sort: any, areaNo:number, categoryNo:number, max:number, min:number, target:boolean, date:string): Promise<Board[]> {
+  async filteredBoards(sort: any,popular:string, areaNo:number, categoryNo:number, max:number, min:number, target:boolean, date:string, free:string): Promise<Board[]> {
     const currentTime = new Date();
     currentTime.setHours(currentTime.getHours() + 9);
     
@@ -73,8 +73,8 @@ export class BoardsService {
         endTime.setFullYear(endTime.getFullYear() + 1);
         break;
     };
-
-    const boards = await this.boardRepository.filteredBoards(sort, areaNo, categoryNo, max, min, target, endTime, currentTime);
+    
+    const boards = await this.boardRepository.filteredBoards(sort,popular, areaNo, categoryNo, max, min, target, date, endTime, currentTime, free);
 
     this.errorConfirm.notFoundError(
       boards.length,
