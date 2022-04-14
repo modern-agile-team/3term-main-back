@@ -10,7 +10,10 @@ import { UserRepository } from 'src/auth/repository/user.repository';
 import { CategoryRepository } from 'src/categories/repository/category.repository';
 import { MajorRepository } from 'src/majors/repository/major.repository';
 import { SchoolRepository } from 'src/schools/repository/school.repository';
-import { UpdateProfileDto } from './dto/update-profile.dto';
+import {
+  JudgeDuplicateNicknameDto,
+  UpdateProfileDto,
+} from './dto/update-profile.dto';
 
 @Injectable()
 export class ProfilesService {
@@ -53,6 +56,24 @@ export class ProfilesService {
       specs,
       categories,
     };
+  }
+
+  async judgeDuplicateNickname(
+    judgeDuplicateNicknameDto: JudgeDuplicateNicknameDto,
+  ) {
+    const { no, nickname } = judgeDuplicateNicknameDto;
+
+    const user = await this.userRepository.findOne(no);
+    if (user.nickname === nickname) {
+      throw new ConflictException('현재 닉네임입니다.');
+    }
+    const duplicateNickname = await this.userRepository.duplicateCheck(
+      'nickname',
+      nickname,
+    );
+    if (duplicateNickname) {
+      throw new ConflictException('이미 사용 중인 닉네임 입니다.');
+    }
   }
 
   async updateProfile(no: number, updateProfileDto): Promise<number> {
