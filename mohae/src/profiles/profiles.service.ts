@@ -1,4 +1,9 @@
-import { ConsoleLogger, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  ConsoleLogger,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/auth/entity/user.entity';
 import { UserRepository } from 'src/auth/repository/user.repository';
@@ -50,35 +55,59 @@ export class ProfilesService {
     };
   }
 
-  async updateProfile(
-    no: number,
-    updateProfileDto: UpdateProfileDto,
-  ): Promise<number> {
-    const profile = await this.userRepository.findOne(no);
-    console.log(profile);
+  async updateProfile(no: number, updateProfileDto): Promise<number> {
+    const profile = await this.userRepository.findOne(no, {
+      relations: ['categories'],
+    });
     if (!profile) {
       throw new NotFoundException('유저 정보를 찾지 못했습니다.');
     }
 
+    const profileKeys = Object.keys(updateProfileDto);
+    const deletedNullprofile = {};
+    profileKeys.forEach((item) => {
+      updateProfileDto[item]
+        ? (deletedNullprofile[item] = updateProfileDto[item])
+        : 0;
+    });
+
     const { phone, nickname, school, major, categories, photo_url } =
       updateProfileDto;
 
-    const schoolRepo = await this.schoolRepository.findOne(school, {
-      relations: ['users'],
-    });
-    const majorRepo = await this.majorRepository.findOne(major, {
-      relations: ['users'],
-    });
-
-    profile.phone = phone;
-    profile.nickname = nickname;
-    profile.photo_url = photo_url;
-    profile.major = majorRepo;
-    profile.school = schoolRepo;
-
+    if (deletedNullprofile['nickname']) {
+      const duplicateNickname = await this.userRepository.duplicateCheck(
+        'nickname',
+        nickname,
+      );
+      if (duplicateNickname) {
+        throw new ConflictException('이미 존재하는 닉네임입니다.');
+      }
+    }
+    if (deletedNullprofile['school']) {
+      const schoolRepo = await this.schoolRepository.findOne(school, {});
+      profile.school = schoolRepo;
+    }
+    if (deletedNullprofile['major']) {
+      const majorRepo = await this.majorRepository.findOne(major, {});
+      profile.major = majorRepo;
+    }
+    if (deletedNullprofile['categories']) {
+      const categoriesRepo = await this.categoriesRepository.selectCategory(
+        categories,
+      );
+      profile.categories.splice(0);
+      profile.categories = categoriesRepo;
+    }
+    if (deletedNullprofile['phone']) {
+      profile.phone = phone;
+    }
+    if (deletedNullprofile['nickname']) {
+      profile.nickname = nickname;
+    }
+    if (deletedNullprofile['photo_url']) {
+      profile.photo_url = photo_url;
+    }
     await this.userRepository.save(profile);
-
-    console.log(profile);
 
     return profile.no;
   }

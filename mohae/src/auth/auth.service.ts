@@ -43,16 +43,12 @@ export class AuthService {
     const categoriesRepo = await this.categoriesRepository.selectCategory(
       categories,
     );
-    console.log(categoriesRepo);
-    const stringEmail = 'email';
-    const stringNickname = 'nickname';
-
     const duplicateEmail = await this.userRepository.duplicateCheck(
-      stringEmail,
+      'email',
       email,
     );
     const duplicateNickname = await this.userRepository.duplicateCheck(
-      stringNickname,
+      'nickname',
       nickname,
     );
     const duplicateObj = { 이메일: duplicateEmail, 닉네임: duplicateNickname };
@@ -72,15 +68,14 @@ export class AuthService {
     const userCategory = await this.userRepository.findOne(user.no, {
       relations: ['categories'],
     });
-
     categoriesRepo.forEach((item) => {
       if (item) {
         userCategory.categories.push(item);
       }
     });
 
-    // schoolRepo.users.push(user);
-    // majorRepo.users.push(user);
+    schoolRepo.users.push(user);
+    majorRepo.users.push(user);
 
     await this.categoriesRepository.saveUsers(categoriesRepo, userCategory);
 

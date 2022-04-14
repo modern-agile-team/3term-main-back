@@ -61,6 +61,7 @@ export class UserRepository extends Repository<User> {
       const duplicate = await this.createQueryBuilder('users')
         .where(`users.${string}= :duplicateCheck`, { duplicateCheck })
         .getOne();
+
       return duplicate;
     } catch (e) {
       throw new InternalServerErrorException(
