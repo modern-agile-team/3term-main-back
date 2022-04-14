@@ -40,12 +40,14 @@ export class BoardsController {
   }
 
   @Get('/search')
-  async sortfilteredBoards(@Query('sort') sort: any): Promise<Board[]> {
-    const response = await this.boardService.sortfilteredBoards(sort);
+  async filteredBoards(@Query() paginationQuery): Promise<Board[]> {
+    const {sort, areaNo, categoryNo, max, min, target, date} = paginationQuery; 
+    
+    const response = await this.boardService.filteredBoards(sort, areaNo, categoryNo, max, min, target, date);
 
     return Object.assign({
       statusCode: 200,
-      msg: '게시글 정렬 조회가 완료되었습니다.',
+      msg: '게시글 필터링이 완료되었습니다.',
       response,
     });
   }

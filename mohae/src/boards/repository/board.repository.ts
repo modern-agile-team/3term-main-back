@@ -200,9 +200,9 @@ export class BoardRepository extends Repository<Board> {
     }
   }
 
-  async sortfilteredBoards(sort: any): Promise<Board[]> {
+  async filteredBoards(sort: any, areaNo:number, categoryNo:number, max:number, min:number, target:Boolean, endTime: Date, currentTime: Date): Promise<Board[]> {
     try {
-      const filteredBoard = await this.createQueryBuilder('boards')
+      const boardFiltering = this.createQueryBuilder('boards')
         .leftJoinAndSelect('boards.area', 'areas')
         .leftJoinAndSelect('boards.category', 'categories')
         .select([
@@ -210,7 +210,7 @@ export class BoardRepository extends Repository<Board> {
           'boards.title',
           'boards.description',
           'boards.createdAt',
-          'boards.deadLine',
+          'boards.deadline',
           'boards.isDeadLine',
           'boards.thumb',
           'boards.hit',
@@ -223,15 +223,21 @@ export class BoardRepository extends Repository<Board> {
           'areas.name',
           'categories.name',
         ])
-        .where('boards.area = areas.no')
-        .andWhere('boards.category = categories.no')
         .orderBy('boards.no', sort)
-        .getMany();
-
-      return filteredBoard;
+        if (areaNo) boardFiltering.where('boards.area = :areaNo', {areaNo})
+        if (categoryNo) boardFiltering.andWhere('boards.category = :categoryNo', {categoryNo})
+        if (max) boardFiltering.andWhere('boards.price < :max', {max})
+        if (min) boardFiltering.andWhere('boards.price >= :min', {min})
+        if (target) boardFiltering.andWhere('boards.target = :target', {target})
+        if (endTime) {
+          boardFiltering.andWhere('boards.deadline < :endTime', {endTime})
+          boardFiltering.andWhere('boards.deadline > :currentTime', {currentTime})
+        }
+        
+      return await boardFiltering.getMany();
     } catch (e) {
       throw new InternalServerErrorException(
-        `${e} ### 게시판 정렬 조회 : 알 수 없는 서버 에러입니다.`,
+        `${e} ### 게시판 필터링 조회 : 알 수 없는 서버 에러입니다.`,
       );
     }
   }

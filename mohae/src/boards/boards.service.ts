@@ -17,6 +17,7 @@ import { Board } from './entity/board.entity';
 import { BoardRepository } from './repository/board.repository';
 import { ErrorConfirm } from 'src/utils/error';
 import { UserRepository } from 'src/auth/repository/user.repository';
+import e from 'express';
 
 @Injectable()
 export class BoardsService {
@@ -51,11 +52,33 @@ export class BoardsService {
     return boards;
   }
 
-  async sortfilteredBoards(sort: any): Promise<Board[]> {
-    const boards = await this.boardRepository.sortfilteredBoards(sort);
+  async filteredBoards(sort: any, areaNo:number, categoryNo:number, max:number, min:number, target:boolean, date:string): Promise<Board[]> {
+    const currentTime = new Date();
+    currentTime.setHours(currentTime.getHours() + 9);
+    
+    const endTime = new Date();
+    endTime.setHours(endTime.getHours() + 9);
+
+    switch (date) {
+      case '0':
+        endTime.setDate(endTime.getDate() + 7);
+        break;
+      case '1':
+        endTime.setMonth(endTime.getMonth() + 1);
+        break;
+      case '2':
+        endTime.setMonth(endTime.getMonth() + 3);
+        break;
+      case '3':
+        endTime.setFullYear(endTime.getFullYear() + 1);
+        break;
+    };
+
+    const boards = await this.boardRepository.filteredBoards(sort, areaNo, categoryNo, max, min, target, endTime, currentTime);
+
     this.errorConfirm.notFoundError(
-      boards,
-      '정렬된 게시글을 찾을 수 없습니다.',
+      boards.length,
+      '필터링된 게시글을 찾을 수 없습니다.',
     );
 
     return boards;
