@@ -30,7 +30,7 @@ export class ProfilesController {
   @Patch(':no')
   async updateProfile(
     @Param('no', ParseIntPipe) no: number,
-    @Body() updateProfileDto: UpdateProfileDto,
+    @Body() updateProfileDto,
   ): Promise<number> {
     const response = await this.profileService.updateProfile(
       no,

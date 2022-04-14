@@ -6,6 +6,7 @@ import { InternalServerErrorException } from '@nestjs/common';
 
 @EntityRepository(User)
 export class UserRepository extends Repository<User> {
+  // 인증 관련 부분
   async createUser(createUserDto: CreateUserDto, school, major): Promise<User> {
     try {
       const { email, password, phone, nickname, manager, name, photo_url } =
@@ -47,36 +48,6 @@ export class UserRepository extends Repository<User> {
     }
   }
 
-  async findOneUser(no: number) {
-    try {
-      const user = await this.createQueryBuilder('users')
-        .leftJoinAndSelect('users.school', 'school')
-        .leftJoinAndSelect('users.reports', 'reports')
-        .where('users.no = :no', { no })
-        .andWhere('users.school = school.no')
-        .getOne();
-
-      return user;
-    } catch (e) {
-      throw new InternalServerErrorException(
-        `${e} ### 유저 프로필 선택 조회 : 알 수 없는 서버 에러입니다.`,
-      );
-    }
-  }
-
-  async findOneUserinfo(no: number) {
-    try {
-      const user = await this.createQueryBuilder('users')
-        .select(['no', 'email', 'nickname', 'name'])
-        .where('no = :no', { no })
-        .getOne();
-
-      return user;
-    } catch (err) {
-      throw err;
-    }
-  }
-
   async signDown(no: number) {
     const result = await this.createQueryBuilder()
       .softDelete()
@@ -90,6 +61,7 @@ export class UserRepository extends Repository<User> {
       const duplicate = await this.createQueryBuilder('users')
         .where(`users.${string}= :duplicateCheck`, { duplicateCheck })
         .getOne();
+
       return duplicate;
     } catch (e) {
       throw new InternalServerErrorException(
@@ -144,6 +116,52 @@ export class UserRepository extends Repository<User> {
         .execute();
     } catch (e) {
       throw e;
+    }
+  }
+  // 프로필 관련 기능
+  async findOneUser(no: number) {
+    try {
+      const user = await this.createQueryBuilder('users')
+        .leftJoinAndSelect('users.school', 'school')
+        .leftJoinAndSelect('users.major', 'major')
+        .leftJoinAndSelect('users.reports', 'reports')
+        .leftJoinAndSelect('users.specs', 'specs')
+        .leftJoinAndSelect('users.categories', 'categories')
+        .select([
+          'users.no',
+          'users.email',
+          'users.nickname',
+          'users.createdAt',
+          'school.no',
+          'school.name',
+          'major.no',
+          'major.name',
+          'specs.no',
+          'specs.title',
+          'categories.no',
+          'categories.name',
+        ])
+        .where('users.no = :no', { no })
+        .getOne();
+
+      return user;
+    } catch (e) {
+      throw new InternalServerErrorException(
+        `${e} ### 유저 프로필 선택 조회 : 알 수 없는 서버 에러입니다.`,
+      );
+    }
+  }
+
+  async findOneUserinfo(no: number) {
+    try {
+      const user = await this.createQueryBuilder('users')
+        .select(['no', 'email', 'nickname', 'name'])
+        .where('no = :no', { no })
+        .getOne();
+
+      return user;
+    } catch (err) {
+      throw err;
     }
   }
 }
