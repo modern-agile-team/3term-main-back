@@ -51,10 +51,9 @@ export class Spec extends BaseEntity {
   @OneToMany((type) => SpecPhoto, (photo) => photo.spec, {
     nullable: true,
   })
-  specPhoto: SpecPhoto[];
+  specPhotos: SpecPhoto[];
 
   @ManyToOne((type) => User, (user) => user.no, {
-    // eager: true,
     onDelete: 'SET NULL',
   })
   @JoinColumn({ name: 'user_no' })

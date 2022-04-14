@@ -99,13 +99,13 @@ export class User extends BaseEntity {
   latestLogin: Date;
 
   @DeleteDateColumn({
-    name: 'delete_at',
+    name: 'deleted_at',
     comment: '삭제일',
   })
   deletedAt: Date | null;
 
   @CreateDateColumn({
-    name: 'create_at',
+    name: 'created_at',
     comment: '회원가입 시간',
   })
   createdAt: Date;
@@ -170,14 +170,12 @@ export class User extends BaseEntity {
   specs: Spec[];
 
   @ManyToOne((type) => School, (school) => school.no, {
-    eager: true,
     onDelete: 'SET NULL',
   })
   @JoinColumn({ name: 'school_no' })
   school: School;
 
   @ManyToOne((type) => Major, (major) => major.no, {
-    eager: true,
     onDelete: 'SET NULL',
   })
   @JoinColumn({ name: 'major_no' })

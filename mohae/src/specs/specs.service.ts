@@ -78,7 +78,7 @@ export class SpecsService {
         const specPhotoRepo = await this.specPhotoRepository.findOne(
           specPhotoNo,
         );
-        spec.specPhoto.push(specPhotoRepo);
+        spec.specPhotos.push(specPhotoRepo);
       }
 
       if (spec) {
