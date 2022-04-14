@@ -71,41 +71,43 @@ export class ProfilesService {
         : 0;
     });
 
-    const { phone, nickname, school, major, categories, photo_url } =
-      updateProfileDto;
+    const { nickname, school, major, categories } = updateProfileDto;
 
-    if (deletedNullprofile['nickname']) {
-      const duplicateNickname = await this.userRepository.duplicateCheck(
-        'nickname',
-        nickname,
-      );
-      if (duplicateNickname) {
-        throw new ConflictException('이미 존재하는 닉네임입니다.');
+    for (const key of Object.keys(deletedNullprofile)) {
+      switch (key) {
+        case 'phone':
+        case 'photo_url':
+          profile[`${key}`] = updateProfileDto[`${key}`];
+          break;
+        case 'school':
+          const schoolRepo = await this.schoolRepository.findOne(school);
+          profile.school = schoolRepo;
+          break;
+        case 'major':
+          const majorRepo = await this.majorRepository.findOne(major);
+          profile.major = majorRepo;
+          break;
+        case 'nickname':
+          const duplicateNickname = await this.userRepository.duplicateCheck(
+            'nickname',
+            nickname,
+          );
+          if (duplicateNickname) {
+            throw new ConflictException('이미 존재하는 닉네임입니다.');
+          }
+          profile.nickname = nickname;
+          break;
+        case 'categories':
+          const categoriesRepo = await this.categoriesRepository.selectCategory(
+            categories,
+          );
+          const filteredCategories = categoriesRepo.filter(
+            (element) => element !== undefined,
+          );
+          profile.categories.splice(0);
+          profile.categories = filteredCategories;
+          break;
       }
-    }
-    if (deletedNullprofile['school']) {
-      const schoolRepo = await this.schoolRepository.findOne(school, {});
-      profile.school = schoolRepo;
-    }
-    if (deletedNullprofile['major']) {
-      const majorRepo = await this.majorRepository.findOne(major, {});
-      profile.major = majorRepo;
-    }
-    if (deletedNullprofile['categories']) {
-      const categoriesRepo = await this.categoriesRepository.selectCategory(
-        categories,
-      );
-      profile.categories.splice(0);
-      profile.categories = categoriesRepo;
-    }
-    if (deletedNullprofile['phone']) {
-      profile.phone = phone;
-    }
-    if (deletedNullprofile['nickname']) {
-      profile.nickname = nickname;
-    }
-    if (deletedNullprofile['photo_url']) {
-      profile.photo_url = photo_url;
     }
     await this.userRepository.save(profile);
 

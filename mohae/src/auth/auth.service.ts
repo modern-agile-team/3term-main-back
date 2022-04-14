@@ -68,16 +68,17 @@ export class AuthService {
     const userCategory = await this.userRepository.findOne(user.no, {
       relations: ['categories'],
     });
-    categoriesRepo.forEach((item) => {
-      if (item) {
-        userCategory.categories.push(item);
-      }
+    const filteredCategories = categoriesRepo.filter(
+      (element) => element !== undefined,
+    );
+    filteredCategories.forEach((item) => {
+      userCategory.categories.push(item);
     });
 
     schoolRepo.users.push(user);
     majorRepo.users.push(user);
 
-    await this.categoriesRepository.saveUsers(categoriesRepo, userCategory);
+    await this.categoriesRepository.saveUsers(filteredCategories, userCategory);
 
     return user;
   }
