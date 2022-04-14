@@ -2,12 +2,11 @@ import {
   BadRequestException,
   Injectable,
   InternalServerErrorException,
-  NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CategoryRepository } from 'src/categories/repository/category.repository';
 import { AreasRepository } from 'src/areas/repository/area.repository';
-import { createQueryBuilder, DeleteResult, getConnection } from 'typeorm';
+import { DeleteResult} from 'typeorm';
 import {
   CreateBoardDto,
   SearchBoardDto,
@@ -51,11 +50,33 @@ export class BoardsService {
     return boards;
   }
 
-  async sortfilteredBoards(sort: any): Promise<Board[]> {
-    const boards = await this.boardRepository.sortfilteredBoards(sort);
+  async filteredBoards(sort: any,popular:string, areaNo:number, categoryNo:number, max:number, min:number, target:boolean, date:string, free:string): Promise<Board[]> {
+    const currentTime = new Date();
+    currentTime.setHours(currentTime.getHours() + 9);
+    
+    const endTime = new Date();
+    endTime.setHours(endTime.getHours() + 9);
+
+    switch (date) {
+      case '0':
+        endTime.setDate(endTime.getDate() + 7);
+        break;
+      case '1':
+        endTime.setMonth(endTime.getMonth() + 1);
+        break;
+      case '2':
+        endTime.setMonth(endTime.getMonth() + 3);
+        break;
+      case '3':
+        endTime.setFullYear(endTime.getFullYear() + 1);
+        break;
+    };
+    
+    const boards = await this.boardRepository.filteredBoards(sort,popular, areaNo, categoryNo, max, min, target, date, endTime, currentTime, free);
+
     this.errorConfirm.notFoundError(
-      boards,
-      '정렬된 게시글을 찾을 수 없습니다.',
+      boards.length,
+      '필터링된 게시글을 찾을 수 없습니다.',
     );
 
     return boards;
