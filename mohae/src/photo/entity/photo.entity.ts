@@ -20,7 +20,7 @@ export class SpecPhoto extends BaseEntity {
   })
   photo_url: string | null;
 
-  @ManyToOne((type) => Spec, (spec) => spec.specPhoto, {
+  @ManyToOne((type) => Spec, (spec) => spec.specPhotos, {
     onDelete: 'SET NULL',
   })
   @JoinColumn({ name: 'spec_no' })

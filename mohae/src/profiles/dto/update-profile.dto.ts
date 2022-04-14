@@ -19,3 +19,11 @@ export class UpdateProfileDto {
   @IsString()
   photo_url?: string;
 }
+
+export class JudgeDuplicateNicknameDto {
+  @IsNumber()
+  no?: number;
+
+  @IsString()
+  nickname?: string;
+}

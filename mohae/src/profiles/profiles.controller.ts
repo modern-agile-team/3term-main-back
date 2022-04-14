@@ -5,9 +5,13 @@ import {
   Param,
   ParseIntPipe,
   Patch,
+  Post,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { UpdateProfileDto } from './dto/update-profile.dto';
+import {
+  JudgeDuplicateNicknameDto,
+  UpdateProfileDto,
+} from './dto/update-profile.dto';
 import { ProfilesService } from './profiles.service';
 
 @Controller('profile')
@@ -24,6 +28,19 @@ export class ProfilesController {
       statusCode: 200,
       msg: '프로필 조회에 성공했습니다.',
       response,
+    });
+  }
+
+  @Post()
+  async judgeDuplicateNickname(
+    @Body() judgeDuplicateNicknameDto: JudgeDuplicateNicknameDto,
+  ) {
+    await this.profileService.judgeDuplicateNickname(judgeDuplicateNicknameDto);
+
+    return Object.assign({
+      success: true,
+      statusCode: 204,
+      msg: '사용가능한 닉네임입니다.',
     });
   }
 
