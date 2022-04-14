@@ -42,6 +42,7 @@ export class ProfilesService {
       major,
       specs,
       categories,
+      boards,
     } = profile;
 
     return {
@@ -51,6 +52,7 @@ export class ProfilesService {
       nickname,
       photo_url,
       createdAt,
+      boards,
       school,
       major,
       specs,

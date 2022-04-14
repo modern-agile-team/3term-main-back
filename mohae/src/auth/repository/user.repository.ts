@@ -122,6 +122,7 @@ export class UserRepository extends Repository<User> {
   async findOneUser(no: number) {
     try {
       const user = await this.createQueryBuilder('users')
+        .leftJoinAndSelect('users.boards', 'boards')
         .leftJoinAndSelect('users.school', 'school')
         .leftJoinAndSelect('users.major', 'major')
         .leftJoinAndSelect('users.reports', 'reports')
@@ -132,6 +133,9 @@ export class UserRepository extends Repository<User> {
           'users.email',
           'users.nickname',
           'users.createdAt',
+          'boards.no',
+          'boards.title',
+          'boards.target',
           'school.no',
           'school.name',
           'major.no',
