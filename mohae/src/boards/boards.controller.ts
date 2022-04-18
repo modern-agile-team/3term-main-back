@@ -48,6 +48,7 @@ export class BoardsController {
     return Object.assign({
       statusCode: 200,
       msg: '게시글 필터링이 완료되었습니다.',
+      count : response.length,
       response,
     });
   }

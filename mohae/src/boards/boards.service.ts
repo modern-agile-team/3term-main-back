@@ -92,6 +92,7 @@ export class BoardsService {
   async getByOneBoard(no: number): Promise<Board> {
     const board = await this.boardRepository.getByOneBoard(no);
     this.errorConfirm.notFoundError(board, `해당 게시글을 찾을 수 없습니다.`);
+
     const boardHit = await this.boardRepository.addBoardHit(no, board);
 
     if (!boardHit) {
@@ -107,7 +108,7 @@ export class BoardsService {
     if (!affected) {
       throw new InternalServerErrorException('게시글 마감이 되지 않았습니다');
     }
-
+    
     return board;
   }
 
