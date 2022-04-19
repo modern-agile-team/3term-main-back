@@ -187,4 +187,9 @@ export class User extends BaseEntity {
 
   @ManyToMany((type) => Mailbox, (mailbox) => mailbox.users)
   mailboxes: Mailbox[];
+
+  @ManyToMany((type) => Board, (board) => board.thumb, {
+    cascade:true
+  })
+  thumb: Board[];
 }

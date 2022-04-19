@@ -19,6 +19,7 @@ import { BoardsService } from './boards.service';
 import {
   CreateBoardDto,
   SearchBoardDto,
+  ThumbBoardDto,
   UpdateBoardDto,
 } from './dto/board.dto';
 import { Board } from './entity/board.entity';
@@ -135,6 +136,16 @@ export class BoardsController {
     return Object.assign({
       statusCode: 200,
       msg: '검색에 관한 게시글 조회가 완료되었습니다.',
+      response,
+    });
+  }
+
+  @Post('thumb')
+  async thumbBoard(@Body() thumbBoardDto:ThumbBoardDto): Promise<Board> {
+    const response = await this.boardService.thumbBoard(thumbBoardDto);
+
+    return Object.assign({
+      statusCode: 200,
       response,
     });
   }

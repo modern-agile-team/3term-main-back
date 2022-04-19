@@ -23,6 +23,7 @@ export class BoardRepository extends Repository<Board> {
         .leftJoinAndSelect('boards.user', 'users')
         .leftJoinAndSelect('users.school', 'school')
         .leftJoinAndSelect('users.major', 'major')
+        .leftJoin('boards.thumb', 'users')
         .select([
           'users.no',
           'users.name',
@@ -36,7 +37,6 @@ export class BoardRepository extends Repository<Board> {
           'boards.createdAt',
           'boards.deadline',
           'boards.isDeadline',
-          'boards.thumb',
           'boards.hit',
           'boards.price',
           'boards.summary',
@@ -46,6 +46,7 @@ export class BoardRepository extends Repository<Board> {
           'boards.note3',
           'areas.name',
           'categories.name',
+          'boards.thumb'
         ])
         .where('boards.no = :no', { no })
         .andWhere('boards.area = areas.no')

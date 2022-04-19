@@ -6,10 +6,11 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { CategoryRepository } from 'src/categories/repository/category.repository';
 import { AreasRepository } from 'src/areas/repository/area.repository';
-import { DeleteResult} from 'typeorm';
+import { DeleteResult, RelationId} from 'typeorm';
 import {
   CreateBoardDto,
   SearchBoardDto,
+  ThumbBoardDto,
   UpdateBoardDto,
 } from './dto/board.dto';
 import { Board } from './entity/board.entity';
@@ -48,6 +49,44 @@ export class BoardsService {
     }
 
     return boards;
+  }
+
+  async thumbBoard(thumbBoardDto:ThumbBoardDto) {
+    const {boardNo, userNo, judge} = thumbBoardDto
+
+    const board = await this.boardRepository.findOne(boardNo, {
+      relations: ['thumb']
+    });
+
+    this.errorConfirm.notFoundError(board, '게시글을 찾을 수 없습니다.');
+
+    const user = await this.userRepository.findOne(userNo);
+
+    this.errorConfirm.notFoundError(user, '회원을 찾을 수 없습니다.');
+    
+    const find = board.thumb.find(user => user.no === userNo)
+
+    if(find === undefined && judge === true) {
+      
+      board.thumb.push(user)
+
+      await this.boardRepository.save(board)
+
+      return {success: true, msg: '좋아요 등록'}
+    }
+    if(find && judge === false) {
+      for (let i = 0; i < board.thumb.length; i++) {
+        if(board.thumb[i].no === userNo) {
+          board.thumb.splice(i,1);
+        }
+      }
+      
+      await this.boardRepository.save(board)
+
+      return {success: true, msg: '좋아요 취소'}
+    }
+
+    return {success: false, msg: '좋아요가 중복되었거나 좋아요 취소가 실패하였습니다.'};
   }
 
   async filteredBoards(sort: any,popular:string, areaNo:number, categoryNo:number, max:number, min:number, target:boolean, date:string, free:string): Promise<Board[]> {
@@ -90,6 +129,11 @@ export class BoardsService {
   }
 
   async getByOneBoard(no: number): Promise<Board> {
+    const aboard = await this.boardRepository.findOne(no, {
+      relations: ['thumb']
+    });
+    console.log(aboard.thumb)
+
     const board = await this.boardRepository.getByOneBoard(no);
     this.errorConfirm.notFoundError(board, `해당 게시글을 찾을 수 없습니다.`);
 

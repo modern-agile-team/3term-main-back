@@ -79,12 +79,25 @@ export class CreateBoardDto extends BoardContent {
   @IsNumber()
   userNo: number;
 }
+
 export class UpdateBoardDto extends BoardContent {
   @IsNumber()
   deadline: number;
 }
+
 export class SearchBoardDto {
   @IsString()
   @MaxLength(20)
   title: string;
+}
+
+export class ThumbBoardDto {
+  @IsNumber()
+  boardNo: number;
+
+  @IsNumber()
+  userNo: number;
+
+  @IsBoolean()
+  judge: boolean;
 }
