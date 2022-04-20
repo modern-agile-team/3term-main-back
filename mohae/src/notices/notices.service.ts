@@ -61,7 +61,7 @@ export class NoticesService {
       const { managerNo } = updateNoticeDto;
 
       const manager = await this.userRepository.findOne(managerNo, {
-        relations: ['modifyNotices'],
+        relations: ['modifiedNotices'],
       });
       const updateResult = await this.noticeRepository.updateNotice(
         no,
@@ -70,7 +70,7 @@ export class NoticesService {
       );
 
       const notice = await this.noticeRepository.findOne(no);
-      manager.modifyNotices.push(notice);
+      manager.modifiedNotices.push(notice);
 
       await this.userRepository.save(manager);
 

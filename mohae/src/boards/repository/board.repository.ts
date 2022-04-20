@@ -23,6 +23,7 @@ export class BoardRepository extends Repository<Board> {
         .leftJoinAndSelect('boards.user', 'users')
         .leftJoinAndSelect('users.school', 'school')
         .leftJoinAndSelect('users.major', 'major')
+        .leftJoinAndSelect('boards.thumb', 'thumbUsers')
         .select([
           'users.no',
           'users.name',
@@ -34,9 +35,8 @@ export class BoardRepository extends Repository<Board> {
           'boards.title',
           'boards.description',
           'boards.createdAt',
-          'boards.deadLine',
-          'boards.isDeadLine',
-          'boards.thumb',
+          'boards.deadline',
+          'boards.isDeadline',
           'boards.hit',
           'boards.price',
           'boards.summary',
@@ -46,6 +46,7 @@ export class BoardRepository extends Repository<Board> {
           'boards.note3',
           'areas.name',
           'categories.name',
+          'thumbUsers.no',
         ])
         .where('boards.no = :no', { no })
         .andWhere('boards.area = areas.no')
@@ -200,9 +201,21 @@ export class BoardRepository extends Repository<Board> {
     }
   }
 
-  async sortfilteredBoards(sort: any, area: number): Promise<Board[]> {
+  async filteredBoards(
+    sort: any,
+    popular: string,
+    areaNo: number,
+    categoryNo: number,
+    max: number,
+    min: number,
+    target: Boolean,
+    date: string,
+    endTime: Date,
+    currentTime: Date,
+    free: string,
+  ): Promise<Board[]> {
     try {
-      const filteredBoard = await this.createQueryBuilder('boards')
+      const boardFiltering = this.createQueryBuilder('boards')
         .leftJoinAndSelect('boards.area', 'areas')
         .leftJoinAndSelect('boards.category', 'categories')
         .select([
@@ -210,7 +223,7 @@ export class BoardRepository extends Repository<Board> {
           'boards.title',
           'boards.description',
           'boards.createdAt',
-          'boards.deadLine',
+          'boards.deadline',
           'boards.isDeadLine',
           'boards.thumb',
           'boards.hit',
@@ -223,14 +236,30 @@ export class BoardRepository extends Repository<Board> {
           'areas.name',
           'categories.name',
         ])
-        .where('boards.area = :no', { no: area })
-        .orderBy('boards.no', sort)
-        .getMany();
+        .orderBy('boards.no', sort);
 
-      return filteredBoard;
+      if (areaNo) boardFiltering.andWhere('boards.area = :areaNo', { areaNo });
+      if (categoryNo)
+        boardFiltering.andWhere('boards.category = :categoryNo', {
+          categoryNo,
+        });
+      if (max) boardFiltering.andWhere('boards.price < :max', { max });
+      if (min) boardFiltering.andWhere('boards.price >= :min', { min });
+      if (target)
+        boardFiltering.andWhere('boards.target = :target', { target });
+      if (date) {
+        boardFiltering.andWhere('boards.deadline < :endTime', { endTime });
+        boardFiltering.andWhere('boards.deadline > :currentTime', {
+          currentTime,
+        });
+      }
+      if (free) boardFiltering.andWhere('boards.price = 0');
+      if (popular) boardFiltering.orderBy('boards.hit', 'DESC');
+
+      return await boardFiltering.getMany();
     } catch (e) {
       throw new InternalServerErrorException(
-        `${e} ### 게시판 정렬 조회 : 알 수 없는 서버 에러입니다.`,
+        `${e} ### 게시판 필터링 조회 : 알 수 없는 서버 에러입니다.`,
       );
     }
   }
@@ -376,4 +405,19 @@ export class BoardRepository extends Repository<Board> {
       );
     }
   }
+
+  // async boardRelation(no: number) {
+  //   try {
+  //     const relation = await this.createQueryBuilder()
+  //       .relation(Board, 'thumb')
+  //       .of(no)
+  //       .loadMany();
+
+  //     return relation;
+  //   } catch (e) {
+  //     throw new InternalServerErrorException(
+  //       `${e} ### 게시글 신고 릴레이션 : 알 수 없는 서버 에러입니다.`,
+  //     );
+  //   }
+  // }
 }

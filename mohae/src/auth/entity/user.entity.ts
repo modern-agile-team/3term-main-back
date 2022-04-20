@@ -48,29 +48,6 @@ export class User extends BaseEntity {
   })
   photo_url: string;
 
-  @OneToMany((type) => Board, (board) => board.user, {
-    onDelete: 'SET NULL',
-  })
-  boards: Board[];
-
-  @ManyToOne((type) => School, (school) => school.no, {
-    eager: true,
-    onDelete: 'SET NULL',
-  })
-  @JoinColumn({ name: 'school_no' })
-  school: School;
-
-  @ManyToOne((type) => Major, (major) => major.no, {
-    eager: true,
-    onDelete: 'SET NULL',
-  })
-  @JoinColumn({ name: 'major_no' })
-  major: Major;
-
-  @ManyToMany((type) => Category, (category) => category.users)
-  @JoinTable({ name: 'user_in_category' })
-  categories: Category[];
-
   @Column({
     unique: true,
     type: 'varchar',
@@ -103,17 +80,70 @@ export class User extends BaseEntity {
   })
   salt: string;
 
+  @Column({
+    comment: '로그인 실패 횟수',
+    default: 0,
+  })
+  loginFailCount: number;
+
+  @Column({
+    type: 'boolean',
+    comment: '로그인 실패로 인한 계정 제한 여부',
+    default: false,
+  })
+  isLock: boolean;
+
+  @UpdateDateColumn({
+    comment: '마지막으로 로그인을 시도한 시간',
+  })
+  latestLogin: Date;
+
   @DeleteDateColumn({
-    name: 'delete_at',
+    name: 'deleted_at',
     comment: '삭제일',
   })
   deletedAt: Date | null;
 
   @CreateDateColumn({
-    name: 'create_at',
+    name: 'created_at',
     comment: '회원가입 시간',
   })
   createdAt: Date;
+
+  @OneToMany((type) => Board, (board) => board.user, {
+    onDelete: 'SET NULL',
+  })
+  boards: Board[];
+
+  @OneToMany((type) => Letter, (letter) => letter.sender, {
+    nullable: true,
+  })
+  sendLetters: Letter[];
+
+  @OneToMany((type) => Letter, (letter) => letter.receiver, {
+    nullable: true,
+  })
+  receivedLetters: Letter[];
+
+  @OneToMany((type) => Faq, (faqs) => faqs.manager, {
+    nullable: true,
+  })
+  faqs: Faq[];
+
+  @OneToMany((type) => Faq, (faqs) => faqs.lastEditor, {
+    nullable: true,
+  })
+  modifiedFaqs: Faq[];
+
+  @OneToMany((type) => Notice, (notices) => notices.manager, {
+    nullable: true,
+  })
+  notices: Notice[];
+
+  @OneToMany((type) => Notice, (notices) => notices.lastEditor, {
+    nullable: true,
+  })
+  modifiedNotices: Notice[];
 
   @OneToMany((type) => ReportedUser, (user) => user.reportedUser, {
     nullable: true,
@@ -138,55 +168,28 @@ export class User extends BaseEntity {
 
   @OneToMany((type) => Spec, (spec) => spec.user)
   specs: Spec[];
-  //
-  @Column({
-    comment: '로그인 실패 횟수',
-    default: 0,
-  })
-  loginFailCount: number;
 
-  @Column({
-    type: 'boolean',
-    comment: '로그인 실패로 인한 계정 제한 여부',
-    default: false,
+  @ManyToOne((type) => School, (school) => school.no, {
+    onDelete: 'SET NULL',
   })
-  isLock: boolean;
+  @JoinColumn({ name: 'school_no' })
+  school: School;
 
-  @UpdateDateColumn({
-    comment: '마지막으로 로그인을 시도한 시간',
+  @ManyToOne((type) => Major, (major) => major.no, {
+    onDelete: 'SET NULL',
   })
-  latestLogin: Date;
+  @JoinColumn({ name: 'major_no' })
+  major: Major;
 
-  @OneToMany((type) => Letter, (letter) => letter.sender, {
-    nullable: true,
-  })
-  sendLetters: Letter[];
-
-  @OneToMany((type) => Letter, (letter) => letter.receiver, {
-    nullable: true,
-  })
-  receivedLetters: Letter[];
-
-  @OneToMany((type) => Faq, (faqs) => faqs.manager, {
-    nullable: true,
-  })
-  faqs: Faq[];
-
-  @OneToMany((type) => Faq, (faqs) => faqs.modifiedManager, {
-    nullable: true,
-  })
-  modifyFaqs: Faq[];
-
-  @OneToMany((type) => Notice, (notices) => notices.manager, {
-    nullable: true,
-  })
-  notices: Faq[];
-
-  @OneToMany((type) => Notice, (notices) => notices.modifiedManager, {
-    nullable: true,
-  })
-  modifyNotices: Faq[];
+  @ManyToMany((type) => Category, (category) => category.users)
+  @JoinTable({ name: 'user_in_category' })
+  categories: Category[];
 
   @ManyToMany((type) => Mailbox, (mailbox) => mailbox.users)
   mailboxes: Mailbox[];
+
+  @ManyToMany((type) => Board, (board) => board.likedUser, {
+    cascade: true,
+  })
+  likedBoard: Board[];
 }

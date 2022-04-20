@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsBoolean, IsDate, IsNumber, IsString } from 'class-validator';
+import { IsBoolean, IsDate, IsNotEmpty, IsNumber, IsString, MaxLength, MinLength, minLength } from 'class-validator';
 
 export abstract class BoardContent {
   @ApiProperty({
@@ -16,6 +16,9 @@ export abstract class BoardContent {
     required: true,
   })
   @IsString()
+  @IsNotEmpty()
+  @MinLength(3)
+  @MaxLength(15)
   title: string;
 
   @ApiProperty({
@@ -24,6 +27,8 @@ export abstract class BoardContent {
     required: true,
   })
   @IsString()
+  @IsNotEmpty()
+  @MaxLength(1000)
   description: string;
 
   @ApiProperty({
@@ -32,6 +37,7 @@ export abstract class BoardContent {
     required: false,
   })
   @IsString()
+  @MaxLength(100)
   summary?: string;
 
   @ApiProperty({
@@ -54,12 +60,15 @@ export abstract class BoardContent {
   areaNo: number;
 
   @IsString()
+  @MaxLength(100)
   note1: string;
 
   @IsString()
+  @MaxLength(100)
   note2: string;
 
   @IsString()
+  @MaxLength(100)
   note3: string;
 }
 
@@ -70,25 +79,25 @@ export class CreateBoardDto extends BoardContent {
   @IsNumber()
   userNo: number;
 }
+
 export class UpdateBoardDto extends BoardContent {
   @IsNumber()
   deadline: number;
 }
+
 export class SearchBoardDto {
   @IsString()
+  @MaxLength(20)
   title: string;
-  // @IsString()
-  // description: string;
-  // @IsString()
-  // sort: 'DESC' | 'ASC';
-  // @IsNumber()
-  // price1: number;
-  // @IsNumber()
-  // price2: number;
-  // @IsNumber()
-  // area: number;
-  // @IsNumber()
-  // category: number;
-  // @IsBoolean()
-  // target: boolean;
+}
+
+export class ThumbBoardDto {
+  @IsNumber()
+  boardNo: number;
+
+  @IsNumber()
+  userNo: number;
+
+  @IsBoolean()
+  judge: boolean;
 }

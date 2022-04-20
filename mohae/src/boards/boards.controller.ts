@@ -19,6 +19,7 @@ import { BoardsService } from './boards.service';
 import {
   CreateBoardDto,
   SearchBoardDto,
+  ThumbBoardDto,
   UpdateBoardDto,
 } from './dto/board.dto';
 import { Board } from './entity/board.entity';
@@ -40,13 +41,26 @@ export class BoardsController {
   }
 
   @Get('/search')
-  async sortfilteredBoards(@Query('sort') paginationQuery): Promise<Board[]> {
-    const { sort, area } = paginationQuery;
-    const response = await this.boardService.sortfilteredBoards(sort, area);
+  async filteredBoards(@Query() paginationQuery): Promise<Board[]> {
+    const { sort, popular, areaNo, categoryNo, max, min, target, date, free } =
+      paginationQuery;
+
+    const response = await this.boardService.filteredBoards(
+      sort,
+      popular,
+      areaNo,
+      categoryNo,
+      max,
+      min,
+      target,
+      date,
+      free,
+    );
 
     return Object.assign({
       statusCode: 200,
-      msg: '게시글 정렬 조회가 완료되었습니다.',
+      msg: '게시글 필터링이 완료되었습니다.',
+      count: response.length,
       response,
     });
   }
@@ -133,6 +147,16 @@ export class BoardsController {
     return Object.assign({
       statusCode: 200,
       msg: '검색에 관한 게시글 조회가 완료되었습니다.',
+      response,
+    });
+  }
+
+  @Post('thumb')
+  async thumbBoard(@Body() thumbBoardDto: ThumbBoardDto): Promise<Board> {
+    const response = await this.boardService.thumbBoard(thumbBoardDto);
+
+    return Object.assign({
+      statusCode: 200,
       response,
     });
   }

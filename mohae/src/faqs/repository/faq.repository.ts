@@ -1,7 +1,6 @@
 import { InternalServerErrorException } from '@nestjs/common';
 import { User } from 'src/auth/entity/user.entity';
 import { EntityRepository, Repository } from 'typeorm';
-import { CreateFaqDto, UpdateFaqDto } from '../dto/faq.dto';
 import { Faq } from '../entity/faq.entity';
 
 @EntityRepository(Faq)
@@ -9,8 +8,8 @@ export class FaqRepository extends Repository<Faq> {
   async readFaqs(): Promise<Faq[]> {
     try {
       const faqs = await this.createQueryBuilder('faqs')
-        .leftJoinAndSelect('faqs.manager', 'manager')
-        .leftJoinAndSelect('faqs.modifiedManager', 'modifiedManager')
+        .select(['faqs.no', 'faqs.title', 'faqs.description', 'faqs.createdAt'])
+        .orderBy('faqs.updatedAt', 'DESC')
         .getMany();
 
       return faqs;
@@ -29,7 +28,7 @@ export class FaqRepository extends Repository<Faq> {
             title,
             description,
             manager,
-            modifiedManager: manager,
+            lastEditor: manager,
           },
         ])
         .execute();
@@ -47,7 +46,7 @@ export class FaqRepository extends Repository<Faq> {
         .set({
           title,
           description,
-          modifiedManager: manager,
+          lastEditor: manager,
         })
         .where('no = :no', { no })
         .execute();

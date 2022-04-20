@@ -15,7 +15,7 @@ export class SpecPhotoRepository extends Repository<SpecPhoto> {
       return raw.insertId;
     } catch (err) {
       throw new InternalServerErrorException(
-        '### 정상적으로 저장되지 않았습니다.',
+        `스펙 사진 저장도중 에러가 발생 하였습니다.${err}`,
       );
     }
   }
@@ -50,7 +50,9 @@ export class SpecPhotoRepository extends Repository<SpecPhoto> {
 
       return spec.no;
     } catch (err) {
-      throw err;
+      throw new InternalServerErrorException(
+        `스펙 번호 가져오기 도중 오류가 발생 하였습니다.${err}`,
+      );
     }
   }
 }

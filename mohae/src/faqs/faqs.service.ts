@@ -21,8 +21,8 @@ export class FaqsService {
   async readFaqs(): Promise<Faq[]> {
     try {
       const faqs = await this.faqRepository.readFaqs();
-
       this.errorConfirm.notFoundError(faqs, '자주 묻는 질문이 없습니다.');
+
       return faqs;
     } catch (e) {
       throw e;
@@ -35,7 +35,6 @@ export class FaqsService {
       const manager = await this.userRepository.findOne(managerNo, {
         relations: ['faqs'],
       });
-
       this.errorConfirm.notFoundError(
         manager,
         '해당 매니저를 찾을 수 없습니다.',
@@ -44,7 +43,6 @@ export class FaqsService {
         createFaqDto,
         manager,
       );
-
       const faq = await this.faqRepository.findOne(insertId);
 
       manager.faqs.push(faq);
@@ -66,7 +64,7 @@ export class FaqsService {
 
     try {
       const manager = await this.userRepository.findOne(modifiedManagerNo, {
-        relations: ['modifyFaqs'],
+        relations: ['modifiedFaqs'],
       });
       this.errorConfirm.notFoundError(
         manager,
@@ -79,7 +77,7 @@ export class FaqsService {
       );
       const faq = await this.faqRepository.findOne(no);
 
-      manager.modifyFaqs.push(faq);
+      manager.modifiedFaqs.push(faq);
 
       await this.userRepository.save(manager);
 

@@ -2,15 +2,15 @@ import {
   BadRequestException,
   Injectable,
   InternalServerErrorException,
-  NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CategoryRepository } from 'src/categories/repository/category.repository';
 import { AreasRepository } from 'src/areas/repository/area.repository';
-import { createQueryBuilder, DeleteResult, getConnection } from 'typeorm';
+import { DeleteResult, RelationId } from 'typeorm';
 import {
   CreateBoardDto,
   SearchBoardDto,
+  ThumbBoardDto,
   UpdateBoardDto,
 } from './dto/board.dto';
 import { Board } from './entity/board.entity';
@@ -51,11 +51,102 @@ export class BoardsService {
     return boards;
   }
 
-  async sortfilteredBoards(sort: any, area: number): Promise<Board[]> {
-    const boards = await this.boardRepository.sortfilteredBoards(sort, area);
+  async thumbBoard(thumbBoardDto: ThumbBoardDto) {
+    const { boardNo, userNo, judge } = thumbBoardDto;
+
+    const board = await this.boardRepository.findOne(boardNo, {
+      relations: ['likedUser'],
+    });
+    this.errorConfirm.notFoundError(board, '게시글을 찾을 수 없습니다.');
+
+    const user = await this.userRepository.findOne(userNo);
+    this.errorConfirm.notFoundError(user, '회원을 찾을 수 없습니다.');
+
+    const findUser = board.likedUser.find(
+      (thumbUser) => thumbUser.no === user.no,
+    );
+
+    if ((findUser && judge) || (!findUser && !judge)) {
+      return {
+        success: false,
+        msg: '좋아요가 중복되었거나 좋아요 취소가 실패하였습니다.',
+      };
+    }
+
+    if (!findUser) {
+      board.likedUser.push(user);
+
+      await this.boardRepository.save(board);
+
+      return {
+        success: true,
+        msg: '좋아요 등록',
+      };
+    }
+
+    for (let i = 0; i < board.likedUser.length; i++) {
+      if (board.likedUser[i].no === userNo) {
+        board.likedUser.splice(i, 1);
+      }
+    }
+
+    await this.boardRepository.save(board);
+
+    return {
+      success: true,
+      msg: '좋아요 취소',
+    };
+  }
+
+  async filteredBoards(
+    sort: any,
+    popular: string,
+    areaNo: number,
+    categoryNo: number,
+    max: number,
+    min: number,
+    target: boolean,
+    date: string,
+    free: string,
+  ): Promise<Board[]> {
+    const currentTime = new Date();
+    currentTime.setHours(currentTime.getHours() + 9);
+
+    const endTime = new Date();
+    endTime.setHours(endTime.getHours() + 9);
+
+    switch (date) {
+      case '0':
+        endTime.setDate(endTime.getDate() + 7);
+        break;
+      case '1':
+        endTime.setMonth(endTime.getMonth() + 1);
+        break;
+      case '2':
+        endTime.setMonth(endTime.getMonth() + 3);
+        break;
+      case '3':
+        endTime.setFullYear(endTime.getFullYear() + 1);
+        break;
+    }
+
+    const boards = await this.boardRepository.filteredBoards(
+      sort,
+      popular,
+      areaNo,
+      categoryNo,
+      max,
+      min,
+      target,
+      date,
+      endTime,
+      currentTime,
+      free,
+    );
+
     this.errorConfirm.notFoundError(
-      boards,
-      '정렬된 게시글을 찾을 수 없습니다.',
+      boards.length,
+      '필터링된 게시글을 찾을 수 없습니다.',
     );
 
     return boards;
@@ -69,8 +160,14 @@ export class BoardsService {
   }
 
   async getByOneBoard(no: number): Promise<Board> {
+    // const aboard = await this.boardRepository.findOne(no, {
+    //   relations: ['thumb'],
+    // });
+    // console.log(aboard.thumb);
+
     const board = await this.boardRepository.getByOneBoard(no);
     this.errorConfirm.notFoundError(board, `해당 게시글을 찾을 수 없습니다.`);
+    const thumbNum = board.likedUser.length;
     const boardHit = await this.boardRepository.addBoardHit(no, board);
 
     if (!boardHit) {
