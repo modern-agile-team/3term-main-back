@@ -200,7 +200,7 @@ export class BoardRepository extends Repository<Board> {
     }
   }
 
-  async sortfilteredBoards(sort: any): Promise<Board[]> {
+  async sortfilteredBoards(sort: any, area: number): Promise<Board[]> {
     try {
       const filteredBoard = await this.createQueryBuilder('boards')
         .leftJoinAndSelect('boards.area', 'areas')
@@ -223,8 +223,7 @@ export class BoardRepository extends Repository<Board> {
           'areas.name',
           'categories.name',
         ])
-        .where('boards.area = areas.no')
-        .andWhere('boards.category = categories.no')
+        .where('boards.area = :no', { no: area })
         .orderBy('boards.no', sort)
         .getMany();
 

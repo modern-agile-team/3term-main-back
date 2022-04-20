@@ -51,8 +51,8 @@ export class BoardsService {
     return boards;
   }
 
-  async sortfilteredBoards(sort: any): Promise<Board[]> {
-    const boards = await this.boardRepository.sortfilteredBoards(sort);
+  async sortfilteredBoards(sort: any, area: number): Promise<Board[]> {
+    const boards = await this.boardRepository.sortfilteredBoards(sort, area);
     this.errorConfirm.notFoundError(
       boards,
       '정렬된 게시글을 찾을 수 없습니다.',

@@ -40,8 +40,9 @@ export class BoardsController {
   }
 
   @Get('/search')
-  async sortfilteredBoards(@Query('sort') sort: any): Promise<Board[]> {
-    const response = await this.boardService.sortfilteredBoards(sort);
+  async sortfilteredBoards(@Query('sort') paginationQuery): Promise<Board[]> {
+    const { sort, area } = paginationQuery;
+    const response = await this.boardService.sortfilteredBoards(sort, area);
 
     return Object.assign({
       statusCode: 200,
