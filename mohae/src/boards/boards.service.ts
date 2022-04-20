@@ -160,14 +160,8 @@ export class BoardsService {
   }
 
   async getByOneBoard(no: number): Promise<Board> {
-    // const aboard = await this.boardRepository.findOne(no, {
-    //   relations: ['thumb'],
-    // });
-    // console.log(aboard.thumb);
-
     const board = await this.boardRepository.getByOneBoard(no);
     this.errorConfirm.notFoundError(board, `해당 게시글을 찾을 수 없습니다.`);
-    const thumbNum = board.likedUser.length;
     const boardHit = await this.boardRepository.addBoardHit(no, board);
 
     if (!boardHit) {

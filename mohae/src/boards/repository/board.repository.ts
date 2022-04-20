@@ -23,7 +23,7 @@ export class BoardRepository extends Repository<Board> {
         .leftJoinAndSelect('boards.user', 'users')
         .leftJoinAndSelect('users.school', 'school')
         .leftJoinAndSelect('users.major', 'major')
-        .leftJoinAndSelect('boards.thumb', 'thumbUsers')
+        .leftJoin('boards.likedUser', 'likedUsers')
         .select([
           'users.no',
           'users.name',
@@ -46,13 +46,12 @@ export class BoardRepository extends Repository<Board> {
           'boards.note3',
           'areas.name',
           'categories.name',
-          'thumbUsers.no',
+          'likedUsers.no',
         ])
         .where('boards.no = :no', { no })
         .andWhere('boards.area = areas.no')
         .andWhere('boards.category = categories.no')
         .getOne();
-
       return board;
     } catch (e) {
       `${e} ### 게시판 상세 조회 : 알 수 없는 서버 에러입니다.`;
