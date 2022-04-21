@@ -18,11 +18,11 @@ export class BoardRepository extends Repository<Board> {
   async getByOneBoard(no: number): Promise<Board> {
     try {
       const board = await this.createQueryBuilder('boards')
-        .leftJoinAndSelect('boards.area', 'areas')
-        .leftJoinAndSelect('boards.category', 'categories')
-        .leftJoinAndSelect('boards.user', 'users')
-        .leftJoinAndSelect('users.school', 'school')
-        .leftJoinAndSelect('users.major', 'major')
+        .leftJoin('boards.area', 'areas')
+        .leftJoin('boards.category', 'categories')
+        .leftJoin('boards.user', 'users')
+        .leftJoin('users.school', 'school')
+        .leftJoin('users.major', 'major')
         .leftJoin('boards.likedUser', 'likedUsers')
         .select([
           'users.no',
@@ -179,6 +179,7 @@ export class BoardRepository extends Repository<Board> {
           'boards.createdAt',
           'boards.deadLine',
           'boards.isDeadLine',
+          'boards.thumb',
           'boards.hit',
           'boards.price',
           'boards.summary',
@@ -208,7 +209,7 @@ export class BoardRepository extends Repository<Board> {
     categoryNo: number,
     max: number,
     min: number,
-    target: Boolean,
+    target: boolean,
     date: string,
     endTime: Date,
     currentTime: Date,
@@ -225,6 +226,7 @@ export class BoardRepository extends Repository<Board> {
           'boards.createdAt',
           'boards.deadline',
           'boards.isDeadLine',
+          'boards.thumb',
           'boards.hit',
           'boards.price',
           'boards.summary',
