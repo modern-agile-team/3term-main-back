@@ -156,8 +156,8 @@ export class BoardsService {
     return boards;
   }
 
-  async getByOneBoard(no: number): Promise<Board> {
-    const board = await this.boardRepository.getByOneBoard(no);
+  async getByOneBoard(no: number) {
+    const { board, likeCount } = await this.boardRepository.getByOneBoard(no);
     this.errorConfirm.notFoundError(board, `해당 게시글을 찾을 수 없습니다.`);
 
     const boardHit = await this.boardRepository.addBoardHit(no, board);
@@ -176,7 +176,7 @@ export class BoardsService {
       throw new InternalServerErrorException('게시글 마감이 되지 않았습니다');
     }
 
-    return board;
+    return { board, likeCount };
   }
 
   async boardClosed(no: number): Promise<object> {
