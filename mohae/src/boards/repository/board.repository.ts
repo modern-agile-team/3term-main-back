@@ -17,12 +17,12 @@ import { Board } from '../entity/board.entity';
 export class BoardRepository extends Repository<Board> {
   async getByOneBoard(no: number): Promise<Board> {
     try {
-      const qb = this.createQueryBuilder('boards')
-        .leftJoinAndSelect('boards.area', 'areas')
-        .leftJoinAndSelect('boards.category', 'categories')
-        .leftJoinAndSelect('boards.user', 'users')
-        .leftJoinAndSelect('users.school', 'school')
-        .leftJoinAndSelect('users.major', 'major')
+      const board = await this.createQueryBuilder('boards')
+        .leftJoin('boards.area', 'areas')
+        .leftJoin('boards.category', 'categories')
+        .leftJoin('boards.user', 'users')
+        .leftJoin('users.school', 'school')
+        .leftJoin('users.major', 'major')
         .leftJoin('boards.likedUser', 'likedUsers')
         .select([
           'users.no',
@@ -35,9 +35,8 @@ export class BoardRepository extends Repository<Board> {
           'boards.title',
           'boards.description',
           'boards.createdAt',
-          'boards.deadLine',
-          'boards.isDeadLine',
-          'boards.thumb',
+          'boards.deadline',
+          'boards.isDeadline',
           'boards.hit',
           'boards.price',
           'boards.summary',
@@ -47,11 +46,13 @@ export class BoardRepository extends Repository<Board> {
           'boards.note3',
           'areas.name',
           'categories.name',
+          'likedUsers.no',
+          'likedUsers.name',
         ])
         .where('boards.no = :no', { no })
         .andWhere('boards.area = areas.no')
-        .andWhere('boards.category = categories.no');
-      const board = await qb.getOne();
+        .andWhere('boards.category = categories.no')
+        .getOne();
 
       return board;
     } catch (e) {
