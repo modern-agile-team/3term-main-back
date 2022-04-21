@@ -99,14 +99,14 @@ export class BoardsController {
   }
 
   @Get('/:no')
-  async getByOneBoard(@Param('no') no: number): Promise<Board> {
-    const response = await this.boardService.getByOneBoard(no);
+  async getByOneBoard(@Param('no') no: number) {
+    const { board, likeCount } = await this.boardService.getByOneBoard(no);
 
     return Object.assign({
       statusCode: 200,
       msg: '게시글 상세 조회가 완료되었습니다.',
-      countLike: response.likedUser.length,
-      response,
+      likeCount,
+      board,
     });
   }
 

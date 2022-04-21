@@ -15,14 +15,14 @@ import { Board } from '../entity/board.entity';
 
 @EntityRepository(Board)
 export class BoardRepository extends Repository<Board> {
-  async getByOneBoard(no: number): Promise<Board> {
+  async getByOneBoard(no: number) {
     try {
-      const board = await this.createQueryBuilder('boards')
-        .leftJoinAndSelect('boards.area', 'areas')
-        .leftJoinAndSelect('boards.category', 'categories')
-        .leftJoinAndSelect('boards.user', 'users')
-        .leftJoinAndSelect('users.school', 'school')
-        .leftJoinAndSelect('users.major', 'major')
+      const qb = await this.createQueryBuilder('boards')
+        .leftJoin('boards.area', 'areas')
+        .leftJoin('boards.category', 'categories')
+        .leftJoin('boards.user', 'users')
+        .leftJoin('users.school', 'school')
+        .leftJoin('users.major', 'major')
         .leftJoin('boards.likedUser', 'likedUsers')
         .select([
           'users.no',
@@ -51,10 +51,14 @@ export class BoardRepository extends Repository<Board> {
         ])
         .where('boards.no = :no', { no })
         .andWhere('boards.area = areas.no')
-        .andWhere('boards.category = categories.no')
-        .getOne();
+        .andWhere('boards.category = categories.no');
 
-      return board;
+      const board = await qb.getOne();
+      const { likeCount } = await qb
+        .addSelect('COUNT(likedUsers.no)', 'likeCount')
+        .getRawOne();
+
+      return { board, likeCount };
     } catch (e) {
       `${e} ### 게시판 상세 조회 : 알 수 없는 서버 에러입니다.`;
     }
@@ -72,7 +76,6 @@ export class BoardRepository extends Repository<Board> {
           'boards.createdAt',
           'boards.deadLine',
           'boards.isDeadLine',
-          'boards.thumb',
           'boards.hit',
           'boards.price',
           'boards.summary',
