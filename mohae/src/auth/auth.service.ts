@@ -42,13 +42,13 @@ export class AuthService {
     const schoolRepo = await this.schoolRepository.findOne(school, {
       relations: ['users'],
     });
-
     const majorRepo = await this.majorRepository.findOne(major, {
       relations: ['users'],
     });
     const categoriesRepo = await this.categoriesRepository.selectCategory(
       categories,
     );
+    console.log(categoriesRepo);
     const duplicateEmail = await this.userRepository.duplicateCheck(
       'email',
       email,
