@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UserRepository } from 'src/auth/repository/user.repository';
 import { BoardRepository } from 'src/boards/repository/board.repository';
@@ -48,7 +48,7 @@ export class ReviewsService {
     }
   }
 
-  async createReview(createReviewDto: CreateReviewDto): Promise<Review> {
+  async createReview(createReviewDto: CreateReviewDto) {
     const { boardNo, reviewerNo } = createReviewDto;
     try {
       const board = await this.boardsRepository.findOne(boardNo, {
@@ -68,14 +68,17 @@ export class ReviewsService {
         '리뷰 작성자를 찾을 수 없습니다.',
       );
 
-      const review = await this.reviewRepository.createReview(createReviewDto);
+      const affectedRows = await this.reviewRepository.createReview(
+        createReviewDto,
+        reviewer,
+        board,
+      );
 
-      board.reviews.push(review);
-      reviewer.reviews.push(review);
+      if (!affectedRows) {
+        throw new InternalServerErrorException('알 수 없는 리뷰 작성 오류');
+      }
 
-      await this.boardsRepository.save(board);
-      await this.userRepository.save(reviewer);
-      return review;
+      return { success: true };
     } catch (e) {
       throw e;
     }
