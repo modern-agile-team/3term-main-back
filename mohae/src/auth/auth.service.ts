@@ -48,11 +48,11 @@ export class AuthService {
     const categoriesRepo = await this.categoriesRepository.selectCategory(
       categories,
     );
-    console.log(categoriesRepo);
     const duplicateEmail = await this.userRepository.duplicateCheck(
       'email',
       email,
     );
+
     const duplicateNickname = await this.userRepository.duplicateCheck(
       'nickname',
       nickname,
@@ -71,9 +71,15 @@ export class AuthService {
       schoolRepo,
       majorRepo,
     );
+    if (!user) {
+      throw new NotFoundException(
+        '유저 생성이 정상적으로 이루어지지 않았습니다.',
+      );
+    }
     const userCategory = await this.userRepository.findOne(user.no, {
       relations: ['categories'],
     });
+
     const filteredCategories = categoriesRepo.filter(
       (element) => element !== undefined,
     );

@@ -9,6 +9,7 @@ import { SchoolRepository } from 'src/schools/repository/school.repository';
 import { ErrorConfirm } from 'src/utils/error';
 import { getRepository, Repository } from 'typeorm';
 import { AuthService } from './auth.service';
+import { CreateUserDto } from './dto/auth-credential.dto';
 import { User } from './entity/user.entity';
 import { UserRepository } from './repository/user.repository';
 
@@ -105,75 +106,54 @@ describe('AuthService', () => {
   });
 
   describe('signUp', () => {
-    it('회원 가입 절차 도중 학교 가져오기', async () => {
-      schoolRepository.findOne.mockResolvedValue([
-        {
-          no: 1,
-          name: '수형',
-          users: [User],
-        },
-      ]);
-      const schoolNo = 1;
+    it('회원가입이 성공적으로 이루어졌을 경우', async () => {
+      schoolRepository.findOne.mockResolvedValue({
+        no: 1,
+        name: '인덕대',
+        users: [],
+      });
 
-      const returnSchoolRepo = await schoolRepository.findOne(schoolNo);
-      console.log(returnSchoolRepo);
-      expect(returnSchoolRepo).toStrictEqual([
-        {
-          no: 1,
-          name: '수형',
-          users: [User],
-        },
-      ]);
-    });
-
-    it('회원 가입 절차 도중 전공 가져오기', async () => {
-      majorRepository.findOne.mockResolvedValue([
-        {
-          no: 1,
-          name: '수형',
-          users: [User],
-        },
-      ]);
-      const majorNo = 1;
-
-      const returnMajorRepo = await schoolRepository.findOne(majorNo);
-      expect(returnMajorRepo).toStrictEqual([
-        {
-          no: 1,
-          name: '수형',
-          users: [User],
-        },
-      ]);
-    });
-
-    it('회원 가입 절차 도충 카테고리별 레포 가져오기', async () => {
+      majorRepository.findOne.mockResolvedValue({
+        no: 1,
+        name: '개발',
+        users: [],
+      });
       categoryRepository['selectCategory'].mockResolvedValue([
-        {
-          categories: [
-            { no: 1, name: '개발' },
-            { no: 2, name: '디자인' },
-            { no: 3, name: '일상' },
-          ],
-        },
+        { no: 1, name: '개발' },
+        { no: 2, name: '디자인' },
+        { no: 3, name: '일상' },
       ]);
-      const categoriesNo = [1, 2, 3];
-      const returnCatoegoriesRepo = await categoryRepository['selectCategory'](
-        categoriesNo,
-      );
-      console.log(returnCatoegoriesRepo);
-      expect(returnCatoegoriesRepo).toStrictEqual([
-        {
-          categories: [
-            { no: 1, name: '개발' },
-            { no: 2, name: '디자인' },
-            { no: 3, name: '일상' },
-          ],
-        },
-      ]);
-    });
+      userRepository['duplicateCheck'].mockResolvedValue(undefined);
+      userRepository['createUser'].mockResolvedValue({
+        no: 1,
+        email: 'subro',
+        nickname: '용훈',
+      });
+      userRepository.findOne.mockResolvedValue({
+        no: 1,
+        categories: [],
+      });
+      categoryRepository['saveUsers'].mockResolvedValue();
 
-    it('회원 가입 절차 도중 이메일,닉네임 중복 체크', async () => {
-      userRepository['duplicateCheck'].mockResolvedValue([{}]);
+      const createUserDto: CreateUserDto = {
+        email: 'cd111@eegnadddddsver.com',
+        password: 'hello',
+        name: '백팀장',
+        school: 1,
+        major: 1,
+        categories: [],
+        phone: '01012345678',
+        nickname: '1ddd11gddddd111',
+        manager: false,
+        photo_url: 'asdfasdf',
+      };
+      const returnValue = await authService.signUp(createUserDto);
+
+      expect(returnValue).toStrictEqual({
+        no: 1,
+        email: 'subro',
+        nickname: '용훈',
+      });
     });
   });
 });
