@@ -47,6 +47,7 @@ export class BoardRepository extends Repository<Board> {
           'areas.name',
           'categories.name',
           'likedUsers.no',
+          'likedUsers.name',
         ])
         .where('boards.no = :no', { no })
         .andWhere('boards.area = areas.no')
