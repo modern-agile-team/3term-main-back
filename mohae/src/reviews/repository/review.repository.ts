@@ -53,12 +53,12 @@ export class ReviewRepository extends Repository<Review> {
     }
   }
 
-  async readUserReviews(no: number): Promise<Review[]> {
+  async readUserReviews(no: number) {
     try {
-      const review = await this.createQueryBuilder('reviews')
-        .leftJoinAndSelect('reviews.board', 'board')
-        .leftJoinAndSelect('reviews.reviewer', 'reviewer')
-        .leftJoinAndSelect('board.user', 'user')
+      const qb = this.createQueryBuilder('reviews')
+        .leftJoin('reviews.board', 'board')
+        .leftJoin('reviews.reviewer', 'reviewer')
+        .leftJoin('board.user', 'user')
         .select([
           'reviews.no',
           'reviews.reviewer',
@@ -71,11 +71,13 @@ export class ReviewRepository extends Repository<Review> {
           'reviewer.nickname',
           'reviewer.photo_url',
         ])
-        .where('user.no = :no', { no })
-        .getMany();
+        .where('user.no = :no', { no });
+      const reviews = await qb.getMany();
+      const count = await qb.getCount();
 
-      return review;
+      return { reviews, count };
     } catch (e) {
+      console.log(e);
       throw new InternalServerErrorException(
         `${e} ### 리뷰 선택 조회 : 알 수 없는 서버 에러입니다.`,
       );

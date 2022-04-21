@@ -17,7 +17,7 @@ import { Board } from '../entity/board.entity';
 export class BoardRepository extends Repository<Board> {
   async getByOneBoard(no: number) {
     try {
-      const qb = await this.createQueryBuilder('boards')
+      const qb = this.createQueryBuilder('boards')
         .leftJoin('boards.area', 'areas')
         .leftJoin('boards.category', 'categories')
         .leftJoin('boards.user', 'users')
@@ -182,6 +182,7 @@ export class BoardRepository extends Repository<Board> {
           'boards.createdAt',
           'boards.deadLine',
           'boards.isDeadLine',
+          'boards.thumb',
           'boards.hit',
           'boards.price',
           'boards.summary',
@@ -211,7 +212,7 @@ export class BoardRepository extends Repository<Board> {
     categoryNo: number,
     max: number,
     min: number,
-    target: Boolean,
+    target: boolean,
     date: string,
     endTime: Date,
     currentTime: Date,
@@ -228,6 +229,7 @@ export class BoardRepository extends Repository<Board> {
           'boards.createdAt',
           'boards.deadline',
           'boards.isDeadLine',
+          'boards.thumb',
           'boards.hit',
           'boards.price',
           'boards.summary',

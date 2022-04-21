@@ -108,6 +108,7 @@ describe('ReviewsService', () => {
           },
         },
       ]);
+
       const returnValue = await reviewsService.readAllReview();
 
       expect(returnValue).toStrictEqual([
@@ -214,6 +215,7 @@ describe('ReviewsService', () => {
             },
           },
         ],
+        count: 2,
       });
     });
   });
