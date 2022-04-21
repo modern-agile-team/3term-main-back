@@ -6,7 +6,7 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { CategoryRepository } from 'src/categories/repository/category.repository';
 import { AreasRepository } from 'src/areas/repository/area.repository';
-import { DeleteResult} from 'typeorm';
+import { DeleteResult, RelationId } from 'typeorm';
 import {
   CreateBoardDto,
   SearchBoardDto,
@@ -50,10 +50,65 @@ export class BoardsService {
     return boards;
   }
 
-  async filteredBoards(sort: any,popular:string, areaNo:number, categoryNo:number, max:number, min:number, target:boolean, date:string, free:string): Promise<Board[]> {
+  async likeBoard({ boardNo, userNo, judge }) {
+    const board = await this.boardRepository.findOne(boardNo, {
+      relations: ['likedUser'],
+    });
+    this.errorConfirm.notFoundError(board, '게시글을 찾을 수 없습니다.');
+
+    const user = await this.userRepository.findOne(userNo);
+    this.errorConfirm.notFoundError(user, '회원을 찾을 수 없습니다.');
+
+    const findUser = board.likedUser.find(
+      (thumbUser) => thumbUser.no === user.no,
+    );
+
+    if ((findUser && judge) || (!findUser && !judge)) {
+      return {
+        success: false,
+        msg: '좋아요가 중복되었거나 좋아요 취소가 실패하였습니다.',
+      };
+    }
+
+    if (!findUser) {
+      board.likedUser.push(user);
+
+      await this.boardRepository.save(board);
+
+      return {
+        success: true,
+        msg: '좋아요 등록',
+      };
+    }
+
+    for (let i = 0; i < board.likedUser.length; i++) {
+      if (board.likedUser[i].no === userNo) {
+        board.likedUser.splice(i, 1);
+      }
+    }
+
+    await this.boardRepository.save(board);
+
+    return {
+      success: true,
+      msg: '좋아요 취소',
+    };
+  }
+
+  async filteredBoards(
+    sort: any,
+    popular: string,
+    areaNo: number,
+    categoryNo: number,
+    max: number,
+    min: number,
+    target: boolean,
+    date: string,
+    free: string,
+  ): Promise<Board[]> {
     const currentTime = new Date();
     currentTime.setHours(currentTime.getHours() + 9);
-    
+
     const endTime = new Date();
     endTime.setHours(endTime.getHours() + 9);
 
@@ -70,9 +125,21 @@ export class BoardsService {
       case '3':
         endTime.setFullYear(endTime.getFullYear() + 1);
         break;
-    };
-    
-    const boards = await this.boardRepository.filteredBoards(sort,popular, areaNo, categoryNo, max, min, target, date, endTime, currentTime, free);
+    }
+
+    const boards = await this.boardRepository.filteredBoards(
+      sort,
+      popular,
+      areaNo,
+      categoryNo,
+      max,
+      min,
+      target,
+      date,
+      endTime,
+      currentTime,
+      free,
+    );
 
     this.errorConfirm.notFoundError(
       boards.length,
@@ -92,6 +159,7 @@ export class BoardsService {
   async getByOneBoard(no: number): Promise<Board> {
     const board = await this.boardRepository.getByOneBoard(no);
     this.errorConfirm.notFoundError(board, `해당 게시글을 찾을 수 없습니다.`);
+
     const boardHit = await this.boardRepository.addBoardHit(no, board);
 
     if (!boardHit) {
