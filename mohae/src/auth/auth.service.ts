@@ -23,7 +23,6 @@ export class AuthService {
   constructor(
     @InjectRepository(UserRepository)
     private userRepository: UserRepository,
-    private jwtService: JwtService,
 
     @InjectRepository(SchoolRepository)
     private schoolRepository: SchoolRepository,
@@ -35,6 +34,7 @@ export class AuthService {
     private categoriesRepository: CategoryRepository,
 
     private errorConfirm: ErrorConfirm,
+    private jwtService: JwtService,
   ) {}
   async signUp(createUserDto: CreateUserDto): Promise<User> {
     const { school, major, email, nickname, categories } = createUserDto;
@@ -42,7 +42,6 @@ export class AuthService {
     const schoolRepo = await this.schoolRepository.findOne(school, {
       relations: ['users'],
     });
-
     const majorRepo = await this.majorRepository.findOne(major, {
       relations: ['users'],
     });
@@ -53,15 +52,16 @@ export class AuthService {
       'email',
       email,
     );
+
     const duplicateNickname = await this.userRepository.duplicateCheck(
       'nickname',
       nickname,
     );
     const duplicateObj = { 이메일: duplicateEmail, 닉네임: duplicateNickname };
-    const duplicateKeys = Object.keys(duplicateObj).filter((key) => {
-      if (duplicateObj[key]) return true;
-      return false;
-    });
+    const duplicateKeys = Object.keys(duplicateObj).filter(
+      (key) => duplicateObj[key],
+    );
+
     if (duplicateKeys.length) {
       throw new ConflictException(`해당 ${duplicateKeys}이 이미 존재합니다.`);
     }
@@ -71,15 +71,19 @@ export class AuthService {
       schoolRepo,
       majorRepo,
     );
+    if (!user) {
+      throw new NotFoundException(
+        '유저 생성이 정상적으로 이루어지지 않았습니다.',
+      );
+    }
     const userCategory = await this.userRepository.findOne(user.no, {
       relations: ['categories'],
     });
+
     const filteredCategories = categoriesRepo.filter(
       (element) => element !== undefined,
     );
-    filteredCategories.forEach((item) => {
-      userCategory.categories.push(item);
-    });
+    userCategory.categories.push(...filteredCategories);
 
     schoolRepo.users.push(user);
     majorRepo.users.push(user);

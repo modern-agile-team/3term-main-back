@@ -37,7 +37,7 @@ export class ProfilesController {
       throw err;
     }
   }
-
+  // 중복된 닉네임에 걸맞는 주소 짓기
   @Post()
   async judgeDuplicateNickname(
     @Body() judgeDuplicateNicknameDto: JudgeDuplicateNicknameDto,
