@@ -1,13 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
 import {
   IsBoolean,
-  IsDate,
   IsNotEmpty,
   IsNumber,
   IsString,
   MaxLength,
   MinLength,
-  minLength,
 } from 'class-validator';
 
 export abstract class BoardContent {
