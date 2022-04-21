@@ -9,6 +9,8 @@ import {
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
+  JoinTable,
+  ManyToMany,
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
@@ -38,12 +40,6 @@ export class Board extends BaseEntity {
     default: false,
   })
   isDeadline: boolean;
-
-  @Column({
-    type: 'int',
-    default: 0,
-  })
-  thumb: number;
 
   @Column({
     type: 'int',
@@ -125,4 +121,8 @@ export class Board extends BaseEntity {
     onDelete: 'SET NULL',
   })
   area: Area;
+
+  @ManyToMany((type) => User, (user) => user.likedBoard)
+  @JoinTable({ name: 'userLike' })
+  likedUser: User[];
 }

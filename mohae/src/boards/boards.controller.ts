@@ -19,6 +19,7 @@ import { BoardsService } from './boards.service';
 import {
   CreateBoardDto,
   SearchBoardDto,
+  LikeBoardDto,
   UpdateBoardDto,
 } from './dto/board.dto';
 import { Board } from './entity/board.entity';
@@ -41,13 +42,25 @@ export class BoardsController {
 
   @Get('/search')
   async filteredBoards(@Query() paginationQuery): Promise<Board[]> {
-    const {sort, popular, areaNo, categoryNo, max, min, target, date, free} = paginationQuery; 
-    
-    const response = await this.boardService.filteredBoards(sort, popular, areaNo, categoryNo, max, min, target, date, free);
+    const { sort, popular, areaNo, categoryNo, max, min, target, date, free } =
+      paginationQuery;
+
+    const response = await this.boardService.filteredBoards(
+      sort,
+      popular,
+      areaNo,
+      categoryNo,
+      max,
+      min,
+      target,
+      date,
+      free,
+    );
 
     return Object.assign({
       statusCode: 200,
       msg: '게시글 필터링이 완료되었습니다.',
+      filteredBoardNum: response.length,
       response,
     });
   }
@@ -92,6 +105,7 @@ export class BoardsController {
     return Object.assign({
       statusCode: 200,
       msg: '게시글 상세 조회가 완료되었습니다.',
+      countLike: response.likedUser.length,
       response,
     });
   }
@@ -134,6 +148,16 @@ export class BoardsController {
     return Object.assign({
       statusCode: 200,
       msg: '검색에 관한 게시글 조회가 완료되었습니다.',
+      response,
+    });
+  }
+
+  @Post('like')
+  async likeBoard(@Body() likeBoardDto: LikeBoardDto): Promise<Board> {
+    const response = await this.boardService.likeBoard(likeBoardDto);
+
+    return Object.assign({
+      statusCode: 200,
       response,
     });
   }
