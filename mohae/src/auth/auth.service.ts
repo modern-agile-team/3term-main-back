@@ -23,7 +23,6 @@ export class AuthService {
   constructor(
     @InjectRepository(UserRepository)
     private userRepository: UserRepository,
-    private jwtService: JwtService,
 
     @InjectRepository(SchoolRepository)
     private schoolRepository: SchoolRepository,
@@ -35,6 +34,7 @@ export class AuthService {
     private categoriesRepository: CategoryRepository,
 
     private errorConfirm: ErrorConfirm,
+    private jwtService: JwtService,
   ) {}
   async signUp(createUserDto: CreateUserDto): Promise<User> {
     const { school, major, email, nickname, categories } = createUserDto;
@@ -58,10 +58,10 @@ export class AuthService {
       nickname,
     );
     const duplicateObj = { 이메일: duplicateEmail, 닉네임: duplicateNickname };
-    const duplicateKeys = Object.keys(duplicateObj).filter((key) => {
-      if (duplicateObj[key]) return true;
-      return false;
-    });
+    const duplicateKeys = Object.keys(duplicateObj).filter(
+      (key) => duplicateObj[key],
+    );
+
     if (duplicateKeys.length) {
       throw new ConflictException(`해당 ${duplicateKeys}이 이미 존재합니다.`);
     }
@@ -77,9 +77,7 @@ export class AuthService {
     const filteredCategories = categoriesRepo.filter(
       (element) => element !== undefined,
     );
-    filteredCategories.forEach((item) => {
-      userCategory.categories.push(item);
-    });
+    userCategory.categories.push(...filteredCategories);
 
     schoolRepo.users.push(user);
     majorRepo.users.push(user);

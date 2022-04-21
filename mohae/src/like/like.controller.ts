@@ -10,10 +10,14 @@ export class LikeController {
 
   @Post('/user')
   async likeUser(@Body() likeUserDto: LikeUserDto) {
-    const response = await this.likeService.likeUser(likeUserDto);
-    return Object.assign({
-      success: true,
-      msg: '성공적으로 요청이 처리되었습니다.',
-    });
+    try {
+      await this.likeService.likeUser(likeUserDto);
+      return Object.assign({
+        success: true,
+        msg: '성공적으로 요청이 처리되었습니다.',
+      });
+    } catch (err) {
+      throw err;
+    }
   }
 }

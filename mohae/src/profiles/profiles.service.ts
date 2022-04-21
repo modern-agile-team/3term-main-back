@@ -43,7 +43,6 @@ export class ProfilesService {
   async findOneProfile(profileUserNo, userNo): Promise<object> {
     try {
       const profile = await this.userRepository.findOneUser(profileUserNo);
-      console.log(profile.likedMe);
       if (!profile) {
         throw new NotFoundException(
           `No: ${profileUserNo} 일치하는 유저가 없습니다.`,
@@ -51,7 +50,7 @@ export class ProfilesService {
       }
       const isliked = await this.likeRepository.isLike(profileUserNo, userNo);
       let islike = false;
-      if (isliked.length === 1) {
+      if (isliked === 1) {
         islike = true;
       }
 
