@@ -52,6 +52,7 @@ export class BoardRepository extends Repository<Board> {
         .andWhere('boards.area = areas.no')
         .andWhere('boards.category = categories.no')
         .getOne();
+
       return board;
     } catch (e) {
       `${e} ### 게시판 상세 조회 : 알 수 없는 서버 에러입니다.`;
@@ -404,19 +405,4 @@ export class BoardRepository extends Repository<Board> {
       );
     }
   }
-
-  // async boardRelation(no: number) {
-  //   try {
-  //     const relation = await this.createQueryBuilder()
-  //       .relation(Board, 'thumb')
-  //       .of(no)
-  //       .loadMany();
-
-  //     return relation;
-  //   } catch (e) {
-  //     throw new InternalServerErrorException(
-  //       `${e} ### 게시글 신고 릴레이션 : 알 수 없는 서버 에러입니다.`,
-  //     );
-  //   }
-  // }
 }
