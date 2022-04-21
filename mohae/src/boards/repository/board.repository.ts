@@ -17,12 +17,13 @@ import { Board } from '../entity/board.entity';
 export class BoardRepository extends Repository<Board> {
   async getByOneBoard(no: number): Promise<Board> {
     try {
-      const board = await this.createQueryBuilder('boards')
+      const qb = this.createQueryBuilder('boards')
         .leftJoinAndSelect('boards.area', 'areas')
         .leftJoinAndSelect('boards.category', 'categories')
         .leftJoinAndSelect('boards.user', 'users')
         .leftJoinAndSelect('users.school', 'school')
         .leftJoinAndSelect('users.major', 'major')
+        .leftJoin('boards.likedUser', 'likedUsers')
         .select([
           'users.no',
           'users.name',
@@ -49,8 +50,8 @@ export class BoardRepository extends Repository<Board> {
         ])
         .where('boards.no = :no', { no })
         .andWhere('boards.area = areas.no')
-        .andWhere('boards.category = categories.no')
-        .getOne();
+        .andWhere('boards.category = categories.no');
+      const board = await qb.getOne();
 
       return board;
     } catch (e) {
@@ -200,7 +201,19 @@ export class BoardRepository extends Repository<Board> {
     }
   }
 
-  async filteredBoards(sort: any, popular: string, areaNo:number, categoryNo:number, max:number, min:number, target:Boolean, date:string, endTime: Date, currentTime: Date, free:string): Promise<Board[]> {
+  async filteredBoards(
+    sort: any,
+    popular: string,
+    areaNo: number,
+    categoryNo: number,
+    max: number,
+    min: number,
+    target: boolean,
+    date: string,
+    endTime: Date,
+    currentTime: Date,
+    free: string,
+  ): Promise<Board[]> {
     try {
       const boardFiltering = this.createQueryBuilder('boards')
         .leftJoinAndSelect('boards.area', 'areas')
@@ -223,19 +236,25 @@ export class BoardRepository extends Repository<Board> {
           'areas.name',
           'categories.name',
         ])
-        .orderBy('boards.no', sort)
+        .orderBy('boards.no', sort);
 
-        if (areaNo) boardFiltering.andWhere('boards.area = :areaNo', {areaNo})
-        if (categoryNo) boardFiltering.andWhere('boards.category = :categoryNo', {categoryNo})
-        if (max) boardFiltering.andWhere('boards.price < :max', {max})
-        if (min) boardFiltering.andWhere('boards.price >= :min', {min})
-        if (target) boardFiltering.andWhere('boards.target = :target', {target})
-        if (date) {
-          boardFiltering.andWhere('boards.deadline < :endTime', {endTime})
-          boardFiltering.andWhere('boards.deadline > :currentTime', {currentTime})
-        }
-        if (free) boardFiltering.andWhere('boards.price = 0')
-        if (popular) boardFiltering.orderBy('boards.hit', 'DESC')
+      if (areaNo) boardFiltering.andWhere('boards.area = :areaNo', { areaNo });
+      if (categoryNo)
+        boardFiltering.andWhere('boards.category = :categoryNo', {
+          categoryNo,
+        });
+      if (max) boardFiltering.andWhere('boards.price < :max', { max });
+      if (min) boardFiltering.andWhere('boards.price >= :min', { min });
+      if (target)
+        boardFiltering.andWhere('boards.target = :target', { target });
+      if (date) {
+        boardFiltering.andWhere('boards.deadline < :endTime', { endTime });
+        boardFiltering.andWhere('boards.deadline > :currentTime', {
+          currentTime,
+        });
+      }
+      if (free) boardFiltering.andWhere('boards.price = 0');
+      if (popular) boardFiltering.orderBy('boards.hit', 'DESC');
 
       return await boardFiltering.getMany();
     } catch (e) {

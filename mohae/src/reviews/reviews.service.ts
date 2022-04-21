@@ -34,7 +34,9 @@ export class ReviewsService {
 
   async readUserReviews(no: number) {
     try {
-      const reviews = await this.reviewRepository.readUserReviews(no);
+      const { reviews, count } = await this.reviewRepository.readUserReviews(
+        no,
+      );
       this.errorConfirm.notFoundError(reviews, '해당 리뷰를 찾을 수 없습니다.');
 
       const rating =
@@ -42,7 +44,7 @@ export class ReviewsService {
           return result + review.rating;
         }, 0) / reviews.length;
 
-      return { reviews, rating: rating.toFixed(1), count: reviews.length };
+      return { reviews, rating: rating.toFixed(1), count };
     } catch (e) {
       throw e;
     }
