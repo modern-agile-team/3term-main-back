@@ -49,12 +49,16 @@ export class UserRepository extends Repository<User> {
   }
 
   async signDown(no: number) {
-    const result = await this.createQueryBuilder()
-      .softDelete()
-      .from(User)
-      .where('no = :no', { no })
-      .execute();
-    return result;
+    try {
+      const result = await this.createQueryBuilder()
+        .softDelete()
+        .from(User)
+        .where('no = :no', { no })
+        .execute();
+      return result;
+    } catch (err) {
+      throw err;
+    }
   }
   async duplicateCheck(string, duplicateCheck) {
     try {
@@ -122,16 +126,22 @@ export class UserRepository extends Repository<User> {
   async findOneUser(no: number) {
     try {
       const user = await this.createQueryBuilder('users')
+        .leftJoinAndSelect('users.boards', 'boards')
         .leftJoinAndSelect('users.school', 'school')
         .leftJoinAndSelect('users.major', 'major')
         .leftJoinAndSelect('users.reports', 'reports')
         .leftJoinAndSelect('users.specs', 'specs')
         .leftJoinAndSelect('users.categories', 'categories')
+        .leftJoinAndSelect('users.likedMe', 'likedMe')
         .select([
           'users.no',
           'users.email',
           'users.nickname',
           'users.createdAt',
+          'likedMe',
+          'boards.no',
+          'boards.title',
+          'boards.target',
           'school.no',
           'school.name',
           'major.no',

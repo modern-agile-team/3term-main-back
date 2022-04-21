@@ -20,6 +20,7 @@ import { EmailModule } from './email/email.module';
 import { NoticesModule } from './notices/notices.module';
 import { SpecsModule } from './specs/specs.module';
 import { PhotoModule } from './photo/photo.module';
+import { LikeModule } from './like/like.module';
 
 @Module({
   imports: [
@@ -41,6 +42,7 @@ import { PhotoModule } from './photo/photo.module';
     NoticesModule,
     SpecsModule,
     PhotoModule,
+    LikeModule,
   ],
   controllers: [AppController],
   providers: [AppService],

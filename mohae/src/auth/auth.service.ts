@@ -24,8 +24,14 @@ export class AuthService {
     @InjectRepository(UserRepository)
     private userRepository: UserRepository,
     private jwtService: JwtService,
+
+    @InjectRepository(SchoolRepository)
     private schoolRepository: SchoolRepository,
+
+    @InjectRepository(MajorRepository)
     private majorRepository: MajorRepository,
+
+    @InjectRepository(CategoryRepository)
     private categoriesRepository: CategoryRepository,
 
     private errorConfirm: ErrorConfirm,

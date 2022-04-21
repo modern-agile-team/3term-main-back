@@ -30,6 +30,8 @@ import { Spec } from 'src/specs/entity/spec.entity';
 import { Faq } from 'src/faqs/entity/faq.entity';
 import { Notice } from 'src/notices/entity/notice.entity';
 import { Board } from 'src/boards/entity/board.entity';
+import { userInfo } from 'os';
+import { UserLike } from 'src/like/entity/user.like.entity';
 
 @Entity('users')
 export class User extends BaseEntity {
@@ -109,6 +111,18 @@ export class User extends BaseEntity {
     comment: '회원가입 시간',
   })
   createdAt: Date;
+
+  // 내가 좋아요 한 유저 목록
+  @OneToMany((type) => UserLike, (userLike) => userLike.likedUser, {
+    nullable: true,
+  })
+  likedUser: UserLike[];
+
+  // 나를 좋아요한 유저 목록
+  @OneToMany((type) => UserLike, (userLike) => userLike.likedMe, {
+    nullable: true,
+  })
+  likedMe: UserLike[];
 
   @OneToMany((type) => Board, (board) => board.user, {
     onDelete: 'SET NULL',
