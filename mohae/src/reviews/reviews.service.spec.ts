@@ -217,19 +217,7 @@ describe('ReviewsService', () => {
       const returnValue = await reviewsService.createReview(createReviewDto);
 
       expect(returnValue).toStrictEqual({
-        no: 1,
-        boardNo: [
-          {
-            no: 1,
-            title: '테스트 게시글',
-          },
-        ],
-        reviewerNo: [
-          {
-            no: 1,
-            name: '테스트 유저',
-          },
-        ],
+        success: true,
       });
     });
   });
