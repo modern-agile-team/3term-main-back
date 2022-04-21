@@ -1,3 +1,7 @@
+import {
+  InternalServerErrorException,
+  NotFoundException,
+} from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { UserRepository } from 'src/auth/repository/user.repository';
@@ -257,7 +261,13 @@ describe('ReviewsService', () => {
         try {
           await reviewsService.createReview(createReviewDto);
         } catch (e) {
+          expect(e).toBeInstanceOf(NotFoundException);
           expect(e.message).toBe('리뷰를 작성하려는 게시글이 없습니다.');
+          expect(e.response).toStrictEqual({
+            error: 'Not Found',
+            message: '리뷰를 작성하려는 게시글이 없습니다.',
+            statusCode: 404,
+          });
         }
       });
 
@@ -278,7 +288,13 @@ describe('ReviewsService', () => {
         try {
           await reviewsService.createReview(createReviewDto);
         } catch (e) {
+          expect(e).toBeInstanceOf(NotFoundException);
           expect(e.message).toBe('리뷰 작성자를 찾을 수 없습니다.');
+          expect(e.response).toStrictEqual({
+            error: 'Not Found',
+            message: '리뷰 작성자를 찾을 수 없습니다.',
+            statusCode: 404,
+          });
         }
       });
 
@@ -303,7 +319,13 @@ describe('ReviewsService', () => {
         try {
           await reviewsService.createReview(createReviewDto);
         } catch (e) {
+          expect(e).toBeInstanceOf(InternalServerErrorException);
           expect(e.message).toBe('알 수 없는 리뷰 작성 오류');
+          expect(e.response).toStrictEqual({
+            statusCode: 500,
+            message: '알 수 없는 리뷰 작성 오류',
+            error: 'Internal Server Error',
+          });
         }
       });
     });
