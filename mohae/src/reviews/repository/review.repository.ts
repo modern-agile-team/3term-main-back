@@ -1,20 +1,25 @@
 import { InternalServerErrorException } from '@nestjs/common';
+import { User } from 'src/auth/entity/user.entity';
+import { Board } from 'src/boards/entity/board.entity';
 import { EntityRepository, Repository } from 'typeorm';
 import { CreateReviewDto } from '../dto/review.dto';
 import { Review } from '../entity/review.entity';
 
 @EntityRepository(Review)
 export class ReviewRepository extends Repository<Review> {
-  async createReview(createReviewDto: CreateReviewDto): Promise<Review> {
-    const { description, rating } = createReviewDto;
-
+  async createReview(
+    { description, rating }: CreateReviewDto,
+    reviewer: User,
+    board: Board,
+  ) {
     try {
-      const createdReview = this.create({
-        description,
-        rating,
-      });
+      const { raw } = await this.createQueryBuilder('reviews')
+        .insert()
+        .into(Review)
+        .values({ description, rating, reviewer, board })
+        .execute();
 
-      return await createdReview.save();
+      return raw.affectedRows;
     } catch (e) {
       throw new InternalServerErrorException(
         `${e} ### 리뷰 작성 : 알 수 없는 서버 에러입니다.`,
