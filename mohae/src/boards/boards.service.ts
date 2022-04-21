@@ -10,7 +10,6 @@ import { DeleteResult, RelationId } from 'typeorm';
 import {
   CreateBoardDto,
   SearchBoardDto,
-  ThumbBoardDto,
   UpdateBoardDto,
 } from './dto/board.dto';
 import { Board } from './entity/board.entity';
@@ -51,7 +50,7 @@ export class BoardsService {
     return boards;
   }
 
-  async thumbBoard({ boardNo, userNo, judge }) {
+  async likeBoard({ boardNo, userNo, judge }) {
     const board = await this.boardRepository.findOne(boardNo, {
       relations: ['likedUser'],
     });

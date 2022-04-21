@@ -19,7 +19,7 @@ import { BoardsService } from './boards.service';
 import {
   CreateBoardDto,
   SearchBoardDto,
-  ThumbBoardDto,
+  LikeBoardDto,
   UpdateBoardDto,
 } from './dto/board.dto';
 import { Board } from './entity/board.entity';
@@ -60,7 +60,7 @@ export class BoardsController {
     return Object.assign({
       statusCode: 200,
       msg: '게시글 필터링이 완료되었습니다.',
-      count: response.length,
+      filteredBoardNum: response.length,
       response,
     });
   }
@@ -152,9 +152,9 @@ export class BoardsController {
     });
   }
 
-  @Post('thumb')
-  async thumbBoard(@Body() thumbBoardDto: ThumbBoardDto): Promise<Board> {
-    const response = await this.boardService.thumbBoard(thumbBoardDto);
+  @Post('like')
+  async likeBoard(@Body() likeBoardDto: LikeBoardDto): Promise<Board> {
+    const response = await this.boardService.likeBoard(likeBoardDto);
 
     return Object.assign({
       statusCode: 200,

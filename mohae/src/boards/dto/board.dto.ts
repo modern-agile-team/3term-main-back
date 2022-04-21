@@ -1,5 +1,14 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsBoolean, IsDate, IsNotEmpty, IsNumber, IsString, MaxLength, MinLength, minLength } from 'class-validator';
+import {
+  IsBoolean,
+  IsDate,
+  IsNotEmpty,
+  IsNumber,
+  IsString,
+  MaxLength,
+  MinLength,
+  minLength,
+} from 'class-validator';
 
 export abstract class BoardContent {
   @ApiProperty({
@@ -91,7 +100,7 @@ export class SearchBoardDto {
   title: string;
 }
 
-export class ThumbBoardDto {
+export class LikeBoardDto {
   @IsNumber()
   boardNo: number;
 
