@@ -53,7 +53,7 @@ export class ReviewRepository extends Repository<Review> {
     }
   }
 
-  async readUserReviews(no: number): Promise<Review[]> {
+  async readUserReviews(no: number) {
     try {
       const review = await this.createQueryBuilder('reviews')
         .leftJoinAndSelect('reviews.board', 'board')
@@ -76,6 +76,7 @@ export class ReviewRepository extends Repository<Review> {
 
       return review;
     } catch (e) {
+      console.log(e);
       throw new InternalServerErrorException(
         `${e} ### 리뷰 선택 조회 : 알 수 없는 서버 에러입니다.`,
       );

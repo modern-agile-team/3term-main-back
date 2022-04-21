@@ -42,7 +42,7 @@ export class ReviewsService {
           return result + review.rating;
         }, 0) / reviews.length;
 
-      return { reviews, rating: rating.toFixed(1) };
+      return { reviews, rating: rating.toFixed(1), count: reviews.length };
     } catch (e) {
       throw e;
     }
