@@ -143,7 +143,7 @@ export class ReportedUserRepository extends Repository<ReportedUser> {
 }
 
 @EntityRepository(ReportCheckbox)
-export class ReportCheckBoxRepository extends Repository<ReportCheckbox> {
+export class ReportCheckboxRepository extends Repository<ReportCheckbox> {
   async readAllCheckboxes(): Promise<ReportCheckbox[]> {
     try {
       const checkedReport = this.createQueryBuilder('report_checkboxes')

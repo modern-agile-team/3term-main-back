@@ -10,7 +10,7 @@ import {
   ReportedUser,
 } from './entity/report.entity';
 import {
-  ReportCheckBoxRepository,
+  ReportCheckboxRepository,
   ReportedBoardRepository,
   ReportedUserRepository,
 } from './repository/report.repository';
@@ -24,8 +24,8 @@ export class ReportsService {
     @InjectRepository(ReportedUserRepository)
     private reportedUserRepository: ReportedUserRepository,
 
-    @InjectRepository(ReportCheckBoxRepository)
-    private reportCheckBoxRepository: ReportCheckBoxRepository,
+    @InjectRepository(ReportCheckboxRepository)
+    private reportCheckboxRepository: ReportCheckboxRepository,
 
     @InjectRepository(BoardRepository)
     private boardRepository: BoardRepository,
@@ -38,7 +38,7 @@ export class ReportsService {
 
   async readAllCheckboxes(): Promise<ReportCheckbox[]> {
     const checkedReport =
-      await this.reportCheckBoxRepository.readAllCheckboxes();
+      await this.reportCheckboxRepository.readAllCheckboxes();
 
     return checkedReport;
   }
@@ -79,7 +79,7 @@ export class ReportsService {
     const { head, headNo, reportUserNo, checks } = createReportDto;
 
     const checkInfo = checks.map(async (el) => {
-      const info = await this.reportCheckBoxRepository.selectCheckConfirm(el);
+      const info = await this.reportCheckboxRepository.selectCheckConfirm(el);
 
       return info;
     });
@@ -130,7 +130,7 @@ export class ReportsService {
             await this.boardRepository.save(board);
             await this.userRepository.save(boardReporter);
             checkInfo.forEach(async (checkNo) => {
-              this.reportCheckBoxRepository.saveChecks(
+              this.reportCheckboxRepository.saveChecks(
                 await checkNo,
                 newBoardReport,
                 checkboxRelation,
@@ -187,7 +187,7 @@ export class ReportsService {
             await this.userRepository.save(userReporter);
 
             checkInfo.forEach(async (checkNo) => {
-              this.reportCheckBoxRepository.saveChecks(
+              this.reportCheckboxRepository.saveChecks(
                 await checkNo,
                 newUserReport,
                 checkboxRelation,
