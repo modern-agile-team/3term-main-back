@@ -96,10 +96,11 @@ export class BoardsService {
   }
 
   async filteredBoards(
+    no: number,
     sort: any,
+    title: string,
     popular: string,
     areaNo: number,
-    categoryNo: number,
     max: number,
     min: number,
     target: boolean,
@@ -128,10 +129,11 @@ export class BoardsService {
     }
 
     const boards = await this.boardRepository.filteredBoards(
+      no,
       sort,
+      title,
       popular,
       areaNo,
-      categoryNo,
       max,
       min,
       target,
@@ -139,11 +141,6 @@ export class BoardsService {
       endTime,
       currentTime,
       free,
-    );
-
-    this.errorConfirm.notFoundError(
-      boards.length,
-      '필터링된 게시글을 찾을 수 없습니다.',
     );
 
     return boards;

@@ -200,10 +200,11 @@ export class BoardRepository extends Repository<Board> {
   }
 
   async filteredBoards(
+    no: number,
     sort: any,
+    title: string,
     popular: string,
     areaNo: number,
-    categoryNo: number,
     max: number,
     min: number,
     target: boolean,
@@ -216,31 +217,27 @@ export class BoardRepository extends Repository<Board> {
       const boardFiltering = this.createQueryBuilder('boards')
         .leftJoinAndSelect('boards.area', 'areas')
         .leftJoinAndSelect('boards.category', 'categories')
+        .leftJoin('boards.user', 'users')
         .select([
           'boards.no',
           'boards.title',
-          'boards.description',
           'boards.createdAt',
           'boards.deadline',
           'boards.isDeadLine',
-          'boards.thumb',
-          'boards.hit',
           'boards.price',
-          'boards.summary',
           'boards.target',
-          'boards.note1',
-          'boards.note2',
-          'boards.note3',
           'areas.name',
           'categories.name',
+          'users.name',
         ])
+        .where('boards.category = :no', { no })
         .orderBy('boards.no', sort);
 
-      if (areaNo) boardFiltering.andWhere('boards.area = :areaNo', { areaNo });
-      if (categoryNo)
-        boardFiltering.andWhere('boards.category = :categoryNo', {
-          categoryNo,
+      if (title)
+        boardFiltering.andWhere('boards.title like :title', {
+          title: `%${title}%`,
         });
+      if (areaNo) boardFiltering.andWhere('boards.area = :areaNo', { areaNo });
       if (max) boardFiltering.andWhere('boards.price < :max', { max });
       if (min) boardFiltering.andWhere('boards.price >= :min', { min });
       if (target)
