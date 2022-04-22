@@ -14,7 +14,9 @@ import {
 const MockReportedBoardRepository = () => ({
   readOneReportedBoard: jest.fn(),
 });
-const MockReportedUserRepository = () => ({});
+const MockReportedUserRepository = () => ({
+  readOneReportedUser: jest.fn(),
+});
 const MockReportCheckboxRepository = () => ({
   readAllCheckboxes: jest.fn(),
 });
@@ -151,6 +153,24 @@ describe('ReportsService', () => {
         no: 1,
         reportUser: 1,
         reportedBoard: 5,
+        checks: [1, 2, 3],
+      });
+    });
+
+    it('readOneReportedUser', async () => {
+      reportedUserRepository['readOneReportedUser'].mockResolvedValue({
+        no: 1,
+        reportUser: 1,
+        reportedUser: 5,
+        checks: [1, 2, 3],
+      });
+
+      const returnValue = await reportsService.readOneReportedUser(5);
+
+      expect(returnValue).toStrictEqual({
+        no: 1,
+        reportUser: 1,
+        reportedUser: 5,
         checks: [1, 2, 3],
       });
     });
