@@ -40,8 +40,11 @@ export class BoardsController {
     });
   }
 
-  @Get('/search')
-  async filteredBoards(@Query() paginationQuery): Promise<Board[]> {
+  @Get('/search/:no')
+  async filteredBoards(
+    @Param('no') no: number,
+    @Query() paginationQuery,
+  ): Promise<Board[]> {
     const { sort, popular, areaNo, categoryNo, max, min, target, date, free } =
       paginationQuery;
 
