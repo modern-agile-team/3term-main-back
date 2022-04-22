@@ -1,8 +1,13 @@
-import { ConflictException } from '@nestjs/common';
+import {
+  ConflictException,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
+import { create } from 'domain';
 import { Category } from 'src/categories/entity/category.entity';
 import { CategoryRepository } from 'src/categories/repository/category.repository';
 import { MajorRepository } from 'src/majors/repository/major.repository';
@@ -10,9 +15,10 @@ import { SchoolRepository } from 'src/schools/repository/school.repository';
 import { ErrorConfirm } from 'src/utils/error';
 import { getRepository, Repository } from 'typeorm';
 import { AuthService } from './auth.service';
-import { CreateUserDto } from './dto/auth-credential.dto';
+import { CreateUserDto, SignInDto } from './dto/auth-credential.dto';
 import { User } from './entity/user.entity';
 import { UserRepository } from './repository/user.repository';
+import * as bcrypt from 'bcryptjs';
 
 const MockUserRepository = () => ({
   //signUp
@@ -212,7 +218,265 @@ describe('AuthService', () => {
         });
       }
     });
-    test.todo('학교 정보,전공 정보 넣어주지 않았을 때');
-    test.todo('카테고리 정보가 없을 때');
+
+    it('DB에 없는 학교 정보,전공 번호로 회원가입을 하려할 때', async () => {
+      schoolRepository.findOne.mockResolvedValue(undefined);
+
+      majorRepository.findOne.mockResolvedValue(undefined);
+      categoryRepository['selectCategory'].mockResolvedValue([
+        { no: 1, name: '개발' },
+        { no: 2, name: '디자인' },
+        { no: 3, name: '일상' },
+      ]);
+      userRepository['duplicateCheck'].mockResolvedValue(undefined);
+      userRepository['createUser'].mockResolvedValue({
+        no: 1,
+        email: 'subro',
+        nickname: '용훈',
+      });
+      userRepository.findOne.mockResolvedValue({
+        no: 1,
+        categories: [],
+      });
+      categoryRepository['saveUsers'].mockResolvedValue();
+
+      const createUserDto: CreateUserDto = {
+        email: 'cd111@eegnadddddsver.com',
+        password: 'hello',
+        name: '백팀장',
+        school: 5,
+        major: 5,
+        categories: [],
+        phone: '01012345678',
+        nickname: '1ddd11gddddd111',
+        manager: false,
+        photo_url: 'asdfasdf',
+      };
+      try {
+        await authService.signUp(createUserDto);
+      } catch (e) {
+        expect(e).toBeInstanceOf(NotFoundException);
+        expect(e.response.message).toBe(
+          `해당 번호에 해당하는 학교,전공이(가) 존재하지 않습니다.`,
+        );
+        expect(e.response).toStrictEqual({
+          statusCode: 404,
+          message: '해당 번호에 해당하는 학교,전공이(가) 존재하지 않습니다.',
+          error: 'Not Found',
+        });
+      }
+    });
+
+    it('유저 생성이 정상적으로 이루어지지 않았을 때', async () => {
+      schoolRepository.findOne.mockResolvedValue({
+        no: 1,
+        name: '인덕대',
+        users: [],
+      });
+
+      majorRepository.findOne.mockResolvedValue({
+        no: 1,
+        name: '개발',
+        users: [],
+      });
+      categoryRepository['selectCategory'].mockResolvedValue([
+        { no: 1, name: '개발' },
+        { no: 2, name: '디자인' },
+        { no: 3, name: '일상' },
+      ]);
+      userRepository['duplicateCheck'].mockResolvedValue(undefined);
+      userRepository['createUser'].mockResolvedValue(undefined);
+      userRepository.findOne.mockResolvedValue({
+        no: 1,
+        categories: [],
+      });
+      categoryRepository['saveUsers'].mockResolvedValue();
+
+      const createUserDto: CreateUserDto = {
+        email: 'cd111@eegnadddddsver.com',
+        password: 'hello',
+        name: '백팀장',
+        school: 1,
+        major: 1,
+        categories: [],
+        phone: '01012345678',
+        nickname: '1ddd11gddddd111',
+        manager: false,
+        photo_url: 'asdfasdf',
+      };
+      try {
+        await authService.signUp(createUserDto);
+      } catch (e) {
+        expect(e).toBeInstanceOf(NotFoundException);
+        expect(e.response.message).toBe(
+          '유저 생성이 정상적으로 이루어지지 않았습니다.',
+        );
+        expect(e.response).toStrictEqual({
+          statusCode: 404,
+          message: '유저 생성이 정상적으로 이루어지지 않았습니다.',
+          error: 'Not Found',
+        });
+      }
+    });
+  });
+
+  describe('signIn', () => {
+    it('로그인에 성공하였을 때', async () => {
+      userRepository['signIn'].mockResolvedValue({
+        no: 1,
+        isLock: 0,
+        latestLogin: new Date(),
+        salt: '1234',
+        loginFailCount: 0,
+      });
+      userRepository['changeIsLock'].mockResolvedValue({
+        affected: 0,
+      });
+      userRepository['clearLoginCount'].mockResolvedValue({
+        affected: 0,
+      });
+      userRepository['plusLoginFailCount'].mockResolvedValue({
+        affected: 0,
+      });
+      bcrypt.compare = jest.fn().mockResolvedValue(true);
+      mockJwtService.sign = jest.fn().mockResolvedValue('accessToken 입니다.');
+
+      const signInDto: SignInDto = {
+        email: 'subro',
+        password: '1234',
+      };
+      const resultValue = await authService.signIn(signInDto);
+
+      expect(resultValue).toStrictEqual({
+        accessToken: 'accessToken 입니다.',
+      });
+    });
+
+    it('없는 이메일로 로그인을 시도했을 때', async () => {
+      userRepository['signIn'].mockResolvedValue(undefined);
+      userRepository['changeIsLock'].mockResolvedValue({
+        affected: 0,
+      });
+      userRepository['clearLoginCount'].mockResolvedValue({
+        affected: 0,
+      });
+      userRepository['plusLoginFailCount'].mockResolvedValue({
+        affected: 0,
+      });
+      bcrypt.compare = jest.fn().mockResolvedValue(true);
+      mockJwtService.sign = jest.fn().mockResolvedValue('accessToken 입니다.');
+
+      const signInDto: SignInDto = {
+        email: 'subro',
+        password: '1234',
+      };
+      try {
+        await authService.signIn(signInDto);
+      } catch (e) {
+        expect(e).toBeInstanceOf(NotFoundException);
+        expect(e.response.message).toBe(
+          '아이디 또는 비밀번호가 일치하지 않습니다.',
+        );
+        expect(e.response).toStrictEqual({
+          error: 'Not Found',
+          message: '아이디 또는 비밀번호가 일치하지 않습니다.',
+          statusCode: 404,
+        });
+      }
+    });
+
+    it('비밀번호가 틀렸을때', async () => {
+      userRepository['signIn'].mockResolvedValue({
+        no: 1,
+        isLock: 0,
+        latestLogin: new Date(),
+        salt: '1234',
+        loginFailCount: 0,
+      });
+      userRepository['changeIsLock'].mockResolvedValue({
+        affected: 0,
+      });
+      userRepository['clearLoginCount'].mockResolvedValue({
+        affected: 0,
+      });
+      userRepository['plusLoginFailCount'].mockResolvedValue({
+        affected: 0,
+      });
+      bcrypt.compare = jest.fn().mockResolvedValue(false);
+      mockJwtService.sign = jest.fn().mockResolvedValue('accessToken 입니다.');
+
+      const signInDto: SignInDto = {
+        email: 'subro',
+        password: '1234',
+      };
+      try {
+        await authService.signIn(signInDto);
+      } catch (e) {
+        expect(e).toBeInstanceOf(UnauthorizedException);
+        expect(e.response.message).toBe(
+          `아이디 또는 비밀번호가 일치하지 않습니다. 로그인 실패 횟수: undefined `,
+        );
+        expect(e.response).toStrictEqual({
+          statusCode: 401,
+          message:
+            '아이디 또는 비밀번호가 일치하지 않습니다. 로그인 실패 횟수: undefined ',
+          error: 'Unauthorized',
+        });
+      }
+    });
+
+    it('로그인 시도 횟수를 모두 초과하였을 때', async () => {
+      userRepository['signIn'].mockResolvedValue({
+        no: 1,
+        isLock: 1,
+        latestLogin: new Date(),
+        salt: '1234',
+        loginFailCount: 0,
+      });
+      userRepository['changeIsLock'].mockResolvedValue({
+        affected: 0,
+      });
+      userRepository['clearLoginCount'].mockResolvedValue({
+        affected: 0,
+      });
+      userRepository['plusLoginFailCount'].mockResolvedValue({
+        affected: 0,
+      });
+      bcrypt.compare = jest.fn().mockResolvedValue(false);
+      mockJwtService.sign = jest.fn().mockResolvedValue('accessToken 입니다.');
+
+      const signInDto: SignInDto = {
+        email: 'subro',
+        password: '1234',
+      };
+      try {
+        await authService.signIn(signInDto);
+      } catch (e) {
+        expect(e).toBeInstanceOf(UnauthorizedException);
+        expect(e.response.message).toBe(
+          '로그인 실패 횟수를 모두 초과 하였습니다 -32389초 뒤에 다시 로그인 해주세요',
+        );
+        expect(e.response).toStrictEqual({
+          statusCode: 401,
+          message:
+            '로그인 실패 횟수를 모두 초과 하였습니다 -32389초 뒤에 다시 로그인 해주세요',
+          error: 'Unauthorized',
+        });
+      }
+    });
+  });
+
+  describe('signDown', () => {
+    it('회원 탈퇴가 성공하였을 때', async () => {
+      userRepository['signDown'].mockResolvedValue({
+        affected: 1,
+      });
+      const no = 1;
+      const resultValue = await authService.signDown(no);
+
+      expect(resultValue).toStrictEqual({
+        affected: 1,
+      });
+    });
   });
 });

@@ -165,7 +165,6 @@ export class AuthService {
   }
   async signDown(no: number): Promise<DeleteResult> {
     const result = await this.userRepository.signDown(no);
-
     if (!result.affected) {
       throw new NotFoundException(
         `${no} 회원님의 회원탈퇴가 정상적으로 이루어 지지 않았습니다.`,
