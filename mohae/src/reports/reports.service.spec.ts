@@ -13,6 +13,7 @@ describe('ReportsService', () => {
   });
 
   it('should be defined', () => {
+    console.log('object');
     expect(service).toBeDefined();
   });
 });
