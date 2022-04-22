@@ -11,7 +11,9 @@ import {
   ReportedUserRepository,
 } from './repository/report.repository';
 
-const MockReportedBoardRepository = () => ({});
+const MockReportedBoardRepository = () => ({
+  readOneReportedBoard: jest.fn(),
+});
 const MockReportedUserRepository = () => ({});
 const MockReportCheckboxRepository = () => ({
   readAllCheckboxes: jest.fn(),
@@ -89,20 +91,26 @@ describe('ReportsService', () => {
     expect(reportsService).toBeDefined();
   });
 
-  describe('Checkboxes', () => {
+  describe('read', () => {
     it('readAllCheckboxes', async () => {
       reportCheckboxRepository['readAllCheckboxes'].mockResolvedValue([
         {
           no: 1,
-          name: '내용',
+          content: '욕',
+          reportedBoards: [{ no: 1, title: 'title' }],
+          reportedUsers: [{ no: 1, name: 'name' }],
         },
         {
           no: 2,
-          name: '내용2',
+          content: '비방',
+          reportedBoards: [{ no: 1, title: 'title' }],
+          reportedUsers: [{ no: 1, name: 'name' }],
         },
         {
           no: 3,
-          name: '내용3',
+          content: '험담',
+          reportedBoards: [{ no: 1, title: 'title' }],
+          reportedUsers: [{ no: 1, name: 'name' }],
         },
       ]);
 
@@ -110,17 +118,45 @@ describe('ReportsService', () => {
       expect(returnValue).toStrictEqual([
         {
           no: 1,
-          name: '내용',
+          content: '욕',
+          reportedBoards: [{ no: 1, title: 'title' }],
+          reportedUsers: [{ no: 1, name: 'name' }],
         },
         {
           no: 2,
-          name: '내용2',
+          content: '비방',
+          reportedBoards: [{ no: 1, title: 'title' }],
+          reportedUsers: [{ no: 1, name: 'name' }],
         },
         {
           no: 3,
-          name: '내용3',
+          content: '험담',
+          reportedBoards: [{ no: 1, title: 'title' }],
+          reportedUsers: [{ no: 1, name: 'name' }],
         },
       ]);
     });
+
+    it('readOneReportedBoard', async () => {
+      reportedBoardRepository['readOneReportedBoard'].mockResolvedValue({
+        no: 1,
+        reportUser: 1,
+        reportedBoard: 5,
+        checks: [1, 2, 3],
+      });
+
+      const returnValue = await reportsService.readOneReportedBoard(5);
+
+      expect(returnValue).toStrictEqual({
+        no: 1,
+        reportUser: 1,
+        reportedBoard: 5,
+        checks: [1, 2, 3],
+      });
+    });
+  });
+
+  describe('create', () => {
+    it.todo('신고 생성');
   });
 });
