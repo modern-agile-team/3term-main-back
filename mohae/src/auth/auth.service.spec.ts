@@ -327,7 +327,7 @@ describe('AuthService', () => {
         isLock: 0,
         latestLogin: new Date(),
         salt: '1234',
-        logInFailCount: 0,
+        loginFailCount: 0,
       });
       userRepository['changeIsLock'].mockResolvedValue({
         affected: 0,
@@ -391,7 +391,7 @@ describe('AuthService', () => {
         isLock: 0,
         latestLogin: new Date(),
         salt: '1234',
-        logInFailCount: 0,
+        loginFailCount: 0,
       });
       userRepository['changeIsLock'].mockResolvedValue({
         affected: 0,
@@ -431,7 +431,7 @@ describe('AuthService', () => {
         isLock: 1,
         latestLogin: new Date(),
         salt: '1234',
-        logInFailCount: 0,
+        loginFailCount: 0,
       });
       userRepository['changeIsLock'].mockResolvedValue({
         affected: 0,
@@ -463,6 +463,20 @@ describe('AuthService', () => {
           error: 'Unauthorized',
         });
       }
+    });
+  });
+
+  describe('signDown', () => {
+    it('회원 탈퇴가 성공하였을 때', async () => {
+      userRepository['signDown'].mockResolvedValue({
+        affected: 1,
+      });
+      const no = 1;
+      const resultValue = await authService.signDown(no);
+
+      expect(resultValue).toStrictEqual({
+        affected: 1,
+      });
     });
   });
 });

@@ -121,7 +121,6 @@ export class ProfilesService {
       }
 
       const profileKeys = Object.keys(updateProfileDto);
-
       const deletedNullprofile = {};
       profileKeys.forEach((item) => {
         updateProfileDto[item]
