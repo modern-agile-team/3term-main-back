@@ -109,11 +109,14 @@ export class AuthService {
     try {
       const { email, password } = signInDto;
       const user = await this.userRepository.signIn(email);
+
       this.errorConfirm.notFoundError(
         user,
         '아이디 또는 비밀번호가 일치하지 않습니다.',
       );
+
       const lastLogin = user.latestLogin.getTime();
+
       // VScode에서 찍는 현재시간이 pc 시간보다 9시간 적게 나와서 일단 Date().getTime()에 9시간을 강제로 더해서 현재시간을 측정해주었음
       // const plusCurrentTime = 9 * 60 * 60 * 1000;
       const plusCurrentTime = 32398362;
