@@ -45,6 +45,18 @@ export class AuthService {
     const majorRepo = await this.majorRepository.findOne(major, {
       relations: ['users'],
     });
+    if (!schoolRepo || !majorRepo) {
+      const notFoundObj = { 학교: schoolRepo, 전공: majorRepo };
+      const notFoundKey = Object.keys(notFoundObj).filter(
+        (key) => !notFoundObj[key],
+      );
+      if (notFoundKey.length) {
+        throw new NotFoundException(
+          `해당 번호에 해당하는 ${notFoundKey}이(가) 존재하지 않습니다.`,
+        );
+      }
+    }
+
     const categoriesRepo = await this.categoriesRepository.selectCategory(
       categories,
     );

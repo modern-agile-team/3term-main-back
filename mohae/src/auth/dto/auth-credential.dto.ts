@@ -25,6 +25,7 @@ export class CreateUserDto {
   school: number;
 
   @IsNumber()
+  // Matches 사용하여 DB에 있는 전공 값 맞춰보기
   major: number;
 
   @IsString()

@@ -1,3 +1,4 @@
+import { ConflictException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { Test, TestingModule } from '@nestjs/testing';
@@ -155,5 +156,63 @@ describe('AuthService', () => {
         nickname: '용훈',
       });
     });
+
+    it('이메일,닉네임이 중복되는 경우', async () => {
+      schoolRepository.findOne.mockResolvedValue({
+        no: 1,
+        name: '인덕대',
+        users: [],
+      });
+
+      majorRepository.findOne.mockResolvedValue({
+        no: 1,
+        name: '개발',
+        users: [],
+      });
+      categoryRepository['selectCategory'].mockResolvedValue([
+        { no: 1, name: '개발' },
+        { no: 2, name: '디자인' },
+        { no: 3, name: '일상' },
+      ]);
+      userRepository['duplicateCheck'].mockResolvedValue(1);
+      userRepository['createUser'].mockResolvedValue({
+        no: 1,
+        email: 'subro',
+        nickname: '용훈',
+      });
+      userRepository.findOne.mockResolvedValue({
+        no: 1,
+        categories: [],
+      });
+      categoryRepository['saveUsers'].mockResolvedValue();
+
+      const createUserDto: CreateUserDto = {
+        email: 'cd111@eegnadddddsver.com',
+        password: 'hello',
+        name: '백팀장',
+        school: 1,
+        major: 1,
+        categories: [],
+        phone: '01012345678',
+        nickname: '1ddd11gddddd111',
+        manager: false,
+        photo_url: 'asdfasdf',
+      };
+      try {
+        await authService.signUp(createUserDto);
+      } catch (e) {
+        expect(e).toBeInstanceOf(ConflictException);
+        expect(e.response.message).toBe(
+          '해당 이메일,닉네임이 이미 존재합니다.',
+        );
+        expect(e.response).toStrictEqual({
+          statusCode: 409,
+          message: '해당 이메일,닉네임이 이미 존재합니다.',
+          error: 'Conflict',
+        });
+      }
+    });
+    test.todo('학교 정보,전공 정보 넣어주지 않았을 때');
+    test.todo('카테고리 정보가 없을 때');
   });
 });
