@@ -10,15 +10,20 @@ import {
   ReportedBoardRepository,
   ReportedUserRepository,
 } from './repository/report.repository';
+import { CreateReportDto } from './dto/report.dto';
 
 const MockReportedBoardRepository = () => ({
   readOneReportedBoard: jest.fn(),
+  createBoardReport: jest.fn(),
+  readOneReportBoardRelation: jest.fn(),
 });
 const MockReportedUserRepository = () => ({
   readOneReportedUser: jest.fn(),
 });
 const MockReportCheckboxRepository = () => ({
   readAllCheckboxes: jest.fn(),
+  selectCheckConfirm: jest.fn(),
+  saveChecks: jest.fn(),
 });
 
 const MockUserRepository = () => ({
@@ -177,6 +182,52 @@ describe('ReportsService', () => {
   });
 
   describe('create', () => {
-    it.todo('신고 생성');
+    it('createReport', async () => {
+      reportCheckboxRepository['selectCheckConfirm'].mockResolvedValue({
+        no: 1,
+        content: '욕',
+      });
+      boardRepository.findOne.mockResolvedValue({
+        no: 1,
+        title: '제목',
+        description: '신고된 게시글',
+        reports: [],
+      });
+      userRepository.findOne.mockResolvedValue({
+        no: 1,
+        name: '신고자 이름',
+        boardReport: [],
+      });
+      reportedBoardRepository['createBoardReport'].mockResolvedValue(1);
+      reportedBoardRepository['readOneReportBoardRelation'].mockResolvedValue(
+        [],
+      );
+      reportedBoardRepository['readOneReportedBoard'].mockResolvedValue({
+        no: 1,
+        description: '신고된 게시글 내용',
+      });
+      reportCheckboxRepository['saveChecks'].mockResolvedValue();
+
+      const createReportDto: CreateReportDto = {
+        head: 'board',
+        headNo: 1,
+        reportUserNo: 1,
+        description: '신고내용',
+        checks: [],
+      };
+      const returnValue = await reportsService.createReport(createReportDto);
+
+      expect(returnValue).toStrictEqual({
+        no: 1,
+        title: '제목',
+        description: '신고된 게시글',
+        reports: [
+          {
+            no: 1,
+            description: '신고된 게시글 내용',
+          },
+        ],
+      });
+    });
   });
 });
