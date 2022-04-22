@@ -25,7 +25,7 @@ export class LikeRepository extends Repository<UserLike> {
         .where('likedMeNo = :user', { user })
         .andWhere('likedUserNo = :dislikedUser', { dislikedUser })
         .execute();
-      console.log(affected);
+
       return affected;
     } catch (err) {
       throw err;
