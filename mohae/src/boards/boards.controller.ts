@@ -36,23 +36,25 @@ export class BoardsController {
     return Object.assign({
       statusCode: 200,
       msg: '게시글 전체 조회가 완료되었습니다.',
+      allBoardNum: response.length,
       response,
     });
   }
 
-  @Get('/search/:no')
+  @Get('/filter/:no')
   async filteredBoards(
     @Param('no') no: number,
     @Query() paginationQuery,
   ): Promise<Board[]> {
-    const { sort, popular, areaNo, categoryNo, max, min, target, date, free } =
+    const { sort, title, popular, areaNo, max, min, target, date, free } =
       paginationQuery;
 
     const response = await this.boardService.filteredBoards(
+      no,
       sort,
+      title,
       popular,
       areaNo,
-      categoryNo,
       max,
       min,
       target,
@@ -75,6 +77,20 @@ export class BoardsController {
     return Object.assign({
       statusCode: 200,
       msg: '인기 게시글 조회가 완료되었습니다.',
+      response,
+    });
+  }
+
+  @Get('search')
+  async searchAllBoards(
+    @Query() searchBoardDto: SearchBoardDto,
+  ): Promise<Board[]> {
+    const response = await this.boardService.searchAllBoards(searchBoardDto);
+
+    return Object.assign({
+      statusCode: 200,
+      msg: '검색결과에 대한 게시글 조회가 완료되었습니다.',
+      foundedBoardNum: response.length,
       response,
     });
   }
@@ -138,19 +154,6 @@ export class BoardsController {
     return Object.assign({
       statusCode: 201,
       msg: '게시글 생성이 완료되었습니다.',
-      response,
-    });
-  }
-
-  @Post('search')
-  async searchAllBoards(
-    @Body() searchBoardDto: SearchBoardDto,
-  ): Promise<Board[]> {
-    const response = await this.boardService.searchAllBoards(searchBoardDto);
-
-    return Object.assign({
-      statusCode: 200,
-      msg: '검색에 관한 게시글 조회가 완료되었습니다.',
       response,
     });
   }
