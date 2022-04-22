@@ -36,6 +36,7 @@ export class BoardsController {
     return Object.assign({
       statusCode: 200,
       msg: '게시글 전체 조회가 완료되었습니다.',
+      allBoardNum: response.length,
       response,
     });
   }

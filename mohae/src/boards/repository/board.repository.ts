@@ -6,11 +6,7 @@ import { Area } from 'src/areas/entity/areas.entity';
 import { User } from 'src/auth/entity/user.entity';
 import { Category } from 'src/categories/entity/category.entity';
 import { DeleteResult, EntityRepository, Repository } from 'typeorm';
-import {
-  CreateBoardDto,
-  SearchBoardDto,
-  UpdateBoardDto,
-} from '../dto/board.dto';
+import { CreateBoardDto, UpdateBoardDto } from '../dto/board.dto';
 import { Board } from '../entity/board.entity';
 
 @EntityRepository(Board)
@@ -67,26 +63,23 @@ export class BoardRepository extends Repository<Board> {
   async readHotBoards(): Promise<Board[]> {
     try {
       const boards = await this.createQueryBuilder('boards')
-        .leftJoinAndSelect('boards.area', 'areas')
-        .leftJoinAndSelect('boards.category', 'categories')
+        .leftJoin('boards.area', 'areas')
+        .leftJoin('boards.category', 'categories')
+        .leftJoin('boards.user', 'users')
         .select([
           'boards.no',
           'boards.title',
-          'boards.description',
           'boards.createdAt',
           'boards.deadLine',
           'boards.isDeadLine',
           'boards.hit',
           'boards.price',
-          'boards.summary',
           'boards.target',
-          'boards.note1',
-          'boards.note2',
-          'boards.note3',
           'areas.name',
           'categories.name',
+          'users.name',
         ])
-        .orderBy('boards.thumb', 'DESC')
+        .orderBy('boards.hit', 'DESC')
         .limit(3)
         .getMany();
 
@@ -171,21 +164,21 @@ export class BoardRepository extends Repository<Board> {
   async searchAllBoards({ title }): Promise<Board[]> {
     try {
       const boards = await this.createQueryBuilder('boards')
-        .leftJoinAndSelect('boards.area', 'areas')
-        .leftJoinAndSelect('boards.category', 'categories')
+        .leftJoin('boards.area', 'areas')
+        .leftJoin('boards.category', 'categories')
+        .leftJoin('boards.user', 'users')
         .select([
           'boards.no',
           'boards.title',
-          'boards.description',
           'boards.createdAt',
           'boards.deadLine',
           'boards.isDeadLine',
           'boards.hit',
           'boards.price',
-          'boards.summary',
           'boards.target',
           'areas.name',
           'categories.name',
+          'users.name',
         ])
         .where('boards.title like :title', { title: `%${title}%` })
         .orderBy('boards.no', 'DESC')
@@ -215,8 +208,8 @@ export class BoardRepository extends Repository<Board> {
   ): Promise<Board[]> {
     try {
       const boardFiltering = this.createQueryBuilder('boards')
-        .leftJoinAndSelect('boards.area', 'areas')
-        .leftJoinAndSelect('boards.category', 'categories')
+        .leftJoin('boards.area', 'areas')
+        .leftJoin('boards.category', 'categories')
         .leftJoin('boards.user', 'users')
         .select([
           'boards.no',
@@ -262,11 +255,25 @@ export class BoardRepository extends Repository<Board> {
   async getAllBoards(): Promise<Board[]> {
     try {
       const boards = await this.createQueryBuilder('boards')
-        .leftJoinAndSelect('boards.area', 'areas')
-        .leftJoinAndSelect('boards.category', 'categories')
+        .leftJoin('boards.area', 'areas')
+        .leftJoin('boards.category', 'categories')
+        .leftJoin('boards.user', 'users')
+        .select([
+          'boards.no',
+          'boards.title',
+          'boards.createdAt',
+          'boards.deadLine',
+          'boards.isDeadLine',
+          'boards.hit',
+          'boards.price',
+          'boards.target',
+          'areas.name',
+          'categories.name',
+          'users.name',
+        ])
         .where('boards.area = areas.no')
         .andWhere('boards.category = categories.no')
-        .orderBy('boards.no', 'ASC')
+        .orderBy('boards.no', 'DESC')
         .getMany();
 
       return boards;
