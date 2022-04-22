@@ -8,7 +8,7 @@ import { ErrorConfirm } from 'src/utils/error';
 import { ReportsController } from './reports.controller';
 import { ReportsService } from './reports.service';
 import {
-  ReportCheckBoxRepository,
+  ReportCheckboxRepository,
   ReportedBoardRepository,
   ReportedUserRepository,
 } from './repository/report.repository';
@@ -18,7 +18,7 @@ import {
     TypeOrmModule.forFeature([
       ReportedBoardRepository,
       ReportedUserRepository,
-      ReportCheckBoxRepository,
+      ReportCheckboxRepository,
       BoardRepository,
       UserRepository,
     ]),
