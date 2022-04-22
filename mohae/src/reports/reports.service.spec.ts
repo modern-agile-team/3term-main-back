@@ -19,6 +19,8 @@ const MockReportedBoardRepository = () => ({
 });
 const MockReportedUserRepository = () => ({
   readOneReportedUser: jest.fn(),
+  createUserReport: jest.fn(),
+  readOneReportUserRelation: jest.fn(),
 });
 const MockReportCheckboxRepository = () => ({
   readAllCheckboxes: jest.fn(),
@@ -47,7 +49,7 @@ describe('ReportsService', () => {
   let boardRepository: MockRepository<BoardRepository>;
   let errorConfirm: ErrorConfirm;
 
-  beforeEach(async () => {
+  beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         ReportsService,
@@ -182,7 +184,7 @@ describe('ReportsService', () => {
   });
 
   describe('create', () => {
-    it('createReport', async () => {
+    it('createReportBoard', async () => {
       reportCheckboxRepository['selectCheckConfirm'].mockResolvedValue({
         no: 1,
         content: '욕',
@@ -227,6 +229,44 @@ describe('ReportsService', () => {
             description: '신고된 게시글 내용',
           },
         ],
+      });
+    });
+
+    it.todo('게시글 신고 생성시 예외처리');
+
+    it('createReportUser', async () => {
+      reportCheckboxRepository['selectCheckConfirm'].mockResolvedValue({
+        no: 1,
+        content: '욕',
+      });
+      userRepository.findOne.mockResolvedValue({
+        no: 1,
+        name: '신고자 이름',
+        reports: [],
+        userReport: [],
+      });
+      reportedUserRepository['createUserReport'].mockResolvedValue(1);
+      reportedUserRepository['readOneReportUserRelation'].mockResolvedValue([]);
+      reportedUserRepository['readOneReportedUser'].mockResolvedValue({
+        no: 1,
+        description: '신고된 유저 내용',
+      });
+      reportCheckboxRepository['saveChecks'].mockResolvedValue();
+
+      const createReportDto: CreateReportDto = {
+        head: 'user',
+        headNo: 1,
+        reportUserNo: 1,
+        description: '신고내용',
+        checks: [],
+      };
+      const returnValue = await reportsService.createReport(createReportDto);
+
+      expect(returnValue).toStrictEqual({
+        no: 1,
+        name: '신고자 이름',
+        reports: [{ no: 1, description: '신고된 유저 내용' }],
+        userReport: [{ no: 1, description: '신고된 유저 내용' }],
       });
     });
   });
