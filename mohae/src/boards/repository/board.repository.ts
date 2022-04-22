@@ -168,10 +168,8 @@ export class BoardRepository extends Repository<Board> {
     }
   }
 
-  async searchAllBoards(searchBoardDto: SearchBoardDto): Promise<Board[]> {
+  async searchAllBoards({ title }): Promise<Board[]> {
     try {
-      const { title } = searchBoardDto;
-
       const boards = await this.createQueryBuilder('boards')
         .leftJoinAndSelect('boards.area', 'areas')
         .leftJoinAndSelect('boards.category', 'categories')
@@ -182,14 +180,10 @@ export class BoardRepository extends Repository<Board> {
           'boards.createdAt',
           'boards.deadLine',
           'boards.isDeadLine',
-          'boards.thumb',
           'boards.hit',
           'boards.price',
           'boards.summary',
           'boards.target',
-          'boards.note1',
-          'boards.note2',
-          'boards.note3',
           'areas.name',
           'categories.name',
         ])

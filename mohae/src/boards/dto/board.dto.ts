@@ -94,7 +94,7 @@ export class UpdateBoardDto extends BoardContent {
 
 export class SearchBoardDto {
   @IsString()
-  @MaxLength(20)
+  @MaxLength(15)
   title: string;
 }
 
