@@ -184,56 +184,71 @@ describe('ReportsService', () => {
   });
 
   describe('create', () => {
-    it('createReportBoard', async () => {
-      reportCheckboxRepository['selectCheckConfirm'].mockResolvedValue({
-        no: 1,
-        content: '욕',
+    describe('게시글 신고 생성', () => {
+      beforeAll(async () => {
+        // 게시글 신고 생성시 필요한 리턴값 지정
+        reportCheckboxRepository['selectCheckConfirm'].mockResolvedValue({
+          no: 1,
+          content: '욕',
+        });
+        boardRepository.findOne.mockResolvedValue({
+          no: 1,
+          title: '제목',
+          description: '신고된 게시글',
+          reports: [],
+        });
+        userRepository.findOne.mockResolvedValue({
+          no: 1,
+          name: '신고자 이름',
+          boardReport: [],
+        });
+        reportedBoardRepository['createBoardReport'].mockResolvedValue(1);
+        reportedBoardRepository['readOneReportBoardRelation'].mockResolvedValue(
+          [],
+        );
+        reportedBoardRepository['readOneReportedBoard'].mockResolvedValue({
+          no: 1,
+          description: '신고된 게시글 내용',
+        });
+        reportCheckboxRepository['saveChecks'].mockResolvedValue();
       });
-      boardRepository.findOne.mockResolvedValue({
-        no: 1,
-        title: '제목',
-        description: '신고된 게시글',
-        reports: [],
-      });
-      userRepository.findOne.mockResolvedValue({
-        no: 1,
-        name: '신고자 이름',
-        boardReport: [],
-      });
-      reportedBoardRepository['createBoardReport'].mockResolvedValue(1);
-      reportedBoardRepository['readOneReportBoardRelation'].mockResolvedValue(
-        [],
-      );
-      reportedBoardRepository['readOneReportedBoard'].mockResolvedValue({
-        no: 1,
-        description: '신고된 게시글 내용',
-      });
-      reportCheckboxRepository['saveChecks'].mockResolvedValue();
 
-      const createReportDto: CreateReportDto = {
-        head: 'board',
-        headNo: 1,
-        reportUserNo: 1,
-        description: '신고내용',
-        checks: [],
-      };
-      const returnValue = await reportsService.createReport(createReportDto);
+      it('createReportBoard', async () => {
+        const createReportDto: CreateReportDto = {
+          head: 'board',
+          headNo: 1,
+          reportUserNo: 1,
+          description: '신고내용',
+          checks: [],
+        };
+        const returnValue = await reportsService.createReport(createReportDto);
 
-      expect(returnValue).toStrictEqual({
-        no: 1,
-        title: '제목',
-        description: '신고된 게시글',
-        reports: [
-          {
-            no: 1,
-            description: '신고된 게시글 내용',
-          },
-        ],
+        expect(returnValue).toStrictEqual({
+          no: 1,
+          title: '제목',
+          description: '신고된 게시글',
+          reports: [
+            {
+              no: 1,
+              description: '신고된 게시글 내용',
+            },
+          ],
+        });
       });
+
+      it('게시글 신고시 게시글이 없을 경우', async () => {
+        boardRepository.findOne.mockResolvedValue(undefined);
+
+        const createReportDto: CreateReportDto = {
+          head: 'user',
+          headNo: 1,
+          reportUserNo: 1,
+          description: '신고내용',
+          checks: [],
+        };
+      });
+      it.todo('게시글 신고 생성시 예외처리');
     });
-
-    it.todo('게시글 신고 생성시 예외처리');
-
     it('createReportUser', async () => {
       reportCheckboxRepository['selectCheckConfirm'].mockResolvedValue({
         no: 1,
