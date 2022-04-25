@@ -164,12 +164,15 @@ export class ReportsService {
               '신고자를 찾을 수 없습니다.',
             );
 
-            const createdUserReportNo =
+            const { insertId, affectedRows } =
               await this.reportedUserRepository.createUserReport(description);
-            const newUserReport =
-              await this.reportedUserRepository.readOneReportedUser(
-                createdUserReportNo,
+            if (!affectedRows) {
+              throw new InternalServerErrorException(
+                '유저 신고가 접수되지 않았습니다.',
               );
+            }
+            const newUserReport =
+              await this.reportedUserRepository.readOneReportedUser(insertId);
 
             checkInfo.forEach(async (checkNo) => {
               await this.userReportChecksRepository.saveUserReportChecks(
@@ -184,7 +187,7 @@ export class ReportsService {
             await this.userRepository.save(user);
             await this.userRepository.save(userReporter);
 
-            return user;
+            return { success: true, reportNo: insertId };
           } catch (e) {
             throw e;
           }

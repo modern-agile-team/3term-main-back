@@ -4,7 +4,11 @@ import { UserRepository } from 'src/auth/repository/user.repository';
 import { BoardRepository } from 'src/boards/repository/board.repository';
 import { ErrorConfirm } from 'src/utils/error';
 import { Repository } from 'typeorm';
-import { ReportCheckboxRepository } from './repository/report.repository';
+import {
+  BoardReportChecksRepository,
+  ReportCheckboxRepository,
+  UserReportChecksRepository,
+} from './repository/report.repository';
 import { ReportsService } from './reports.service';
 import {
   ReportedBoardRepository,
@@ -15,7 +19,6 @@ import { CreateReportDto } from './dto/report.dto';
 const MockReportedBoardRepository = () => ({
   readOneReportedBoard: jest.fn(),
   createBoardReport: jest.fn(),
-  readOneReportBoardRelation: jest.fn(),
 });
 const MockReportedUserRepository = () => ({
   readOneReportedUser: jest.fn(),
@@ -25,7 +28,12 @@ const MockReportedUserRepository = () => ({
 const MockReportCheckboxRepository = () => ({
   readAllCheckboxes: jest.fn(),
   selectCheckConfirm: jest.fn(),
-  saveChecks: jest.fn(),
+});
+const MockBoardReportChecksRepository = () => ({
+  saveBoardReportChecks: jest.fn(),
+});
+const MockUserReportChecksRepository = () => ({
+  saveUserReportChecks: jest.fn(),
 });
 
 const MockUserRepository = () => ({
@@ -45,6 +53,8 @@ describe('ReportsService', () => {
   let reportedBoardRepository: MockRepository<ReportedBoardRepository>;
   let reportedUserRepository: MockRepository<ReportedUserRepository>;
   let reportCheckboxRepository: MockRepository<ReportCheckboxRepository>;
+  let boardReportChecksRepository: MockRepository<BoardReportChecksRepository>;
+  let userReportChecksRepository: MockRepository<UserReportChecksRepository>;
   let userRepository: MockRepository<UserRepository>;
   let boardRepository: MockRepository<BoardRepository>;
   let errorConfirm: ErrorConfirm;
@@ -67,6 +77,14 @@ describe('ReportsService', () => {
           useValue: MockReportCheckboxRepository(),
         },
         {
+          provide: getRepositoryToken(BoardReportChecksRepository),
+          useValue: MockBoardReportChecksRepository(),
+        },
+        {
+          provide: getRepositoryToken(UserReportChecksRepository),
+          useValue: MockUserReportChecksRepository(),
+        },
+        {
           provide: getRepositoryToken(UserRepository),
           useValue: MockUserRepository(),
         },
@@ -87,6 +105,12 @@ describe('ReportsService', () => {
     reportCheckboxRepository = module.get<
       MockRepository<ReportCheckboxRepository>
     >(getRepositoryToken(ReportCheckboxRepository));
+    boardReportChecksRepository = module.get<
+      MockRepository<BoardReportChecksRepository>
+    >(getRepositoryToken(BoardReportChecksRepository));
+    userReportChecksRepository = module.get<
+      MockRepository<UserReportChecksRepository>
+    >(getRepositoryToken(UserReportChecksRepository));
     userRepository = module.get<MockRepository<UserRepository>>(
       getRepositoryToken(UserRepository),
     );
@@ -202,15 +226,17 @@ describe('ReportsService', () => {
           name: '신고자 이름',
           boardReport: [],
         });
-        reportedBoardRepository['createBoardReport'].mockResolvedValue(1);
-        reportedBoardRepository['readOneReportBoardRelation'].mockResolvedValue(
-          [],
-        );
+        reportedBoardRepository['createBoardReport'].mockResolvedValue({
+          insertId: 1,
+          affectedRows: 1,
+        });
         reportedBoardRepository['readOneReportedBoard'].mockResolvedValue({
           no: 1,
           description: '신고된 게시글 내용',
         });
-        reportCheckboxRepository['saveChecks'].mockResolvedValue();
+        boardReportChecksRepository[
+          'saveBoardReportChecks'
+        ].mockResolvedValue();
       });
 
       it('createReportBoard', async () => {
@@ -224,15 +250,8 @@ describe('ReportsService', () => {
         const returnValue = await reportsService.createReport(createReportDto);
 
         expect(returnValue).toStrictEqual({
-          no: 1,
-          title: '제목',
-          description: '신고된 게시글',
-          reports: [
-            {
-              no: 1,
-              description: '신고된 게시글 내용',
-            },
-          ],
+          success: true,
+          reportNo: 1,
         });
       });
 
@@ -260,13 +279,15 @@ describe('ReportsService', () => {
         reports: [],
         userReport: [],
       });
-      reportedUserRepository['createUserReport'].mockResolvedValue(1);
-      reportedUserRepository['readOneReportUserRelation'].mockResolvedValue([]);
+      reportedUserRepository['createUserReport'].mockResolvedValue({
+        insertId: 1,
+        affectedRows: 1,
+      });
       reportedUserRepository['readOneReportedUser'].mockResolvedValue({
         no: 1,
         description: '신고된 유저 내용',
       });
-      reportCheckboxRepository['saveChecks'].mockResolvedValue();
+      userReportChecksRepository['saveUserReportChecks'].mockResolvedValue();
 
       const createReportDto: CreateReportDto = {
         head: 'user',
@@ -278,10 +299,8 @@ describe('ReportsService', () => {
       const returnValue = await reportsService.createReport(createReportDto);
 
       expect(returnValue).toStrictEqual({
-        no: 1,
-        name: '신고자 이름',
-        reports: [{ no: 1, description: '신고된 유저 내용' }],
-        userReport: [{ no: 1, description: '신고된 유저 내용' }],
+        success: true,
+        reportNo: 1,
       });
     });
   });

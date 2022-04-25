@@ -88,15 +88,8 @@ export class ReportedUserRepository extends Repository<ReportedUser> {
         .into(ReportedUser)
         .values({ description })
         .execute();
-      const { insertId, affectedRows } = raw;
 
-      if (!affectedRows) {
-        throw new InternalServerErrorException(
-          '게시글 신고가 접수되지 않았습니다.',
-        );
-      }
-
-      return insertId;
+      return raw;
     } catch (e) {
       throw new InternalServerErrorException(
         `${e} ### 게시글 신고 : 알 수 없는 서버 에러입니다.`,
