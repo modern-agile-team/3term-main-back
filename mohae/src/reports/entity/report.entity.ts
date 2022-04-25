@@ -45,13 +45,19 @@ export abstract class ReportContent extends BaseEntity {
   description: string;
 
   /* Timestamps */
-  @CreateDateColumn({ comment: '게시글 또는 유저 신고 생성 일시' })
+  @CreateDateColumn({
+    comment: '게시글 또는 유저 신고 생성 일시',
+  })
   createdAt: Timestamp;
 
-  @UpdateDateColumn({ comment: '신고 수정 일자' })
+  @UpdateDateColumn({
+    comment: '신고 수정 일자',
+  })
   updatedAt: Timestamp;
 
-  @DeleteDateColumn({ comment: '신고 삭제 일자' })
+  @DeleteDateColumn({
+    comment: '신고 삭제 일자',
+  })
   deletedAt: Timestamp;
 }
 
