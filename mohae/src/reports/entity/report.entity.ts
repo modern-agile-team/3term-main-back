@@ -9,10 +9,12 @@ import {
   JoinTable,
   ManyToMany,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
   Timestamp,
   UpdateDateColumn,
 } from 'typeorm';
+import { BoardReportChecks, UserReportChecks } from './report-checks.entity';
 
 @Entity('report_checkboxes')
 export class ReportCheckbox extends BaseEntity {
@@ -27,11 +29,15 @@ export class ReportCheckbox extends BaseEntity {
   content: string;
 
   /* 신고 체크박스 Relations */
-  @ManyToMany((type) => ReportedBoard, (report) => report.checks)
-  reportedBoards: ReportedBoard[];
+  @OneToMany((type) => BoardReportChecks, (boardReport) => boardReport.check, {
+    nullable: true,
+  })
+  reportedBoards: BoardReportChecks[];
 
-  @ManyToMany((type) => ReportedUser, (report) => report.checks)
-  reportedUsers: ReportedBoard[];
+  @OneToMany((type) => UserReportChecks, (userReport) => userReport.check, {
+    nullable: true,
+  })
+  reportedUsers: UserReportChecks[];
 }
 
 export abstract class ReportContent extends BaseEntity {
@@ -69,11 +75,10 @@ export class ReportedBoard extends ReportContent {
   })
   reportedBoard: Board;
 
-  @ManyToMany((type) => ReportCheckbox, (checks) => checks.reportedBoards)
-  @JoinTable({
-    name: 'board_report_checks',
+  @OneToMany((type) => BoardReportChecks, (checks) => checks.reportedBoard, {
+    nullable: true,
   })
-  checks: ReportCheckbox[];
+  checks: BoardReportChecks[];
 
   @ManyToOne((type) => User, (user) => user.boardReport, {
     onDelete: 'SET NULL',
@@ -89,11 +94,11 @@ export class ReportedUser extends ReportContent {
   })
   reportedUser: User;
 
-  @ManyToMany((type) => ReportCheckbox, (checks) => checks.reportedUsers)
+  @ManyToMany((type) => UserReportChecks, (checks) => checks.reportedUser)
   @JoinTable({
     name: 'user_report_checks',
   })
-  checks: ReportCheckbox[];
+  checks: UserReportChecks[];
 
   @ManyToOne((type) => User, (user) => user.userReport, {
     onDelete: 'SET NULL',

@@ -8,6 +8,7 @@ import { ErrorConfirm } from 'src/utils/error';
 import { ReportsController } from './reports.controller';
 import { ReportsService } from './reports.service';
 import {
+  BoardReportChecksRepository,
   ReportCheckboxRepository,
   ReportedBoardRepository,
   ReportedUserRepository,
@@ -21,6 +22,7 @@ import {
       ReportCheckboxRepository,
       BoardRepository,
       UserRepository,
+      BoardReportChecksRepository,
     ]),
     PassportModule.register({ defaultStrategy: 'jwt' }),
     AuthModule,

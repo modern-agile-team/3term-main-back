@@ -10,6 +10,7 @@ import {
   ReportedUser,
 } from './entity/report.entity';
 import {
+  BoardReportChecksRepository,
   ReportCheckboxRepository,
   ReportedBoardRepository,
   ReportedUserRepository,
@@ -32,6 +33,9 @@ export class ReportsService {
 
     @InjectRepository(UserRepository)
     private userRepository: UserRepository,
+
+    @InjectRepository(BoardReportChecksRepository)
+    private boardReportChecksRepository: BoardReportChecksRepository,
 
     private errorConfirm: ErrorConfirm,
   ) {}
@@ -116,28 +120,21 @@ export class ReportsService {
             if (!affectedRows) {
               throw new InternalServerErrorException('게시글 신고 저장 실패');
             }
-            const reportChecksRelation =
-              await this.reportedBoardRepository.readOneReportBoardRelation(
-                insertId,
-              );
-            const newBoardReport =
+            const newBoardReport: ReportedBoard =
               await this.reportedBoardRepository.readOneReportedBoard(insertId);
 
             checkInfo.forEach(async (checkNo) => {
-              reportChecksRelation.push(await checkNo);
+              await this.boardReportChecksRepository.saveChecks(
+                newBoardReport,
+                await checkNo,
+              );
             });
+
             board.reports.push(newBoardReport);
             boardReporter.boardReport.push(newBoardReport);
 
             await this.boardRepository.save(board);
             await this.userRepository.save(boardReporter);
-            checkInfo.forEach(async (checkNo) => {
-              this.reportCheckboxRepository.saveChecks(
-                await checkNo,
-                newBoardReport,
-                checkboxRelation,
-              );
-            });
 
             return { success: true, reportNo: insertId };
           } catch (e) {
