@@ -26,7 +26,7 @@ export class SpecsService {
     try {
       const user = await this.userRepository.findOne(no);
       const specs = await this.specRepository.getAllSpec(no);
-
+      console.log(specs);
       this.errorConfirm.notFoundError(user, '존재하지 않는 유저 입니다.');
       if (specs.length === 0) {
         return '현재 등록된 스펙이 없습니다.';
@@ -55,10 +55,10 @@ export class SpecsService {
         relations: ['specs'],
       });
       const specNo = await this.specRepository.registSpec(createSpecDto, user);
-      const spec = await this.specRepository.findOne(specNo, {
-        relations: ['specPhoto'],
-      });
 
+      const spec = await this.specRepository.findOne(specNo, {
+        relations: ['specPhotos'],
+      });
       if (!userNo) {
         throw new UnauthorizedException(
           `${userNo}에 해당하는 유저가 존재하지 않습니다.`,
@@ -86,7 +86,7 @@ export class SpecsService {
       }
     } catch (err) {
       throw new InternalServerErrorException(
-        '스펙등록 중 발생한 서버 에러입니다.',
+        ` ${err}####스펙등록 중 발생한 서버 에러입니다.`,
       );
     }
   }

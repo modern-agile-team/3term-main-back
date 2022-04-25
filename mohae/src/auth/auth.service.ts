@@ -89,21 +89,18 @@ export class AuthService {
       );
     }
     const userCategory = await this.userRepository.findOne(user.no, {
-      relations: ['categories'],
+      select: ['no'],
     });
 
     const filteredCategories = categoriesRepo.filter(
       (element) => element !== undefined,
     );
-    // userCategory.categories.push(...filteredCategories);
     for (const categoryNo of filteredCategories) {
       await this.categoriesRepository.addUser(categoryNo.no, user);
     }
 
     await this.schoolRepository.addUser(schoolRepo.no, user);
     await this.majorRepository.addUser(majorRepo.no, user);
-
-    await this.categoriesRepository.saveUsers(filteredCategories, userCategory);
 
     return user;
   }
