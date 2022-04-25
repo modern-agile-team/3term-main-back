@@ -94,10 +94,7 @@ export class ReportedUser extends ReportContent {
   })
   reportedUser: User;
 
-  @ManyToMany((type) => UserReportChecks, (checks) => checks.reportedUser)
-  @JoinTable({
-    name: 'user_report_checks',
-  })
+  @OneToMany((type) => UserReportChecks, (checks) => checks.reportedUser)
   checks: UserReportChecks[];
 
   @ManyToOne((type) => User, (user) => user.userReport, {
