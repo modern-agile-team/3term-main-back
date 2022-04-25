@@ -40,10 +40,10 @@ export class AuthService {
     const { school, major, email, nickname, categories } = createUserDto;
 
     const schoolRepo = await this.schoolRepository.findOne(school, {
-      relations: ['users'],
+      select: ['no'],
     });
     const majorRepo = await this.majorRepository.findOne(major, {
-      relations: ['users'],
+      select: ['no'],
     });
     if (!schoolRepo || !majorRepo) {
       const notFoundObj = { 학교: schoolRepo, 전공: majorRepo };
@@ -95,10 +95,13 @@ export class AuthService {
     const filteredCategories = categoriesRepo.filter(
       (element) => element !== undefined,
     );
-    userCategory.categories.push(...filteredCategories);
+    // userCategory.categories.push(...filteredCategories);
+    for (const categoryNo of filteredCategories) {
+      await this.categoriesRepository.addUser(categoryNo.no, user);
+    }
 
-    schoolRepo.users.push(user);
-    majorRepo.users.push(user);
+    await this.schoolRepository.addUser(schoolRepo.no, user);
+    await this.majorRepository.addUser(majorRepo.no, user);
 
     await this.categoriesRepository.saveUsers(filteredCategories, userCategory);
 

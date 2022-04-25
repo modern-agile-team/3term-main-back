@@ -21,6 +21,7 @@ import { Spec } from 'src/specs/entity/spec.entity';
 import { Notice } from 'src/notices/entity/notice.entity';
 import { SpecPhoto } from 'src/photo/entity/photo.entity';
 import { UserLike } from 'src/like/entity/user.like.entity';
+import { BoardReportChecks } from 'src/reports/entity/board-report-checks.entity';
 const dbConfig = config.get('db');
 
 const { DB_HOST, DB_PORT, DB_USER, DB_PSWORD, DB_DATABASE } = process.env;
@@ -53,6 +54,7 @@ export const typeORMConfig: TypeOrmModuleOptions = {
     Notice,
     SpecPhoto,
     UserLike,
+    BoardReportChecks,
   ],
   // entities: [__dirname + '/../**/*.entity.{ts,js}'],
   synchronize: dbConfig.synchronize,

@@ -425,7 +425,7 @@ describe('AuthService', () => {
       }
     });
 
-    it('로그인 시도 횟수를 모두 초과하였을 때', async () => {
+    it('로그인 시도 횟수를 모두 초과하였는데도 로그인을 시도했을 때', async () => {
       userRepository['signIn'].mockResolvedValue({
         no: 1,
         isLock: 1,

@@ -1,4 +1,5 @@
 import { InternalServerErrorException } from '@nestjs/common';
+import { User } from 'src/auth/entity/user.entity';
 import { EntityRepository, Repository } from 'typeorm';
 import { Category } from '../entity/category.entity';
 
@@ -56,6 +57,18 @@ export class CategoryRepository extends Repository<Category> {
         .getOne(),
     ];
     return categoryInfo;
+  }
+
+  async addUser(categoryNo: number, user: User) {
+    try {
+      await this.createQueryBuilder()
+        .relation(Category, 'users')
+        .of(categoryNo)
+        .add(user);
+    } catch (e) {
+      throw new InternalServerErrorException(`
+        ${e} ### 유저 회원 가입도중 학교정보 저장 관련 알 수없는 서버에러입니다. `);
+    }
   }
   async saveUsers(categories, user) {
     try {
