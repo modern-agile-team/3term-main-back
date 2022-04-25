@@ -48,7 +48,8 @@ export abstract class CreateReportDto {
   @IsArray()
   @ArrayNotEmpty()
   @ArrayMaxSize(3)
-  checks: [];
+  @IsOptional()
+  checks: Array<number>;
 
   @ApiProperty({
     example: '짜증나 죽겠어요.',

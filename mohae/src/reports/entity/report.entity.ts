@@ -14,7 +14,7 @@ import {
   Timestamp,
   UpdateDateColumn,
 } from 'typeorm';
-import { BoardReportChecks } from './board-report-checks.entity';
+import { BoardReportChecks, UserReportChecks } from './report-checks.entity';
 
 @Entity('report_checkboxes')
 export class ReportCheckbox extends BaseEntity {
@@ -34,8 +34,10 @@ export class ReportCheckbox extends BaseEntity {
   })
   reportedBoards: BoardReportChecks[];
 
-  @ManyToMany((type) => ReportedUser, (report) => report.checks)
-  reportedUsers: ReportedBoard[];
+  @OneToMany((type) => UserReportChecks, (userReport) => userReport.check, {
+    nullable: true,
+  })
+  reportedUsers: UserReportChecks[];
 }
 
 export abstract class ReportContent extends BaseEntity {
@@ -92,11 +94,8 @@ export class ReportedUser extends ReportContent {
   })
   reportedUser: User;
 
-  @ManyToMany((type) => ReportCheckbox, (checks) => checks.reportedUsers)
-  @JoinTable({
-    name: 'user_report_checks',
-  })
-  checks: ReportCheckbox[];
+  @OneToMany((type) => UserReportChecks, (checks) => checks.reportedUser)
+  checks: UserReportChecks[];
 
   @ManyToOne((type) => User, (user) => user.userReport, {
     onDelete: 'SET NULL',
