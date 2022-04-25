@@ -76,7 +76,7 @@ export class ReportsService {
   }
 
   async createReport(createReportDto: CreateReportDto) {
-    const { head, headNo, reportUserNo, checks } = createReportDto;
+    const { head, headNo, reportUserNo, checks, description } = createReportDto;
 
     const checkInfo = checks.map(async (el) => {
       const info = await this.reportCheckboxRepository.selectCheckConfirm(el);
@@ -109,9 +109,7 @@ export class ReportsService {
             );
 
             const createdBoardReportNo =
-              await this.reportedBoardRepository.createBoardReport(
-                createReportDto,
-              );
+              await this.reportedBoardRepository.createBoardReport(description);
             const boardReportRelation =
               await this.reportedBoardRepository.readOneReportBoardRelation(
                 createdBoardReportNo,
@@ -165,9 +163,7 @@ export class ReportsService {
             );
 
             const createdUserReportNo =
-              await this.reportedUserRepository.createUserReport(
-                createReportDto,
-              );
+              await this.reportedUserRepository.createUserReport(description);
             const userReportRelation =
               await this.reportedUserRepository.readOneReportUserRelation(
                 createdUserReportNo,

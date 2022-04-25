@@ -41,9 +41,7 @@ export class ReportedBoardRepository extends Repository<ReportedBoard> {
     }
   }
 
-  async createBoardReport(createReportDto: CreateReportDto) {
-    const { description } = createReportDto;
-
+  async createBoardReport(description: string) {
     try {
       const { raw } = await this.createQueryBuilder('reported_boards')
         .insert()
@@ -116,9 +114,7 @@ export class ReportedUserRepository extends Repository<ReportedUser> {
     }
   }
 
-  async createUserReport(createReportDto: CreateReportDto) {
-    const { description } = createReportDto;
-
+  async createUserReport(description: string) {
     try {
       const { raw } = await this.createQueryBuilder('reported_users')
         .insert()
