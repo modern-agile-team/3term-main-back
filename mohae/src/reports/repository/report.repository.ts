@@ -1,6 +1,9 @@
 import { InternalServerErrorException } from '@nestjs/common';
 import { EntityRepository, Repository } from 'typeorm';
-import { BoardReportChecks } from '../entity/report-checks.entity';
+import {
+  BoardReportChecks,
+  UserReportChecks,
+} from '../entity/report-checks.entity';
 import {
   ReportCheckbox,
   ReportedBoard,
@@ -63,21 +66,6 @@ export class ReportedUserRepository extends Repository<ReportedUser> {
     }
   }
 
-  async readOneReportUserRelation(no: number) {
-    try {
-      const relation = await this.createQueryBuilder()
-        .relation(ReportedUser, 'reportUser')
-        .of(no)
-        .loadMany();
-
-      return relation;
-    } catch (e) {
-      throw new InternalServerErrorException(
-        `${e} ### 유저 신고한 유저 릴레이션 : 알 수 없는 서버 에러입니다.`,
-      );
-    }
-  }
-
   async readOneUserReportCheckRelation(no: number): Promise<any[]> {
     try {
       const relation = await this.createQueryBuilder()
@@ -124,12 +112,17 @@ export class ReportCheckboxRepository extends Repository<ReportCheckbox> {
       const checkedReport = this.createQueryBuilder('report_checkboxes')
         .leftJoin('report_checkboxes.reportedBoards', 'boardReportChecks')
         .leftJoin('boardReportChecks.reportedBoard', 'reportedBoard')
+        .leftJoin('report_checkboxes.reportedUsers', 'userReportChecks')
+        .leftJoin('userReportChecks.reportedUser', 'reportedUser')
         .select([
           'report_checkboxes.no',
           'report_checkboxes.content',
           'boardReportChecks.no',
           'reportedBoard.no',
           'reportedBoard.description',
+          'userReportChecks.no',
+          'reportedUser.no',
+          'reportedUser.description',
         ])
         .getMany();
 
@@ -153,33 +146,14 @@ export class ReportCheckboxRepository extends Repository<ReportCheckbox> {
       throw new InternalServerErrorException(e);
     }
   }
-
-  async saveChecks(
-    { no }: ReportCheckbox,
-    newReport: ReportedBoard | ReportedUser,
-    relationName: string,
-  ) {
-    try {
-      await this.createQueryBuilder()
-        .relation(ReportCheckbox, relationName)
-        .of(no)
-        .add(newReport);
-      // const relation = await this.findOne(no, {
-      //   relations: [relationName],
-      // });
-      // relation[relationName].push(newReport);
-      // this.save(relation);
-    } catch (e) {
-      throw new InternalServerErrorException(
-        `${e} ### 체크 박스 저장 : 알 수 없는 서버 에러입니다.`,
-      );
-    }
-  }
 }
 
 @EntityRepository(BoardReportChecks)
 export class BoardReportChecksRepository extends Repository<BoardReportChecks> {
-  async saveChecks(reportedBoard: ReportedBoard, check: ReportCheckbox) {
+  async saveBoardReportChecks(
+    reportedBoard: ReportedBoard,
+    check: ReportCheckbox,
+  ) {
     try {
       await this.createQueryBuilder('board_report_checks')
         .insert()
@@ -188,6 +162,24 @@ export class BoardReportChecksRepository extends Repository<BoardReportChecks> {
         .execute();
     } catch (e) {
       throw new InternalServerErrorException('BoardReportChecks 에러');
+    }
+  }
+}
+
+@EntityRepository(UserReportChecks)
+export class UserReportChecksRepository extends Repository<UserReportChecks> {
+  async saveUserReportChecks(
+    reportedUser: ReportedUser,
+    check: ReportCheckbox,
+  ) {
+    try {
+      await this.createQueryBuilder('user_report_checks')
+        .insert()
+        .into(UserReportChecks)
+        .values({ reportedUser, check })
+        .execute();
+    } catch (e) {
+      throw new InternalServerErrorException('UserReportChecks 에러');
     }
   }
 }

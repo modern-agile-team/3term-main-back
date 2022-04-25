@@ -12,6 +12,7 @@ import {
   ReportCheckboxRepository,
   ReportedBoardRepository,
   ReportedUserRepository,
+  UserReportChecksRepository,
 } from './repository/report.repository';
 
 @Module({
@@ -23,6 +24,7 @@ import {
       BoardRepository,
       UserRepository,
       BoardReportChecksRepository,
+      UserReportChecksRepository,
     ]),
     PassportModule.register({ defaultStrategy: 'jwt' }),
     AuthModule,
