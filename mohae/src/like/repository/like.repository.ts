@@ -4,25 +4,29 @@ import { UserLike } from '../entity/user.like.entity';
 
 @EntityRepository(UserLike)
 export class LikeRepository extends Repository<UserLike> {
-  async likeUser(user, likedUser) {
+  async likeUser(likedMe, likedUser) {
     try {
-      return await this.createQueryBuilder('user_like')
+      const { raw } = await this.createQueryBuilder('user_like')
         .insert()
         .into(UserLike)
-        .values({ likedMe: user, likedUser: likedUser })
+        .values({ likedMe, likedUser })
         .execute();
+
+      return raw.affectedRows;
     } catch (err) {
       throw err;
     }
   }
 
-  async dislikeUser(user, likedUser) {
+  async dislikeUser(user, dislikedUser) {
     try {
-      return await this.createQueryBuilder('user_like')
+      const { affected } = await this.createQueryBuilder('user_like')
         .delete()
-        .where('likedMeNo = :likedMe', { likedMe: user.no })
-        .andWhere('likedUserNo = :likedUser', { likedUser: likedUser.no })
+        .where('likedMeNo = :user', { user })
+        .andWhere('likedUserNo = :dislikedUser', { dislikedUser })
         .execute();
+
+      return affected;
     } catch (err) {
       throw err;
     }
@@ -30,11 +34,12 @@ export class LikeRepository extends Repository<UserLike> {
 
   async isLike(profileUserNo, userNo) {
     try {
-      return await this.createQueryBuilder('user_like')
+      const numberOfLikes = await this.createQueryBuilder('user_like')
         .select()
-        .where('likedMeNo = :likedMe', { likedMe: profileUserNo })
-        .andWhere('likedUserNo = :likedUser', { likedUser: userNo })
+        .where('likedMeNo = :profileUserNo', { profileUserNo })
+        .andWhere('likedUserNo = :userNo', { userNo })
         .execute();
+      return numberOfLikes.length;
     } catch (err) {
       throw err;
     }
