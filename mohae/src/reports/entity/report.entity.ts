@@ -6,14 +6,15 @@ import {
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
-  JoinColumn,
   JoinTable,
   ManyToMany,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
   Timestamp,
   UpdateDateColumn,
 } from 'typeorm';
+import { BoardReportChecks, UserReportChecks } from './report-checks.entity';
 
 @Entity('report_checkboxes')
 export class ReportCheckbox extends BaseEntity {
@@ -28,11 +29,15 @@ export class ReportCheckbox extends BaseEntity {
   content: string;
 
   /* 신고 체크박스 Relations */
-  @ManyToMany((type) => ReportedBoard, (report) => report.checks)
-  reportedBoards: ReportedBoard[];
+  @OneToMany((type) => BoardReportChecks, (boardReport) => boardReport.check, {
+    nullable: true,
+  })
+  reportedBoards: BoardReportChecks[];
 
-  @ManyToMany((type) => ReportedUser, (report) => report.checks)
-  reportedUsers: ReportedBoard[];
+  @OneToMany((type) => UserReportChecks, (userReport) => userReport.check, {
+    nullable: true,
+  })
+  reportedUsers: UserReportChecks[];
 }
 
 export abstract class ReportContent extends BaseEntity {
@@ -46,29 +51,36 @@ export abstract class ReportContent extends BaseEntity {
   description: string;
 
   /* Timestamps */
-  @CreateDateColumn({ comment: '게시글 또는 유저 신고 생성 일시' })
+  @CreateDateColumn({
+    comment: '게시글 또는 유저 신고 생성 일시',
+  })
   createdAt: Timestamp;
 
-  @UpdateDateColumn({ comment: '신고 수정 일자' })
+  @UpdateDateColumn({
+    comment: '신고 수정 일자',
+  })
   updatedAt: Timestamp;
 
-  @DeleteDateColumn({ comment: '신고 삭제 일자' })
+  @DeleteDateColumn({
+    comment: '신고 삭제 일자',
+  })
   deletedAt: Timestamp;
 }
 
 @Entity('reported_boards')
 export class ReportedBoard extends ReportContent {
   /* 신고된 게시글 Relations */
-  @ManyToOne((type) => Board, (board) => board.no, {
+  @ManyToOne((type) => Board, (board) => board.reports, {
     onDelete: 'SET NULL',
   })
   reportedBoard: Board;
 
-  @ManyToMany((type) => ReportCheckbox, (checks) => checks.reportedBoards)
-  @JoinTable({ name: 'board_report_checks' })
-  checks: ReportCheckbox[];
+  @OneToMany((type) => BoardReportChecks, (checks) => checks.reportedBoard, {
+    nullable: true,
+  })
+  checks: BoardReportChecks[];
 
-  @ManyToOne((type) => User, (user) => user.no, {
+  @ManyToOne((type) => User, (user) => user.boardReport, {
     onDelete: 'SET NULL',
   })
   reportUser: User;
@@ -77,17 +89,15 @@ export class ReportedBoard extends ReportContent {
 @Entity('reported_users')
 export class ReportedUser extends ReportContent {
   /* 신고된 유저 Relations */
-  @ManyToOne((type) => User, (user) => user.no, {
+  @ManyToOne((type) => User, (user) => user.reports, {
     onDelete: 'SET NULL',
   })
-  @JoinColumn({ name: 'reported_user_no' })
   reportedUser: User;
 
-  @ManyToMany((type) => ReportCheckbox, (checks) => checks.reportedUsers)
-  @JoinTable({ name: 'user_report_checks' })
-  checks: ReportCheckbox[];
+  @OneToMany((type) => UserReportChecks, (checks) => checks.reportedUser)
+  checks: UserReportChecks[];
 
-  @ManyToOne((type) => User, (user) => user.no, {
+  @ManyToOne((type) => User, (user) => user.userReport, {
     onDelete: 'SET NULL',
   })
   reportUser: User;
