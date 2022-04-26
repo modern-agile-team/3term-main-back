@@ -67,7 +67,7 @@ export class AuthController {
   }
 
   @Patch('/change/password')
-  @UseGuards(AuthGuard())
+  // @UseGuards(AuthGuard())
   async changePassword(
     @Body() changePasswordDto: ChangePasswordDto,
   ): Promise<void> {

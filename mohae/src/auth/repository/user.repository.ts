@@ -3,6 +3,7 @@ import { CreateUserDto } from '../dto/auth-credential.dto';
 import { User } from '../entity/user.entity';
 import * as bcrypt from 'bcryptjs';
 import { InternalServerErrorException } from '@nestjs/common';
+import { resourceLimits } from 'worker_threads';
 
 @EntityRepository(User)
 export class UserRepository extends Repository<User> {
