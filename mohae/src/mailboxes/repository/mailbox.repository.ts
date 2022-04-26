@@ -7,11 +7,24 @@ export class MailboxRepository extends Repository<Mailbox> {
   async findAllMailboxes(loginUserNo: number) {
     try {
       const mailbox = await this.createQueryBuilder('mailboxes')
-        .leftJoinAndSelect('mailboxes.users', 'users')
-        .leftJoinAndSelect('mailboxes.letters', 'letters')
-        .leftJoinAndSelect('letters.sender', 'sender')
-        .leftJoinAndSelect('letters.receiver', 'receiver')
+        .leftJoin('mailboxes.users', 'users')
+        .leftJoin('mailboxes.letters', 'letters')
+        .leftJoin('letters.sender', 'sender')
+        .leftJoin('letters.receiver', 'receiver')
+        .select([
+          'mailboxes.no',
+          'users.no',
+          'users.name',
+          'letters.no',
+          'letters.description',
+          'letters.reading_flag',
+          'sender.no',
+          'receiver.no',
+        ])
         .where('users.no = :loginUserNo', { loginUserNo })
+        // .andWhere('users.no = sender.no')
+        // .orWhere('users.no = receiver.no')
+        .orderBy('letters.createdAt', 'DESC')
         .getMany();
 
       return mailbox;
@@ -22,28 +35,28 @@ export class MailboxRepository extends Repository<Mailbox> {
     }
   }
 
-  async searchMailbox(loignUserNo: number, clickedUserNo: number) {
+  async searchMailbox(mailboxNo: number, limit: number) {
     try {
       const mailbox = await this.createQueryBuilder('mailboxes')
-        .leftJoinAndSelect('mailboxes.users', 'users')
-        .select(['mailboxes.no', 'users.no'])
-        .getMany();
+        .leftJoin('mailboxes.users', 'users')
+        .leftJoin('mailboxes.letters', 'letter')
+        .limit(limit * 2 + 19)
+        .select([
+          'mailboxes.no',
+          'users.no',
+          'users.nickname',
+          'users.photo_url',
+          'letter.no',
+          'letter.description',
+          'letter.reading_flag',
+          'letter.createdAt',
+        ])
+        .where('mailboxes.no = :mailboxNo', { mailboxNo })
+        .orderBy('letter.createdAt', 'ASC')
+        .getOne();
 
-      for (const user of mailbox) {
-        const { users } = user;
-        if (!users[0] || !users[1]) {
-          return 0;
-        }
-
-        if (users[0].no === loignUserNo || users[1].no === loignUserNo) {
-          if (users[0].no === clickedUserNo || users[1].no === clickedUserNo) {
-            return user.no;
-          }
-        }
-      }
-
-      return 0;
-    } catch {
+      return mailbox;
+    } catch (e) {
       throw new InternalServerErrorException(
         '### 쪽지함이 있는지 찾음 : 알 수 없는 서버 에러입니다.',
       );
