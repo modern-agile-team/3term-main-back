@@ -146,6 +146,7 @@ export class ReportsService {
         case 'user':
           try {
             const user = await this.userRepository.findOne(headNo, {
+              select: ['no'],
               relations: ['reports'],
             });
             this.errorConfirm.notFoundError(
@@ -156,6 +157,7 @@ export class ReportsService {
             const userReporter = await this.userRepository.findOne(
               reportUserNo,
               {
+                select: ['no'],
                 relations: ['userReport'],
               },
             );
