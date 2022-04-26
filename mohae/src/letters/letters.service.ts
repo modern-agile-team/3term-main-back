@@ -25,22 +25,22 @@ export class LettersService {
     private errorConfirm: ErrorConfirm,
   ) {}
 
-  async sendLetter(sendLetterDto: SendLetterDto) {
-    const { senderNo, receiverNo, description } = sendLetterDto;
-
+  async sendLetter({
+    senderNo,
+    receiverNo,
+    mailboxNo,
+    description,
+  }: SendLetterDto) {
     try {
-      const mailboxNo = await this.mailboxRepository.searchMailbox(
-        senderNo,
-        receiverNo,
-      );
-
-      if (!mailboxNo) {
-        throw new NotFoundException('해당 쪽지함을 찾을 수 없습니다.');
-      }
-      const mailbox = await this.mailboxRepository.findOne(mailboxNo, {
+      const mailboxRelation = await this.mailboxRepository.findOne(mailboxNo, {
+        select: ['no'],
         relations: ['letters'],
       });
+      if (!mailboxRelation) {
+        throw new NotFoundException('해당 쪽지함을 찾을 수 없습니다.');
+      }
       const sender = await this.userRepository.findOne(senderNo, {
+        select: ['no'],
         relations: ['sendLetters'],
       });
       this.errorConfirm.notFoundError(
@@ -49,6 +49,7 @@ export class LettersService {
       );
 
       const receiver = await this.userRepository.findOne(receiverNo, {
+        select: ['no'],
         relations: ['receivedLetters'],
       });
       this.errorConfirm.notFoundError(
@@ -66,14 +67,14 @@ export class LettersService {
         sender,
         receiver,
         description,
-        mailbox,
+        mailboxRelation,
       );
 
       const newLetter = await this.letterRepository.findOne(insertId);
 
       sender.sendLetters.push(newLetter);
       receiver.receivedLetters.push(newLetter);
-      mailbox.letters.push(newLetter);
+      mailboxRelation.letters.push(newLetter);
 
       return { success: true };
     } catch (e) {
