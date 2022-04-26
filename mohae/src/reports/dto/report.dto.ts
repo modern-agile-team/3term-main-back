@@ -24,7 +24,7 @@ export abstract class CreateReportDto {
 
   @ApiProperty({
     example: 3,
-    description: '헤드에 넘버입니다. (게시글 넘버 또는 유저 넘버)',
+    description: '헤드 번호입니다. (게시글 넘버 또는 유저 넘버)',
     required: true,
   })
   @IsNotEmpty()
@@ -33,7 +33,7 @@ export abstract class CreateReportDto {
 
   @ApiProperty({
     example: 5,
-    description: '신고자 넘버입니다.',
+    description: '신고자 번호입니다.',
     required: true,
   })
   @IsNotEmpty()
@@ -48,7 +48,8 @@ export abstract class CreateReportDto {
   @IsArray()
   @ArrayNotEmpty()
   @ArrayMaxSize(3)
-  checks: [];
+  @IsOptional()
+  checks: Array<number>;
 
   @ApiProperty({
     example: '짜증나 죽겠어요.',

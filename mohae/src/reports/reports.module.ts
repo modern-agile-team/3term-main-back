@@ -8,9 +8,11 @@ import { ErrorConfirm } from 'src/utils/error';
 import { ReportsController } from './reports.controller';
 import { ReportsService } from './reports.service';
 import {
-  ReportCheckBoxRepository,
+  BoardReportChecksRepository,
+  ReportCheckboxRepository,
   ReportedBoardRepository,
   ReportedUserRepository,
+  UserReportChecksRepository,
 } from './repository/report.repository';
 
 @Module({
@@ -18,9 +20,11 @@ import {
     TypeOrmModule.forFeature([
       ReportedBoardRepository,
       ReportedUserRepository,
-      ReportCheckBoxRepository,
+      ReportCheckboxRepository,
       BoardRepository,
       UserRepository,
+      BoardReportChecksRepository,
+      UserReportChecksRepository,
     ]),
     PassportModule.register({ defaultStrategy: 'jwt' }),
     AuthModule,
