@@ -20,7 +20,7 @@ import {
 import { ReportsService } from './reports.service';
 
 @Controller('reports')
-@UseGuards(AuthGuard())
+// @UseGuards(AuthGuard())
 @ApiTags('Reports')
 export class ReportsController {
   private logger = new Logger('ReportsController');

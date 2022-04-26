@@ -1,6 +1,9 @@
 import { InternalServerErrorException } from '@nestjs/common';
 import { EntityRepository, Repository } from 'typeorm';
-import { CreateReportDto } from '../dto/report.dto';
+import {
+  BoardReportChecks,
+  UserReportChecks,
+} from '../entity/report-checks.entity';
 import {
   ReportCheckbox,
   ReportedBoard,
@@ -12,9 +15,21 @@ export class ReportedBoardRepository extends Repository<ReportedBoard> {
   async readOneReportedBoard(no: number): Promise<ReportedBoard> {
     try {
       const reportBoard = await this.createQueryBuilder('reported_boards')
-        .leftJoinAndSelect('reported_boards.reportUser', 'reportUser')
-        .leftJoinAndSelect('reported_boards.reportedBoard', 'reportedBoard')
-        .leftJoinAndSelect('reported_boards.checks', 'checks')
+        .leftJoin('reported_boards.reportUser', 'reportUser')
+        .leftJoin('reported_boards.reportedBoard', 'reportedBoard')
+        .leftJoin('reported_boards.checks', 'checks')
+        .leftJoin('checks.check', 'check')
+        .select([
+          'reported_boards.no',
+          'reported_boards.description',
+          'reportUser.no',
+          'reportUser.email',
+          'reportedBoard.no',
+          'reportedBoard.title',
+          'checks.no',
+          'check.no',
+          'check.content',
+        ])
         .where('reported_boards.no = :no', { no })
         .getOne();
 
@@ -26,39 +41,15 @@ export class ReportedBoardRepository extends Repository<ReportedBoard> {
     }
   }
 
-  async readOneReportBoardRelation(no: number): Promise<any[]> {
-    try {
-      const relation = await this.createQueryBuilder()
-        .relation(ReportedBoard, 'checks')
-        .of(no)
-        .loadMany();
-
-      return relation;
-    } catch (e) {
-      throw new InternalServerErrorException(
-        `${e} ### 게시글 신고 릴레이션 : 알 수 없는 서버 에러입니다.`,
-      );
-    }
-  }
-
-  async createBoardReport(createReportDto: CreateReportDto) {
-    const { description } = createReportDto;
-
+  async createBoardReport(description: string) {
     try {
       const { raw } = await this.createQueryBuilder('reported_boards')
         .insert()
         .into(ReportedBoard)
         .values({ description })
         .execute();
-      const { insertId, affectedRows } = raw;
 
-      if (!affectedRows) {
-        throw new InternalServerErrorException(
-          '게시글 신고가 접수되지 않았습니다.',
-        );
-      }
-
-      return insertId;
+      return raw;
     } catch (e) {
       throw new InternalServerErrorException(
         `${e} ### 게시글 신고 : 알 수 없는 서버 에러입니다.`,
@@ -72,9 +63,21 @@ export class ReportedUserRepository extends Repository<ReportedUser> {
   async readOneReportedUser(no: number): Promise<ReportedUser> {
     try {
       const reportUser = await this.createQueryBuilder('reported_users')
-        .leftJoinAndSelect('reported_users.reportUser', 'reportUser')
-        .leftJoinAndSelect('reported_users.reportedUser', 'reportedUser')
-        .leftJoinAndSelect('reported_users.checks', 'checks')
+        .leftJoin('reported_users.reportUser', 'reportUser')
+        .leftJoin('reported_users.reportedUser', 'reportedUser')
+        .leftJoin('reported_users.checks', 'checks')
+        .leftJoin('checks.check', 'check')
+        .select([
+          'reported_users.no',
+          'reported_users.description',
+          'reportUser.no',
+          'reportUser.email',
+          'reportedUser.no',
+          'reportedUser.email',
+          'checks.no',
+          'check.no',
+          'check.content',
+        ])
         .where('reported_users.no = :no', { no })
         .getOne();
 
@@ -82,21 +85,6 @@ export class ReportedUserRepository extends Repository<ReportedUser> {
     } catch (e) {
       throw new InternalServerErrorException(
         `${e} ### 신고 내역(유저) 조회 : 알 수 없는 서버 에러입니다.`,
-      );
-    }
-  }
-
-  async readOneReportUserRelation(no: number) {
-    try {
-      const relation = await this.createQueryBuilder()
-        .relation(ReportedUser, 'reportUser')
-        .of(no)
-        .loadMany();
-
-      return relation;
-    } catch (e) {
-      throw new InternalServerErrorException(
-        `${e} ### 유저 신고한 유저 릴레이션 : 알 수 없는 서버 에러입니다.`,
       );
     }
   }
@@ -116,24 +104,15 @@ export class ReportedUserRepository extends Repository<ReportedUser> {
     }
   }
 
-  async createUserReport(createReportDto: CreateReportDto) {
-    const { description } = createReportDto;
-
+  async createUserReport(description: string) {
     try {
       const { raw } = await this.createQueryBuilder('reported_users')
         .insert()
         .into(ReportedUser)
         .values({ description })
         .execute();
-      const { insertId, affectedRows } = raw;
 
-      if (!affectedRows) {
-        throw new InternalServerErrorException(
-          '게시글 신고가 접수되지 않았습니다.',
-        );
-      }
-
-      return insertId;
+      return raw;
     } catch (e) {
       throw new InternalServerErrorException(
         `${e} ### 게시글 신고 : 알 수 없는 서버 에러입니다.`,
@@ -143,18 +122,24 @@ export class ReportedUserRepository extends Repository<ReportedUser> {
 }
 
 @EntityRepository(ReportCheckbox)
-export class ReportCheckBoxRepository extends Repository<ReportCheckbox> {
+export class ReportCheckboxRepository extends Repository<ReportCheckbox> {
   async readAllCheckboxes(): Promise<ReportCheckbox[]> {
     try {
       const checkedReport = this.createQueryBuilder('report_checkboxes')
-        .leftJoinAndSelect('report_checkboxes.reportedBoards', 'reportedBoard')
-        .leftJoinAndSelect('report_checkboxes.reportedUsers', 'reportedUser')
-        .leftJoinAndSelect('reportedBoard.reportedBoard', 'board')
-        .leftJoinAndSelect('reportedUser.reportedUser', 'user')
-        .leftJoinAndSelect('reportedBoard.reportUser', 'boardReportUser')
-        .leftJoinAndSelect('reportedUser.reportUser', 'userReportUser')
-        .leftJoinAndSelect('reportedBoard.checks', 'checkedBoardReport')
-        .leftJoinAndSelect('reportedUser.checks', 'checkedUserReport')
+        .leftJoin('report_checkboxes.reportedBoards', 'boardReportChecks')
+        .leftJoin('boardReportChecks.reportedBoard', 'reportedBoard')
+        .leftJoin('report_checkboxes.reportedUsers', 'userReportChecks')
+        .leftJoin('userReportChecks.reportedUser', 'reportedUser')
+        .select([
+          'report_checkboxes.no',
+          'report_checkboxes.content',
+          'boardReportChecks.no',
+          'reportedBoard.no',
+          'reportedBoard.description',
+          'userReportChecks.no',
+          'reportedUser.no',
+          'reportedUser.description',
+        ])
         .getMany();
 
       return checkedReport;
@@ -177,21 +162,40 @@ export class ReportCheckBoxRepository extends Repository<ReportCheckbox> {
       throw new InternalServerErrorException(e);
     }
   }
+}
 
-  async saveChecks(checks, newReport, relationName: string) {
+@EntityRepository(BoardReportChecks)
+export class BoardReportChecksRepository extends Repository<BoardReportChecks> {
+  async saveBoardReportChecks(
+    reportedBoard: ReportedBoard,
+    check: ReportCheckbox,
+  ) {
     try {
-      const { no } = checks;
-      const relation = await this.findOne(no, {
-        relations: [relationName],
-      });
-
-      relation[relationName].push(newReport);
-
-      this.save(relation);
+      await this.createQueryBuilder('board_report_checks')
+        .insert()
+        .into(BoardReportChecks)
+        .values({ reportedBoard, check })
+        .execute();
     } catch (e) {
-      throw new InternalServerErrorException(
-        `${e} ### 체크 박스 저장 : 알 수 없는 서버 에러입니다.`,
-      );
+      throw new InternalServerErrorException('BoardReportChecks 에러');
+    }
+  }
+}
+
+@EntityRepository(UserReportChecks)
+export class UserReportChecksRepository extends Repository<UserReportChecks> {
+  async saveUserReportChecks(
+    reportedUser: ReportedUser,
+    check: ReportCheckbox,
+  ) {
+    try {
+      await this.createQueryBuilder('user_report_checks')
+        .insert()
+        .into(UserReportChecks)
+        .values({ reportedUser, check })
+        .execute();
+    } catch (e) {
+      throw new InternalServerErrorException('UserReportChecks 에러');
     }
   }
 }
