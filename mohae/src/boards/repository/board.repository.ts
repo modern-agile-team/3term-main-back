@@ -407,4 +407,17 @@ export class BoardRepository extends Repository<Board> {
       );
     }
   }
+
+  async findTest(no) {
+    const board = await this.createQueryBuilder('boards')
+      .select([
+        'boards_no AS no'
+      ])
+      .where('no = :no', { no })
+      .getRawOne();
+    const { boards_no, boards_title } = board;
+    console.log(boards_no, boards_title, board);
+
+    return { board: no };
+  }
 }

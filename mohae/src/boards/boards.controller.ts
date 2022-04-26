@@ -21,6 +21,7 @@ import {
   SearchBoardDto,
   LikeBoardDto,
   UpdateBoardDto,
+  ExBoardDto,
 } from './dto/board.dto';
 import { Board } from './entity/board.entity';
 
@@ -184,6 +185,17 @@ export class BoardsController {
     @Body() updateBoardDto: UpdateBoardDto,
   ): Promise<object> {
     const response = await this.boardService.updateBoard(no, updateBoardDto);
+
+    return Object.assign({
+      statusCode: 201,
+      msg: '게시글 수정이 완료되었습니다.',
+      response,
+    });
+  }
+
+  @Patch('update/:no')
+  async exBoard(@Param('no') no: number, @Body() exBoardDto: ExBoardDto) {
+    const response = await this.boardService.exBoard(no, exBoardDto);
 
     return Object.assign({
       statusCode: 201,
