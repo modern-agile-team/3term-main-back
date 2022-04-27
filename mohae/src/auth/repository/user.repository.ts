@@ -8,26 +8,28 @@ import { resourceLimits } from 'worker_threads';
 @EntityRepository(User)
 export class UserRepository extends Repository<User> {
   // 인증 관련 부분
-  async createUser(createUserDto: CreateUserDto, school, major): Promise<User> {
+  async createUser(createUserDto: CreateUserDto, school, major) {
     try {
       const { email, password, phone, nickname, manager, name, photo_url } =
         createUserDto;
-
-      const salt = await bcrypt.genSalt();
-      const hashedPassword = await bcrypt.hash(password, salt);
-      const user = this.create({
-        email,
-        school,
-        major,
-        salt: hashedPassword,
-        name,
-        phone,
-        nickname,
-        manager,
-        photo_url,
-      });
-      await user.save();
-      return user;
+      const { raw } = await this.createQueryBuilder('users')
+        .insert()
+        .into(User)
+        .values([
+          {
+            email,
+            school,
+            major,
+            salt: password,
+            name,
+            phone,
+            nickname,
+            manager,
+            photo_url,
+          },
+        ])
+        .execute();
+      return raw.insertId;
     } catch (e) {
       throw new InternalServerErrorException(
         `${e} ### 회원 가입도중 발생한 서버에러입니다 서버 담당자에게 말해주세요`,
@@ -52,12 +54,12 @@ export class UserRepository extends Repository<User> {
 
   async signDown(no: number) {
     try {
-      const result = await this.createQueryBuilder()
+      const raw = await this.createQueryBuilder()
         .softDelete()
         .from(User)
         .where('no = :no', { no })
         .execute();
-      return result;
+      return raw.affected;
     } catch (err) {
       throw err;
     }

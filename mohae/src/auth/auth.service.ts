@@ -39,7 +39,8 @@ export class AuthService {
     private jwtService: JwtService,
   ) {}
   async signUp(createUserDto: CreateUserDto): Promise<User> {
-    const { school, major, email, nickname, categories } = createUserDto;
+    const { school, major, email, nickname, categories, password } =
+      createUserDto;
 
     const schoolRepo = await this.schoolRepository.findOne(school, {
       select: ['no'],
@@ -66,7 +67,6 @@ export class AuthService {
       'email',
       email,
     );
-    //return 값이 있으면 번호, 없으면 undefined
     const duplicateNickname = await this.userRepository.duplicateCheck(
       'nickname',
       nickname,
@@ -79,7 +79,10 @@ export class AuthService {
     if (duplicateKeys.length) {
       throw new ConflictException(`해당 ${duplicateKeys}이 이미 존재합니다.`);
     }
-    const user = await this.userRepository.createUser(
+    const salt = await bcrypt.genSalt();
+    const hashedPassword = await bcrypt.hash(password, salt);
+    createUserDto.password = hashedPassword;
+    const user: User = await this.userRepository.createUser(
       createUserDto,
       schoolRepo,
       majorRepo,
@@ -164,15 +167,14 @@ export class AuthService {
       throw e;
     }
   }
-  async signDown(no: number): Promise<DeleteResult> {
-    const result = await this.userRepository.signDown(no);
+  async signDown(no: number) {
+    const Isaffected = await this.userRepository.signDown(no);
 
-    if (!result.affected) {
+    if (!Isaffected) {
       throw new InternalServerErrorException(
         `${no} 회원님의 회원탈퇴가 정상적으로 이루어 지지 않았습니다.`,
       );
     }
-    return result;
   }
 
   async changePassword(changePasswordDto) {
