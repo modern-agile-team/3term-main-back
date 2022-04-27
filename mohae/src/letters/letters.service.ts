@@ -68,13 +68,13 @@ export class LettersService {
         );
       }
 
-      const relation = await this.mailboxRepository.findOne(newMailboxNo, {
+      const relation = await this.mailboxUserRepository.findOne(newMailboxNo, {
         select: ['no'],
-        relations: ['users'],
+        relations: ['mailboxUsers'],
       });
 
-      relation.users.push(sender);
-      relation.users.push(receiver);
+      relation.mailboxUsers.push(sender);
+      relation.mailboxUsers.push(receiver);
 
       await this.mailboxRepository.save(relation);
 
