@@ -32,13 +32,18 @@ export class LettersService {
     description,
   }: SendLetterDto) {
     try {
-      const mailboxRelation = await this.mailboxRepository.findOne(mailboxNo, {
-        select: ['no'],
-        relations: ['letters'],
-      });
-      if (!mailboxRelation) {
-        throw new NotFoundException('해당 쪽지함을 찾을 수 없습니다.');
-      }
+      const newMailboxNo = !mailboxNo
+        ? await this.mailboxRepository.createMailbox()
+        : mailboxNo;
+
+      const mailboxRelation = await this.mailboxRepository.findOne(
+        newMailboxNo,
+        {
+          select: ['no'],
+          relations: ['letters'],
+        },
+      );
+
       const sender = await this.userRepository.findOne(senderNo, {
         select: ['no'],
         relations: ['sendLetters'],
@@ -62,6 +67,16 @@ export class LettersService {
           '본인에게는 쪽지를 전송할 수 없습니다.',
         );
       }
+
+      const relation = await this.mailboxRepository.findOne(newMailboxNo, {
+        select: ['no'],
+        relations: ['users'],
+      });
+
+      relation.users.push(sender);
+      relation.users.push(receiver);
+
+      await this.mailboxRepository.save(relation);
 
       const { insertId } = await this.letterRepository.sendLetter(
         sender,

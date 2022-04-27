@@ -84,4 +84,17 @@ export class MailboxesService {
       throw e;
     }
   }
+
+  async checkMailbox(oneselfNo: number, opponentNo: number) {
+    try {
+      const mailbox = await this.mailboxRepository.checkMailbox(
+        oneselfNo,
+        opponentNo,
+      );
+
+      return mailbox;
+    } catch (e) {
+      throw e;
+    }
+  }
 }
