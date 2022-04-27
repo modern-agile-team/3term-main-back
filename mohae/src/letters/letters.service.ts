@@ -5,7 +5,10 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UserRepository } from 'src/auth/repository/user.repository';
-import { MailboxRepository } from 'src/mailboxes/repository/mailbox.repository';
+import {
+  MailboxRepository,
+  MailboxUserRepository,
+} from 'src/mailboxes/repository/mailbox.repository';
 import { ErrorConfirm } from 'src/utils/error';
 import { SendLetterDto } from './dto/letter.dto';
 import { LetterRepository } from './repository/letter.repository';
@@ -22,25 +25,33 @@ export class LettersService {
     @InjectRepository(MailboxRepository)
     private mailboxRepository: MailboxRepository,
 
+    @InjectRepository(MailboxUserRepository)
+    private mailboxUserRepository: MailboxUserRepository,
+
     private errorConfirm: ErrorConfirm,
   ) {}
 
-  async sendLetter(sendLetterDto: SendLetterDto) {
-    const { senderNo, receiverNo, description } = sendLetterDto;
-
+  async sendLetter({
+    senderNo,
+    receiverNo,
+    mailboxNo,
+    description,
+  }: SendLetterDto) {
     try {
-      const mailboxNo = await this.mailboxRepository.searchMailbox(
-        senderNo,
-        receiverNo,
+      const newMailboxNo = !mailboxNo
+        ? await this.mailboxRepository.createMailbox()
+        : mailboxNo;
+
+      const mailboxRelation = await this.mailboxRepository.findOne(
+        newMailboxNo,
+        {
+          select: ['no'],
+          relations: ['letters'],
+        },
       );
 
-      if (!mailboxNo) {
-        throw new NotFoundException('해당 쪽지함을 찾을 수 없습니다.');
-      }
-      const mailbox = await this.mailboxRepository.findOne(mailboxNo, {
-        relations: ['letters'],
-      });
       const sender = await this.userRepository.findOne(senderNo, {
+        select: ['no'],
         relations: ['sendLetters'],
       });
       this.errorConfirm.notFoundError(
@@ -49,6 +60,7 @@ export class LettersService {
       );
 
       const receiver = await this.userRepository.findOne(receiverNo, {
+        select: ['no'],
         relations: ['receivedLetters'],
       });
       this.errorConfirm.notFoundError(
@@ -62,18 +74,24 @@ export class LettersService {
         );
       }
 
+      await this.mailboxUserRepository.saveMailboxUser(mailboxRelation, sender);
+      await this.mailboxUserRepository.saveMailboxUser(
+        mailboxRelation,
+        receiver,
+      );
+
       const { insertId } = await this.letterRepository.sendLetter(
         sender,
         receiver,
         description,
-        mailbox,
+        mailboxRelation,
       );
 
       const newLetter = await this.letterRepository.findOne(insertId);
 
       sender.sendLetters.push(newLetter);
       receiver.receivedLetters.push(newLetter);
-      mailbox.letters.push(newLetter);
+      mailboxRelation.letters.push(newLetter);
 
       return { success: true };
     } catch (e) {

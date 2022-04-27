@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsNumber, IsString } from 'class-validator';
+import { IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
 
 export class SendLetterDto {
   @IsNotEmpty()
@@ -8,6 +8,10 @@ export class SendLetterDto {
   @IsNotEmpty()
   @IsNumber()
   receiverNo: number;
+
+  @IsOptional()
+  @IsNumber()
+  mailboxNo?: number;
 
   @IsNotEmpty()
   @IsString()
