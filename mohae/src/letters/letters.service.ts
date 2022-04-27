@@ -74,15 +74,11 @@ export class LettersService {
         );
       }
 
-      const relation = await this.mailboxUserRepository.findOne(newMailboxNo, {
-        select: ['no'],
-        relations: ['mailboxUsers'],
-      });
-
-      relation.mailboxUsers.push(sender);
-      relation.mailboxUsers.push(receiver);
-
-      await this.mailboxRepository.save(relation);
+      await this.mailboxUserRepository.saveMailboxUser(mailboxRelation, sender);
+      await this.mailboxUserRepository.saveMailboxUser(
+        mailboxRelation,
+        receiver,
+      );
 
       const { insertId } = await this.letterRepository.sendLetter(
         sender,
