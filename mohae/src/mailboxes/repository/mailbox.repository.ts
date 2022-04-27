@@ -37,7 +37,7 @@ export class MailboxRepository extends Repository<Mailbox> {
       const newMailbox = await this.createQueryBuilder('mailboxes')
         .insert()
         .into(Mailbox)
-        .values({ users: [] })
+        .values({})
         .execute();
       const { insertId } = newMailbox.raw;
 
