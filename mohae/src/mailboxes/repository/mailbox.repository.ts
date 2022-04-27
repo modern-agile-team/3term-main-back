@@ -1,4 +1,5 @@
 import { InternalServerErrorException } from '@nestjs/common';
+import { User } from 'src/auth/entity/user.entity';
 import { EntityRepository, Repository } from 'typeorm';
 import { Mailbox, MailboxUser } from '../entity/mailbox.entity';
 
@@ -99,4 +100,16 @@ export class MailboxRepository extends Repository<Mailbox> {
 }
 
 @EntityRepository(MailboxUser)
-export class MailboxUserRepository extends Repository<MailboxUser> {}
+export class MailboxUserRepository extends Repository<MailboxUser> {
+  async saveMailboxUser(mailbox: Mailbox, user: User) {
+    try {
+      await this.createQueryBuilder('board_report_checks')
+        .insert()
+        .into(MailboxUser)
+        .values({ mailbox, user })
+        .execute();
+    } catch (e) {
+      throw new InternalServerErrorException('MailboxUserRepository 에러');
+    }
+  }
+}
