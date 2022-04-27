@@ -173,9 +173,7 @@ export class BoardsService {
       const { affected } = await this.boardRepository.closingBoard(currentTime);
 
       if (!affected) {
-        throw new InternalServerErrorException(
-          '게시글 마감이 되지 않았습니다..',
-        );
+        throw new InternalServerErrorException('게시글 마감이 되지 않았습니다');
       }
     }
 
