@@ -1,6 +1,6 @@
 import { InternalServerErrorException } from '@nestjs/common';
 import { EntityRepository, Repository } from 'typeorm';
-import { Mailbox } from '../entity/mailbox.entity';
+import { Mailbox, MailboxUser } from '../entity/mailbox.entity';
 
 @EntityRepository(Mailbox)
 export class MailboxRepository extends Repository<Mailbox> {
@@ -97,3 +97,6 @@ export class MailboxRepository extends Repository<Mailbox> {
     }
   }
 }
+
+@EntityRepository(MailboxUser)
+export class MailboxUserRepository extends Repository<MailboxUser> {}

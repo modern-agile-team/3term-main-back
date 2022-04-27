@@ -5,7 +5,10 @@ import { LetterRepository } from 'src/letters/repository/letter.repository';
 import { ErrorConfirm } from 'src/utils/error';
 import { MailboxesController } from './mailboxes.controller';
 import { MailboxesService } from './mailboxes.service';
-import { MailboxRepository } from './repository/mailbox.repository';
+import {
+  MailboxRepository,
+  MailboxUserRepository,
+} from './repository/mailbox.repository';
 
 @Module({
   imports: [
@@ -13,6 +16,7 @@ import { MailboxRepository } from './repository/mailbox.repository';
       MailboxRepository,
       UserRepository,
       LetterRepository,
+      MailboxUserRepository,
     ]),
   ],
   controllers: [MailboxesController],
