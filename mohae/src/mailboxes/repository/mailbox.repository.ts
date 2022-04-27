@@ -95,4 +95,23 @@ export class MailboxRepository extends Repository<Mailbox> {
       );
     }
   }
+
+  async checkMailbox(oneselfNo: number, opponentNo: number) {
+    try {
+      const mailbox = await this.createQueryBuilder('mailboxes')
+        .leftJoinAndSelect('mailboxes.users', 'users')
+        .leftJoinAndSelect('mailboxes.letters', 'letters')
+        .where('letters.sender = :oneselfNo', { oneselfNo })
+        .orWhere('letters.receiver = :oneselfNo', { oneselfNo })
+        .andWhere('letters.sender = :opponentNo', { opponentNo })
+        .orWhere('letters.receiver = :opponentNo', { opponentNo })
+        .getMany();
+      console.log(mailbox);
+      return mailbox;
+    } catch {
+      throw new InternalServerErrorException(
+        '### 쪽지함 여부 확인 : 알 수 없는 서버 에러입니다.',
+      );
+    }
+  }
 }
