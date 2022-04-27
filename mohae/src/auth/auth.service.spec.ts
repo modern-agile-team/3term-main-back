@@ -1,5 +1,6 @@
 import {
   ConflictException,
+  InternalServerErrorException,
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -13,9 +14,13 @@ import { CategoryRepository } from 'src/categories/repository/category.repositor
 import { MajorRepository } from 'src/majors/repository/major.repository';
 import { SchoolRepository } from 'src/schools/repository/school.repository';
 import { ErrorConfirm } from 'src/utils/error';
-import { getRepository, Repository } from 'typeorm';
+import { ConnectionIsNotSetError, getRepository, Repository } from 'typeorm';
 import { AuthService } from './auth.service';
-import { CreateUserDto, SignInDto } from './dto/auth-credential.dto';
+import {
+  ChangePasswordDto,
+  CreateUserDto,
+  SignInDto,
+} from './dto/auth-credential.dto';
 import { User } from './entity/user.entity';
 import { UserRepository } from './repository/user.repository';
 import * as bcrypt from 'bcryptjs';
@@ -25,6 +30,7 @@ const MockUserRepository = () => ({
   findOne: jest.fn(),
   duplicateCheck: jest.fn(),
   createUser: jest.fn(),
+  addUser: jest.fn(),
   //signIn
   signIn: jest.fn(),
   changeIsLock: jest.fn(),
@@ -34,19 +40,23 @@ const MockUserRepository = () => ({
   signDown: jest.fn(),
   //changePassword, forgetPassword
   changePassword: jest.fn(),
+  forgetPassword: jest.fn(),
 });
 const MockSchoolRepository = () => ({
   //signUp
   findOne: jest.fn(),
+  addUser: jest.fn(),
 });
 const MockMajorRepository = () => ({
   //signUp
   findOne: jest.fn(),
+  addUser: jest.fn(),
 });
 const MockCategoryRepository = () => ({
   //signUp
   selectCategory: jest.fn(),
   saveUsers: jest.fn(),
+  addUser: jest.fn(),
 });
 const mockJwtService = {
   sign: jest.fn(),
@@ -141,6 +151,9 @@ describe('AuthService', () => {
         categories: [],
       });
       categoryRepository['saveUsers'].mockResolvedValue();
+      categoryRepository['addUser'].mockResolvedValue();
+      schoolRepository['addUser'].mockResolvedValue();
+      majorRepository['addUser'].mockResolvedValue();
 
       const createUserDto: CreateUserDto = {
         email: 'cd111@eegnadddddsver.com',
@@ -191,6 +204,9 @@ describe('AuthService', () => {
         categories: [],
       });
       categoryRepository['saveUsers'].mockResolvedValue();
+      categoryRepository['addUser'].mockResolvedValue();
+      schoolRepository['addUser'].mockResolvedValue();
+      majorRepository['addUser'].mockResolvedValue();
 
       const createUserDto: CreateUserDto = {
         email: 'cd111@eegnadddddsver.com',
@@ -239,6 +255,9 @@ describe('AuthService', () => {
         categories: [],
       });
       categoryRepository['saveUsers'].mockResolvedValue();
+      categoryRepository['addUser'].mockResolvedValue();
+      schoolRepository['addUser'].mockResolvedValue();
+      majorRepository['addUser'].mockResolvedValue();
 
       const createUserDto: CreateUserDto = {
         email: 'cd111@eegnadddddsver.com',
@@ -291,6 +310,9 @@ describe('AuthService', () => {
         categories: [],
       });
       categoryRepository['saveUsers'].mockResolvedValue();
+      categoryRepository['addUser'].mockResolvedValue();
+      schoolRepository['addUser'].mockResolvedValue();
+      majorRepository['addUser'].mockResolvedValue();
 
       const createUserDto: CreateUserDto = {
         email: 'cd111@eegnadddddsver.com',
@@ -414,18 +436,18 @@ describe('AuthService', () => {
       } catch (e) {
         expect(e).toBeInstanceOf(UnauthorizedException);
         expect(e.response.message).toBe(
-          `아이디 또는 비밀번호가 일치하지 않습니다. 로그인 실패 횟수: undefined `,
+          `아이디 또는 비밀번호가 일치하지 않습니다. 로그인 실패 횟수: 0 `,
         );
         expect(e.response).toStrictEqual({
           statusCode: 401,
           message:
-            '아이디 또는 비밀번호가 일치하지 않습니다. 로그인 실패 횟수: undefined ',
+            '아이디 또는 비밀번호가 일치하지 않습니다. 로그인 실패 횟수: 0 ',
           error: 'Unauthorized',
         });
       }
     });
 
-    it('로그인 시도 횟수를 모두 초과하였을 때', async () => {
+    it('로그인 시도 횟수를 모두 초과하였는데도 로그인을 시도했을 때', async () => {
       userRepository['signIn'].mockResolvedValue({
         no: 1,
         isLock: 1,
@@ -477,6 +499,271 @@ describe('AuthService', () => {
       expect(resultValue).toStrictEqual({
         affected: 1,
       });
+    });
+
+    it('회원 탈퇴를 진행하였는데 DB에 변동 사항이 없을 때', async () => {
+      userRepository['signDown'].mockResolvedValue({
+        affeted: 0,
+      });
+      const no = 1;
+      try {
+        await authService.signDown(no);
+      } catch (e) {
+        expect(e).toBeInstanceOf(InternalServerErrorException);
+        expect(e.response.message).toBe(
+          `${no} 회원님의 회원탈퇴가 정상적으로 이루어 지지 않았습니다.`,
+        );
+
+        expect(e.response).toStrictEqual({
+          statusCode: 500,
+          message: `${no} 회원님의 회원탈퇴가 정상적으로 이루어 지지 않았습니다.`,
+          error: 'Internal Server Error',
+        });
+      }
+    });
+  });
+
+  describe('changePassword', () => {
+    it('성공적으로 비밀번호를 변경했을 때', async () => {
+      userRepository['signIn'].mockResolvedValue({
+        no: 1,
+        isLock: 1,
+        latestLogin: new Date(),
+        salt: '1234',
+        loginFailCount: 0,
+      });
+      bcrypt.compare = jest.fn().mockResolvedValue(true);
+      bcrypt.genSalt = jest.fn().mockResolvedValue('salt');
+      bcrypt.hash = jest.fn().mockResolvedValue('hash');
+      userRepository['changePassword'].mockResolvedValue({ affected: 1 });
+
+      const changePasswordDto = {
+        email: 'subro@health.com',
+        nowPassword: 'health',
+        changePassword: 'muscle',
+        confirmChangePassword: 'muscle',
+      };
+      const returnValue = await authService.changePassword(changePasswordDto);
+
+      expect(returnValue).toStrictEqual({
+        affected: 1,
+      });
+    });
+
+    it('새비밀번호와 새비밀번호 확인이 일치 하지 않았을 때', async () => {
+      const changePasswordDto = {
+        email: 'subro@health.com',
+        nowPassword: 'health',
+        changePassword: 'muscle',
+        confirmChangePassword: 'muscle!',
+      };
+      try {
+        await authService.changePassword(changePasswordDto);
+      } catch (e) {
+        expect(e).toBeInstanceOf(UnauthorizedException);
+        expect(e.response.message).toBe(
+          '새비밀번호와 새비밀번호 확인이 일치하지 않습니다',
+        );
+        expect(e.response).toStrictEqual({
+          statusCode: 401,
+          message: '새비밀번호와 새비밀번호 확인이 일치하지 않습니다',
+          error: 'Unauthorized',
+        });
+      }
+    });
+
+    it('이전의 비밀번호로 비밀번호 변경을 시도하였을 때', async () => {
+      userRepository['signIn'].mockResolvedValue({
+        no: 1,
+        isLock: 1,
+        latestLogin: new Date(),
+        salt: '1234',
+        loginFailCount: 0,
+      });
+      bcrypt.compare = jest.fn().mockResolvedValue(true);
+      bcrypt.genSalt = jest.fn().mockResolvedValue('salt');
+
+      const changePasswordDto = {
+        email: 'subro@health.com',
+        nowPassword: 'muscle',
+        changePassword: 'muscle',
+        confirmChangePassword: 'muscle',
+      };
+      try {
+        await authService.changePassword(changePasswordDto);
+      } catch (e) {
+        expect(e).toBeInstanceOf(UnauthorizedException);
+        expect(e.response.message).toBe(
+          '이전의 비밀번호로는 변경하실 수 없습니다.',
+        );
+        expect(e.response).toStrictEqual({
+          statusCode: 401,
+          message: '이전의 비밀번호로는 변경하실 수 없습니다.',
+          error: 'Unauthorized',
+        });
+      }
+    });
+
+    it('아이디 또는 비밀번호가 틀렸을 때', async () => {
+      userRepository['signIn'].mockResolvedValue({
+        undefined,
+      });
+      bcrypt.compare = jest.fn().mockResolvedValue(false);
+      bcrypt.genSalt = jest.fn().mockResolvedValue('salt');
+
+      const changePasswordDto = {
+        email: 'subro@health.com',
+        nowPassword: 'health',
+        changePassword: 'muscle',
+        confirmChangePassword: 'muscle',
+      };
+      try {
+        await authService.changePassword(changePasswordDto);
+      } catch (e) {
+        expect(e).toBeInstanceOf(UnauthorizedException);
+        expect(e.response.message).toBe(
+          '아이디 또는 비밀번호가 일치하지 않습니다.',
+        );
+        expect(e.response).toStrictEqual({
+          statusCode: 401,
+          message: '아이디 또는 비밀번호가 일치하지 않습니다.',
+          error: 'Unauthorized',
+        });
+      }
+    });
+
+    it('비밀번호 변경 중 알 수 없는 오류', async () => {
+      userRepository['signIn'].mockResolvedValue({
+        no: 1,
+        isLock: 1,
+        latestLogin: new Date(),
+        salt: '1234',
+        loginFailCount: 0,
+      });
+      bcrypt.compare = jest.fn().mockResolvedValue(true);
+      bcrypt.genSalt = jest.fn().mockResolvedValue('salt');
+      userRepository['changePassword'].mockResolvedValue({ affected: 0 });
+
+      const changePasswordDto = {
+        email: 'subro@health.com',
+        nowPassword: 'health',
+        changePassword: 'muscle',
+        confirmChangePassword: 'muscle',
+      };
+      try {
+        await authService.changePassword(changePasswordDto);
+      } catch (e) {
+        expect(e).toBeInstanceOf(InternalServerErrorException);
+        expect(e.response.message).toBe(
+          '비밀번호 변경중 알 수 없는 오류입니다.',
+        );
+        expect(e.response).toStrictEqual({
+          statusCode: 500,
+          message: '비밀번호 변경중 알 수 없는 오류입니다.',
+          error: 'Internal Server Error',
+        });
+      }
+    });
+  });
+
+  describe('forgetPassword', () => {
+    it('성공적으로 비밀번호를 변경했을 때', async () => {
+      userRepository['signIn'].mockResolvedValue({
+        no: 1,
+        isLock: 1,
+        latestLogin: new Date(),
+        salt: '1234',
+        loginFailCount: 0,
+      });
+      bcrypt.compare = jest.fn().mockResolvedValue(false);
+      // 이전 비밀번호로 변경할때의 비교임
+      bcrypt.genSalt = jest.fn().mockResolvedValue('salt');
+      bcrypt.hash = jest.fn().mockResolvedValue('hash');
+      userRepository['changePassword'].mockResolvedValue({ affected: 1 });
+
+      const forgetPasswordDto = {
+        email: 'subro@health.com',
+        changePassword: 'muscle',
+        confirmChangePassword: 'muscle',
+      };
+      const returnValue = await authService.forgetPassword(forgetPasswordDto);
+      expect(returnValue).toStrictEqual({
+        affected: 1,
+      });
+    });
+
+    it('새비밀번호와 새비밀번호 확인이 일치하지 않은경우', async () => {
+      const forgetPasswordDto = {
+        email: 'subro@health.com',
+        changePassword: 'muscle',
+        confirmChangePassword: 'muscle!',
+      };
+      try {
+        await authService.forgetPassword(forgetPasswordDto);
+      } catch (e) {
+        expect(e).toBeInstanceOf(UnauthorizedException);
+        expect(e.response.message).toBe(
+          '새비밀번호와 새비밀번호 확인이 일치하지 않습니다',
+        );
+        expect(e.response).toStrictEqual({
+          statusCode: 401,
+          message: '새비밀번호와 새비밀번호 확인이 일치하지 않습니다',
+          error: 'Unauthorized',
+        });
+      }
+    });
+    it('이전 비밀번호로 비밀번호를 변경하려는 경우', async () => {
+      userRepository['signIn'].mockResolvedValue({
+        no: 1,
+        isLock: 1,
+        latestLogin: new Date(),
+        salt: '1234',
+        loginFailCount: 0,
+      });
+      bcrypt.compare = jest.fn().mockResolvedValue(true);
+      const forgetPasswordDto = {
+        email: 'subro@health.com',
+        changePassword: 'muscle',
+        confirmChangePassword: 'muscle',
+      };
+      try {
+        await authService.forgetPassword(forgetPasswordDto);
+      } catch (e) {
+        expect(e).toBeInstanceOf(UnauthorizedException);
+        expect(e.response.message).toBe(
+          '이전 비밀번호로는 변경하실 수 없습니다.',
+        );
+        expect(e.response).toStrictEqual({
+          statusCode: 401,
+          message: '이전 비밀번호로는 변경하실 수 없습니다.',
+          error: 'Unauthorized',
+        });
+      }
+    });
+
+    it('비밀번호 변경 중 알 수 없는 오류', async () => {
+      const forgetPasswordDto = {
+        email: 'subro@health.com',
+        changePassword: 'muscle',
+        confirmChangePassword: 'muscle',
+      };
+      bcrypt.compare = jest.fn().mockResolvedValue(false);
+      bcrypt.genSalt = jest.fn().mockResolvedValue('salt');
+      userRepository['changePassword'].mockResolvedValue({ affected: 0 });
+
+      try {
+        await authService.forgetPassword(forgetPasswordDto);
+      } catch (e) {
+        expect(e).toBeInstanceOf(InternalServerErrorException);
+        expect(e.response.message).toBe(
+          '비밀번호 변경중 알 수 없는 오류입니다.',
+        );
+        expect(e.response).toStrictEqual({
+          statusCode: 500,
+          message: '비밀번호 변경중 알 수 없는 오류입니다.',
+          error: 'Internal Server Error',
+        });
+      }
     });
   });
 });

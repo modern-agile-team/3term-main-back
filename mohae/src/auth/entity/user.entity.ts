@@ -161,19 +161,16 @@ export class User extends BaseEntity {
 
   @OneToMany((type) => ReportedUser, (user) => user.reportedUser, {
     nullable: true,
-    eager: true,
   })
   reports: ReportedUser[];
 
   @OneToMany((type) => ReportedUser, (user) => user.reportUser, {
     nullable: true,
-    eager: true,
   })
   userReport: ReportedUser[];
 
   @OneToMany((type) => ReportedBoard, (board) => board.reportUser, {
     nullable: true,
-    eager: true,
   })
   boardReport: ReportedBoard[];
 

@@ -1,6 +1,7 @@
 import {
   ConflictException,
   Injectable,
+  InternalServerErrorException,
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -40,10 +41,10 @@ export class AuthService {
     const { school, major, email, nickname, categories } = createUserDto;
 
     const schoolRepo = await this.schoolRepository.findOne(school, {
-      relations: ['users'],
+      select: ['no'],
     });
     const majorRepo = await this.majorRepository.findOne(major, {
-      relations: ['users'],
+      select: ['no'],
     });
     if (!schoolRepo || !majorRepo) {
       const notFoundObj = { 학교: schoolRepo, 전공: majorRepo };
@@ -88,19 +89,16 @@ export class AuthService {
         '유저 생성이 정상적으로 이루어지지 않았습니다.',
       );
     }
-    const userCategory = await this.userRepository.findOne(user.no, {
-      relations: ['categories'],
-    });
 
     const filteredCategories = categoriesRepo.filter(
       (element) => element !== undefined,
     );
-    userCategory.categories.push(...filteredCategories);
+    for (const categoryNo of filteredCategories) {
+      await this.categoriesRepository.addUser(categoryNo.no, user);
+    }
 
-    schoolRepo.users.push(user);
-    majorRepo.users.push(user);
-
-    await this.categoriesRepository.saveUsers(filteredCategories, userCategory);
+    await this.schoolRepository.addUser(schoolRepo.no, user);
+    await this.majorRepository.addUser(majorRepo.no, user);
 
     return user;
   }
@@ -124,10 +122,12 @@ export class AuthService {
       }
       const isLockUser = await this.userRepository.signIn(email);
       const isPassword = await bcrypt.compare(password, user.salt);
+
       if (!isLockUser.isLock) {
         if (user && isPassword) {
           const payload = {
             email,
+            userNo: user.no,
             issuer: 'modern-agile',
             expiration: jwtConfig.expiresIn,
           };
@@ -165,8 +165,9 @@ export class AuthService {
   }
   async signDown(no: number): Promise<DeleteResult> {
     const result = await this.userRepository.signDown(no);
+
     if (!result.affected) {
-      throw new NotFoundException(
+      throw new InternalServerErrorException(
         `${no} 회원님의 회원탈퇴가 정상적으로 이루어 지지 않았습니다.`,
       );
     }
@@ -180,7 +181,7 @@ export class AuthService {
 
       if (changePassword !== confirmChangePassword) {
         throw new UnauthorizedException(
-          '새비밀번호화 새비밀번호 확인이 일치하지 않습니다',
+          '새비밀번호와 새비밀번호 확인이 일치하지 않습니다',
         );
       }
       const user = await this.userRepository.signIn(email);
@@ -197,11 +198,12 @@ export class AuthService {
           email,
           hashedPassword,
         );
-
         if (result.affected) {
           return result;
         }
-        throw new Error('비밀번호 변경중 알 수 없는 오류입니다.');
+        throw new InternalServerErrorException(
+          '비밀번호 변경중 알 수 없는 오류입니다.',
+        );
       }
       throw new UnauthorizedException(
         '아이디 또는 비밀번호가 일치하지 않습니다.',
@@ -217,7 +219,7 @@ export class AuthService {
 
       if (changePassword !== confirmChangePassword) {
         throw new UnauthorizedException(
-          '새비밀번호화 새비밀번호 확인이 일치하지 않습니다',
+          '새비밀번호와 새비밀번호 확인이 일치하지 않습니다',
         );
       }
       const user = await this.userRepository.signIn(email);
@@ -236,12 +238,11 @@ export class AuthService {
           email,
           hashedPassword,
         );
-
         if (result.affected) {
           return result;
         }
-        throw new UnauthorizedException(
-          '비밀번호 변경 중 알 수 없는 오류입니다.',
+        throw new InternalServerErrorException(
+          '비밀번호 변경중 알 수 없는 오류입니다.',
         );
       }
       throw new UnauthorizedException('존재하지 않는 이메일 입니다.');

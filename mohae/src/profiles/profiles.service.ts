@@ -111,7 +111,10 @@ export class ProfilesService {
     }
   }
 
-  async updateProfile(no: number, updateProfileDto): Promise<number> {
+  async updateProfile(
+    no: number,
+    updateProfileDto: UpdateProfileDto,
+  ): Promise<number> {
     try {
       const profile = await this.userRepository.findOne(no, {
         relations: ['categories'],
@@ -134,7 +137,7 @@ export class ProfilesService {
         switch (key) {
           case 'phone':
           case 'photo_url':
-            profile[`${key}`] = updateProfileDto[`${key}`];
+            profile[key] = updateProfileDto[key];
             break;
           case 'school':
             const schoolRepo = await this.schoolRepository.findOne(school);

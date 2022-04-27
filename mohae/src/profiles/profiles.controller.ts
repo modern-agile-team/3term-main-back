@@ -8,7 +8,10 @@ import {
   Post,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { JudgeDuplicateNicknameDto } from './dto/update-profile.dto';
+import {
+  JudgeDuplicateNicknameDto,
+  UpdateProfileDto,
+} from './dto/update-profile.dto';
 import { ProfilesService } from './profiles.service';
 
 @Controller('profile')
@@ -60,7 +63,7 @@ export class ProfilesController {
   @Patch(':no')
   async updateProfile(
     @Param('no', ParseIntPipe) no: number,
-    @Body() updateProfileDto,
+    @Body() updateProfileDto: UpdateProfileDto,
   ): Promise<number> {
     try {
       const response = await this.profileService.updateProfile(
