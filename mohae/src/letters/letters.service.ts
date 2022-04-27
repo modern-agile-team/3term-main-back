@@ -5,7 +5,10 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UserRepository } from 'src/auth/repository/user.repository';
-import { MailboxRepository } from 'src/mailboxes/repository/mailbox.repository';
+import {
+  MailboxRepository,
+  MailboxUserRepository,
+} from 'src/mailboxes/repository/mailbox.repository';
 import { ErrorConfirm } from 'src/utils/error';
 import { SendLetterDto } from './dto/letter.dto';
 import { LetterRepository } from './repository/letter.repository';
@@ -21,6 +24,9 @@ export class LettersService {
 
     @InjectRepository(MailboxRepository)
     private mailboxRepository: MailboxRepository,
+
+    @InjectRepository(MailboxUserRepository)
+    private mailboxUserRepository: MailboxUserRepository,
 
     private errorConfirm: ErrorConfirm,
   ) {}
@@ -68,15 +74,11 @@ export class LettersService {
         );
       }
 
-      const relation = await this.mailboxRepository.findOne(newMailboxNo, {
-        select: ['no'],
-        relations: ['users'],
-      });
-
-      relation.users.push(sender);
-      relation.users.push(receiver);
-
-      await this.mailboxRepository.save(relation);
+      await this.mailboxUserRepository.saveMailboxUser(mailboxRelation, sender);
+      await this.mailboxUserRepository.saveMailboxUser(
+        mailboxRelation,
+        receiver,
+      );
 
       const { insertId } = await this.letterRepository.sendLetter(
         sender,

@@ -4,7 +4,10 @@ import { UserRepository } from 'src/auth/repository/user.repository';
 import { Letter } from 'src/letters/entity/letter.entity';
 import { LetterRepository } from 'src/letters/repository/letter.repository';
 import { ErrorConfirm } from 'src/utils/error';
-import { MailboxRepository } from './repository/mailbox.repository';
+import {
+  MailboxRepository,
+  MailboxUserRepository,
+} from './repository/mailbox.repository';
 
 @Injectable()
 export class MailboxesService {
@@ -17,6 +20,9 @@ export class MailboxesService {
 
     @InjectRepository(LetterRepository)
     private letterRepository: LetterRepository,
+
+    @InjectRepository(MailboxUserRepository)
+    private mailboxUserRepository: MailboxUserRepository,
 
     private errorConfirm: ErrorConfirm,
   ) {}
