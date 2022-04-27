@@ -6,7 +6,7 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { CategoryRepository } from 'src/categories/repository/category.repository';
 import { AreasRepository } from 'src/areas/repository/area.repository';
-import { DeleteResult, RelationId } from 'typeorm';
+import { Any, DeleteResult, RelationId } from 'typeorm';
 import {
   CreateBoardDto,
   SearchBoardDto,
@@ -16,6 +16,7 @@ import { Board } from './entity/board.entity';
 import { BoardRepository } from './repository/board.repository';
 import { ErrorConfirm } from 'src/utils/error';
 import { UserRepository } from 'src/auth/repository/user.repository';
+import { profile } from 'console';
 
 @Injectable()
 export class BoardsService {
@@ -168,9 +169,12 @@ export class BoardsService {
     const currentTime = new Date();
     currentTime.setHours(currentTime.getHours() + 9);
 
-    const { affected } = await this.boardRepository.closingBoard(currentTime);
-    if (!affected) {
-      throw new InternalServerErrorException('게시글 마감이 되지 않았습니다');
+    if (board.deadline <= currentTime) {
+      const { affected } = await this.boardRepository.closingBoard(currentTime);
+
+      if (!affected) {
+        throw new InternalServerErrorException('게시글 마감이 되지 않았습니다');
+      }
     }
 
     return { board, likeCount };
@@ -184,6 +188,7 @@ export class BoardsService {
     }
 
     const result = await this.boardRepository.boardClosed(no);
+
     if (!result) {
       throw new InternalServerErrorException('게시글 마감이 되지 않았습니다');
     }
@@ -289,21 +294,7 @@ export class BoardsService {
     no: number,
     updateBoardDto: UpdateBoardDto,
   ): Promise<Object> {
-    const { categoryNo, areaNo, deadline } = updateBoardDto;
-    const category = await this.categoryRepository.findOne(categoryNo, {
-      relations: ['boards'],
-    });
-
-    const area = await this.areaRepository.findOne(areaNo, {
-      relations: ['boards'],
-    });
-
-    this.errorConfirm.notFoundError(
-      category,
-      `해당 카테고리를 찾을 수 없습니다.`,
-    );
-
-    this.errorConfirm.notFoundError(area, `해당 지역을 찾을 수 없습니다.`);
+    const { category, area, deadline } = updateBoardDto;
 
     const board = await this.boardRepository.findOne(no);
     this.errorConfirm.notFoundError(board, `해당 게시글을 찾을 수 없습니다.`);
@@ -311,6 +302,8 @@ export class BoardsService {
     const endTime = new Date(board.createdAt);
 
     switch (deadline) {
+      case null:
+        endTime.setTime(board.deadline.getTime());
       case 0:
         endTime.setDate(endTime.getDate() + 7);
         break;
@@ -328,16 +321,41 @@ export class BoardsService {
     const currentTime = new Date();
     currentTime.setHours(currentTime.getHours() + 9);
 
-    if (endTime <= currentTime) {
+    if (deadline && endTime <= currentTime) {
       throw new BadRequestException('다른 기간을 선택해 주십시오');
+    }
+
+    updateBoardDto.deadline = endTime;
+
+    const boardKey = Object.keys(updateBoardDto);
+
+    const deletedNullBoardKey = {};
+
+    boardKey.forEach((item) => {
+      updateBoardDto[item] !== null
+        ? (deletedNullBoardKey[item] = updateBoardDto[item])
+        : 0;
+    });
+
+    if (category !== null) {
+      const categoryNo = await this.categoryRepository.findOne(category, {
+        relations: ['boards'],
+      });
+      this.errorConfirm.notFoundError(
+        categoryNo,
+        `해당 카테고리를 찾을 수 없습니다.`,
+      );
+    } else if (area !== null) {
+      const getArea = await this.areaRepository.findOne(area, {
+        relations: ['boards'],
+      });
+
+      this.errorConfirm.notFoundError(getArea, `해당 지역을 찾을 수 없습니다.`);
     }
 
     const updatedBoard = await this.boardRepository.updateBoard(
       no,
-      category,
-      area,
-      updateBoardDto,
-      endTime,
+      deletedNullBoardKey,
     );
 
     if (updatedBoard) {
