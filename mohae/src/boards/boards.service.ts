@@ -9,7 +9,6 @@ import { AreasRepository } from 'src/areas/repository/area.repository';
 import { Any, DeleteResult, RelationId } from 'typeorm';
 import {
   CreateBoardDto,
-  ExBoardDto,
   SearchBoardDto,
   UpdateBoardDto,
 } from './dto/board.dto';
@@ -170,9 +169,14 @@ export class BoardsService {
     const currentTime = new Date();
     currentTime.setHours(currentTime.getHours() + 9);
 
-    const { affected } = await this.boardRepository.closingBoard(currentTime);
-    if (!affected) {
-      throw new InternalServerErrorException('게시글 마감이 되지 않았습니다');
+    if (board.deadline <= currentTime) {
+      const { affected } = await this.boardRepository.closingBoard(currentTime);
+
+      if (!affected) {
+        throw new InternalServerErrorException(
+          '게시글 마감이 되지 않았습니다..',
+        );
+      }
     }
 
     return { board, likeCount };
@@ -186,6 +190,7 @@ export class BoardsService {
     }
 
     const result = await this.boardRepository.boardClosed(no);
+
     if (!result) {
       throw new InternalServerErrorException('게시글 마감이 되지 않았습니다');
     }
@@ -291,21 +296,7 @@ export class BoardsService {
     no: number,
     updateBoardDto: UpdateBoardDto,
   ): Promise<Object> {
-    const { categoryNo, areaNo, deadline } = updateBoardDto;
-    const category = await this.categoryRepository.findOne(categoryNo, {
-      relations: ['boards'],
-    });
-
-    const area = await this.areaRepository.findOne(areaNo, {
-      relations: ['boards'],
-    });
-
-    this.errorConfirm.notFoundError(
-      category,
-      `해당 카테고리를 찾을 수 없습니다.`,
-    );
-
-    this.errorConfirm.notFoundError(area, `해당 지역을 찾을 수 없습니다.`);
+    const { category, area, deadline } = updateBoardDto;
 
     const board = await this.boardRepository.findOne(no);
     this.errorConfirm.notFoundError(board, `해당 게시글을 찾을 수 없습니다.`);
@@ -313,6 +304,8 @@ export class BoardsService {
     const endTime = new Date(board.createdAt);
 
     switch (deadline) {
+      case null:
+        endTime.setTime(board.deadline.getTime());
       case 0:
         endTime.setDate(endTime.getDate() + 7);
         break;
@@ -330,16 +323,41 @@ export class BoardsService {
     const currentTime = new Date();
     currentTime.setHours(currentTime.getHours() + 9);
 
-    if (endTime <= currentTime) {
+    if (deadline && endTime <= currentTime) {
       throw new BadRequestException('다른 기간을 선택해 주십시오');
+    }
+
+    updateBoardDto.deadline = endTime;
+
+    const boardKey = Object.keys(updateBoardDto);
+
+    const deletedNullBoardKey = {};
+
+    boardKey.forEach((item) => {
+      updateBoardDto[item] !== null
+        ? (deletedNullBoardKey[item] = updateBoardDto[item])
+        : 0;
+    });
+
+    if (category !== null) {
+      const categoryNo = await this.categoryRepository.findOne(category, {
+        relations: ['boards'],
+      });
+      this.errorConfirm.notFoundError(
+        categoryNo,
+        `해당 카테고리를 찾을 수 없습니다.`,
+      );
+    } else if (area !== null) {
+      const getArea = await this.areaRepository.findOne(area, {
+        relations: ['boards'],
+      });
+
+      this.errorConfirm.notFoundError(getArea, `해당 지역을 찾을 수 없습니다.`);
     }
 
     const updatedBoard = await this.boardRepository.updateBoard(
       no,
-      category,
-      area,
-      updateBoardDto,
-      endTime,
+      deletedNullBoardKey,
     );
 
     if (updatedBoard) {
@@ -347,116 +365,5 @@ export class BoardsService {
     }
 
     return { success: false };
-  }
-
-  async exBoard(no: number, exBoardDto: ExBoardDto) {
-    const { categoryNo, areaNo } = exBoardDto;
-    // let board: Board = await this.boardRepository.findOne(no);
-    const board = await this.boardRepository.findTest(no);
-    console.log(board);
-
-    this.errorConfirm.notFoundError(board, `해당 게시글을 찾을 수 없습니다.`);
-    const category = await this.categoryRepository.findOne(categoryNo, {
-      relations: ['boards'],
-    });
-
-    const area = await this.areaRepository.findOne(areaNo, {
-      relations: ['boards'],
-    });
-    this.errorConfirm.notFoundError(
-      category,
-      `해당 카테고리를 찾을 수 없습니다.`,
-    );
-
-    this.errorConfirm.notFoundError(area, `해당 지역을 찾을 수 없습니다.`);
-
-    const boardKey = Object.keys(exBoardDto);
-
-    type DeletedNullBoardKey = {
-      [key: string]: any;
-    };
-    const deletedNullBoardKey: DeletedNullBoardKey = {};
-    boardKey.forEach((item) => {
-      exBoardDto[item] ? (deletedNullBoardKey[item] = exBoardDto[item]) : 0;
-    });
-    console.log(deletedNullBoardKey);
-    // const endTime = new Date(board.createdAt);
-
-    // switch (deadline) {
-    //   case 0:
-    //     endTime.setDate(endTime.getDate() + 7);
-    //     break;
-    //   case 1:
-    //     endTime.setMonth(endTime.getMonth() + 1);
-    //     break;
-    //   case 2:
-    //     endTime.setMonth(endTime.getMonth() + 3);
-    //     break;
-    //   case 3:
-    //     endTime.setFullYear(endTime.getFullYear() + 100);
-    //     break;
-    // }
-
-    // const currentTime = new Date();
-    // currentTime.setHours(currentTime.getHours() + 9);
-
-    // if (endTime <= currentTime) {
-    //   throw new BadRequestException('다른 기간을 선택해 주십시오');
-    // }
-    for (const key of Object.keys(deletedNullBoardKey)) {
-      // console.log(typeof deletedNullBoardKey[key]);
-
-      // console.log('ssss', key);
-      switch (key) {
-        case 'price':
-        case 'title':
-        case 'description':
-        case 'summary':
-        case 'target':
-        case 'note1':
-        case 'note2':
-        case 'note3':
-          board[key] = deletedNullBoardKey[key];
-          break;
-        // case 'title':
-        //   board.title = deletedNullBoardKey[key];
-        //   break;
-        // case 'description':
-        //   board.description = deletedNullBoardKey[key];
-        //   break;
-        // case 'price':
-        //   board.price = deletedNullBoardKey[key];
-        //   break;
-        // case 'summary':
-        //   board.summary = deletedNullBoardKey[key];
-        //   break;
-        // case 'target':
-        //   board[key] = deletedNullBoardKey[key];
-        //   break;
-        // case 'note1':
-        //   board.note1 = deletedNullBoardKey[key];
-        //   break;
-        // case 'note2':
-        //   board.note2 = deletedNullBoardKey[key];
-        //   break;
-        // case 'note3':
-        //   board.note3 = deletedNullBoardKey[key];
-        //   break;
-        // case 'deadline':
-
-        //   break;
-        // case 'areaNo':
-        //   const areaRepo = await this.areaRepository.findOne(areaNo);
-        //   board.area = areaRepo;
-        //   break;
-        // case 'categoryNo':
-        //   const categoryRepo = await this.categoryRepository.findOne(
-        //     categoryNo,
-        //   );
-        //   board.category = categoryRepo;
-        //   break; 여기 풀고
-      }
-    }
-    // await this.boardRepository.save(board); 여기 풀고
   }
 }

@@ -88,11 +88,6 @@ export class CreateBoardDto extends BoardContent {
   userNo: number;
 }
 
-export class UpdateBoardDto extends BoardContent {
-  @IsNumber()
-  deadline: number;
-}
-
 export class SearchBoardDto {
   @IsString()
   @MaxLength(15)
@@ -110,7 +105,7 @@ export class LikeBoardDto {
   judge: boolean;
 }
 
-export abstract class ExBoardDto {
+export abstract class UpdateBoardDto {
   @IsOptional()
   @IsNumber()
   price?: number;
@@ -139,11 +134,11 @@ export abstract class ExBoardDto {
 
   @IsOptional()
   @IsNumber()
-  categoryNo?: number;
+  category?: number;
 
   @IsOptional()
   @IsNumber()
-  areaNo?: number;
+  area?: number;
 
   @IsOptional()
   @IsString()
@@ -159,4 +154,8 @@ export abstract class ExBoardDto {
   @IsString()
   @MaxLength(100)
   note3?: string;
+
+  @IsOptional()
+  @IsNumber()
+  deadline: any;
 }

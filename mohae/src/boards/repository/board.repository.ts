@@ -5,7 +5,7 @@ import {
 import { Area } from 'src/areas/entity/areas.entity';
 import { User } from 'src/auth/entity/user.entity';
 import { Category } from 'src/categories/entity/category.entity';
-import { DeleteResult, EntityRepository, Repository } from 'typeorm';
+import { DeleteResult, EntityRepository, IsNull, Repository } from 'typeorm';
 import { CreateBoardDto, UpdateBoardDto } from '../dto/board.dto';
 import { Board } from '../entity/board.entity';
 
@@ -111,13 +111,13 @@ export class BoardRepository extends Repository<Board> {
 
   async cancelClosedBoard(no: number): Promise<object> {
     try {
-      const affected = await this.createQueryBuilder()
+      const { affected } = await this.createQueryBuilder()
         .update(Board)
         .set({ isDeadline: false })
         .where('no = :no', { no })
         .execute();
 
-      return affected;
+      return { affected };
     } catch (e) {
       throw new InternalServerErrorException(
         `${e} ### 게시판 활성화 : 알 수 없는 서버 에러입니다.`,
@@ -338,44 +338,15 @@ export class BoardRepository extends Repository<Board> {
     }
   }
 
-  async updateBoard(
-    no: number,
-    category: Category,
-    area: Area,
-    updateBoardDto: UpdateBoardDto,
-    endTime: Date,
-  ): Promise<object> {
+  async updateBoard(no: number, deletedNullBoardKey: any): Promise<object> {
     const board = await this.findOne(no);
     if (!board) {
       throw new NotFoundException(`No: ${no} 게시글을 찾을 수 없습니다.`);
     }
     try {
-      const {
-        title,
-        description,
-        price,
-        summary,
-        target,
-        note1,
-        note2,
-        note3,
-      } = updateBoardDto;
-
       const updatedBoard = await this.createQueryBuilder()
         .update(Board)
-        .set({
-          title,
-          description,
-          price,
-          summary,
-          target,
-          category,
-          area,
-          note1,
-          note2,
-          note3,
-          deadline: endTime,
-        })
+        .set(deletedNullBoardKey)
         .where('no = :no', { no })
         .execute();
       const { affected } = updatedBoard;
@@ -410,9 +381,7 @@ export class BoardRepository extends Repository<Board> {
 
   async findTest(no) {
     const board = await this.createQueryBuilder('boards')
-      .select([
-        'boards_no AS no'
-      ])
+      .select(['boards_no AS no'])
       .where('no = :no', { no })
       .getRawOne();
     const { boards_no, boards_title } = board;
