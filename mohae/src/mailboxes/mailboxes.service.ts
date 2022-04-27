@@ -39,9 +39,9 @@ export class MailboxesService {
           'letter.createdAt AS createdAt',
         ])
         .from(Letter, 'letter')
-        .orderBy('letter.createdAt', 'DESC')
-        .limit(1)
         .groupBy('letter.no')
+        .limit(1)
+        .orderBy('letter.createdAt', 'DESC')
         .getQuery();
 
       const mailbox = await this.userRepository
@@ -98,7 +98,44 @@ export class MailboxesService {
         opponentNo,
       );
 
-      return mailbox;
+      const test = await this.mailboxUserRepository
+        .createQueryBuilder('mailboxUser')
+        .leftJoin('mailboxUser.user', 'users')
+        .leftJoin('mailboxUser.mailbox', 'mailboxes')
+        .select([
+          'mailboxUser.no',
+          'users.no',
+          // 'users.nickname',
+          'mailboxes.no',
+        ])
+        .where('users.no = :oneselfNo OR users.no = :opponentNo', {
+          oneselfNo,
+          opponentNo,
+        })
+        .groupBy('mailboxUser.no')
+        // .having('mailboxes.no IN (:...mn)', { mn: [1] })
+        .getMany();
+
+      const t = await this.userRepository
+        .createQueryBuilder('users')
+        .leftJoinAndSelect('users.mailboxUsers', 'MU')
+        .leftJoin('MU.user', 'MUUser')
+        .leftJoin('MU.mailbox', 'MUMailbox')
+        // .select([
+        //   'users.no',
+        //   'users.nickname',
+        //   'MU.no',
+        //   'MUMailbox.no',
+        //   'MUUser.no',
+        // ])
+        .where('users.no = :oneselfNo', { oneselfNo })
+        // .andWhere('MUUser.no = :opponentNo', { opponentNo })
+        // .andWhere('MUMailbox.no = :no')
+        .getOne();
+
+      console.log('###1', test);
+      console.log(t);
+      // return mailbox;
     } catch (e) {
       throw e;
     }
