@@ -91,6 +91,8 @@ export class MailboxesService {
         oneselfNo,
         opponentNo,
       );
+
+      return mailbox;
     } catch (e) {
       throw e;
     }
