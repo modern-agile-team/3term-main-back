@@ -5,7 +5,10 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UserRepository } from 'src/auth/repository/user.repository';
-import { MailboxRepository } from 'src/mailboxes/repository/mailbox.repository';
+import {
+  MailboxRepository,
+  MailboxUserRepository,
+} from 'src/mailboxes/repository/mailbox.repository';
 import { ErrorConfirm } from 'src/utils/error';
 import { SendLetterDto } from './dto/letter.dto';
 import { LetterRepository } from './repository/letter.repository';
@@ -22,6 +25,9 @@ export class LettersService {
     @InjectRepository(MailboxRepository)
     private mailboxRepository: MailboxRepository,
 
+    @InjectRepository(MailboxUserRepository)
+    private mailboxUserRepository: MailboxUserRepository,
+
     private errorConfirm: ErrorConfirm,
   ) {}
 
@@ -32,13 +38,18 @@ export class LettersService {
     description,
   }: SendLetterDto) {
     try {
-      const mailboxRelation = await this.mailboxRepository.findOne(mailboxNo, {
-        select: ['no'],
-        relations: ['letters'],
-      });
-      if (!mailboxRelation) {
-        throw new NotFoundException('해당 쪽지함을 찾을 수 없습니다.');
-      }
+      const newMailboxNo = !mailboxNo
+        ? await this.mailboxRepository.createMailbox()
+        : mailboxNo;
+
+      const mailboxRelation = await this.mailboxRepository.findOne(
+        newMailboxNo,
+        {
+          select: ['no'],
+          relations: ['letters'],
+        },
+      );
+
       const sender = await this.userRepository.findOne(senderNo, {
         select: ['no'],
         relations: ['sendLetters'],
@@ -62,6 +73,12 @@ export class LettersService {
           '본인에게는 쪽지를 전송할 수 없습니다.',
         );
       }
+
+      await this.mailboxUserRepository.saveMailboxUser(mailboxRelation, sender);
+      await this.mailboxUserRepository.saveMailboxUser(
+        mailboxRelation,
+        receiver,
+      );
 
       const { insertId } = await this.letterRepository.sendLetter(
         sender,
