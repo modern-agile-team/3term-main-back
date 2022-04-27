@@ -373,24 +373,20 @@ describe('AuthService', () => {
 
   describe('signDown', () => {
     it('회원 탈퇴가 성공하였을 때', async () => {
-      userRepository['signDown'].mockResolvedValue({
-        affected: 1,
-      });
+      userRepository['signDown'].mockResolvedValue(1);
       const no = 1;
       const resultValue = await authService.signDown(no);
-
-      expect(resultValue).toStrictEqual({
-        affected: 1,
-      });
+      expect(resultValue).toStrictEqual(
+        undefined,
+        // 반환값이 없어유~
+      );
     });
 
     it('회원 탈퇴를 진행하였는데 DB에 변동 사항이 없을 때', async () => {
-      userRepository['signDown'].mockResolvedValue({
-        affeted: 0,
-      });
+      userRepository['signDown'].mockResolvedValue(0);
       const no = 1;
       try {
-        await authService.signDown(no);
+        const result = await authService.signDown(no);
       } catch (e) {
         expect(e).toBeInstanceOf(InternalServerErrorException);
         expect(e.response.message).toBe(
@@ -429,7 +425,6 @@ describe('AuthService', () => {
         confirmChangePassword: 'muscle',
       };
       const returnValue = await authService.changePassword(changePasswordDto);
-
       expect(returnValue).toStrictEqual({
         affected: 1,
       });

@@ -58,12 +58,16 @@ export class AuthController {
 
   @Delete('/:no')
   async signDown(@Param('no') no: number): Promise<DeleteResult> {
-    await this.authService.signDown(no);
+    try {
+      await this.authService.signDown(no);
 
-    return Object.assign({
-      statusCode: 204,
-      msg: `성공적으로 회원탈퇴가 진행되었습니다.`,
-    });
+      return Object.assign({
+        statusCode: 204,
+        msg: `성공적으로 회원탈퇴가 진행되었습니다.`,
+      });
+    } catch (e) {
+      throw e;
+    }
   }
 
   @Patch('/change/password')

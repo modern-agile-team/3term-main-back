@@ -168,12 +168,16 @@ export class AuthService {
     }
   }
   async signDown(no: number) {
-    const Isaffected = await this.userRepository.signDown(no);
+    try {
+      const isAffected = await this.userRepository.signDown(no);
 
-    if (!Isaffected) {
-      throw new InternalServerErrorException(
-        `${no} 회원님의 회원탈퇴가 정상적으로 이루어 지지 않았습니다.`,
-      );
+      if (!isAffected) {
+        throw new InternalServerErrorException(
+          `${no} 회원님의 회원탈퇴가 정상적으로 이루어 지지 않았습니다.`,
+        );
+      }
+    } catch (e) {
+      throw e;
     }
   }
 
