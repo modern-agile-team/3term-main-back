@@ -1,10 +1,7 @@
-import {
-  Injectable,
-  NotFoundException,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UserRepository } from 'src/auth/repository/user.repository';
+import { Letter } from 'src/letters/entity/letter.entity';
 import { LetterRepository } from 'src/letters/repository/letter.repository';
 import { ErrorConfirm } from 'src/utils/error';
 import { MailboxRepository } from './repository/mailbox.repository';
@@ -26,9 +23,37 @@ export class MailboxesService {
 
   async findAllMailboxes(loginUserNo: number) {
     try {
-      const mailbox = await this.mailboxRepository.findAllMailboxes(
-        loginUserNo,
-      );
+      const Letters = this.letterRepository
+        .createQueryBuilder()
+        .subQuery()
+        .select([
+          'letter.no AS no',
+          'letter.mailbox AS mailbox',
+          'letter.description AS description',
+          'letter.createdAt AS createdAt',
+        ])
+        .from(Letter, 'letter')
+        .orderBy('letter.createdAt', 'DESC')
+        .limit(1)
+        .groupBy('letter.no')
+        .getQuery();
+
+      const mailbox = await this.userRepository
+        .createQueryBuilder('user')
+        .where('user.no = :loginUserNo', { loginUserNo })
+        .leftJoin('user.mailboxes', 'mailbox')
+        .leftJoin(Letters, 'letter', 'letter.mailbox = mailbox.no')
+        .select([
+          'user.no AS userNo',
+          'user.photo_url AS photoUrl',
+          'user.nickname AS nickname',
+          'mailbox.no AS mailboxNo',
+          'letter.no AS letterNo',
+          'letter.description AS letterDescription',
+          'letter.createdAt AS letterCreatedAt',
+        ])
+        .orderBy('letter.createdAt', 'DESC')
+        .getRawMany();
 
       return mailbox;
     } catch (e) {
@@ -36,37 +61,12 @@ export class MailboxesService {
     }
   }
 
-  async searchMailbox(loginUserNo: number, clickedUserNo: number) {
+  async searchMailbox(mailboxNo: number, limit: number) {
     try {
-      if (loginUserNo === clickedUserNo) {
-        throw new UnauthorizedException('자신에게는 채팅을 보낼 수 없습니다.');
-      }
-      const loginUserInfo = await this.userRepository.findOne(loginUserNo);
-      this.errorConfirm.notFoundError(loginUserInfo, '내 정보 못찾음');
-
-      const clickedUserInfo = await this.userRepository.findOne(clickedUserNo);
-      this.errorConfirm.notFoundError(clickedUserInfo, '너 정보 못찾음');
-
-      const mailboxNo = await this.mailboxRepository.searchMailbox(
-        loginUserNo,
-        clickedUserNo,
+      const mailbox = await this.mailboxRepository.searchMailbox(
+        mailboxNo,
+        limit,
       );
-
-      if (!mailboxNo) {
-        const user1 = await this.userRepository.findOne(loginUserNo);
-        const user2 = await this.userRepository.findOne(clickedUserNo);
-        const newMailboxNo = await this.mailboxRepository.createMailbox();
-        const relation = await this.mailboxRepository.findOne(newMailboxNo, {
-          relations: ['users'],
-        });
-
-        relation.users.push(user1);
-        relation.users.push(user2);
-
-        await this.mailboxRepository.save(relation);
-
-        return this.mailboxRepository.findOneMailbox(newMailboxNo);
-      }
 
       const notReadLetter = await this.letterRepository.notReadingLetter(
         mailboxNo,
@@ -79,13 +79,7 @@ export class MailboxesService {
       for (const letter of notReadLetter) {
         await this.letterRepository.updateReading(letter.no);
       }
-
-      const letterContent = await this.letterRepository.getLetterContent(
-        loginUserNo,
-        clickedUserNo,
-      );
-
-      return letterContent;
+      return mailbox;
     } catch (e) {
       throw e;
     }
