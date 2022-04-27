@@ -79,6 +79,7 @@ export class User extends BaseEntity {
   @Column({
     type: 'varchar',
     comment: '암호화된 비밀번호',
+    select: false,
   })
   salt: string;
 

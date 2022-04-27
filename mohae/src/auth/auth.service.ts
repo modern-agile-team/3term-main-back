@@ -17,6 +17,7 @@ import { MajorRepository } from 'src/majors/repository/major.repository';
 import * as config from 'config';
 import { CategoryRepository } from 'src/categories/repository/category.repository';
 import { ErrorConfirm } from 'src/utils/error';
+import { create } from 'domain';
 
 const jwtConfig = config.get('jwt');
 @Injectable()
@@ -65,7 +66,7 @@ export class AuthService {
       'email',
       email,
     );
-
+    //return 값이 있으면 번호, 없으면 undefined
     const duplicateNickname = await this.userRepository.duplicateCheck(
       'nickname',
       nickname,
@@ -78,12 +79,12 @@ export class AuthService {
     if (duplicateKeys.length) {
       throw new ConflictException(`해당 ${duplicateKeys}이 이미 존재합니다.`);
     }
-
     const user = await this.userRepository.createUser(
       createUserDto,
       schoolRepo,
       majorRepo,
     );
+
     if (!user) {
       throw new NotFoundException(
         '유저 생성이 정상적으로 이루어지지 않았습니다.',

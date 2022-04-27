@@ -12,6 +12,7 @@ export class UserRepository extends Repository<User> {
     try {
       const { email, password, phone, nickname, manager, name, photo_url } =
         createUserDto;
+
       const salt = await bcrypt.genSalt();
       const hashedPassword = await bcrypt.hash(password, salt);
       const user = this.create({
@@ -25,12 +26,11 @@ export class UserRepository extends Repository<User> {
         manager,
         photo_url,
       });
-
       await user.save();
       return user;
     } catch (e) {
       throw new InternalServerErrorException(
-        '서버에러입니다 서버 담당자에게 말해주세요',
+        `${e} ### 회원 가입도중 발생한 서버에러입니다 서버 담당자에게 말해주세요`,
       );
     }
   }
@@ -38,6 +38,7 @@ export class UserRepository extends Repository<User> {
   async signIn(email: string) {
     try {
       const user = await this.createQueryBuilder('users')
+        .addSelect('users.salt')
         .where('users.email = :email', { email })
         .getOne();
 
