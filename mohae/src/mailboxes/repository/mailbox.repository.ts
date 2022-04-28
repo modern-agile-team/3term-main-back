@@ -8,14 +8,21 @@ export class MailboxRepository extends Repository<Mailbox> {
   async searchMailbox(mailboxNo: number, limit: number) {
     try {
       const mailbox = await this.createQueryBuilder('mailboxes')
-        .leftJoin('mailboxes.users', 'users')
+        .leftJoin('mailboxes.mailboxUsers', 'mailboxUsers')
+        .leftJoin(
+          'mailboxUsers.mailbox',
+          'mailbox',
+          'mailbox.no = :mailboxNo',
+          { mailboxNo },
+        )
+        .leftJoin('mailboxUsers.user', 'user')
         .leftJoin('mailboxes.letters', 'letter')
         .limit(limit * 2 + 19)
         .select([
           'mailboxes.no',
-          'users.no',
-          'users.nickname',
-          'users.photo_url',
+          'mailboxUsers.no',
+          'mailbox.no',
+          'user.no',
           'letter.no',
           'letter.description',
           'letter.reading_flag',
