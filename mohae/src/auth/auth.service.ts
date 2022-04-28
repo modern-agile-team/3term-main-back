@@ -17,6 +17,8 @@ import { MajorRepository } from 'src/majors/repository/major.repository';
 import * as config from 'config';
 import { CategoryRepository } from 'src/categories/repository/category.repository';
 import { ErrorConfirm } from 'src/utils/error';
+import { create } from 'domain';
+import { copyFileSync } from 'fs';
 
 const jwtConfig = config.get('jwt');
 @Injectable()
@@ -38,8 +40,8 @@ export class AuthService {
     private jwtService: JwtService,
   ) {}
   async signUp(createUserDto: CreateUserDto): Promise<User> {
-    const { school, major, email, nickname, categories } = createUserDto;
-
+    const { school, major, email, nickname, categories, password } =
+      createUserDto;
     const schoolRepo = await this.schoolRepository.findOne(school, {
       select: ['no'],
     });
@@ -65,7 +67,6 @@ export class AuthService {
       'email',
       email,
     );
-
     const duplicateNickname = await this.userRepository.duplicateCheck(
       'nickname',
       nickname,
@@ -78,18 +79,20 @@ export class AuthService {
     if (duplicateKeys.length) {
       throw new ConflictException(`해당 ${duplicateKeys}이 이미 존재합니다.`);
     }
-
-    const user = await this.userRepository.createUser(
+    const salt = await bcrypt.genSalt();
+    const hashedPassword = await bcrypt.hash(password, salt);
+    createUserDto.password = hashedPassword;
+    const user: User = await this.userRepository.createUser(
       createUserDto,
       schoolRepo,
       majorRepo,
     );
+
     if (!user) {
       throw new NotFoundException(
         '유저 생성이 정상적으로 이루어지지 않았습니다.',
       );
     }
-
     const filteredCategories = categoriesRepo.filter(
       (element) => element !== undefined,
     );
@@ -111,13 +114,9 @@ export class AuthService {
         user,
         '아이디 또는 비밀번호가 일치하지 않습니다.',
       );
-      const lastLogin = user.latestLogin.getTime();
-      // VScode에서 찍는 현재시간이 pc 시간보다 9시간 적게 나와서 일단 Date().getTime()에 9시간을 강제로 더해서 현재시간을 측정해주었음
-      // const plusCurrentTime = 9 * 60 * 60 * 1000;
-      const plusCurrentTime = 32398362;
-      const currentTime = new Date().getTime() + plusCurrentTime;
+      const loginTerm = await this.userRepository.checkLoginTerm(user.no);
 
-      if (user.isLock && currentTime >= lastLogin + 10000) {
+      if (user.isLock && loginTerm > 10) {
         await this.userRepository.changeIsLock(user.no, user.isLock);
       }
       const isLockUser = await this.userRepository.signIn(email);
@@ -156,22 +155,25 @@ export class AuthService {
 
       throw new UnauthorizedException(
         `로그인 실패 횟수를 모두 초과 하였습니다 ${Math.floor(
-          (lastLogin + 10000 - currentTime) / 1000,
+          10 - loginTerm,
         )}초 뒤에 다시 로그인 해주세요`,
       );
     } catch (e) {
       throw e;
     }
   }
-  async signDown(no: number): Promise<DeleteResult> {
-    const result = await this.userRepository.signDown(no);
+  async signDown(no: number) {
+    try {
+      const isAffected = await this.userRepository.signDown(no);
 
-    if (!result.affected) {
-      throw new InternalServerErrorException(
-        `${no} 회원님의 회원탈퇴가 정상적으로 이루어 지지 않았습니다.`,
-      );
+      if (!isAffected) {
+        throw new InternalServerErrorException(
+          `${no} 회원님의 회원탈퇴가 정상적으로 이루어 지지 않았습니다.`,
+        );
+      }
+    } catch (e) {
+      throw e;
     }
-    return result;
   }
 
   async changePassword(changePasswordDto) {
@@ -250,4 +252,6 @@ export class AuthService {
       throw e;
     }
   }
+
+  async changeIsLockTest() {}
 }

@@ -25,7 +25,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { Letter } from 'src/letters/entity/letter.entity';
-import { Mailbox } from 'src/mailboxes/entity/mailbox.entity';
+import { Mailbox, MailboxUser } from 'src/mailboxes/entity/mailbox.entity';
 import { Spec } from 'src/specs/entity/spec.entity';
 import { Faq } from 'src/faqs/entity/faq.entity';
 import { Notice } from 'src/notices/entity/notice.entity';
@@ -79,6 +79,7 @@ export class User extends BaseEntity {
   @Column({
     type: 'varchar',
     comment: '암호화된 비밀번호',
+    select: false,
   })
   salt: string;
 
@@ -196,8 +197,8 @@ export class User extends BaseEntity {
   @JoinTable({ name: 'user_in_category' })
   categories: Category[];
 
-  @ManyToMany((type) => Mailbox, (mailbox) => mailbox.users)
-  mailboxes: Mailbox[];
+  @OneToMany(() => MailboxUser, (mailboxUser) => mailboxUser.mailbox)
+  mailboxUsers: MailboxUser[];
 
   @ManyToMany((type) => Board, (board) => board.likedUser, {
     cascade: true,

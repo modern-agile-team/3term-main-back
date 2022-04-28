@@ -8,20 +8,13 @@ import { JwtService } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { create } from 'domain';
-import { Category } from 'src/categories/entity/category.entity';
 import { CategoryRepository } from 'src/categories/repository/category.repository';
 import { MajorRepository } from 'src/majors/repository/major.repository';
 import { SchoolRepository } from 'src/schools/repository/school.repository';
 import { ErrorConfirm } from 'src/utils/error';
-import { ConnectionIsNotSetError, getRepository, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { AuthService } from './auth.service';
-import {
-  ChangePasswordDto,
-  CreateUserDto,
-  SignInDto,
-} from './dto/auth-credential.dto';
-import { User } from './entity/user.entity';
+import { CreateUserDto, SignInDto } from './dto/auth-credential.dto';
 import { UserRepository } from './repository/user.repository';
 import * as bcrypt from 'bcryptjs';
 
@@ -123,7 +116,7 @@ describe('AuthService', () => {
   });
 
   describe('signUp', () => {
-    it('회원가입이 성공적으로 이루어졌을 경우', async () => {
+    beforeEach(async () => {
       schoolRepository.findOne.mockResolvedValue({
         no: 1,
         name: '인덕대',
@@ -154,7 +147,9 @@ describe('AuthService', () => {
       categoryRepository['addUser'].mockResolvedValue();
       schoolRepository['addUser'].mockResolvedValue();
       majorRepository['addUser'].mockResolvedValue();
+    });
 
+    it('회원가입이 성공적으로 이루어졌을 경우', async () => {
       const createUserDto: CreateUserDto = {
         email: 'cd111@eegnadddddsver.com',
         password: 'hello',
@@ -177,36 +172,7 @@ describe('AuthService', () => {
     });
 
     it('이메일,닉네임이 중복되는 경우', async () => {
-      schoolRepository.findOne.mockResolvedValue({
-        no: 1,
-        name: '인덕대',
-        users: [],
-      });
-
-      majorRepository.findOne.mockResolvedValue({
-        no: 1,
-        name: '개발',
-        users: [],
-      });
-      categoryRepository['selectCategory'].mockResolvedValue([
-        { no: 1, name: '개발' },
-        { no: 2, name: '디자인' },
-        { no: 3, name: '일상' },
-      ]);
       userRepository['duplicateCheck'].mockResolvedValue(1);
-      userRepository['createUser'].mockResolvedValue({
-        no: 1,
-        email: 'subro',
-        nickname: '용훈',
-      });
-      userRepository.findOne.mockResolvedValue({
-        no: 1,
-        categories: [],
-      });
-      categoryRepository['saveUsers'].mockResolvedValue();
-      categoryRepository['addUser'].mockResolvedValue();
-      schoolRepository['addUser'].mockResolvedValue();
-      majorRepository['addUser'].mockResolvedValue();
 
       const createUserDto: CreateUserDto = {
         email: 'cd111@eegnadddddsver.com',
@@ -237,27 +203,7 @@ describe('AuthService', () => {
 
     it('DB에 없는 학교 정보,전공 번호로 회원가입을 하려할 때', async () => {
       schoolRepository.findOne.mockResolvedValue(undefined);
-
       majorRepository.findOne.mockResolvedValue(undefined);
-      categoryRepository['selectCategory'].mockResolvedValue([
-        { no: 1, name: '개발' },
-        { no: 2, name: '디자인' },
-        { no: 3, name: '일상' },
-      ]);
-      userRepository['duplicateCheck'].mockResolvedValue(undefined);
-      userRepository['createUser'].mockResolvedValue({
-        no: 1,
-        email: 'subro',
-        nickname: '용훈',
-      });
-      userRepository.findOne.mockResolvedValue({
-        no: 1,
-        categories: [],
-      });
-      categoryRepository['saveUsers'].mockResolvedValue();
-      categoryRepository['addUser'].mockResolvedValue();
-      schoolRepository['addUser'].mockResolvedValue();
-      majorRepository['addUser'].mockResolvedValue();
 
       const createUserDto: CreateUserDto = {
         email: 'cd111@eegnadddddsver.com',
@@ -287,32 +233,7 @@ describe('AuthService', () => {
     });
 
     it('유저 생성이 정상적으로 이루어지지 않았을 때', async () => {
-      schoolRepository.findOne.mockResolvedValue({
-        no: 1,
-        name: '인덕대',
-        users: [],
-      });
-
-      majorRepository.findOne.mockResolvedValue({
-        no: 1,
-        name: '개발',
-        users: [],
-      });
-      categoryRepository['selectCategory'].mockResolvedValue([
-        { no: 1, name: '개발' },
-        { no: 2, name: '디자인' },
-        { no: 3, name: '일상' },
-      ]);
-      userRepository['duplicateCheck'].mockResolvedValue(undefined);
       userRepository['createUser'].mockResolvedValue(undefined);
-      userRepository.findOne.mockResolvedValue({
-        no: 1,
-        categories: [],
-      });
-      categoryRepository['saveUsers'].mockResolvedValue();
-      categoryRepository['addUser'].mockResolvedValue();
-      schoolRepository['addUser'].mockResolvedValue();
-      majorRepository['addUser'].mockResolvedValue();
 
       const createUserDto: CreateUserDto = {
         email: 'cd111@eegnadddddsver.com',
@@ -343,7 +264,7 @@ describe('AuthService', () => {
   });
 
   describe('signIn', () => {
-    it('로그인에 성공하였을 때', async () => {
+    beforeEach(async () => {
       userRepository['signIn'].mockResolvedValue({
         no: 1,
         isLock: 0,
@@ -362,7 +283,8 @@ describe('AuthService', () => {
       });
       bcrypt.compare = jest.fn().mockResolvedValue(true);
       mockJwtService.sign = jest.fn().mockResolvedValue('accessToken 입니다.');
-
+    });
+    it('로그인에 성공하였을 때', async () => {
       const signInDto: SignInDto = {
         email: 'subro',
         password: '1234',
@@ -376,17 +298,6 @@ describe('AuthService', () => {
 
     it('없는 이메일로 로그인을 시도했을 때', async () => {
       userRepository['signIn'].mockResolvedValue(undefined);
-      userRepository['changeIsLock'].mockResolvedValue({
-        affected: 0,
-      });
-      userRepository['clearLoginCount'].mockResolvedValue({
-        affected: 0,
-      });
-      userRepository['plusLoginFailCount'].mockResolvedValue({
-        affected: 0,
-      });
-      bcrypt.compare = jest.fn().mockResolvedValue(true);
-      mockJwtService.sign = jest.fn().mockResolvedValue('accessToken 입니다.');
 
       const signInDto: SignInDto = {
         email: 'subro',
@@ -408,24 +319,7 @@ describe('AuthService', () => {
     });
 
     it('비밀번호가 틀렸을때', async () => {
-      userRepository['signIn'].mockResolvedValue({
-        no: 1,
-        isLock: 0,
-        latestLogin: new Date(),
-        salt: '1234',
-        loginFailCount: 0,
-      });
-      userRepository['changeIsLock'].mockResolvedValue({
-        affected: 0,
-      });
-      userRepository['clearLoginCount'].mockResolvedValue({
-        affected: 0,
-      });
-      userRepository['plusLoginFailCount'].mockResolvedValue({
-        affected: 0,
-      });
       bcrypt.compare = jest.fn().mockResolvedValue(false);
-      mockJwtService.sign = jest.fn().mockResolvedValue('accessToken 입니다.');
 
       const signInDto: SignInDto = {
         email: 'subro',
@@ -455,17 +349,6 @@ describe('AuthService', () => {
         salt: '1234',
         loginFailCount: 0,
       });
-      userRepository['changeIsLock'].mockResolvedValue({
-        affected: 0,
-      });
-      userRepository['clearLoginCount'].mockResolvedValue({
-        affected: 0,
-      });
-      userRepository['plusLoginFailCount'].mockResolvedValue({
-        affected: 0,
-      });
-      bcrypt.compare = jest.fn().mockResolvedValue(false);
-      mockJwtService.sign = jest.fn().mockResolvedValue('accessToken 입니다.');
 
       const signInDto: SignInDto = {
         email: 'subro',
@@ -490,24 +373,20 @@ describe('AuthService', () => {
 
   describe('signDown', () => {
     it('회원 탈퇴가 성공하였을 때', async () => {
-      userRepository['signDown'].mockResolvedValue({
-        affected: 1,
-      });
+      userRepository['signDown'].mockResolvedValue(1);
       const no = 1;
       const resultValue = await authService.signDown(no);
-
-      expect(resultValue).toStrictEqual({
-        affected: 1,
-      });
+      expect(resultValue).toStrictEqual(
+        undefined,
+        // 반환값이 없어유~
+      );
     });
 
     it('회원 탈퇴를 진행하였는데 DB에 변동 사항이 없을 때', async () => {
-      userRepository['signDown'].mockResolvedValue({
-        affeted: 0,
-      });
+      userRepository['signDown'].mockResolvedValue(0);
       const no = 1;
       try {
-        await authService.signDown(no);
+        const result = await authService.signDown(no);
       } catch (e) {
         expect(e).toBeInstanceOf(InternalServerErrorException);
         expect(e.response.message).toBe(
@@ -524,7 +403,7 @@ describe('AuthService', () => {
   });
 
   describe('changePassword', () => {
-    it('성공적으로 비밀번호를 변경했을 때', async () => {
+    beforeEach(async () => {
       userRepository['signIn'].mockResolvedValue({
         no: 1,
         isLock: 1,
@@ -536,7 +415,9 @@ describe('AuthService', () => {
       bcrypt.genSalt = jest.fn().mockResolvedValue('salt');
       bcrypt.hash = jest.fn().mockResolvedValue('hash');
       userRepository['changePassword'].mockResolvedValue({ affected: 1 });
+    });
 
+    it('성공적으로 비밀번호를 변경했을 때', async () => {
       const changePasswordDto = {
         email: 'subro@health.com',
         nowPassword: 'health',
@@ -544,7 +425,6 @@ describe('AuthService', () => {
         confirmChangePassword: 'muscle',
       };
       const returnValue = await authService.changePassword(changePasswordDto);
-
       expect(returnValue).toStrictEqual({
         affected: 1,
       });
@@ -573,15 +453,7 @@ describe('AuthService', () => {
     });
 
     it('이전의 비밀번호로 비밀번호 변경을 시도하였을 때', async () => {
-      userRepository['signIn'].mockResolvedValue({
-        no: 1,
-        isLock: 1,
-        latestLogin: new Date(),
-        salt: '1234',
-        loginFailCount: 0,
-      });
       bcrypt.compare = jest.fn().mockResolvedValue(true);
-      bcrypt.genSalt = jest.fn().mockResolvedValue('salt');
 
       const changePasswordDto = {
         email: 'subro@health.com',
@@ -609,7 +481,6 @@ describe('AuthService', () => {
         undefined,
       });
       bcrypt.compare = jest.fn().mockResolvedValue(false);
-      bcrypt.genSalt = jest.fn().mockResolvedValue('salt');
 
       const changePasswordDto = {
         email: 'subro@health.com',
@@ -633,15 +504,6 @@ describe('AuthService', () => {
     });
 
     it('비밀번호 변경 중 알 수 없는 오류', async () => {
-      userRepository['signIn'].mockResolvedValue({
-        no: 1,
-        isLock: 1,
-        latestLogin: new Date(),
-        salt: '1234',
-        loginFailCount: 0,
-      });
-      bcrypt.compare = jest.fn().mockResolvedValue(true);
-      bcrypt.genSalt = jest.fn().mockResolvedValue('salt');
       userRepository['changePassword'].mockResolvedValue({ affected: 0 });
 
       const changePasswordDto = {
@@ -667,7 +529,7 @@ describe('AuthService', () => {
   });
 
   describe('forgetPassword', () => {
-    it('성공적으로 비밀번호를 변경했을 때', async () => {
+    beforeEach(async () => {
       userRepository['signIn'].mockResolvedValue({
         no: 1,
         isLock: 1,
@@ -680,13 +542,15 @@ describe('AuthService', () => {
       bcrypt.genSalt = jest.fn().mockResolvedValue('salt');
       bcrypt.hash = jest.fn().mockResolvedValue('hash');
       userRepository['changePassword'].mockResolvedValue({ affected: 1 });
-
+    });
+    it('성공적으로 비밀번호를 변경했을 때', async () => {
       const forgetPasswordDto = {
         email: 'subro@health.com',
         changePassword: 'muscle',
         confirmChangePassword: 'muscle',
       };
       const returnValue = await authService.forgetPassword(forgetPasswordDto);
+
       expect(returnValue).toStrictEqual({
         affected: 1,
       });
@@ -713,14 +577,8 @@ describe('AuthService', () => {
       }
     });
     it('이전 비밀번호로 비밀번호를 변경하려는 경우', async () => {
-      userRepository['signIn'].mockResolvedValue({
-        no: 1,
-        isLock: 1,
-        latestLogin: new Date(),
-        salt: '1234',
-        loginFailCount: 0,
-      });
       bcrypt.compare = jest.fn().mockResolvedValue(true);
+
       const forgetPasswordDto = {
         email: 'subro@health.com',
         changePassword: 'muscle',
@@ -742,15 +600,13 @@ describe('AuthService', () => {
     });
 
     it('비밀번호 변경 중 알 수 없는 오류', async () => {
+      userRepository['changePassword'].mockResolvedValue({ affected: 0 });
+
       const forgetPasswordDto = {
         email: 'subro@health.com',
         changePassword: 'muscle',
         confirmChangePassword: 'muscle',
       };
-      bcrypt.compare = jest.fn().mockResolvedValue(false);
-      bcrypt.genSalt = jest.fn().mockResolvedValue('salt');
-      userRepository['changePassword'].mockResolvedValue({ affected: 0 });
-
       try {
         await authService.forgetPassword(forgetPasswordDto);
       } catch (e) {

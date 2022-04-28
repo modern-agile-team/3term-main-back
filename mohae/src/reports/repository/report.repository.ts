@@ -15,10 +15,21 @@ export class ReportedBoardRepository extends Repository<ReportedBoard> {
   async readOneReportedBoard(no: number): Promise<ReportedBoard> {
     try {
       const reportBoard = await this.createQueryBuilder('reported_boards')
-        .leftJoinAndSelect('reported_boards.reportUser', 'reportUser')
-        .leftJoinAndSelect('reported_boards.reportedBoard', 'reportedBoard')
-        .leftJoinAndSelect('reported_boards.checks', 'checks')
-        .leftJoinAndSelect('checks.check', 'check')
+        .leftJoin('reported_boards.reportUser', 'reportUser')
+        .leftJoin('reported_boards.reportedBoard', 'reportedBoard')
+        .leftJoin('reported_boards.checks', 'checks')
+        .leftJoin('checks.check', 'check')
+        .select([
+          'reported_boards.no',
+          'reported_boards.description',
+          'reportUser.no',
+          'reportUser.email',
+          'reportedBoard.no',
+          'reportedBoard.title',
+          'checks.no',
+          'check.no',
+          'check.content',
+        ])
         .where('reported_boards.no = :no', { no })
         .getOne();
 
@@ -55,6 +66,18 @@ export class ReportedUserRepository extends Repository<ReportedUser> {
         .leftJoin('reported_users.reportUser', 'reportUser')
         .leftJoin('reported_users.reportedUser', 'reportedUser')
         .leftJoin('reported_users.checks', 'checks')
+        .leftJoin('checks.check', 'check')
+        .select([
+          'reported_users.no',
+          'reported_users.description',
+          'reportUser.no',
+          'reportUser.email',
+          'reportedUser.no',
+          'reportedUser.email',
+          'checks.no',
+          'check.no',
+          'check.content',
+        ])
         .where('reported_users.no = :no', { no })
         .getOne();
 
@@ -88,15 +111,8 @@ export class ReportedUserRepository extends Repository<ReportedUser> {
         .into(ReportedUser)
         .values({ description })
         .execute();
-      const { insertId, affectedRows } = raw;
 
-      if (!affectedRows) {
-        throw new InternalServerErrorException(
-          '게시글 신고가 접수되지 않았습니다.',
-        );
-      }
-
-      return insertId;
+      return raw;
     } catch (e) {
       throw new InternalServerErrorException(
         `${e} ### 게시글 신고 : 알 수 없는 서버 에러입니다.`,
