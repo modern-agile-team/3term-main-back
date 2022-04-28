@@ -8,8 +8,6 @@ import {
   UsePipes,
   ValidationPipe,
   Patch,
-  UseGuards,
-  Req,
   Query,
   Logger,
 } from '@nestjs/common';
@@ -34,8 +32,8 @@ export class BoardsController {
 
   @Cron('0 1 * * * *')
   async handleCron() {
-    const close = await this.boardService.closingBoard();
-    if (!close.success) {
+    const response = await this.boardService.closingBoard();
+    if (!response.success) {
       this.logger.error('게시글 마감처리 로직 에러');
     }
 
@@ -43,13 +41,12 @@ export class BoardsController {
   }
 
   @Get()
-  async getAllBoards(): Promise<Board[]> {
+  async getAllBoards(): Promise<object> {
     const response = await this.boardService.getAllBoards();
 
     return Object.assign({
       statusCode: 200,
       msg: '게시글 전체 조회가 완료되었습니다.',
-      allBoardNum: response.length,
       response,
     });
   }
@@ -58,7 +55,7 @@ export class BoardsController {
   async filteredBoards(
     @Param('no') no: number,
     @Query() paginationQuery,
-  ): Promise<Board[]> {
+  ): Promise<object> {
     const { sort, title, popular, areaNo, max, min, target, date, free } =
       paginationQuery;
 
@@ -78,7 +75,6 @@ export class BoardsController {
     return Object.assign({
       statusCode: 200,
       msg: '게시글 필터링이 완료되었습니다.',
-      filteredBoardNum: response.length,
       response,
     });
   }
@@ -97,13 +93,12 @@ export class BoardsController {
   @Get('search')
   async searchAllBoards(
     @Query() searchBoardDto: SearchBoardDto,
-  ): Promise<Board[]> {
+  ): Promise<object> {
     const response = await this.boardService.searchAllBoards(searchBoardDto);
 
     return Object.assign({
       statusCode: 200,
       msg: '검색결과에 대한 게시글 조회가 완료되었습니다.',
-      foundedBoardNum: response.length,
       response,
     });
   }
@@ -132,13 +127,12 @@ export class BoardsController {
 
   @Get('/:no')
   async getByOneBoard(@Param('no') no: number) {
-    const { board, likeCount } = await this.boardService.getByOneBoard(no);
+    const response = await this.boardService.getByOneBoard(no);
 
     return Object.assign({
       statusCode: 200,
       msg: '게시글 상세 조회가 완료되었습니다.',
-      likeCount,
-      board,
+      response,
     });
   }
 
