@@ -35,14 +35,13 @@ export class MailboxRepository extends Repository<Mailbox> {
 
   async createMailbox() {
     try {
-      const newMailbox = await this.createQueryBuilder('mailboxes')
+      const { raw } = await this.createQueryBuilder('mailboxes')
         .insert()
         .into(Mailbox)
         .values({})
         .execute();
-      const { insertId } = newMailbox.raw;
 
-      return insertId;
+      return raw.insertId;
     } catch {
       throw new InternalServerErrorException(
         '### 새로운 쪽지방을 생성 : 알 수 없는 서버 에러입니다.',
@@ -68,29 +67,28 @@ export class MailboxRepository extends Repository<Mailbox> {
 
   async checkMailbox(oneselfNo: number, opponentNo: number) {
     try {
-      const mailbox = await this.createQueryBuilder('mailboxes')
-        .leftJoinAndSelect(
-          'mailboxes.users',
-          'user',
-          'user.no = :oneselfNo AND user.no = :opponentNo',
-          {
-            oneselfNo,
-            opponentNo,
-          },
-        )
-        .leftJoinAndSelect('mailboxes.letters', 'letter')
-        .select([
-          'mailboxes.no',
-          'user.no',
-          'user.nickname',
-          'letter.no',
-          'letter.description',
-          'letter.reading_flag',
-          'letter.createdAt',
-        ])
-        .getOne();
-
-      return mailbox;
+      // const mailbox = await this.createQueryBuilder('mailboxes')
+      //   .leftJoinAndSelect(
+      //     'mailboxes.users',
+      //     'user',
+      //     'user.no = :oneselfNo AND user.no = :opponentNo',
+      //     {
+      //       oneselfNo,
+      //       opponentNo,
+      //     },
+      //   )
+      //   .leftJoinAndSelect('mailboxes.letters', 'letter')
+      //   .select([
+      //     'mailboxes.no',
+      //     'user.no',
+      //     'user.nickname',
+      //     'letter.no',
+      //     'letter.description',
+      //     'letter.reading_flag',
+      //     'letter.createdAt',
+      //   ])
+      //   .getOne();
+      // return mailbox;
     } catch (e) {
       throw new InternalServerErrorException(
         '### 쪽지함 여부 확인 : 알 수 없는 서버 에러입니다.',
@@ -103,11 +101,13 @@ export class MailboxRepository extends Repository<Mailbox> {
 export class MailboxUserRepository extends Repository<MailboxUser> {
   async saveMailboxUser(mailbox: Mailbox, user: User) {
     try {
-      await this.createQueryBuilder('board_report_checks')
+      const { raw } = await this.createQueryBuilder()
         .insert()
         .into(MailboxUser)
         .values({ mailbox, user })
         .execute();
+
+      return raw.insertId;
     } catch (e) {
       throw new InternalServerErrorException('MailboxUserRepository 에러');
     }

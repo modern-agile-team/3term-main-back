@@ -200,7 +200,7 @@ export class User extends BaseEntity {
   categories: Category[];
 
   @OneToMany(() => MailboxUser, (mailboxUser) => mailboxUser.mailbox)
-  mailboxUsers: MailboxUser;
+  mailboxUsers: MailboxUser[];
 
   @ManyToMany((type) => Board, (board) => board.likedUser, {
     cascade: true,

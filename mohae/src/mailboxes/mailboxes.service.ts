@@ -4,7 +4,10 @@ import { UserRepository } from 'src/auth/repository/user.repository';
 import { Letter } from 'src/letters/entity/letter.entity';
 import { LetterRepository } from 'src/letters/repository/letter.repository';
 import { ErrorConfirm } from 'src/utils/error';
-import { MailboxRepository } from './repository/mailbox.repository';
+import {
+  MailboxRepository,
+  MailboxUserRepository,
+} from './repository/mailbox.repository';
 
 @Injectable()
 export class MailboxesService {
@@ -17,6 +20,9 @@ export class MailboxesService {
 
     @InjectRepository(LetterRepository)
     private letterRepository: LetterRepository,
+
+    @InjectRepository(MailboxUserRepository)
+    private mailboxUserRepository: MailboxUserRepository,
 
     private errorConfirm: ErrorConfirm,
   ) {}
@@ -33,9 +39,9 @@ export class MailboxesService {
           'letter.createdAt AS createdAt',
         ])
         .from(Letter, 'letter')
-        .orderBy('letter.createdAt', 'DESC')
-        .limit(1)
         .groupBy('letter.no')
+        .limit(1)
+        .orderBy('letter.createdAt', 'DESC')
         .getQuery();
 
       const mailbox = await this.userRepository
@@ -87,11 +93,32 @@ export class MailboxesService {
 
   async checkMailbox(oneselfNo: number, opponentNo: number) {
     try {
-      const mailbox = await this.mailboxRepository.checkMailbox(
-        oneselfNo,
-        opponentNo,
-      );
-
+      // const mailbox = await this.mailboxRepository.checkMailbox(
+      //   oneselfNo,
+      //   opponentNo,
+      // );
+      console.log(oneselfNo, opponentNo);
+      const mailbox = await this.userRepository
+        .createQueryBuilder('users')
+        .leftJoinAndSelect('users.mailboxUsers', 'mailboxUser')
+        .leftJoinAndSelect('mailboxUser.user', 'user')
+        // .leftJoinAndSelect('mailboxUser.mailbox', 'mailbox')
+        // .select('users.no')
+        .select([
+          'users.no AS us',
+          'users.nickname',
+          'mailboxUser.no',
+          // 'mailbox.no',
+          'user.no',
+        ])
+        .where('users.no = :oneselfNo', { oneselfNo })
+        // .where('users.no = :oneselfNo AND user.no = :opponentNo', {
+        //   oneselfNo,
+        //   opponentNo,
+        // })
+        .getOne();
+      console.log(mailbox);
+      // 1,2 조회는 되는데 2,1 조회랑 다른 게 안됨;;;;; 사ㅣ 발라비ㅏㅣㅏㅅ
       return mailbox;
     } catch (e) {
       throw e;
