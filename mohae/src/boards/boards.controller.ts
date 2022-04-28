@@ -11,8 +11,10 @@ import {
   UseGuards,
   Req,
   Query,
+  Logger,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
+import { Cron } from '@nestjs/schedule';
 import { ApiCreatedResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { DeleteResult } from 'typeorm';
 import { BoardsService } from './boards.service';
@@ -27,7 +29,18 @@ import { Board } from './entity/board.entity';
 @Controller('boards')
 @ApiTags('Boards')
 export class BoardsController {
+  private logger = new Logger('BoardsController');
   constructor(private boardService: BoardsService) {}
+
+  @Cron('0 1 * * * *')
+  async handleCron() {
+    const close = await this.boardService.closingBoard();
+    if (!close.success) {
+      this.logger.error('게시글 마감처리 로직 에러');
+    }
+
+    this.logger.verbose('게시글 마감처리 로직 작동');
+  }
 
   @Get()
   async getAllBoards(): Promise<Board[]> {
