@@ -1,5 +1,6 @@
 import {
   Injectable,
+  InternalServerErrorException,
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -41,15 +42,17 @@ export class LettersService {
       const newMailboxNo = !mailboxNo
         ? await this.mailboxRepository.createMailbox()
         : mailboxNo;
-
+      if (!newMailboxNo) {
+        throw new InternalServerErrorException('쪽지 보내기 에러');
+      }
       const mailboxRelation = await this.mailboxRepository.findOne(
         newMailboxNo,
         {
           select: ['no'],
-          relations: ['letters'],
+          relations: ['letters', 'mailboxUsers'],
         },
       );
-
+      // console.log(mailboxRelation, newMailboxNo);
       const sender = await this.userRepository.findOne(senderNo, {
         select: ['no'],
         relations: ['sendLetters', 'mailboxUsers'],
@@ -67,7 +70,6 @@ export class LettersService {
         receiver,
         '쪽지를 전달받을 유저를 찾을 수 없습니다.',
       );
-
       if (sender.no === receiver.no) {
         throw new UnauthorizedException(
           '본인에게는 쪽지를 전송할 수 없습니다.',
@@ -91,18 +93,23 @@ export class LettersService {
         description,
         mailboxRelation,
       );
+      console.log('mailbox ###', mailboxRelation);
+      console.log('sender ###', sender);
+      console.log('receiver ###', receiver);
+      console.log('insertid ###', insertId);
+      // sender.sendLetters.push(insertId);
+      // sender.mailboxUsers.push(senderMailboxUserNo);
 
-      const newLetter = await this.letterRepository.findOne(insertId);
+      // receiver.receivedLetters.push(insertId);
+      // receiver.mailboxUsers.push(receiverMailboxUserNo);
 
-      sender.sendLetters.push(newLetter);
-      sender.mailboxUsers.push(senderMailboxUserNo);
-      receiver.receivedLetters.push(newLetter);
-      receiver.mailboxUsers.push(receiverMailboxUserNo);
-      mailboxRelation.letters.push(newLetter);
+      // mailboxRelation.letters.push(insertId);
+      // mailboxRelation.mailboxUsers.push(senderMailboxUserNo);
+      // mailboxRelation.mailboxUsers.push(receiverMailboxUserNo);
 
-      sender.save();
-      receiver.save();
-      mailboxRelation.save();
+      // await sender.save();
+      // await receiver.save();
+      // await mailboxRelation.save();
       return { success: true };
     } catch (e) {
       throw e;
