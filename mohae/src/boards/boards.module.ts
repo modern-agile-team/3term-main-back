@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { ScheduleModule } from '@nestjs/schedule';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AreasModule } from 'src/areas/areas.module';
 import { AreasRepository } from 'src/areas/repository/area.repository';
@@ -15,6 +16,7 @@ import { BoardRepository } from './repository/board.repository';
 
 @Module({
   imports: [
+    ScheduleModule.forRoot(),
     TypeOrmModule.forFeature([
       BoardRepository,
       ReviewRepository,
