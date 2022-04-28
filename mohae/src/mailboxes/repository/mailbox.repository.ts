@@ -9,12 +9,7 @@ export class MailboxRepository extends Repository<Mailbox> {
     try {
       const mailbox = await this.createQueryBuilder('mailboxes')
         .leftJoin('mailboxes.mailboxUsers', 'mailboxUsers')
-        .leftJoin(
-          'mailboxUsers.mailbox',
-          'mailbox',
-          'mailbox.no = :mailboxNo',
-          { mailboxNo },
-        )
+        .leftJoin('mailboxUsers.mailbox', 'mailbox')
         .leftJoin('mailboxUsers.user', 'user')
         .leftJoin('mailboxes.letters', 'letter')
         .limit(limit * 2 + 19)

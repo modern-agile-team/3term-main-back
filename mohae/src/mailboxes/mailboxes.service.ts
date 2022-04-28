@@ -47,7 +47,8 @@ export class MailboxesService {
       const mailbox = await this.userRepository
         .createQueryBuilder('user')
         .where('user.no = :loginUserNo', { loginUserNo })
-        .leftJoin('user.mailboxes', 'mailbox')
+        .leftJoin('user.mailboxUsers', 'mailboxUsers')
+        .leftJoin('mailboxUsers.mailbox', 'mailbox')
         .leftJoin(Letters, 'letter', 'letter.mailbox = mailbox.no')
         .select([
           'user.no AS userNo',
