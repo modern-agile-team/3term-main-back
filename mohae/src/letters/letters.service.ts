@@ -52,7 +52,7 @@ export class LettersService {
 
       const sender = await this.userRepository.findOne(senderNo, {
         select: ['no'],
-        relations: ['sendLetters'],
+        relations: ['sendLetters', 'mailboxUsers'],
       });
       this.errorConfirm.notFoundError(
         sender,
@@ -61,7 +61,7 @@ export class LettersService {
 
       const receiver = await this.userRepository.findOne(receiverNo, {
         select: ['no'],
-        relations: ['receivedLetters'],
+        relations: ['receivedLetters', 'mailboxUsers'],
       });
       this.errorConfirm.notFoundError(
         receiver,
@@ -74,11 +74,16 @@ export class LettersService {
         );
       }
 
-      await this.mailboxUserRepository.saveMailboxUser(mailboxRelation, sender);
-      await this.mailboxUserRepository.saveMailboxUser(
-        mailboxRelation,
-        receiver,
-      );
+      const senderMailboxUserNo =
+        await this.mailboxUserRepository.saveMailboxUser(
+          mailboxRelation,
+          sender,
+        );
+      const receiverMailboxUserNo =
+        await this.mailboxUserRepository.saveMailboxUser(
+          mailboxRelation,
+          receiver,
+        );
 
       const { insertId } = await this.letterRepository.sendLetter(
         sender,
@@ -90,9 +95,14 @@ export class LettersService {
       const newLetter = await this.letterRepository.findOne(insertId);
 
       sender.sendLetters.push(newLetter);
+      sender.mailboxUsers.push(senderMailboxUserNo);
       receiver.receivedLetters.push(newLetter);
+      receiver.mailboxUsers.push(receiverMailboxUserNo);
       mailboxRelation.letters.push(newLetter);
 
+      sender.save();
+      receiver.save();
+      mailboxRelation.save();
       return { success: true };
     } catch (e) {
       throw e;
