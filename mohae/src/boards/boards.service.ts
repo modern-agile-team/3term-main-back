@@ -52,7 +52,7 @@ export class BoardsService {
 
     const affected = await this.boardRepository.closingBoard(currentTime);
     if (!affected) {
-      return { success: false, msg: '게시판 마감 로직 오작동' };
+      return { success: false, msg: '게시판 마감 로직 에러' };
     }
 
     return { success: true, msg: '게시판 마감 로직 작동' };
