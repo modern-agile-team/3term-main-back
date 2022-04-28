@@ -8,11 +8,11 @@ import {
   UsePipes,
   ValidationPipe,
   Patch,
-  UseGuards,
-  Req,
   Query,
+  Logger,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
+import { Cron } from '@nestjs/schedule';
 import { ApiCreatedResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { DeleteResult } from 'typeorm';
 import { BoardsService } from './boards.service';
@@ -27,10 +27,21 @@ import { Board } from './entity/board.entity';
 @Controller('boards')
 @ApiTags('Boards')
 export class BoardsController {
+  private logger = new Logger('BoardsController');
   constructor(private boardService: BoardsService) {}
 
+  @Cron('0 1 * * * *')
+  async handleCron() {
+    const response = await this.boardService.closingBoard();
+    if (!response.success) {
+      this.logger.error('게시글 마감처리 로직 에러');
+    }
+
+    this.logger.verbose('게시글 마감처리 로직 작동');
+  }
+
   @Get()
-  async getAllBoards(): Promise<Board[]> {
+  async getAllBoards(): Promise<object> {
     const response = await this.boardService.getAllBoards();
 
     return Object.assign({
@@ -40,19 +51,20 @@ export class BoardsController {
     });
   }
 
-  @Get('/search/:no')
+  @Get('/filter/:no')
   async filteredBoards(
     @Param('no') no: number,
     @Query() paginationQuery,
-  ): Promise<Board[]> {
-    const { sort, popular, areaNo, categoryNo, max, min, target, date, free } =
+  ): Promise<object> {
+    const { sort, title, popular, areaNo, max, min, target, date, free } =
       paginationQuery;
 
     const response = await this.boardService.filteredBoards(
+      no,
       sort,
+      title,
       popular,
       areaNo,
-      categoryNo,
       max,
       min,
       target,
@@ -63,7 +75,6 @@ export class BoardsController {
     return Object.assign({
       statusCode: 200,
       msg: '게시글 필터링이 완료되었습니다.',
-      filteredBoardNum: response.length,
       response,
     });
   }
@@ -75,6 +86,19 @@ export class BoardsController {
     return Object.assign({
       statusCode: 200,
       msg: '인기 게시글 조회가 완료되었습니다.',
+      response,
+    });
+  }
+
+  @Get('search')
+  async searchAllBoards(
+    @Query() searchBoardDto: SearchBoardDto,
+  ): Promise<object> {
+    const response = await this.boardService.searchAllBoards(searchBoardDto);
+
+    return Object.assign({
+      statusCode: 200,
+      msg: '검색결과에 대한 게시글 조회가 완료되었습니다.',
       response,
     });
   }
@@ -103,13 +127,12 @@ export class BoardsController {
 
   @Get('/:no')
   async getByOneBoard(@Param('no') no: number) {
-    const { board, likeCount } = await this.boardService.getByOneBoard(no);
+    const response = await this.boardService.getByOneBoard(no);
 
     return Object.assign({
       statusCode: 200,
       msg: '게시글 상세 조회가 완료되었습니다.',
-      likeCount,
-      board,
+      response,
     });
   }
 
@@ -138,19 +161,6 @@ export class BoardsController {
     return Object.assign({
       statusCode: 201,
       msg: '게시글 생성이 완료되었습니다.',
-      response,
-    });
-  }
-
-  @Post('search')
-  async searchAllBoards(
-    @Body() searchBoardDto: SearchBoardDto,
-  ): Promise<Board[]> {
-    const response = await this.boardService.searchAllBoards(searchBoardDto);
-
-    return Object.assign({
-      statusCode: 200,
-      msg: '검색에 관한 게시글 조회가 완료되었습니다.',
       response,
     });
   }
