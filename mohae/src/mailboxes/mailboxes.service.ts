@@ -93,49 +93,33 @@ export class MailboxesService {
 
   async checkMailbox(oneselfNo: number, opponentNo: number) {
     try {
-      const mailbox = await this.mailboxRepository.checkMailbox(
-        oneselfNo,
-        opponentNo,
-      );
-
-      const test = await this.mailboxUserRepository
-        .createQueryBuilder('mailboxUser')
-        .leftJoin('mailboxUser.user', 'users')
-        .leftJoin('mailboxUser.mailbox', 'mailboxes')
-        .select([
-          'mailboxUser.no',
-          'users.no',
-          // 'users.nickname',
-          'mailboxes.no',
-        ])
-        .where('users.no = :oneselfNo OR users.no = :opponentNo', {
-          oneselfNo,
-          opponentNo,
-        })
-        .groupBy('mailboxUser.no')
-        // .having('mailboxes.no IN (:...mn)', { mn: [1] })
-        .getMany();
-
-      const t = await this.userRepository
+      // const mailbox = await this.mailboxRepository.checkMailbox(
+      //   oneselfNo,
+      //   opponentNo,
+      // );
+      console.log(oneselfNo, opponentNo);
+      const mailbox = await this.userRepository
         .createQueryBuilder('users')
-        .leftJoinAndSelect('users.mailboxUsers', 'MU')
-        .leftJoin('MU.user', 'MUUser')
-        .leftJoin('MU.mailbox', 'MUMailbox')
-        // .select([
-        //   'users.no',
-        //   'users.nickname',
-        //   'MU.no',
-        //   'MUMailbox.no',
-        //   'MUUser.no',
-        // ])
-        .where('users.no = :oneselfNo', { oneselfNo })
-        // .andWhere('MUUser.no = :opponentNo', { opponentNo })
-        // .andWhere('MUMailbox.no = :no')
-        .getOne();
-
-      console.log('###1', test);
-      console.log(t);
-      // return mailbox;
+        .leftJoinAndSelect('users.mailboxUsers', 'mailboxUser')
+        .leftJoinAndSelect('mailboxUser.user', 'user')
+        .leftJoinAndSelect('mailboxUser.mailbox', 'mailbox')
+        // .select('users.no')
+        .select([
+          'users.no',
+          'users.nickname',
+          'mailboxUser.no',
+          'mailbox.no',
+          'user.no',
+        ])
+        // .where('users.no = :oneselfNo', { oneselfNo })
+        // .where('users.no = :oneselfNo AND MUUser.no = :opponentNo', {
+        //   oneselfNo,
+        //   opponentNo,
+        // })
+        .getMany();
+      console.log(mailbox);
+      // 1,2 조회는 되는데 2,1 조회랑 다른 게 안됨;;;;; 사ㅣ 발라비ㅏㅣㅏㅅ
+      return mailbox;
     } catch (e) {
       throw e;
     }

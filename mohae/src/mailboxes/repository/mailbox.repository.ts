@@ -35,14 +35,13 @@ export class MailboxRepository extends Repository<Mailbox> {
 
   async createMailbox() {
     try {
-      const newMailbox = await this.createQueryBuilder('mailboxes')
+      const { raw } = await this.createQueryBuilder('mailboxes')
         .insert()
         .into(Mailbox)
         .values({})
         .execute();
-      const { insertId } = newMailbox.raw;
 
-      return insertId;
+      return raw.insertId;
     } catch {
       throw new InternalServerErrorException(
         '### 새로운 쪽지방을 생성 : 알 수 없는 서버 에러입니다.',
@@ -102,7 +101,7 @@ export class MailboxRepository extends Repository<Mailbox> {
 export class MailboxUserRepository extends Repository<MailboxUser> {
   async saveMailboxUser(mailbox: Mailbox, user: User) {
     try {
-      await this.createQueryBuilder('board_report_checks')
+      await this.createQueryBuilder()
         .insert()
         .into(MailboxUser)
         .values({ mailbox, user })
