@@ -123,6 +123,6 @@ export class Board extends BaseEntity {
   area: Area;
 
   @ManyToMany((type) => User, (user) => user.likedBoard)
-  @JoinTable({ name: 'userLike' })
+  @JoinTable({ name: 'board_like' })
   likedUser: User[];
 }
