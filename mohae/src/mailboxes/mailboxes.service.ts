@@ -102,21 +102,21 @@ export class MailboxesService {
         .createQueryBuilder('users')
         .leftJoinAndSelect('users.mailboxUsers', 'mailboxUser')
         .leftJoinAndSelect('mailboxUser.user', 'user')
-        .leftJoinAndSelect('mailboxUser.mailbox', 'mailbox')
+        // .leftJoinAndSelect('mailboxUser.mailbox', 'mailbox')
         // .select('users.no')
         .select([
-          'users.no',
+          'users.no AS us',
           'users.nickname',
           'mailboxUser.no',
-          'mailbox.no',
+          // 'mailbox.no',
           'user.no',
         ])
-        // .where('users.no = :oneselfNo', { oneselfNo })
-        // .where('users.no = :oneselfNo AND MUUser.no = :opponentNo', {
+        .where('users.no = :oneselfNo', { oneselfNo })
+        // .where('users.no = :oneselfNo AND user.no = :opponentNo', {
         //   oneselfNo,
         //   opponentNo,
         // })
-        .getMany();
+        .getOne();
       console.log(mailbox);
       // 1,2 조회는 되는데 2,1 조회랑 다른 게 안됨;;;;; 사ㅣ 발라비ㅏㅣㅏㅅ
       return mailbox;

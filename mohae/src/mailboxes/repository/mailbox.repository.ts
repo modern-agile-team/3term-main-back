@@ -101,11 +101,13 @@ export class MailboxRepository extends Repository<Mailbox> {
 export class MailboxUserRepository extends Repository<MailboxUser> {
   async saveMailboxUser(mailbox: Mailbox, user: User) {
     try {
-      await this.createQueryBuilder()
+      const { raw } = await this.createQueryBuilder()
         .insert()
         .into(MailboxUser)
         .values({ mailbox, user })
         .execute();
+
+      return raw.insertId;
     } catch (e) {
       throw new InternalServerErrorException('MailboxUserRepository 에러');
     }
