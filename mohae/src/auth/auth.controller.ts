@@ -9,7 +9,9 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
+import { Cron } from '@nestjs/schedule';
 import { ApiTags } from '@nestjs/swagger';
+import { start } from 'repl';
 import { DeleteResult } from 'typeorm';
 import { AuthService } from './auth.service';
 import {
@@ -44,6 +46,10 @@ export class AuthController {
   @Post('/signin')
   async signIn(@Body() signInDto: SignInDto): Promise<{ accessToken: string }> {
     try {
+      // start() {
+      //   const job = await this.authService.changeIsLockTest();
+      //   job.start();
+      // }
       const response = await this.authService.signIn(signInDto);
 
       return Object.assign({

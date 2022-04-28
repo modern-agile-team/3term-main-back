@@ -114,13 +114,9 @@ export class AuthService {
         user,
         '아이디 또는 비밀번호가 일치하지 않습니다.',
       );
-      const lastLogin = user.latestLogin.getTime();
-      // VScode에서 찍는 현재시간이 pc 시간보다 9시간 적게 나와서 일단 Date().getTime()에 9시간을 강제로 더해서 현재시간을 측정해주었음
-      // const plusCurrentTime = 9 * 60 * 60 * 1000;
-      const plusCurrentTime = 32398362;
-      const currentTime = new Date().getTime() + plusCurrentTime;
+      const loginTerm = await this.userRepository.checkLoginTerm(user.no);
 
-      if (user.isLock && currentTime >= lastLogin + 10000) {
+      if (user.isLock && loginTerm > 10) {
         await this.userRepository.changeIsLock(user.no, user.isLock);
       }
       const isLockUser = await this.userRepository.signIn(email);
@@ -159,7 +155,7 @@ export class AuthService {
 
       throw new UnauthorizedException(
         `로그인 실패 횟수를 모두 초과 하였습니다 ${Math.floor(
-          (lastLogin + 10000 - currentTime) / 1000,
+          10 - loginTerm,
         )}초 뒤에 다시 로그인 해주세요`,
       );
     } catch (e) {
@@ -256,4 +252,6 @@ export class AuthService {
       throw e;
     }
   }
+
+  async changeIsLockTest() {}
 }

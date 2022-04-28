@@ -112,7 +112,24 @@ export class UserRepository extends Repository<User> {
         .where('no = :no', { no: userNo })
         .execute();
     } catch (e) {
-      throw e;
+      throw new InternalServerErrorException(
+        `${e} ##### changeIsLock 관련 오류`,
+      );
+    }
+  }
+
+  async checkLoginTerm(userNo) {
+    try {
+      const { term } = await this.createQueryBuilder('users')
+        .select('timestampdiff(second, latestLogin, now()) AS term')
+        .where('no = :no', { no: userNo })
+        .getRawOne();
+
+      return term;
+    } catch (e) {
+      throw new InternalServerErrorException(
+        `${e} ##### 로그인 시간차 관련 서버에러`,
+      );
     }
   }
 
