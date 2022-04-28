@@ -147,13 +147,13 @@ export class BoardRepository extends Repository<Board> {
 
   async closingBoard(currentTime: Date) {
     try {
-      const closedBoard = await this.createQueryBuilder()
+      const { affected } = await this.createQueryBuilder()
         .update(Board)
         .set({ isDeadline: true })
         .where('deadline <= :currentTime', { currentTime })
         .execute();
 
-      return closedBoard;
+      return affected;
     } catch (e) {
       throw new InternalServerErrorException(
         `${e} ### 게시판 마감 처리 : 알 수 없는 서버 에러입니다.`,
@@ -262,8 +262,8 @@ export class BoardRepository extends Repository<Board> {
           'boards.no',
           'boards.title',
           'boards.createdAt',
-          'boards.deadLine',
-          'boards.isDeadLine',
+          'boards.deadline',
+          'boards.isDeadline',
           'boards.hit',
           'boards.price',
           'boards.target',

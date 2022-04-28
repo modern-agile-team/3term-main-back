@@ -43,12 +43,19 @@ export class BoardsService {
     const currentTime = new Date();
     currentTime.setHours(currentTime.getHours() + 9);
 
-    const { affected } = await this.boardRepository.closingBoard(currentTime);
+    return boards;
+  }
+
+  async closingBoard() {
+    const currentTime = new Date();
+    currentTime.setHours(currentTime.getHours() + 9);
+
+    const affected = await this.boardRepository.closingBoard(currentTime);
     if (!affected) {
-      throw new InternalServerErrorException('게시글 마감이 되지 않았습니다');
+      return { success: false, msg: '게시판 마감 로직 오작동' };
     }
 
-    return boards;
+    return { success: true, msg: '게시판 마감 로직 작동' };
   }
 
   async likeBoard({ boardNo, userNo, judge }) {
@@ -166,17 +173,6 @@ export class BoardsService {
       );
     }
 
-    const currentTime = new Date();
-    currentTime.setHours(currentTime.getHours() + 9);
-
-    if (board.deadline <= currentTime) {
-      const { affected } = await this.boardRepository.closingBoard(currentTime);
-
-      if (!affected) {
-        throw new InternalServerErrorException('게시글 마감이 되지 않았습니다');
-      }
-    }
-
     return { board, likeCount };
   }
 
@@ -260,6 +256,8 @@ export class BoardsService {
       case 3:
         endTime.setFullYear(endTime.getFullYear() + 100);
         break;
+      case 4:
+        endTime.setSeconds(endTime.getSeconds() + 30);
     }
 
     const board = await this.boardRepository.createBoard(
