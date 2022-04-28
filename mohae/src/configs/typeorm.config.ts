@@ -16,7 +16,7 @@ import { Review } from 'src/reviews/entity/review.entity';
 import { School } from 'src/schools/entity/school.entity';
 import { Note } from 'src/notes/entity/note.entity';
 import { Letter } from 'src/letters/entity/letter.entity';
-import { Mailbox } from 'src/mailboxes/entity/mailbox.entity';
+import { Mailbox, MailboxUser } from 'src/mailboxes/entity/mailbox.entity';
 import { Spec } from 'src/specs/entity/spec.entity';
 import { Notice } from 'src/notices/entity/notice.entity';
 import { SpecPhoto } from 'src/photo/entity/photo.entity';
@@ -59,6 +59,7 @@ export const typeORMConfig: TypeOrmModuleOptions = {
     UserLike,
     BoardReportChecks,
     UserReportChecks,
+    MailboxUser,
   ],
   // entities: [__dirname + '/../**/*.entity.{ts,js}'],
   synchronize: dbConfig.synchronize,
