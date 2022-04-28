@@ -36,26 +36,26 @@ export class BoardsService {
     private errorConfirm: ErrorConfirm,
   ) {}
 
-  async getAllBoards(): Promise<Board[]> {
+  async getAllBoards(): Promise<object> {
     const boards = await this.boardRepository.getAllBoards();
     this.errorConfirm.notFoundError(boards, '게시글을 찾을 수 없습니다.');
 
     const currentTime = new Date();
     currentTime.setHours(currentTime.getHours() + 9);
 
-    return boards;
+    return { allBoardNum: boards.length, boards };
   }
 
   async closingBoard() {
     const currentTime = new Date();
     currentTime.setHours(currentTime.getHours() + 9);
 
-    const affected = await this.boardRepository.closingBoard(currentTime);
-    if (!affected) {
-      return { success: false, msg: '게시판 마감 로직 에러' };
+    const result = await this.boardRepository.closingBoard(currentTime);
+    if (!result) {
+      return { success: false };
     }
 
-    return { success: true, msg: '게시판 마감 로직 작동' };
+    return { success: true };
   }
 
   async likeBoard({ boardNo, userNo, judge }) {
@@ -114,7 +114,7 @@ export class BoardsService {
     target: boolean,
     date: string,
     free: string,
-  ): Promise<Board[]> {
+  ): Promise<object> {
     const currentTime = new Date();
     currentTime.setHours(currentTime.getHours() + 9);
 
@@ -151,7 +151,7 @@ export class BoardsService {
       free,
     );
 
-    return boards;
+    return { filteredBoardNum: boards.length, boards };
   }
 
   async readHotBoards(): Promise<Board[]> {
@@ -173,7 +173,7 @@ export class BoardsService {
       );
     }
 
-    return { board, likeCount };
+    return { likeCount, board };
   }
 
   async boardClosed(no: number): Promise<object> {
@@ -210,11 +210,11 @@ export class BoardsService {
     return { success: true };
   }
 
-  async searchAllBoards(searchBoardDto: SearchBoardDto): Promise<Board[]> {
+  async searchAllBoards(searchBoardDto: SearchBoardDto): Promise<object> {
     const boards = await this.boardRepository.searchAllBoards(searchBoardDto);
     this.errorConfirm.notFoundError(boards, '게시글을 찾을 수 없습니다.');
 
-    return boards;
+    return { foundedBoardNum: boards.length, boards };
   }
 
   async createBoard(createBoardDto: CreateBoardDto): Promise<Board> {
@@ -256,8 +256,6 @@ export class BoardsService {
       case 3:
         endTime.setFullYear(endTime.getFullYear() + 100);
         break;
-      case 4:
-        endTime.setSeconds(endTime.getSeconds() + 30);
     }
 
     const board = await this.boardRepository.createBoard(
@@ -335,7 +333,7 @@ export class BoardsService {
         : 0;
     });
 
-    if (category !== null) {
+    if (category) {
       const categoryNo = await this.categoryRepository.findOne(category, {
         relations: ['boards'],
       });
@@ -343,7 +341,8 @@ export class BoardsService {
         categoryNo,
         `해당 카테고리를 찾을 수 없습니다.`,
       );
-    } else if (area !== null) {
+    }
+    if (area) {
       const getArea = await this.areaRepository.findOne(area, {
         relations: ['boards'],
       });

@@ -109,7 +109,7 @@ export class BoardRepository extends Repository<Board> {
     }
   }
 
-  async cancelClosedBoard(no: number): Promise<object> {
+  async cancelClosedBoard(no: number) {
     try {
       const { affected } = await this.createQueryBuilder()
         .update(Board)
@@ -117,7 +117,7 @@ export class BoardRepository extends Repository<Board> {
         .where('no = :no', { no })
         .execute();
 
-      return { affected };
+      return affected;
     } catch (e) {
       throw new InternalServerErrorException(
         `${e} ### 게시판 활성화 : 알 수 없는 서버 에러입니다.`,
@@ -153,7 +153,10 @@ export class BoardRepository extends Repository<Board> {
         .where('deadline <= :currentTime', { currentTime })
         .execute();
 
-      return affected;
+      if (!affected) {
+        return { success: false };
+      }
+      return { success: true };
     } catch (e) {
       throw new InternalServerErrorException(
         `${e} ### 게시판 마감 처리 : 알 수 없는 서버 에러입니다.`,
@@ -377,16 +380,5 @@ export class BoardRepository extends Repository<Board> {
         `${e} ### 게시판 삭제: 알 수 없는 서버 에러입니다.`,
       );
     }
-  }
-
-  async findTest(no) {
-    const board = await this.createQueryBuilder('boards')
-      .select(['boards_no AS no'])
-      .where('no = :no', { no })
-      .getRawOne();
-    const { boards_no, boards_title } = board;
-    console.log(boards_no, boards_title, board);
-
-    return { board: no };
   }
 }
