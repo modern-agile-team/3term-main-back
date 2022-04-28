@@ -18,6 +18,7 @@ import * as config from 'config';
 import { CategoryRepository } from 'src/categories/repository/category.repository';
 import { ErrorConfirm } from 'src/utils/error';
 import { create } from 'domain';
+import { copyFileSync } from 'fs';
 
 const jwtConfig = config.get('jwt');
 @Injectable()
@@ -41,7 +42,6 @@ export class AuthService {
   async signUp(createUserDto: CreateUserDto): Promise<User> {
     const { school, major, email, nickname, categories, password } =
       createUserDto;
-
     const schoolRepo = await this.schoolRepository.findOne(school, {
       select: ['no'],
     });
@@ -93,7 +93,6 @@ export class AuthService {
         '유저 생성이 정상적으로 이루어지지 않았습니다.',
       );
     }
-
     const filteredCategories = categoriesRepo.filter(
       (element) => element !== undefined,
     );

@@ -12,6 +12,7 @@ export class UserRepository extends Repository<User> {
     try {
       const { email, password, phone, nickname, manager, name, photo_url } =
         createUserDto;
+
       const { raw } = await this.createQueryBuilder('users')
         .insert()
         .into(User)
