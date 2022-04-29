@@ -158,7 +158,9 @@ export class BoardRepository extends Repository<Board> {
       const { affected } = await this.createQueryBuilder()
         .update(Board)
         .set({ isDeadline: true })
-        .where('deadline <= :currentTime', { currentTime })
+        .where(`deadline != ${null}`)
+        .andWhere('deadline <= :currentTime', { currentTime })
+        .andWhere('isDeadline = false')
         .execute();
 
       if (!affected) {
@@ -349,10 +351,6 @@ export class BoardRepository extends Repository<Board> {
   }
 
   async updateBoard(no: number, deletedNullBoardKey: any): Promise<object> {
-    const board = await this.findOne(no);
-    if (!board) {
-      throw new NotFoundException(`No: ${no} 게시글을 찾을 수 없습니다.`);
-    }
     try {
       const updatedBoard = await this.createQueryBuilder()
         .update(Board)

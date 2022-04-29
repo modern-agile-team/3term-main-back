@@ -166,7 +166,7 @@ export class BoardsService {
     this.errorConfirm.notFoundError(board, `해당 게시글을 찾을 수 없습니다.`);
 
     const boardHit = await this.boardRepository.addBoardHit(no, board);
-    const time = board.deadline.getTime();
+
     if (!boardHit) {
       throw new InternalServerErrorException(
         '게시글 조회 수 증가가 되지 않았습니다',
@@ -240,24 +240,17 @@ export class BoardsService {
 
     this.errorConfirm.notFoundError(user, `해당 회원을 찾을 수 없습니다.`);
 
-    const endTime = new Date();
+    let endTime = new Date();
     endTime.setHours(endTime.getHours() + 9);
 
-    switch (deadline) {
-      case 0:
-        endTime.setDate(endTime.getDate() + 7);
-        break;
-      case 1:
-        endTime.setMonth(endTime.getMonth() + 1);
-        break;
-      case 2:
-        endTime.setMonth(endTime.getMonth() + 3);
-        break;
-      case 3:
-        endTime.setFullYear(endTime.getFullYear() + 100);
-        break;
+    if (!deadline) {
+      endTime = null;
+    } 
+  
+    if (deadline) {
+      endTime.setSeconds(endTime.getSeconds() + deadline);
     }
-
+    
     const board = await this.boardRepository.createBoard(
       category,
       area,
@@ -295,23 +288,11 @@ export class BoardsService {
     const board = await this.boardRepository.findOne(no);
     this.errorConfirm.notFoundError(board, `해당 게시글을 찾을 수 없습니다.`);
 
-    const endTime = new Date(board.createdAt);
+    let endTime = new Date(board.createdAt);
 
-    switch (deadline) {
-      case null:
-        endTime.setTime(board.deadline.getTime());
-      case 0:
-        endTime.setDate(endTime.getDate() + 7);
-        break;
-      case 1:
-        endTime.setMonth(endTime.getMonth() + 1);
-        break;
-      case 2:
-        endTime.setMonth(endTime.getMonth() + 3);
-        break;
-      case 3:
-        endTime.setFullYear(endTime.getFullYear() + 100);
-        break;
+    if (deadline) {
+      endTime.setDate(endTime.getDate() + deadline);
+      updateBoardDto.deadline = endTime;
     }
 
     const currentTime = new Date();
@@ -320,9 +301,7 @@ export class BoardsService {
     if (deadline && endTime <= currentTime) {
       throw new BadRequestException('다른 기간을 선택해 주십시오');
     }
-
-    updateBoardDto.deadline = endTime;
-
+  
     const boardKey = Object.keys(updateBoardDto);
 
     const deletedNullBoardKey = {};
@@ -333,6 +312,13 @@ export class BoardsService {
         : 0;
     });
 
+    if (deadline !== null) {
+      if (!deadline) {
+        endTime = null;
+        deletedNullBoardKey['deadline'] = endTime
+      }
+    } 
+
     if (category) {
       const categoryNo = await this.categoryRepository.findOne(category, {
         relations: ['boards'],
@@ -342,6 +328,7 @@ export class BoardsService {
         `해당 카테고리를 찾을 수 없습니다.`,
       );
     }
+
     if (area) {
       const getArea = await this.areaRepository.findOne(area, {
         relations: ['boards'],
