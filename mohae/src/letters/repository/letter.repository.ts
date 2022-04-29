@@ -97,7 +97,7 @@ export class LetterRepository extends Repository<Letter> {
         );
       }
 
-      return raw;
+      return raw.insertId;
     } catch (e) {
       throw new InternalServerErrorException(e);
     }
