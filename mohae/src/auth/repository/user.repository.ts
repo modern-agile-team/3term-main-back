@@ -21,12 +21,12 @@ export class UserRepository extends Repository<User> {
             email,
             school,
             major,
-            salt: password,
             name,
             phone,
             nickname,
             manager,
             photo_url,
+            salt: password,
           },
         ])
         .execute();
@@ -84,7 +84,7 @@ export class UserRepository extends Repository<User> {
       await this.createQueryBuilder()
         .update(User)
         .set({ loginFailCount: 0 })
-        .where('no = :no', { no: userNo })
+        .where('no = :userNo', { userNo })
         .execute();
     } catch (e) {
       throw e;
@@ -109,7 +109,7 @@ export class UserRepository extends Repository<User> {
       return await this.createQueryBuilder()
         .update(User)
         .set({ isLock: !isLock })
-        .where('no = :no', { no: userNo })
+        .where('no = :userNo', { userNo })
         .execute();
     } catch (e) {
       throw new InternalServerErrorException(
@@ -122,7 +122,7 @@ export class UserRepository extends Repository<User> {
     try {
       const { term } = await this.createQueryBuilder('users')
         .select('timestampdiff(second, latestLogin, now()) AS term')
-        .where('no = :no', { no: userNo })
+        .where('no = :userNo', { userNo })
         .getRawOne();
 
       return term;
@@ -194,6 +194,19 @@ export class UserRepository extends Repository<User> {
       return user;
     } catch (err) {
       throw err;
+    }
+  }
+
+  async userRelation(no, value, relation) {
+    try {
+      await this.createQueryBuilder()
+        .relation(User, relation)
+        .of(no)
+        .add(value);
+    } catch (e) {
+      throw new InternalServerErrorException(
+        `${e} 유저 관계형성 도중 생긴 오류`,
+      );
     }
   }
 }

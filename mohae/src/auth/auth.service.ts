@@ -123,7 +123,7 @@ export class AuthService {
 
       if (!isLockUser.isLock) {
         if (user && isPassword) {
-          const payload = {
+          const payload: Object = {
             email,
             userNo: user.no,
             issuer: 'modern-agile',
@@ -251,6 +251,4 @@ export class AuthService {
       throw e;
     }
   }
-
-  async changeIsLockTest() {}
 }

@@ -38,12 +38,14 @@ export class MailboxUser extends BaseEntity {
   @ManyToOne(() => User, (user) => user.mailboxUsers, {
     nullable: true,
     onDelete: 'SET NULL',
+    createForeignKeyConstraints: false,
   })
   user: User;
 
   @ManyToOne(() => Mailbox, (mailbox) => mailbox.mailboxUsers, {
     nullable: true,
     onDelete: 'SET NULL',
+    createForeignKeyConstraints: false,
   })
   mailbox: Mailbox;
 }
