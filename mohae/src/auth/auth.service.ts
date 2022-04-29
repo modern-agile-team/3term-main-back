@@ -12,7 +12,7 @@ import * as bcrypt from 'bcryptjs';
 import { JwtService } from '@nestjs/jwt';
 import { User } from './entity/user.entity';
 import { SchoolRepository } from 'src/schools/repository/school.repository';
-import { DeleteResult } from 'typeorm';
+import { DeleteResult, UpdateResult } from 'typeorm';
 import { MajorRepository } from 'src/majors/repository/major.repository';
 import * as config from 'config';
 import { CategoryRepository } from 'src/categories/repository/category.repository';
@@ -161,7 +161,7 @@ export class AuthService {
       throw e;
     }
   }
-  async signDown(no: number) {
+  async signDown(no: number): Promise<void> {
     try {
       const isAffected = await this.userRepository.signDown(no);
 
@@ -175,7 +175,7 @@ export class AuthService {
     }
   }
 
-  async changePassword(changePasswordDto) {
+  async changePassword(changePasswordDto): Promise<UpdateResult> {
     try {
       const { email, nowPassword, changePassword, confirmChangePassword } =
         changePasswordDto;
@@ -213,7 +213,7 @@ export class AuthService {
       throw e;
     }
   }
-  async forgetPassword(forgetPasswordDto) {
+  async forgetPassword(forgetPasswordDto): Promise<UpdateResult> {
     try {
       const { email, changePassword, confirmChangePassword } =
         forgetPasswordDto;
