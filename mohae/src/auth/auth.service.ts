@@ -115,7 +115,6 @@ export class AuthService {
         '아이디 또는 비밀번호가 일치하지 않습니다.',
       );
       const loginTerm = await this.userRepository.checkLoginTerm(user.no);
-
       if (user.isLock && loginTerm > 10) {
         await this.userRepository.changeIsLock(user.no, user.isLock);
       }
