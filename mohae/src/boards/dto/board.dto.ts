@@ -3,6 +3,7 @@ import {
   IsBoolean,
   IsNotEmpty,
   IsNumber,
+  IsOptional,
   IsString,
   MaxLength,
   MinLength,
@@ -87,11 +88,6 @@ export class CreateBoardDto extends BoardContent {
   userNo: number;
 }
 
-export class UpdateBoardDto extends BoardContent {
-  @IsNumber()
-  deadline: number;
-}
-
 export class SearchBoardDto {
   @IsString()
   @MaxLength(15)
@@ -107,4 +103,59 @@ export class LikeBoardDto {
 
   @IsBoolean()
   judge: boolean;
+}
+
+export abstract class UpdateBoardDto {
+  @IsOptional()
+  @IsNumber()
+  price?: number;
+
+  @IsOptional()
+  @IsString()
+  @IsNotEmpty()
+  @MinLength(3)
+  @MaxLength(15)
+  title?: string;
+
+  @IsOptional()
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(1000)
+  description?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(100)
+  summary?: string;
+
+  @IsOptional()
+  @IsBoolean()
+  target?: boolean;
+
+  @IsOptional()
+  @IsNumber()
+  category?: number;
+
+  @IsOptional()
+  @IsNumber()
+  area?: number;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(100)
+  note1?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(100)
+  note2?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(100)
+  note3?: string;
+
+  @IsOptional()
+  @IsNumber()
+  deadline: any;
 }
