@@ -97,6 +97,17 @@ export class MailboxRepository extends Repository<Mailbox> {
       );
     }
   }
+
+  async mailboxRelation(no: number, value: any, relation: string) {
+    try {
+      await this.createQueryBuilder()
+        .relation(Mailbox, relation)
+        .of(no)
+        .add(value);
+    } catch (e) {
+      throw new InternalServerErrorException('MailboxRelation 값 추가 에러');
+    }
+  }
 }
 
 @EntityRepository(MailboxUser)
@@ -112,6 +123,19 @@ export class MailboxUserRepository extends Repository<MailboxUser> {
       return raw.insertId;
     } catch (e) {
       throw new InternalServerErrorException('MailboxUserRepository 에러');
+    }
+  }
+
+  async mailboxUserRelation(no: number, value: any, relation: string) {
+    try {
+      await this.createQueryBuilder()
+        .relation(MailboxUser, relation)
+        .of(no)
+        .add(value);
+    } catch (e) {
+      throw new InternalServerErrorException(
+        'MailboxUserRelation 값 추가 에러',
+      );
     }
   }
 }
