@@ -101,34 +101,17 @@ export class LettersService {
           .relation(User, 'mailboxUsers')
           .of(receiver)
           .add(receiverMailboxUserNo);
-        await this.mailboxRepository
-          .createQueryBuilder()
-          .relation(Mailbox, 'mailboxUsers')
-          .of(mailboxNo)
-          .add(senderMailboxUserNo);
-        await this.mailboxRepository
-          .createQueryBuilder()
-          .relation(Mailbox, 'mailboxUsers')
-          .of(mailboxNo)
-          .add(receiverMailboxUserNo);
+        await this.mailboxRepository.mailboxRelation(
+          newMailboxNo,
+          senderMailboxUserNo,
+          'mailboxUsers',
+        );
+        await this.mailboxRepository.mailboxRelation(
+          newMailboxNo,
+          receiverMailboxUserNo,
+          'mailboxUsers',
+        );
       }
-      // userRepository에 userRelation이 생성되면 사용할 코드들
-      // await this.userRepository.userRelation(sender, newLetter, 'sendLetters');
-      // await this.userRepository.userRelation(
-      //   receiver,
-      //   newLetter,
-      //   'receivedLetters',
-      // );
-      // await this.userRepository.userRelation(
-      //   sender,
-      //   senderMailboxUserNo,
-      //   'mailboxUsers',
-      // );
-      // await this.userRepository.userRelation(
-      //   receiver,
-      //   receiverMailboxUserNo,
-      //   'mailboxUsers',
-      // );
       await this.userRepository
         .createQueryBuilder()
         .relation(User, 'sendLetters')
@@ -146,71 +129,23 @@ export class LettersService {
         .add(newLetterNo);
 
       return { success: true };
-      // await this.mailboxRepository
-      //   .createQueryBuilder('mailboxes')
-      //   .relation(Mailbox, 'mailboxUsers')
-      //   .of(mailboxNo)
-      //   .add(senderMailboxUserNo);
-      // await this.mailboxRepository
-      //   .createQueryBuilder('mailboxes')
-      //   .relation(Mailbox, 'mailboxUsers')
-      //   .of(mailboxNo)
-      //   .add(receiverMailboxUserNo);
-
-      // const sender = await this.userRepository.findOne(senderNo, {
-      //   select: ['no'],
-      //   relations: ['sendLetters', 'mailboxUsers'],
-      // });
-      // this.errorConfirm.notFoundError(
-      //   sender,
-      //   '쪽지를 작성한 유저를 찾을 수 없습니다.',
-      // );
-
-      // const receiver = await this.userRepository.findOne(receiverNo, {
-      //   select: ['no'],
-      //   relations: ['receivedLetters', 'mailboxUsers'],
-      // });
-      // this.errorConfirm.notFoundError(
+      // userRepository에 userRelation이 생성되면 사용할 코드들
+      // await this.userRepository.userRelation(sender, newLetter, 'sendLetters');
+      // await this.userRepository.userRelation(
       //   receiver,
-      //   '쪽지를 전달받을 유저를 찾을 수 없습니다.',
+      //   newLetter,
+      //   'receivedLetters',
       // );
-      // if (sender.no === receiver.no) {
-      //   throw new UnauthorizedException(
-      //     '본인에게는 쪽지를 전송할 수 없습니다.',
-      //   );
-      // }
-
-      // const senderMailboxUserNo =
-      //   await this.mailboxUserRepository.saveMailboxUser(
-      //     mailboxRelation,
-      //     sender,
-      //   );
-      // const receiverMailboxUserNo =
-      //   await this.mailboxUserRepository.saveMailboxUser(
-      //     mailboxRelation,
-      //     receiver,
-      //   );
-
-      // const { insertId } = await this.letterRepository.sendLetter(
+      // await this.userRepository.userRelation(
       //   sender,
-      //   receiver,
-      //   description,
-      //   mailboxRelation,
+      //   senderMailboxUserNo,
+      //   'mailboxUsers',
       // );
-
-      // sender.sendLetters.push(insertId);
-      // sender.mailboxUsers.push(senderMailboxUserNo);
-
-      // receiver.receivedLetters.push(insertId);
-      // receiver.mailboxUsers.push(receiverMailboxUserNo);
-
-      // mailboxRelation.letters.push(insertId);
-      // mailboxRelation.mailboxUsers.push(senderMailboxUserNo);
-      // mailboxRelation.mailboxUsers.push(receiverMailboxUserNo);
-
-      // await sender.save();
-      // await receiver.save();
-      // await mailboxRelation.save();
+      // await this.userRepository.userRelation(
+      //   receiver,
+      //   receiverMailboxUserNo,
+      //   'mailboxUsers',
+      // );
     } catch (e) {
       throw e;
     }
