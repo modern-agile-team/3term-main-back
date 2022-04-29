@@ -5,7 +5,13 @@ import {
 import { Area } from 'src/areas/entity/areas.entity';
 import { User } from 'src/auth/entity/user.entity';
 import { Category } from 'src/categories/entity/category.entity';
-import { DeleteResult, EntityRepository, IsNull, Repository } from 'typeorm';
+import {
+  DeleteResult,
+  EntityRepository,
+  IsNull,
+  Repository,
+  Timestamp,
+} from 'typeorm';
 import { CreateBoardDto, UpdateBoardDto } from '../dto/board.dto';
 import { Board } from '../entity/board.entity';
 
@@ -219,7 +225,7 @@ export class BoardRepository extends Repository<Board> {
           'boards.title',
           'boards.createdAt',
           'boards.deadline',
-          'boards.isDeadLine',
+          'boards.isDeadline',
           'boards.price',
           'boards.target',
           'areas.name',
@@ -262,23 +268,21 @@ export class BoardRepository extends Repository<Board> {
         .leftJoin('boards.category', 'categories')
         .leftJoin('boards.user', 'users')
         .select([
-          'boards.no',
-          'boards.title',
-          'boards.createdAt',
-          'boards.deadline',
-          'boards.isDeadline',
-          'boards.hit',
-          'boards.price',
-          'boards.target',
-          'areas.name',
-          'categories.name',
-          'users.name',
+          'DATEDIFF(boards.deadline, now()) AS D_day',
+          'boards.no AS no',
+          'boards.title AS title',
+          'boards.createdAt AS createdAt',
+          'boards.isDeadline AS isDeadline',
+          'boards.price AS price',
+          'boards.target AS target',
+          'areas.no AS area_no',
+          'categories.no AS category_no',
+          'users.name AS user_name',
         ])
         .where('boards.area = areas.no')
         .andWhere('boards.category = categories.no')
         .orderBy('boards.no', 'DESC')
-        .getMany();
-
+        .getRawMany();
       return boards;
     } catch (e) {
       throw new InternalServerErrorException(

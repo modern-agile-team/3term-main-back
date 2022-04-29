@@ -39,6 +39,7 @@ export class BoardsService {
   async getAllBoards(): Promise<object> {
     const boards = await this.boardRepository.getAllBoards();
     this.errorConfirm.notFoundError(boards, '게시글을 찾을 수 없습니다.');
+    console.log(boards);
 
     const currentTime = new Date();
     currentTime.setHours(currentTime.getHours() + 9);
@@ -166,7 +167,7 @@ export class BoardsService {
     this.errorConfirm.notFoundError(board, `해당 게시글을 찾을 수 없습니다.`);
 
     const boardHit = await this.boardRepository.addBoardHit(no, board);
-
+    const time = board.deadline.getTime();
     if (!boardHit) {
       throw new InternalServerErrorException(
         '게시글 조회 수 증가가 되지 않았습니다',
