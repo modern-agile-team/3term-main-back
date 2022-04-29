@@ -131,11 +131,13 @@ export class User extends BaseEntity {
 
   @OneToMany((type) => Letter, (letter) => letter.sender, {
     nullable: true,
+    onDelete: 'SET NULL',
   })
   sendLetters: Letter[];
 
   @OneToMany((type) => Letter, (letter) => letter.receiver, {
     nullable: true,
+    onDelete: 'SET NULL',
   })
   receivedLetters: Letter[];
 
@@ -199,7 +201,10 @@ export class User extends BaseEntity {
   @JoinTable({ name: 'user_in_category' })
   categories: Category[];
 
-  @OneToMany(() => MailboxUser, (mailboxUser) => mailboxUser.mailbox)
+  @OneToMany(() => MailboxUser, (mailboxUser) => mailboxUser.mailbox, {
+    nullable: true,
+    onDelete: 'SET NULL',
+  })
   mailboxUsers: MailboxUser[];
 
   @ManyToMany((type) => Board, (board) => board.likedUser, {

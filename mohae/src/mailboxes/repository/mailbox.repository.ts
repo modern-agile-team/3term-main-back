@@ -117,7 +117,7 @@ export class MailboxUserRepository extends Repository<MailboxUser> {
       const { raw } = await this.createQueryBuilder()
         .insert()
         .into(MailboxUser)
-        .values({ mailbox, user })
+        .values({ mailbox: mailbox, user: user })
         .execute();
 
       return raw.insertId;

@@ -125,7 +125,7 @@ export class LettersService {
       await this.mailboxRepository
         .createQueryBuilder()
         .relation(Mailbox, 'letters')
-        .of(mailboxNo)
+        .of(newMailboxNo)
         .add(newLetterNo);
 
       return { success: true };
