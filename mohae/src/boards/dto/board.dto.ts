@@ -157,5 +157,5 @@ export abstract class UpdateBoardDto {
 
   @IsOptional()
   @IsNumber()
-  deadline: any;
+  deadline?: any;
 }
