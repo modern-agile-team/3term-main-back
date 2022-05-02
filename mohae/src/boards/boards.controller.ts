@@ -30,7 +30,7 @@ export class BoardsController {
   private logger = new Logger('BoardsController');
   constructor(private boardService: BoardsService) {}
 
-  @Cron('* * * * * *')
+  @Cron('0 1 * * * *')
   async handleCron() {
     const response = await this.boardService.closingBoard();
     if (!response.success) {
