@@ -39,15 +39,16 @@ export class MailboxesService {
           'letter.createdAt AS createdAt',
         ])
         .from(Letter, 'letter')
-        .orderBy('letter.createdAt', 'DESC')
-        .limit(1)
         .groupBy('letter.no')
+        .limit(1)
+        .orderBy('letter.createdAt', 'DESC')
         .getQuery();
 
       const mailbox = await this.userRepository
         .createQueryBuilder('user')
         .where('user.no = :loginUserNo', { loginUserNo })
-        .leftJoin('user.mailboxes', 'mailbox')
+        .leftJoin('user.mailboxUsers', 'mailboxUsers')
+        .leftJoin('mailboxUsers.mailbox', 'mailbox')
         .leftJoin(Letters, 'letter', 'letter.mailbox = mailbox.no')
         .select([
           'user.no AS userNo',
@@ -93,11 +94,15 @@ export class MailboxesService {
 
   async checkMailbox(oneselfNo: number, opponentNo: number) {
     try {
-      const mailbox = await this.mailboxRepository.checkMailbox(
-        oneselfNo,
-        opponentNo,
-      );
+      const mailbox = await this.userRepository
+        .createQueryBuilder('users')
+        .leftJoinAndSelect('users.mailboxUsers', 'mailboxUser')
+        .leftJoinAndSelect('mailboxUser.user', 'MBUser')
+        .leftJoinAndSelect('mailboxUser.mailbox', 'mailbox')
+        .where('users.no = :oneselfNo', { oneselfNo })
+        .getMany();
 
+      // 1,2 조회는 되는데 2,1 조회랑 다른 게 안됨;;;;; 사ㅣ 발라비ㅏㅣㅏㅅ
       return mailbox;
     } catch (e) {
       throw e;

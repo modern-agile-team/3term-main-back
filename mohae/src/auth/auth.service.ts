@@ -12,7 +12,7 @@ import * as bcrypt from 'bcryptjs';
 import { JwtService } from '@nestjs/jwt';
 import { User } from './entity/user.entity';
 import { SchoolRepository } from 'src/schools/repository/school.repository';
-import { DeleteResult } from 'typeorm';
+import { DeleteResult, UpdateResult } from 'typeorm';
 import { MajorRepository } from 'src/majors/repository/major.repository';
 import * as config from 'config';
 import { CategoryRepository } from 'src/categories/repository/category.repository';
@@ -115,7 +115,6 @@ export class AuthService {
         '아이디 또는 비밀번호가 일치하지 않습니다.',
       );
       const loginTerm = await this.userRepository.checkLoginTerm(user.no);
-
       if (user.isLock && loginTerm > 10) {
         await this.userRepository.changeIsLock(user.no, user.isLock);
       }
@@ -124,7 +123,7 @@ export class AuthService {
 
       if (!isLockUser.isLock) {
         if (user && isPassword) {
-          const payload = {
+          const payload: Object = {
             email,
             userNo: user.no,
             issuer: 'modern-agile',
@@ -162,7 +161,7 @@ export class AuthService {
       throw e;
     }
   }
-  async signDown(no: number) {
+  async signDown(no: number): Promise<void> {
     try {
       const isAffected = await this.userRepository.signDown(no);
 
@@ -176,7 +175,7 @@ export class AuthService {
     }
   }
 
-  async changePassword(changePasswordDto) {
+  async changePassword(changePasswordDto): Promise<UpdateResult> {
     try {
       const { email, nowPassword, changePassword, confirmChangePassword } =
         changePasswordDto;
@@ -214,7 +213,7 @@ export class AuthService {
       throw e;
     }
   }
-  async forgetPassword(forgetPasswordDto) {
+  async forgetPassword(forgetPasswordDto): Promise<UpdateResult> {
     try {
       const { email, changePassword, confirmChangePassword } =
         forgetPasswordDto;
@@ -252,6 +251,4 @@ export class AuthService {
       throw e;
     }
   }
-
-  async changeIsLockTest() {}
 }

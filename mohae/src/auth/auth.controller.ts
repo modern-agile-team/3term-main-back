@@ -46,10 +46,6 @@ export class AuthController {
   @Post('/signin')
   async signIn(@Body() signInDto: SignInDto): Promise<{ accessToken: string }> {
     try {
-      // start() {
-      //   const job = await this.authService.changeIsLockTest();
-      //   job.start();
-      // }
       const response = await this.authService.signIn(signInDto);
 
       return Object.assign({

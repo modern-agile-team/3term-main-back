@@ -26,6 +26,7 @@ const MockUserRepository = () => ({
   addUser: jest.fn(),
   //signIn
   signIn: jest.fn(),
+  checkLoginTerm: jest.fn(),
   changeIsLock: jest.fn(),
   clearLoginCount: jest.fn(),
   plusLoginFailCount: jest.fn(),
@@ -272,6 +273,7 @@ describe('AuthService', () => {
         salt: '1234',
         loginFailCount: 0,
       });
+      userRepository['checkLoginTerm'].mockResolvedValue(10);
       userRepository['changeIsLock'].mockResolvedValue({
         affected: 0,
       });
@@ -345,10 +347,10 @@ describe('AuthService', () => {
       userRepository['signIn'].mockResolvedValue({
         no: 1,
         isLock: 1,
-        latestLogin: new Date(),
         salt: '1234',
         loginFailCount: 0,
       });
+      userRepository['checkLoginTerm'].mockResolvedValue(0);
 
       const signInDto: SignInDto = {
         email: 'subro',
@@ -359,12 +361,12 @@ describe('AuthService', () => {
       } catch (e) {
         expect(e).toBeInstanceOf(UnauthorizedException);
         expect(e.response.message).toBe(
-          '로그인 실패 횟수를 모두 초과 하였습니다 -32389초 뒤에 다시 로그인 해주세요',
+          '로그인 실패 횟수를 모두 초과 하였습니다 10초 뒤에 다시 로그인 해주세요',
         );
         expect(e.response).toStrictEqual({
           statusCode: 401,
           message:
-            '로그인 실패 횟수를 모두 초과 하였습니다 -32389초 뒤에 다시 로그인 해주세요',
+            '로그인 실패 횟수를 모두 초과 하였습니다 10초 뒤에 다시 로그인 해주세요',
           error: 'Unauthorized',
         });
       }

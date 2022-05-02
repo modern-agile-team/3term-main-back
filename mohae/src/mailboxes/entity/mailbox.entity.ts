@@ -20,7 +20,9 @@ export class Mailbox extends BaseEntity {
   @CreateDateColumn()
   createAt: Date | null;
 
-  @DeleteDateColumn()
+  @DeleteDateColumn({
+    select: false,
+  })
   deleteAt: Date | null;
 
   @OneToMany((type) => Letter, (letters) => letters.mailbox)
@@ -38,12 +40,14 @@ export class MailboxUser extends BaseEntity {
   @ManyToOne(() => User, (user) => user.mailboxUsers, {
     nullable: true,
     onDelete: 'SET NULL',
+    createForeignKeyConstraints: false,
   })
   user: User;
 
   @ManyToOne(() => Mailbox, (mailbox) => mailbox.mailboxUsers, {
     nullable: true,
     onDelete: 'SET NULL',
+    createForeignKeyConstraints: false,
   })
   mailbox: Mailbox;
 }
