@@ -94,16 +94,16 @@ export class MailboxesService {
 
   async checkMailbox(oneselfNo: number, opponentNo: number) {
     try {
-      const mailbox = await this.userRepository
-        .createQueryBuilder('users')
-        .leftJoinAndSelect('users.mailboxUsers', 'mailboxUser')
-        .leftJoinAndSelect('mailboxUser.user', 'MBUser')
-        .leftJoinAndSelect('mailboxUser.mailbox', 'mailbox')
-        .where('users.no = :oneselfNo', { oneselfNo })
-        .getMany();
+      const { mailboxNo } = await this.mailboxUserRepository.serachMailboxUser(
+        oneselfNo,
+        opponentNo,
+      );
 
-      // 1,2 조회는 되는데 2,1 조회랑 다른 게 안됨;;;;; 사ㅣ 발라비ㅏㅣㅏㅅ
-      return mailbox;
+      if (mailboxNo) {
+        return { success: true, mailboxNo };
+      }
+
+      return { success: false };
     } catch (e) {
       throw e;
     }
