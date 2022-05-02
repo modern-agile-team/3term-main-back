@@ -28,7 +28,7 @@ export class Mailbox extends BaseEntity {
   @OneToMany((type) => Letter, (letters) => letters.mailbox)
   letters: Letter[];
 
-  @OneToMany(() => MailboxUser, (mailboxUser) => mailboxUser.user)
+  @OneToMany(() => MailboxUser, (mailboxUser) => mailboxUser.mailbox)
   mailboxUsers: MailboxUser[];
 }
 
@@ -37,15 +37,15 @@ export class MailboxUser extends BaseEntity {
   @PrimaryGeneratedColumn()
   no: number;
 
-  @ManyToOne(() => User, (user) => user.mailboxUsers, {
-    nullable: true,
-    onDelete: 'SET NULL',
-  })
-  user: User;
-
   @ManyToOne(() => Mailbox, (mailbox) => mailbox.mailboxUsers, {
     nullable: true,
     onDelete: 'SET NULL',
   })
   mailbox: Mailbox;
+
+  @ManyToOne(() => User, (user) => user.mailboxUsers, {
+    nullable: true,
+    onDelete: 'SET NULL',
+  })
+  user: User;
 }
