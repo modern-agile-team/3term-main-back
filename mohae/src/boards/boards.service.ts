@@ -36,7 +36,7 @@ export class BoardsService {
     private errorConfirm: ErrorConfirm,
   ) {}
 
-  async getAllBoards(): Promise<object> {
+  async getAllBoards(): Promise<Object> {
     const boards = await this.boardRepository.getAllBoards();
     this.errorConfirm.notFoundError(boards, '게시글을 찾을 수 없습니다.');
 
@@ -114,7 +114,7 @@ export class BoardsService {
     target: boolean,
     date: string,
     free: string,
-  ): Promise<object> {
+  ): Promise<Object> {
     const currentTime = new Date();
     currentTime.setHours(currentTime.getHours() + 9);
 
@@ -177,7 +177,7 @@ export class BoardsService {
     return { D_day, likeCount, board };
   }
 
-  async boardClosed(no: number): Promise<object> {
+  async boardClosed(no: number): Promise<Object> {
     const board = await this.boardRepository.findOne(no);
     this.errorConfirm.notFoundError(board, '게시글을 찾을 수 없습니다.');
     if (board.isDeadline) {
@@ -193,7 +193,7 @@ export class BoardsService {
     return { success: true };
   }
 
-  async cancelClosedBoard(no: number): Promise<object> {
+  async cancelClosedBoard(no: number): Promise<Object> {
     const board = await this.boardRepository.findOne(no);
     this.errorConfirm.notFoundError(board, `해당 게시글을 찾을 수 없습니다.`);
 
@@ -221,7 +221,7 @@ export class BoardsService {
     return { success: true };
   }
 
-  async searchAllBoards(searchBoardDto: SearchBoardDto): Promise<object> {
+  async searchAllBoards(searchBoardDto: SearchBoardDto): Promise<Object> {
     const boards = await this.boardRepository.searchAllBoards(searchBoardDto);
     this.errorConfirm.notFoundError(boards, '게시글을 찾을 수 없습니다.');
 

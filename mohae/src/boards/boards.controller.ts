@@ -41,7 +41,7 @@ export class BoardsController {
   }
 
   @Get()
-  async getAllBoards(): Promise<object> {
+  async getAllBoards(): Promise<Object> {
     const response = await this.boardService.getAllBoards();
 
     return Object.assign({
@@ -55,7 +55,7 @@ export class BoardsController {
   async filteredBoards(
     @Param('no') no: number,
     @Query() paginationQuery,
-  ): Promise<object> {
+  ): Promise<Object> {
     const { sort, title, popular, areaNo, max, min, target, date, free } =
       paginationQuery;
 
@@ -80,7 +80,7 @@ export class BoardsController {
   }
 
   @Get('/hot')
-  async readHotBoards(): Promise<Board[]> {
+  async readHotBoards(): Promise<Object> {
     const response = await this.boardService.readHotBoards();
 
     return Object.assign({
@@ -93,7 +93,7 @@ export class BoardsController {
   @Get('search')
   async searchAllBoards(
     @Query() searchBoardDto: SearchBoardDto,
-  ): Promise<object> {
+  ): Promise<Object> {
     const response = await this.boardService.searchAllBoards(searchBoardDto);
 
     return Object.assign({
@@ -104,7 +104,7 @@ export class BoardsController {
   }
 
   @Patch('/cancel/:no')
-  async cancelClosedBoard(@Param('no') no: number): Promise<object> {
+  async cancelClosedBoard(@Param('no') no: number): Promise<Object> {
     const response = await this.boardService.cancelClosedBoard(no);
 
     return Object.assign({
@@ -115,7 +115,7 @@ export class BoardsController {
   }
 
   @Patch('/close/:no')
-  async boardClosed(@Param('no') no: number): Promise<object> {
+  async boardClosed(@Param('no') no: number): Promise<Object> {
     const response = await this.boardService.boardClosed(no);
 
     return Object.assign({
@@ -189,7 +189,7 @@ export class BoardsController {
   async updateBoard(
     @Param('no') no: number,
     @Body() updateBoardDto: UpdateBoardDto,
-  ): Promise<object> {
+  ): Promise<Object> {
     const response = await this.boardService.updateBoard(no, updateBoardDto);
 
     return Object.assign({

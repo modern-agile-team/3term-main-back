@@ -90,7 +90,7 @@ export class BoardRepository extends Repository<Board> {
         .orderBy('boards.hit', 'DESC')
         .limit(3)
         .getRawMany();
-
+      console.log(boards);
       return boards;
     } catch (e) {
       `${e} ### 인기 게시판 순위 조회 : 알 수 없는 서버 에러입니다.`;
@@ -133,7 +133,7 @@ export class BoardRepository extends Repository<Board> {
     }
   }
 
-  async boardClosed(no: number): Promise<object> {
+  async boardClosed(no: number): Promise<Object> {
     try {
       const { affected } = await this.createQueryBuilder()
         .update(Board)
