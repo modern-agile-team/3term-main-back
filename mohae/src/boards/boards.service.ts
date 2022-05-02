@@ -162,7 +162,8 @@ export class BoardsService {
   }
 
   async getByOneBoard(no: number) {
-    const { board, likeCount, D_day } = await this.boardRepository.getByOneBoard(no);
+    const { board, likeCount, D_day } =
+      await this.boardRepository.getByOneBoard(no);
     this.errorConfirm.notFoundError(board, `해당 게시글을 찾을 수 없습니다.`);
 
     const boardHit = await this.boardRepository.addBoardHit(no, board);
@@ -180,7 +181,7 @@ export class BoardsService {
     const board = await this.boardRepository.findOne(no);
     this.errorConfirm.notFoundError(board, '게시글을 찾을 수 없습니다.');
     if (board.isDeadline) {
-      throw new InternalServerErrorException('마감된 게시글 입니다.');
+      throw new InternalServerErrorException('이미 마감된 게시글 입니다.');
     }
 
     const result = await this.boardRepository.boardClosed(no);
@@ -195,6 +196,16 @@ export class BoardsService {
   async cancelClosedBoard(no: number): Promise<object> {
     const board = await this.boardRepository.findOne(no);
     this.errorConfirm.notFoundError(board, `해당 게시글을 찾을 수 없습니다.`);
+
+    const currentTime = new Date();
+    currentTime.setHours(currentTime.getHours() + 9);
+
+    if (board.deadline <= currentTime) {
+      throw new InternalServerErrorException(
+        '시간이 지나 마감된 게시글 입니다.',
+      );
+    }
+
     if (!board.isDeadline) {
       throw new InternalServerErrorException('활성화된 게시글 입니다.');
     }
@@ -245,12 +256,12 @@ export class BoardsService {
 
     if (!deadline) {
       endTime = null;
-    } 
-  
+    }
+
     if (deadline) {
       endTime.setSeconds(endTime.getSeconds() + deadline);
     }
-    
+
     const board = await this.boardRepository.createBoard(
       category,
       area,
@@ -301,7 +312,7 @@ export class BoardsService {
     if (deadline && endTime <= currentTime) {
       throw new BadRequestException('다른 기간을 선택해 주십시오');
     }
-  
+
     const boardKey = Object.keys(updateBoardDto);
 
     const deletedNullBoardKey = {};
@@ -315,9 +326,9 @@ export class BoardsService {
     if (deadline !== null) {
       if (!deadline) {
         endTime = null;
-        deletedNullBoardKey['deadline'] = endTime
+        deletedNullBoardKey['deadline'] = endTime;
       }
-    } 
+    }
 
     if (category) {
       const categoryNo = await this.categoryRepository.findOne(category, {

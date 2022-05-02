@@ -4,11 +4,7 @@ import {
 } from '@nestjs/common';
 import { User } from 'src/auth/entity/user.entity';
 import { Category } from 'src/categories/entity/category.entity';
-import {
-  DeleteResult,
-  EntityRepository,
-  Repository,
-} from 'typeorm';
+import { DeleteResult, EntityRepository, Repository } from 'typeorm';
 import { CreateBoardDto, UpdateBoardDto } from '../dto/board.dto';
 import { Board } from '../entity/board.entity';
 
@@ -43,7 +39,9 @@ export class BoardRepository extends Repository<Board> {
           'boards.note1',
           'boards.note2',
           'boards.note3',
+          'areas.no',
           'areas.name',
+          'categories.no',
           'categories.name',
           'likedUsers.no',
           'likedUsers.name',
@@ -58,9 +56,9 @@ export class BoardRepository extends Repository<Board> {
         .addSelect('COUNT(likedUsers.no)', 'likeCount')
         .getRawOne();
 
-      const {D_day} = await qb
-        .addSelect('DATEDIFF(boards.deadline, now())', 'D_day')   
-        .getRawOne();     
+      const { D_day } = await qb
+        .addSelect('DATEDIFF(boards.deadline, now())', 'D_day')
+        .getRawOne();
       return { board, likeCount, D_day };
     } catch (e) {
       `${e} ### 게시판 상세 조회 : 알 수 없는 서버 에러입니다.`;
@@ -83,12 +81,14 @@ export class BoardRepository extends Repository<Board> {
           'boards.price AS price',
           'boards.target AS target',
           'areas.no AS area_no',
+          'areas.name AS area_name',
           'categories.no AS category_no',
+          'categories.name AS category_name',
           'users.name AS user_name',
         ])
         .where('boards.isDeadline = false')
         .orderBy('boards.hit', 'DESC')
-        .limit(3)        
+        .limit(3)
         .getRawMany();
 
       return boards;
@@ -190,7 +190,9 @@ export class BoardRepository extends Repository<Board> {
           'boards.price AS price',
           'boards.target AS target',
           'areas.no AS area_no',
+          'areas.name AS area_name',
           'categories.no AS category_no',
+          'categories.name AS category_name',
           'users.name AS user_name',
         ])
         .where('boards.title like :title', { title: `%${title}%` })
@@ -233,7 +235,9 @@ export class BoardRepository extends Repository<Board> {
           'boards.price AS price',
           'boards.target AS target',
           'areas.no AS area_no',
+          'areas.name AS area_name',
           'categories.no AS category_no',
+          'categories.name AS category_name',
           'users.name AS user_name',
         ])
         .where('boards.category = :no', { no })
@@ -258,7 +262,6 @@ export class BoardRepository extends Repository<Board> {
       if (popular) boardFiltering.orderBy('boards.hit', 'DESC');
 
       return await boardFiltering.getRawMany();
-
     } catch (e) {
       throw new InternalServerErrorException(
         `${e} ### 게시판 필터링 조회 : 알 수 없는 서버 에러입니다.`,
@@ -281,7 +284,9 @@ export class BoardRepository extends Repository<Board> {
           'boards.price AS price',
           'boards.target AS target',
           'areas.no AS area_no',
+          'areas.name AS area_name',
           'categories.no AS category_no',
+          'categories.name AS category_name',
           'users.name AS user_name',
         ])
         .where('boards.area = areas.no')
