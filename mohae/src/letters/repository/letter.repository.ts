@@ -14,7 +14,7 @@ export class LetterRepository extends Repository<Letter> {
       .select([
         'letters.no',
         'letters.description',
-        'letters.reading_flag',
+        'letters.reading_flag AS isReading',
         'sender.no',
         'sender.email',
         'receiver.no',
@@ -74,8 +74,8 @@ export class LetterRepository extends Repository<Letter> {
   async sendLetter(
     sender: User,
     receiver: User,
-    description: string,
     mailbox: Mailbox,
+    description: string,
   ) {
     try {
       const { raw } = await this.createQueryBuilder('letters')
@@ -85,8 +85,8 @@ export class LetterRepository extends Repository<Letter> {
           {
             sender,
             receiver,
-            description,
             mailbox,
+            description,
           },
         ])
         .execute();
@@ -97,7 +97,7 @@ export class LetterRepository extends Repository<Letter> {
         );
       }
 
-      return raw;
+      return raw.insertId;
     } catch (e) {
       throw new InternalServerErrorException(e);
     }

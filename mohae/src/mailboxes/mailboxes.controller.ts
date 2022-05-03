@@ -40,10 +40,19 @@ export class MailboxesController {
     @Param('oneselfNo') oneselfNo: number,
     @Param('opponentNo') opponentNo: number,
   ) {
-    const response = await this.mailboxesService.checkMailbox(
+    const { success, mailboxNo } = await this.mailboxesService.checkMailbox(
       oneselfNo,
       opponentNo,
     );
+
+    if (!success) {
+      return Object.assign({
+        statusCode: 200,
+        msg: '해당 유저와의 쪽지함이 존재하지 않습니다.',
+      });
+    }
+
+    const response = await this.mailboxesService.searchMailbox(mailboxNo, 0);
 
     return Object.assign({
       statusCode: 200,

@@ -4,7 +4,10 @@ import { UserRepository } from 'src/auth/repository/user.repository';
 import { Letter } from 'src/letters/entity/letter.entity';
 import { LetterRepository } from 'src/letters/repository/letter.repository';
 import { ErrorConfirm } from 'src/utils/error';
-import { MailboxRepository } from './repository/mailbox.repository';
+import {
+  MailboxRepository,
+  MailboxUserRepository,
+} from './repository/mailbox.repository';
 
 @Injectable()
 export class MailboxesService {
@@ -17,6 +20,9 @@ export class MailboxesService {
 
     @InjectRepository(LetterRepository)
     private letterRepository: LetterRepository,
+
+    @InjectRepository(MailboxUserRepository)
+    private mailboxUserRepository: MailboxUserRepository,
 
     private errorConfirm: ErrorConfirm,
   ) {}
@@ -33,15 +39,16 @@ export class MailboxesService {
           'letter.createdAt AS createdAt',
         ])
         .from(Letter, 'letter')
-        .orderBy('letter.createdAt', 'DESC')
-        .limit(1)
         .groupBy('letter.no')
+        .limit(1)
+        .orderBy('letter.createdAt', 'DESC')
         .getQuery();
 
       const mailbox = await this.userRepository
         .createQueryBuilder('user')
         .where('user.no = :loginUserNo', { loginUserNo })
-        .leftJoin('user.mailboxes', 'mailbox')
+        .leftJoin('user.mailboxUsers', 'mailboxUsers')
+        .leftJoin('mailboxUsers.mailbox', 'mailbox')
         .leftJoin(Letters, 'letter', 'letter.mailbox = mailbox.no')
         .select([
           'user.no AS userNo',
@@ -87,12 +94,16 @@ export class MailboxesService {
 
   async checkMailbox(oneselfNo: number, opponentNo: number) {
     try {
-      const mailbox = await this.mailboxRepository.checkMailbox(
+      const { mailboxNo } = await this.mailboxUserRepository.serachMailboxUser(
         oneselfNo,
         opponentNo,
       );
 
-      return mailbox;
+      if (mailboxNo) {
+        return { success: true, mailboxNo };
+      }
+
+      return { success: false };
     } catch (e) {
       throw e;
     }
