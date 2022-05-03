@@ -95,21 +95,23 @@ export class MailboxesService {
 
   async checkMailbox(oneselfNo: number, opponentNo: number) {
     try {
-      const { mailboxNo } = await this.mailboxUserRepository.serachMailboxUser(
+      this.errorConfirm.unauthorizedError(
+        oneselfNo !== opponentNo,
+        '자기 자신에게 쪽지를 보낼 수 없습니다.',
+      );
+      const mailbox = await this.mailboxUserRepository.serachMailboxUser(
         oneselfNo,
         opponentNo,
       );
 
-      if (mailboxNo) {
-        return {
-          success: true,
-          mailboxNo,
-        };
-      }
-
-      return {
-        success: false,
-      };
+      return !mailbox
+        ? {
+            success: false,
+          }
+        : {
+            success: true,
+            mailboxNo: mailbox.mailboxNo,
+          };
     } catch (e) {
       throw e;
     }
