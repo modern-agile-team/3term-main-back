@@ -27,6 +27,7 @@ export class UpdateProfileDto {
 }
 
 export class JudgeDuplicateNicknameDto {
+  @IsOptional()
   @IsNumber()
   no?: number;
 

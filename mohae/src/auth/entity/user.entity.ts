@@ -199,7 +199,7 @@ export class User extends BaseEntity {
   @JoinTable({ name: 'user_in_category' })
   categories: Category[];
 
-  @OneToMany(() => MailboxUser, (mailboxUser) => mailboxUser.mailbox, {
+  @OneToMany(() => MailboxUser, (mailboxUser) => mailboxUser.user, {
     nullable: true,
     onDelete: 'SET NULL',
   })

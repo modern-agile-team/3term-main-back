@@ -28,7 +28,7 @@ export class Mailbox extends BaseEntity {
   @OneToMany((type) => Letter, (letters) => letters.mailbox)
   letters: Letter[];
 
-  @OneToMany(() => MailboxUser, (mailboxUser) => mailboxUser.user)
+  @OneToMany(() => MailboxUser, (mailboxUser) => mailboxUser.mailbox)
   mailboxUsers: MailboxUser[];
 }
 

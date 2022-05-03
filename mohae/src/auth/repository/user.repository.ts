@@ -168,6 +168,8 @@ export class UserRepository extends Repository<User> {
           'users.email',
           'users.nickname',
           'users.createdAt',
+          'users.name',
+          'users.photo_url',
           'likedMe',
           'boards.no',
           'boards.title',
@@ -203,6 +205,20 @@ export class UserRepository extends Repository<User> {
     } catch (e) {
       throw new InternalServerErrorException(
         `${e} ##### 프로필 회원 조회 도중 발생한 서버에러`,
+      );
+    }
+  }
+  async updateProfile(no, profile) {
+    try {
+      const updateProfile = await this.createQueryBuilder()
+        .update(User)
+        .set(profile)
+        .where('no = :no', { no })
+        .execute();
+      return updateProfile;
+    } catch (e) {
+      throw new InternalServerErrorException(
+        `${e} ##### 프로필 수정 도중 발생한 서버에러`,
       );
     }
   }
