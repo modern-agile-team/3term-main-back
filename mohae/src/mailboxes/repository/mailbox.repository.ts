@@ -117,7 +117,10 @@ export class MailboxUserRepository extends Repository<MailboxUser> {
       const { raw } = await this.createQueryBuilder()
         .insert()
         .into(MailboxUser)
-        .values({ mailbox, user })
+        .values({
+          user,
+          mailbox,
+        })
         .execute();
 
       return raw.insertId;
@@ -136,6 +139,21 @@ export class MailboxUserRepository extends Repository<MailboxUser> {
       throw new InternalServerErrorException(
         'MailboxUserRelation 값 추가 에러',
       );
+    }
+  }
+
+  async serachMailboxUser(oneselfNo, opponentNo) {
+    try {
+      const mailboxNo = await this.query(
+        `select firstMU.mailboxNo from mailbox_user firstMU 
+        inner join mailbox_user secondMU 
+        ON firstMU.mailboxNo = secondMU.mailboxNo 
+        where firstMU.userNo = ${oneselfNo} AND secondMU.userNo = ${opponentNo}`,
+      );
+
+      return mailboxNo[0];
+    } catch {
+      throw new InternalServerErrorException('메일박스유저 서치 오류');
     }
   }
 }
