@@ -51,22 +51,6 @@ export class MailboxRepository extends Repository<Mailbox> {
     }
   }
 
-  async findOneMailbox(mailboxNo: number) {
-    try {
-      const mailbox = await this.createQueryBuilder('mailboxes')
-        .leftJoinAndSelect('mailboxes.users', 'users')
-        .leftJoinAndSelect('mailboxes.letters', 'letters')
-        .where('mailboxes.no = :mailboxNo', { mailboxNo })
-        .getMany();
-
-      return mailbox;
-    } catch {
-      throw new InternalServerErrorException(
-        '### 쪽지함 : 알 수 없는 서버 에러입니다.',
-      );
-    }
-  }
-
   async mailboxRelation(no: number, value: any, relation: string) {
     try {
       await this.createQueryBuilder()
