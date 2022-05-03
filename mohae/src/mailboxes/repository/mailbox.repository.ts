@@ -95,17 +95,11 @@ export class MailboxUserRepository extends Repository<MailboxUser> {
     }
   }
 
-  async serachMailboxUser(oneselfNo, opponentNo) {
+  async searchMailboxUser(oneselfNo: number, opponentNo: number) {
     try {
-      // const mailboxNo = await this.query(
-      //   `SELECT firstMU.mailboxNo FROM mailbox_user firstMU
-      //   INNER JOIN mailbox_user secondMU
-      //   ON firstMU.mailboxNo = secondMU.mailboxNo
-      //   WHERE firstMU.userNo = ${oneselfNo} AND secondMU.userNo = ${opponentNo}`,
-      // );
       const mailboxNo = await this.createQueryBuilder('firstMU')
-        .innerJoinAndSelect('firstMU.mailbox', 'innerMailbox')
-        .innerJoinAndSelect(
+        .innerJoin('firstMU.mailbox', 'innerMailbox')
+        .innerJoin(
           'innerMailbox.mailboxUsers',
           'secondMU',
           'firstMU.mailbox = secondMU.mailbox',
@@ -119,8 +113,7 @@ export class MailboxUserRepository extends Repository<MailboxUser> {
 
       return mailboxNo;
     } catch (e) {
-      console.log(e);
-      throw new InternalServerErrorException('메일박스유저 서치 오류');
+      throw new InternalServerErrorException(`${e} ### se 오류`);
     }
   }
 }
