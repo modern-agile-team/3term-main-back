@@ -14,7 +14,7 @@ export class LetterRepository extends Repository<Letter> {
       .select([
         'letters.no',
         'letters.description',
-        'letters.reading_flag',
+        'letters.reading_flag AS isReading',
         'sender.no',
         'sender.email',
         'receiver.no',

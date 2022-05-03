@@ -42,14 +42,14 @@ export class LettersService {
     description,
   }: SendLetterDto) {
     try {
-      const newMailboxNo: number = !mailboxNo
+      const confirmedMailboxNo: number = !mailboxNo
         ? await this.mailboxRepository.createMailbox()
         : mailboxNo;
-      if (!newMailboxNo) {
+      if (!confirmedMailboxNo) {
         throw new InternalServerErrorException('쪽지 보내기 에러');
       }
       const mailbox: Mailbox = await this.mailboxRepository.findOne(
-        newMailboxNo,
+        confirmedMailboxNo,
         {
           select: ['no'],
           relations: ['letters', 'mailboxUsers'],
@@ -102,12 +102,12 @@ export class LettersService {
           .of(receiver)
           .add(receiverMailboxUserNo);
         await this.mailboxRepository.mailboxRelation(
-          newMailboxNo,
+          confirmedMailboxNo,
           senderMailboxUserNo,
           'mailboxUsers',
         );
         await this.mailboxRepository.mailboxRelation(
-          newMailboxNo,
+          confirmedMailboxNo,
           receiverMailboxUserNo,
           'mailboxUsers',
         );
