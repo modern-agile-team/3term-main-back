@@ -69,7 +69,7 @@ export class MailboxesService {
     }
   }
 
-  async searchMailbox(mailboxNo: number, limit: number) {
+  async searchMailbox(mailboxNo: number, limit: number): Promise<Mailbox> {
     try {
       const mailbox: Mailbox = await this.mailboxRepository.searchMailbox(
         mailboxNo,
@@ -93,13 +93,13 @@ export class MailboxesService {
     }
   }
 
-  async checkMailbox(oneselfNo: number, opponentNo: number) {
+  async checkMailbox(oneselfNo: number, opponentNo: number): Promise<any> {
     try {
       this.errorConfirm.unauthorizedError(
         oneselfNo !== opponentNo,
         '자기 자신에게 쪽지를 보낼 수 없습니다.',
       );
-      const mailbox = await this.mailboxUserRepository.searchMailboxUser(
+      const mailbox: any = await this.mailboxUserRepository.searchMailboxUser(
         oneselfNo,
         opponentNo,
       );
