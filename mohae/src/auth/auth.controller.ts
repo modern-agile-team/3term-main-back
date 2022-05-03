@@ -9,7 +9,9 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
+import { Cron } from '@nestjs/schedule';
 import { ApiTags } from '@nestjs/swagger';
+import { start } from 'repl';
 import { DeleteResult } from 'typeorm';
 import { AuthService } from './auth.service';
 import {
@@ -58,16 +60,20 @@ export class AuthController {
 
   @Delete('/:no')
   async signDown(@Param('no') no: number): Promise<DeleteResult> {
-    await this.authService.signDown(no);
+    try {
+      await this.authService.signDown(no);
 
-    return Object.assign({
-      statusCode: 204,
-      msg: `성공적으로 회원탈퇴가 진행되었습니다.`,
-    });
+      return Object.assign({
+        statusCode: 204,
+        msg: `성공적으로 회원탈퇴가 진행되었습니다.`,
+      });
+    } catch (e) {
+      throw e;
+    }
   }
 
   @Patch('/change/password')
-  @UseGuards(AuthGuard())
+  // @UseGuards(AuthGuard())
   async changePassword(
     @Body() changePasswordDto: ChangePasswordDto,
   ): Promise<void> {
