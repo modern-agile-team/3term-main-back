@@ -27,7 +27,7 @@ export class MailboxesService {
     private errorConfirm: ErrorConfirm,
   ) {}
 
-  async findAllMailboxes(loginUserNo: number) {
+  async readAllMailboxes(loginUserNo: number) {
     try {
       const Letters = this.letterRepository
         .createQueryBuilder()
@@ -83,9 +83,10 @@ export class MailboxesService {
         '경로를 찾을 수 없습니다.',
       );
 
-      for (const letter of notReadLetter) {
+      notReadLetter.forEach(async (letter) => {
         await this.letterRepository.updateReading(letter.no);
-      }
+      });
+
       return mailbox;
     } catch (e) {
       throw e;
@@ -100,10 +101,15 @@ export class MailboxesService {
       );
 
       if (mailboxNo) {
-        return { success: true, mailboxNo };
+        return {
+          success: true,
+          mailboxNo,
+        };
       }
 
-      return { success: false };
+      return {
+        success: false,
+      };
     } catch (e) {
       throw e;
     }

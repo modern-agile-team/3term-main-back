@@ -67,37 +67,6 @@ export class MailboxRepository extends Repository<Mailbox> {
     }
   }
 
-  async checkMailbox(oneselfNo: number, opponentNo: number) {
-    try {
-      // const mailbox = await this.createQueryBuilder('mailboxes')
-      //   .leftJoinAndSelect(
-      //     'mailboxes.users',
-      //     'user',
-      //     'user.no = :oneselfNo AND user.no = :opponentNo',
-      //     {
-      //       oneselfNo,
-      //       opponentNo,
-      //     },
-      //   )
-      //   .leftJoinAndSelect('mailboxes.letters', 'letter')
-      //   .select([
-      //     'mailboxes.no',
-      //     'user.no',
-      //     'user.nickname',
-      //     'letter.no',
-      //     'letter.description',
-      //     'letter.reading_flag',
-      //     'letter.createdAt',
-      //   ])
-      //   .getOne();
-      // return mailbox;
-    } catch (e) {
-      throw new InternalServerErrorException(
-        '### 쪽지함 여부 확인 : 알 수 없는 서버 에러입니다.',
-      );
-    }
-  }
-
   async mailboxRelation(no: number, value: any, relation: string) {
     try {
       await this.createQueryBuilder()
@@ -145,10 +114,10 @@ export class MailboxUserRepository extends Repository<MailboxUser> {
   async serachMailboxUser(oneselfNo, opponentNo) {
     try {
       const mailboxNo = await this.query(
-        `select firstMU.mailboxNo from mailbox_user firstMU 
-        inner join mailbox_user secondMU 
+        `SELECT firstMU.mailboxNo FROM mailbox_user firstMU 
+        INNER JOIN mailbox_user secondMU 
         ON firstMU.mailboxNo = secondMU.mailboxNo 
-        where firstMU.userNo = ${oneselfNo} AND secondMU.userNo = ${opponentNo}`,
+        WHERE firstMU.userNo = ${oneselfNo} AND secondMU.userNo = ${opponentNo}`,
       );
 
       return mailboxNo[0];
