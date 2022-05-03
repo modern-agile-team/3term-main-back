@@ -46,15 +46,8 @@ export class LettersService {
         ? await this.mailboxRepository.createMailbox()
         : mailboxNo;
       if (!confirmedMailboxNo) {
-        throw new InternalServerErrorException('쪽지 보내기 에러');
+        throw new Error('쪽지 생성중 쪽지함 번호 유무 판단 조건문 에러');
       }
-      const mailbox: Mailbox = await this.mailboxRepository.findOne(
-        confirmedMailboxNo,
-        {
-          select: ['no'],
-          relations: ['letters', 'mailboxUsers'],
-        },
-      );
       const sender: User = await this.userRepository.findOne(senderNo, {
         relations: ['sendLetters', 'mailboxUsers'],
       });
@@ -67,6 +60,11 @@ export class LettersService {
         relations: ['receivedLetters', 'mailboxUsers'],
       });
       this.errorConfirm.notFoundError(receiver, '상대방을 찾을 수 없습니다.');
+
+      const mailbox: Mailbox = await this.mailboxRepository.searchMailbox(
+        confirmedMailboxNo,
+        0,
+      );
 
       const newLetterNo: Letter = await this.letterRepository.sendLetter(
         sender,
@@ -101,6 +99,7 @@ export class LettersService {
           .relation(User, 'mailboxUsers')
           .of(receiver)
           .add(receiverMailboxUserNo);
+
         await this.mailboxRepository.mailboxRelation(
           confirmedMailboxNo,
           senderMailboxUserNo,
@@ -122,13 +121,15 @@ export class LettersService {
         .relation(User, 'receivedLetters')
         .of(receiver)
         .add(newLetterNo);
-      await this.mailboxRepository
-        .createQueryBuilder()
-        .relation(Mailbox, 'letters')
-        .of(newMailboxNo)
-        .add(newLetterNo);
+      await this.mailboxRepository.mailboxRelation(
+        confirmedMailboxNo,
+        newLetterNo,
+        'letters',
+      );
 
-      return { success: true };
+      return {
+        success: true,
+      };
       // userRepository에 userRelation이 생성되면 사용할 코드들
       // await this.userRepository.userRelation(sender, newLetter, 'sendLetters');
       // await this.userRepository.userRelation(
