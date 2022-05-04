@@ -18,7 +18,6 @@ export class BoardRepository extends Repository<Board> {
         .leftJoin('boards.user', 'users')
         .leftJoin('users.school', 'school')
         .leftJoin('users.major', 'major')
-        .leftJoin('boards.likedUser', 'likedUsers')
         .select([
           'users.no',
           'users.name',
@@ -32,6 +31,7 @@ export class BoardRepository extends Repository<Board> {
           'boards.createdAt',
           'boards.deadline',
           'boards.isDeadline',
+          'boards.likeCount',
           'boards.hit',
           'boards.price',
           'boards.summary',
@@ -43,8 +43,6 @@ export class BoardRepository extends Repository<Board> {
           'areas.name',
           'categories.no',
           'categories.name',
-          'likedUsers.no',
-          'likedUsers.name',
         ])
         .where('boards.no = :no', { no })
         .andWhere('boards.area = areas.no')
@@ -52,46 +50,38 @@ export class BoardRepository extends Repository<Board> {
 
       const board = await qb.getOne();
 
-      const { likeCount } = await qb
-        .addSelect('COUNT(likedUsers.no)', 'likeCount')
-        .getRawOne();
-
       const { D_day } = await qb
         .addSelect('DATEDIFF(boards.deadline, now())', 'D_day')
         .getRawOne();
-      return { board, likeCount, D_day };
+      return { D_day, board };
     } catch (e) {
       `${e} ### 게시판 상세 조회 : 알 수 없는 서버 에러입니다.`;
     }
   }
 
-  async readHotBoards(): Promise<Object> {
+  async readHotBoards(year: number, month: number): Promise<Object> {
     try {
       const boards = await this.createQueryBuilder('boards')
         .leftJoin('boards.area', 'areas')
-        .leftJoin('boards.category', 'categories')
         .leftJoin('boards.user', 'users')
         .select([
           'boards.no AS no',
           'DATEDIFF(boards.deadline, now()) AS D_day',
           'boards.title AS title',
-          'boards.createdAt AS createdAt',
           'boards.isDeadline AS isDeadline',
-          'boards.hit AS hit',
           'boards.price AS price',
           'boards.target AS target',
           'areas.no AS area_no',
           'areas.name AS area_name',
-          'categories.no AS category_no',
-          'categories.name AS category_name',
-          'users.name AS user_name',
+          'users.nickname AS user_nickname',
         ])
-        .where('boards.isDeadline = false')
-        .orderBy('boards.hit', 'DESC')
+        .where('Year(boards.createdAt) = :year', { year })
+        .andWhere('Month(boards.createdAt) = :month', { month })
+        .orderBy('(boards.hit + boards.likeCount) / 2', 'DESC')
         .limit(3)
         .getRawMany();
-      console.log(boards);
-      return boards;
+
+      return { year, month, boards };
     } catch (e) {
       `${e} ### 인기 게시판 순위 조회 : 알 수 없는 서버 에러입니다.`;
     }
@@ -102,6 +92,46 @@ export class BoardRepository extends Repository<Board> {
       const boardHit = await this.createQueryBuilder()
         .update(Board)
         .set({ hit: hit + 1 })
+        .where('no = :no', { no })
+        .execute();
+
+      if (!boardHit.affected) {
+        return { success: false };
+      }
+
+      return { success: true };
+    } catch (e) {
+      throw new InternalServerErrorException(
+        `${e} ### 게시판 조회수 증가 : 알 수 없는 서버 에러입니다.`,
+      );
+    }
+  }
+
+  async likeCountUp(no: number, { likeCount }) {
+    try {
+      const boardHit = await this.createQueryBuilder()
+        .update(Board)
+        .set({ likeCount: likeCount + 1 })
+        .where('no = :no', { no })
+        .execute();
+
+      if (!boardHit.affected) {
+        return { success: false };
+      }
+
+      return { success: true };
+    } catch (e) {
+      throw new InternalServerErrorException(
+        `${e} ### 게시판 조회수 증가 : 알 수 없는 서버 에러입니다.`,
+      );
+    }
+  }
+
+  async likeCountDown(no: number, { likeCount }) {
+    try {
+      const boardHit = await this.createQueryBuilder()
+        .update(Board)
+        .set({ likeCount: likeCount - 1 })
         .where('no = :no', { no })
         .execute();
 
@@ -174,26 +204,21 @@ export class BoardRepository extends Repository<Board> {
     }
   }
 
-  async searchAllBoards({ title }): Promise<Board[]> {
+  async searchAllBoards(title: string): Promise<Board[]> {
     try {
       const boards = await this.createQueryBuilder('boards')
         .leftJoin('boards.area', 'areas')
-        .leftJoin('boards.category', 'categories')
         .leftJoin('boards.user', 'users')
         .select([
           'boards.no AS no',
           'DATEDIFF(boards.deadline, now()) AS D_day',
           'boards.title AS title',
-          'boards.createdAt AS createdAt',
           'boards.isDeadline AS isDeadline',
-          'boards.hit AS hit',
           'boards.price AS price',
           'boards.target AS target',
           'areas.no AS area_no',
           'areas.name AS area_name',
-          'categories.no AS category_no',
-          'categories.name AS category_name',
-          'users.name AS user_name',
+          'users.nickname AS user_nickname',
         ])
         .where('boards.title like :title', { title: `%${title}%` })
         .orderBy('boards.no', 'DESC')
@@ -208,7 +233,7 @@ export class BoardRepository extends Repository<Board> {
   }
 
   async filteredBoards(
-    no: number,
+    categoryNo: number,
     sort: any,
     title: string,
     popular: string,
@@ -216,7 +241,7 @@ export class BoardRepository extends Repository<Board> {
     max: number,
     min: number,
     target: boolean,
-    date: string,
+    date: any,
     endTime: Date,
     currentTime: Date,
     free: string,
@@ -236,13 +261,14 @@ export class BoardRepository extends Repository<Board> {
           'boards.target AS target',
           'areas.no AS area_no',
           'areas.name AS area_name',
-          'categories.no AS category_no',
-          'categories.name AS category_name',
-          'users.name AS user_name',
+          'users.nickname AS user_nickname',
         ])
-        .where('boards.category = :no', { no })
         .orderBy('boards.no', sort);
-
+      if (categoryNo) {
+        boardFiltering.andWhere('boards.category = :categoryNo', {
+          categoryNo,
+        });
+      }
       if (title)
         boardFiltering.andWhere('boards.title like :title', {
           title: `%${title}%`,
@@ -252,6 +278,9 @@ export class BoardRepository extends Repository<Board> {
       if (min) boardFiltering.andWhere('boards.price >= :min', { min });
       if (target)
         boardFiltering.andWhere('boards.target = :target', { target });
+      if (date === NaN) {
+        boardFiltering.andWhere('boards.deadline is null');
+      }
       if (date) {
         boardFiltering.andWhere('boards.deadline < :endTime', { endTime });
         boardFiltering.andWhere('boards.deadline > :currentTime', {
@@ -285,14 +314,13 @@ export class BoardRepository extends Repository<Board> {
           'boards.target AS target',
           'areas.no AS area_no',
           'areas.name AS area_name',
-          'categories.no AS category_no',
-          'categories.name AS category_name',
-          'users.name AS user_name',
+          'users.nickname AS user_nickname',
         ])
         .where('boards.area = areas.no')
         .andWhere('boards.category = categories.no')
         .orderBy('boards.no', 'DESC')
         .getRawMany();
+
       return boards;
     } catch (e) {
       throw new InternalServerErrorException(
@@ -355,7 +383,7 @@ export class BoardRepository extends Repository<Board> {
     }
   }
 
-  async updateBoard(no: number, deletedNullBoardKey: any): Promise<object> {
+  async updateBoard(no: number, deletedNullBoardKey: any): Promise<Object> {
     try {
       const updatedBoard = await this.createQueryBuilder()
         .update(Board)
@@ -389,6 +417,17 @@ export class BoardRepository extends Repository<Board> {
       throw new InternalServerErrorException(
         `${e} ### 게시판 삭제: 알 수 없는 서버 에러입니다.`,
       );
+    }
+  }
+
+  async saveCategory(categoryNo: number, board: Board) {
+    try {
+      await this.createQueryBuilder()
+        .relation(Category, 'boards')
+        .of(categoryNo)
+        .add(board);
+    } catch (e) {
+      throw new InternalServerErrorException();
     }
   }
 }

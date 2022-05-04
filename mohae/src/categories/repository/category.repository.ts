@@ -10,7 +10,6 @@ export class CategoryRepository extends Repository<Category> {
         .leftJoinAndSelect('categories.boards', 'boards')
         .where('categories.no = boards.category')
         .getMany();
-
       return categories;
     } catch (e) {
       throw new InternalServerErrorException(e);

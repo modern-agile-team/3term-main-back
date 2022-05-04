@@ -51,16 +51,10 @@ export class BoardsController {
     });
   }
 
-  @Get('/filter/:no')
-  async filteredBoards(
-    @Param('no') no: number,
-    @Query() paginationQuery,
-  ): Promise<Object> {
-    const { sort, title, popular, areaNo, max, min, target, date, free } =
-      paginationQuery;
-
-    const response = await this.boardService.filteredBoards(
-      no,
+  @Get('/filter')
+  async filteredBoards(@Query() paginationQuery): Promise<Object> {
+    const {
+      categoryNo,
       sort,
       title,
       popular,
@@ -69,6 +63,19 @@ export class BoardsController {
       min,
       target,
       date,
+      free,
+    } = paginationQuery;
+
+    const response = await this.boardService.filteredBoards(
+      categoryNo,
+      sort,
+      title,
+      popular,
+      areaNo,
+      max,
+      min,
+      target,
+      Number(date),
       free,
     );
 
@@ -160,7 +167,6 @@ export class BoardsController {
 
     return Object.assign({
       statusCode: 201,
-      msg: '게시글 생성이 완료되었습니다.',
       response,
     });
   }
