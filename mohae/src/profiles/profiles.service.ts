@@ -39,7 +39,6 @@ export class ProfilesService {
     private errorConfirm: ErrorConfirm,
   ) {}
 
-  // 프로필 수정이랑 프로필 조회 기능이 Repository가 UserRepository라 ProfileService에 둘 지 UserRepository에 따로 뺄지 정해야함
   async findOneProfile(profileUserNo, userNo): Promise<object> {
     try {
       const profile = await this.userRepository.findOneUser(profileUserNo);
@@ -49,10 +48,7 @@ export class ProfilesService {
         );
       }
       const isliked = await this.likeRepository.isLike(profileUserNo, userNo);
-      let islike = false;
-      if (isliked === 1) {
-        islike = true;
-      }
+      const islike = isliked ? true : false;
       const {
         likedMe,
         name,
@@ -130,11 +126,12 @@ export class ProfilesService {
           ? (deletedNullprofile[item] = updateProfileDto[item])
           : 0;
       });
-      const { nickname, school, major, categories } = updateProfileDto;
+      const { school, major, categories } = updateProfileDto;
       for (const key of Object.keys(deletedNullprofile)) {
         switch (key) {
           case 'phone':
           case 'photo_url':
+          case 'nickname':
             profile[key] = updateProfileDto[key];
             break;
           case 'school':
@@ -145,16 +142,6 @@ export class ProfilesService {
           case 'major':
             const majorRepo = await this.majorRepository.findOne(major);
             profile.major = majorRepo;
-            break;
-          case 'nickname':
-            const duplicateNickname = await this.userRepository.duplicateCheck(
-              'nickname',
-              nickname,
-            );
-            if (duplicateNickname) {
-              throw new ConflictException('이미 존재하는 닉네임입니다.');
-            }
-            profile.nickname = nickname;
             break;
           case 'categories':
             const categoriesRepo =
@@ -173,7 +160,6 @@ export class ProfilesService {
       //   no,
       //   profile,
       // );
-
       return profile.no;
     } catch (err) {
       throw err;

@@ -14,11 +14,13 @@ export class UserLike extends BaseEntity {
   @PrimaryGeneratedColumn()
   no: number;
 
+  // 좋아요를 누른 유저
   @ManyToOne((type) => User, (user) => user.no, {
     onDelete: 'SET NULL',
   })
   likedMe: User;
 
+  // 좋아요를 받은 유저
   @ManyToOne((type) => User, (user) => user.no, {
     onDelete: 'SET NULL',
   })
