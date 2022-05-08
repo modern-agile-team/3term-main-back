@@ -9,22 +9,22 @@ export class SpecRepository extends Repository<Spec> {
     try {
       const specs = await this.createQueryBuilder('spec')
         .leftJoinAndSelect('spec.user', 'user')
-        .leftJoinAndSelect('spec.specPhoto', 'specPhoto')
+        .leftJoinAndSelect('spec.specPhotos', 'specPhotos')
         .select([
           'spec.no',
           'spec.title',
           'spec.description',
-          'specPhoto.photo_url',
+          'specPhotos.photo_url',
           'user.no',
         ])
         .where('user.no = :no', { no })
-        .andWhere('spec.no = specPhoto.spec')
+        .andWhere('spec.no = specPhotos.spec')
         .getMany();
 
       return specs;
     } catch (err) {
       throw new InternalServerErrorException(
-        '스펙 전체 조회 관련 서버 에러입니다',
+        `${err}####스펙 전체 조회 관련 서버 에러입니다`,
       );
     }
   }
@@ -32,18 +32,18 @@ export class SpecRepository extends Repository<Spec> {
   async getOneSpec(no: number) {
     try {
       const spec = await this.createQueryBuilder('spec')
-        .leftJoinAndSelect('spec.specPhoto', 'specPhoto')
+        .leftJoinAndSelect('spec.specPhotos', 'specPhotos')
         .select([
           'spec.no',
           'spec.title',
           'spec.description',
-          'specPhoto.photo_url',
-          'specPhoto.no',
+          'specPhotos.photo_url',
+          'specPhotos.no',
           'spec.createdAt',
           'spec.latestUpdateSpec',
         ])
         .where('spec.no = :no', { no })
-        .andWhere('spec.no = specPhoto.spec')
+        .andWhere('spec.no = specPhotos.spec')
         .getOne();
 
       return spec;
