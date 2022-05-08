@@ -61,12 +61,16 @@ export class LettersService {
         0,
       );
 
-      const newLetterNo: Letter = await this.letterRepository.sendLetter(
+      const { insertId, affectedRows } = await this.letterRepository.sendLetter(
         sender,
         receiver,
         mailbox,
         description,
       );
+      if (!affectedRows) {
+        throw new Error('쪽지가 정상적으로 저장되지 않았습니다.');
+      }
+      const newLetterNo = insertId;
       this.errorConfirm.notFoundError(newLetterNo, 'newLetterNo 생성 실패');
 
       if (!mailboxNo) {
