@@ -1,12 +1,11 @@
 import {
   ConflictException,
-  ConsoleLogger,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { isLocale } from 'class-validator';
-import { User } from 'src/auth/entity/user.entity';
+import { create } from 'domain';
+
 import { UserRepository } from 'src/auth/repository/user.repository';
 import { CategoryRepository } from 'src/categories/repository/category.repository';
 import { LikeRepository } from 'src/like/repository/like.repository';
@@ -50,7 +49,7 @@ export class ProfilesService {
       const isliked = await this.likeRepository.isLike(profileUserNo, userNo);
       const islike = isliked ? true : false;
       const {
-        likedMe,
+        likedUser,
         name,
         email,
         nickname,
@@ -62,7 +61,10 @@ export class ProfilesService {
         categories,
         boards,
       } = profile;
-      const likedNum = likedMe.length;
+      const likedNum = likedUser.length;
+      const userCreatedAt = `${createdAt.getFullYear()}.${
+        createdAt.getMonth() + 1
+      }.${createdAt.getDate()}`;
 
       return {
         profileUserNo,
@@ -70,7 +72,7 @@ export class ProfilesService {
         email,
         nickname,
         photo_url,
-        createdAt,
+        userCreatedAt,
         likedNum,
         islike,
         boards,
@@ -137,7 +139,6 @@ export class ProfilesService {
           case 'school':
             const schoolRepo = await this.schoolRepository.findOne(school);
             profile.school = schoolRepo;
-            // set 조져야댐
             break;
           case 'major':
             const majorRepo = await this.majorRepository.findOne(major);
@@ -154,12 +155,8 @@ export class ProfilesService {
             break;
         }
       }
-      // await this.userRepository.updateProfile(no, deletedNullprofile);
+      // 유령데이터 다시한번 생기면 save 의심해보기
       await this.userRepository.save(profile);
-      // const updateProfile = await this.userRepository.updateProfile(
-      //   no,
-      //   profile,
-      // );
       return profile.no;
     } catch (err) {
       throw err;

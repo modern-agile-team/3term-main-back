@@ -119,7 +119,7 @@ describe('ProfilesService', () => {
           { no: 1, name: '개발' },
           { no: 2, name: '디자인' },
         ],
-        likedMe: [],
+        likedUser: [],
       });
       likeRepository['isLike'].mockResolvedValue();
     });

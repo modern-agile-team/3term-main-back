@@ -162,7 +162,7 @@ export class UserRepository extends Repository<User> {
         .leftJoinAndSelect('users.reports', 'reports')
         .leftJoinAndSelect('users.specs', 'specs')
         .leftJoinAndSelect('users.categories', 'categories')
-        .leftJoinAndSelect('users.likedMe', 'likedMe')
+        .leftJoinAndSelect('users.likedUser', 'likedUser')
         .select([
           'users.no',
           'users.email',
@@ -170,7 +170,7 @@ export class UserRepository extends Repository<User> {
           'users.createdAt',
           'users.name',
           'users.photo_url',
-          'likedMe',
+          'likedUser',
           'boards.no',
           'boards.title',
           'boards.target',
@@ -205,20 +205,6 @@ export class UserRepository extends Repository<User> {
     } catch (e) {
       throw new InternalServerErrorException(
         `${e} ##### 프로필 회원 조회 도중 발생한 서버에러`,
-      );
-    }
-  }
-  async updateProfile(no, profile) {
-    try {
-      const updateProfile = await this.createQueryBuilder()
-        .update(User)
-        .set(profile)
-        .where('no = :no', { no })
-        .execute();
-      return updateProfile;
-    } catch (e) {
-      throw new InternalServerErrorException(
-        `${e} ##### 프로필 수정 도중 발생한 서버에러`,
       );
     }
   }
