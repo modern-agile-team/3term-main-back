@@ -89,6 +89,7 @@ export class Board extends BaseEntity {
   @Column({
     comment: '게시글 마감일',
     type: 'datetime',
+    nullable: true,
   })
   deadline: Date;
 

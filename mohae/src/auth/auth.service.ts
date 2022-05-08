@@ -1,6 +1,7 @@
 import {
   ConflictException,
   Injectable,
+  InternalServerErrorException,
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -11,11 +12,13 @@ import * as bcrypt from 'bcryptjs';
 import { JwtService } from '@nestjs/jwt';
 import { User } from './entity/user.entity';
 import { SchoolRepository } from 'src/schools/repository/school.repository';
-import { DeleteResult } from 'typeorm';
+import { DeleteResult, UpdateResult } from 'typeorm';
 import { MajorRepository } from 'src/majors/repository/major.repository';
 import * as config from 'config';
 import { CategoryRepository } from 'src/categories/repository/category.repository';
 import { ErrorConfirm } from 'src/utils/error';
+import { create } from 'domain';
+import { copyFileSync } from 'fs';
 
 const jwtConfig = config.get('jwt');
 @Injectable()
@@ -37,13 +40,13 @@ export class AuthService {
     private jwtService: JwtService,
   ) {}
   async signUp(createUserDto: CreateUserDto): Promise<User> {
-    const { school, major, email, nickname, categories } = createUserDto;
-
+    const { school, major, email, nickname, categories, password } =
+      createUserDto;
     const schoolRepo = await this.schoolRepository.findOne(school, {
-      relations: ['users'],
+      select: ['no'],
     });
     const majorRepo = await this.majorRepository.findOne(major, {
-      relations: ['users'],
+      select: ['no'],
     });
     if (!schoolRepo || !majorRepo) {
       const notFoundObj = { 학교: schoolRepo, 전공: majorRepo };
@@ -64,7 +67,6 @@ export class AuthService {
       'email',
       email,
     );
-
     const duplicateNickname = await this.userRepository.duplicateCheck(
       'nickname',
       nickname,
@@ -77,30 +79,29 @@ export class AuthService {
     if (duplicateKeys.length) {
       throw new ConflictException(`해당 ${duplicateKeys}이 이미 존재합니다.`);
     }
-
-    const user = await this.userRepository.createUser(
+    const salt = await bcrypt.genSalt();
+    const hashedPassword = await bcrypt.hash(password, salt);
+    createUserDto.password = hashedPassword;
+    const user: User = await this.userRepository.createUser(
       createUserDto,
       schoolRepo,
       majorRepo,
     );
+
     if (!user) {
       throw new NotFoundException(
         '유저 생성이 정상적으로 이루어지지 않았습니다.',
       );
     }
-    const userCategory = await this.userRepository.findOne(user.no, {
-      relations: ['categories'],
-    });
-
     const filteredCategories = categoriesRepo.filter(
       (element) => element !== undefined,
     );
-    userCategory.categories.push(...filteredCategories);
+    for (const categoryNo of filteredCategories) {
+      await this.categoriesRepository.addUser(categoryNo.no, user);
+    }
 
-    schoolRepo.users.push(user);
-    majorRepo.users.push(user);
-
-    await this.categoriesRepository.saveUsers(filteredCategories, userCategory);
+    await this.schoolRepository.addUser(schoolRepo.no, user);
+    await this.majorRepository.addUser(majorRepo.no, user);
 
     return user;
   }
@@ -113,21 +114,18 @@ export class AuthService {
         user,
         '아이디 또는 비밀번호가 일치하지 않습니다.',
       );
-      const lastLogin = user.latestLogin.getTime();
-      // VScode에서 찍는 현재시간이 pc 시간보다 9시간 적게 나와서 일단 Date().getTime()에 9시간을 강제로 더해서 현재시간을 측정해주었음
-      // const plusCurrentTime = 9 * 60 * 60 * 1000;
-      const plusCurrentTime = 32398362;
-      const currentTime = new Date().getTime() + plusCurrentTime;
-
-      if (user.isLock && currentTime >= lastLogin + 10000) {
+      const loginTerm = await this.userRepository.checkLoginTerm(user.no);
+      if (user.isLock && loginTerm > 10) {
         await this.userRepository.changeIsLock(user.no, user.isLock);
       }
       const isLockUser = await this.userRepository.signIn(email);
       const isPassword = await bcrypt.compare(password, user.salt);
+
       if (!isLockUser.isLock) {
         if (user && isPassword) {
-          const payload = {
+          const payload: Object = {
             email,
+            userNo: user.no,
             issuer: 'modern-agile',
             expiration: jwtConfig.expiresIn,
           };
@@ -156,32 +154,35 @@ export class AuthService {
 
       throw new UnauthorizedException(
         `로그인 실패 횟수를 모두 초과 하였습니다 ${Math.floor(
-          (lastLogin + 10000 - currentTime) / 1000,
+          10 - loginTerm,
         )}초 뒤에 다시 로그인 해주세요`,
       );
     } catch (e) {
       throw e;
     }
   }
-  async signDown(no: number): Promise<DeleteResult> {
-    const result = await this.userRepository.signDown(no);
+  async signDown(no: number): Promise<void> {
+    try {
+      const isAffected = await this.userRepository.signDown(no);
 
-    if (!result.affected) {
-      throw new NotFoundException(
-        `${no} 회원님의 회원탈퇴가 정상적으로 이루어 지지 않았습니다.`,
-      );
+      if (!isAffected) {
+        throw new InternalServerErrorException(
+          `${no} 회원님의 회원탈퇴가 정상적으로 이루어 지지 않았습니다.`,
+        );
+      }
+    } catch (e) {
+      throw e;
     }
-    return result;
   }
 
-  async changePassword(changePasswordDto) {
+  async changePassword(changePasswordDto): Promise<UpdateResult> {
     try {
       const { email, nowPassword, changePassword, confirmChangePassword } =
         changePasswordDto;
 
       if (changePassword !== confirmChangePassword) {
         throw new UnauthorizedException(
-          '새비밀번호화 새비밀번호 확인이 일치하지 않습니다',
+          '새비밀번호와 새비밀번호 확인이 일치하지 않습니다',
         );
       }
       const user = await this.userRepository.signIn(email);
@@ -198,11 +199,12 @@ export class AuthService {
           email,
           hashedPassword,
         );
-
         if (result.affected) {
           return result;
         }
-        throw new Error('비밀번호 변경중 알 수 없는 오류입니다.');
+        throw new InternalServerErrorException(
+          '비밀번호 변경중 알 수 없는 오류입니다.',
+        );
       }
       throw new UnauthorizedException(
         '아이디 또는 비밀번호가 일치하지 않습니다.',
@@ -211,14 +213,14 @@ export class AuthService {
       throw e;
     }
   }
-  async forgetPassword(forgetPasswordDto) {
+  async forgetPassword(forgetPasswordDto): Promise<UpdateResult> {
     try {
       const { email, changePassword, confirmChangePassword } =
         forgetPasswordDto;
 
       if (changePassword !== confirmChangePassword) {
         throw new UnauthorizedException(
-          '새비밀번호화 새비밀번호 확인이 일치하지 않습니다',
+          '새비밀번호와 새비밀번호 확인이 일치하지 않습니다',
         );
       }
       const user = await this.userRepository.signIn(email);
@@ -237,12 +239,11 @@ export class AuthService {
           email,
           hashedPassword,
         );
-
         if (result.affected) {
           return result;
         }
-        throw new UnauthorizedException(
-          '비밀번호 변경 중 알 수 없는 오류입니다.',
+        throw new InternalServerErrorException(
+          '비밀번호 변경중 알 수 없는 오류입니다.',
         );
       }
       throw new UnauthorizedException('존재하지 않는 이메일 입니다.');
