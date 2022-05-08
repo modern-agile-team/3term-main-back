@@ -56,6 +56,8 @@ export abstract class CreateReportDto {
     description: '신고 내용입니다.',
     required: true,
   })
+  @IsNotEmpty()
   @IsString()
+  @MaxLength(100)
   description: string;
 }
