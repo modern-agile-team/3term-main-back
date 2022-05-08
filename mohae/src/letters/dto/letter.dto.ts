@@ -1,4 +1,10 @@
-import { IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsString,
+  MaxLength,
+} from 'class-validator';
 
 export class SendLetterDto {
   @IsNotEmpty()
@@ -15,5 +21,6 @@ export class SendLetterDto {
 
   @IsNotEmpty()
   @IsString()
+  @MaxLength(500)
   description: string;
 }
