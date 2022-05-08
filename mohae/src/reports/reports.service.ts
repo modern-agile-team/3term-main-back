@@ -47,24 +47,23 @@ export class ReportsService {
   ) {}
 
   async readAllCheckboxes(): Promise<ReportCheckbox[]> {
-    const checkedReport =
+    const checkList: ReportCheckbox[] =
       await this.reportCheckboxRepository.readAllCheckboxes();
 
-    return checkedReport;
+    return checkList;
   }
 
   async readOneReportedBoard(no: number): Promise<ReportedBoard> {
     try {
-      const report = await this.reportedBoardRepository.readOneReportedBoard(
-        no,
-      );
+      const reportedBoard: ReportedBoard =
+        await this.reportedBoardRepository.readOneReportedBoard(no);
 
       this.errorConfirm.notFoundError(
-        report,
+        reportedBoard,
         '해당 게시글 신고를 찾을 수 없습니다.',
       );
 
-      return report;
+      return reportedBoard;
     } catch (e) {
       throw e;
     }
@@ -72,14 +71,15 @@ export class ReportsService {
 
   async readOneReportedUser(no: number): Promise<ReportedUser> {
     try {
-      const report = await this.reportedUserRepository.readOneReportedUser(no);
+      const reportedUser: ReportedUser =
+        await this.reportedUserRepository.readOneReportedUser(no);
 
       this.errorConfirm.notFoundError(
-        report,
+        reportedUser,
         '해당 유저 신고를 찾을 수 없습니다.',
       );
 
-      return report;
+      return reportedUser;
     } catch (e) {
       throw e;
     }
