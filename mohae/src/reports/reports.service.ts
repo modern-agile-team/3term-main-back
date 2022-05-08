@@ -101,117 +101,108 @@ export class ReportsService {
       switch (head) {
         // 게시글 신고일 때의 로직
         case 'board':
-          try {
-            const board: Board = await this.boardRepository.findOne(headNo, {
+          const board: Board = await this.boardRepository.findOne(headNo, {
+            select: ['no'],
+            relations: ['reports'],
+          });
+          this.errorConfirm.notFoundError(
+            board,
+            '신고하려는 게시글이 존재하지 않습니다.',
+          );
+          const boardReporter: User = await this.userRepository.findOne(
+            reportUserNo,
+            {
               select: ['no'],
-              relations: ['reports'],
-            });
-            this.errorConfirm.notFoundError(
-              board,
-              '신고하려는 게시글이 존재하지 않습니다.',
-            );
-            const boardReporter: User = await this.userRepository.findOne(
-              reportUserNo,
-              {
-                select: ['no'],
-                relations: ['boardReport'],
-              },
-            );
-            this.errorConfirm.notFoundError(
-              boardReporter,
-              '신고자를 찾을 수 없습니다.',
-            );
+              relations: ['boardReport'],
+            },
+          );
+          this.errorConfirm.notFoundError(
+            boardReporter,
+            '신고자를 찾을 수 없습니다.',
+          );
 
-            const { insertId, affectedRows } =
-              await this.reportedBoardRepository.createBoardReport(description);
-            if (!affectedRows) {
-              throw new InternalServerErrorException('게시글 신고 저장 실패');
-            }
-            const newBoardReport: ReportedBoard =
-              await this.reportedBoardRepository.readOneReportedBoard(insertId);
-
-            checkInfo.forEach(async (checkNo) => {
-              await this.boardReportChecksRepository.saveBoardReportChecks(
-                newBoardReport,
-                await checkNo,
-              );
-            });
-
-            board.reports.push(newBoardReport);
-            await this.boardRepository.save(board);
-            await this.userRepository.userRelation(
-              boardReporter.no,
-              newBoardReport,
-              'boardReport',
-            );
-
-            return {
-              success: true,
-              reportNo: insertId,
-            };
-          } catch (e) {
-            throw e;
+          const { insertId, affectedRows } =
+            await this.reportedBoardRepository.createBoardReport(description);
+          if (!affectedRows) {
+            throw new InternalServerErrorException('게시글 신고 저장 실패');
           }
+          const newBoardReport: ReportedBoard =
+            await this.reportedBoardRepository.readOneReportedBoard(insertId);
 
+          checkInfo.forEach(async (checkNo) => {
+            await this.boardReportChecksRepository.saveBoardReportChecks(
+              newBoardReport,
+              await checkNo,
+            );
+          });
+
+          board.reports.push(newBoardReport);
+          await this.boardRepository.save(board);
+          await this.userRepository.userRelation(
+            boardReporter.no,
+            newBoardReport,
+            'boardReport',
+          );
+
+          return {
+            success: true,
+            reportNo: insertId,
+          };
         // 유저 신고일 때의 로직
         case 'user':
-          try {
-            const user: User = await this.userRepository.findOne(headNo, {
+          const user: User = await this.userRepository.findOne(headNo, {
+            select: ['no'],
+            relations: ['reports'],
+          });
+          this.errorConfirm.notFoundError(
+            user,
+            '신고하려는 유저가 존재하지 않습니다.',
+          );
+
+          const userReporter: User = await this.userRepository.findOne(
+            reportUserNo,
+            {
               select: ['no'],
-              relations: ['reports'],
-            });
-            this.errorConfirm.notFoundError(
-              user,
-              '신고하려는 유저가 존재하지 않습니다.',
-            );
+              relations: ['userReport'],
+            },
+          );
+          this.errorConfirm.notFoundError(
+            userReporter,
+            '신고자를 찾을 수 없습니다.',
+          );
 
-            const userReporter: User = await this.userRepository.findOne(
-              reportUserNo,
-              {
-                select: ['no'],
-                relations: ['userReport'],
-              },
+          const { insertId, affectedRows } =
+            await this.reportedUserRepository.createUserReport(description);
+          if (!affectedRows) {
+            throw new InternalServerErrorException(
+              '유저 신고가 접수되지 않았습니다.',
             );
-            this.errorConfirm.notFoundError(
-              userReporter,
-              '신고자를 찾을 수 없습니다.',
-            );
-
-            const { insertId, affectedRows } =
-              await this.reportedUserRepository.createUserReport(description);
-            if (!affectedRows) {
-              throw new InternalServerErrorException(
-                '유저 신고가 접수되지 않았습니다.',
-              );
-            }
-            const newUserReport: ReportedUser =
-              await this.reportedUserRepository.readOneReportedUser(insertId);
-
-            checkInfo.forEach(async (checkNo) => {
-              await this.userReportChecksRepository.saveUserReportChecks(
-                newUserReport,
-                await checkNo,
-              );
-            });
-
-            await this.userRepository.userRelation(
-              user.no,
-              newUserReport,
-              'reports',
-            );
-            await this.userRepository.userRelation(
-              userReporter.no,
-              newUserReport,
-              'userReport',
-            );
-
-            return {
-              success: true,
-              reportNo: insertId,
-            };
-          } catch (e) {
-            throw e;
           }
+          const newUserReport: ReportedUser =
+            await this.reportedUserRepository.readOneReportedUser(insertId);
+
+          checkInfo.forEach(async (checkNo) => {
+            await this.userReportChecksRepository.saveUserReportChecks(
+              newUserReport,
+              await checkNo,
+            );
+          });
+
+          await this.userRepository.userRelation(
+            user.no,
+            newUserReport,
+            'reports',
+          );
+          await this.userRepository.userRelation(
+            userReporter.no,
+            newUserReport,
+            'userReport',
+          );
+
+          return {
+            success: true,
+            reportNo: insertId,
+          };
         default:
           this.errorConfirm.notFoundError('', '해당 경로를 찾을 수 없습니다.');
       }
