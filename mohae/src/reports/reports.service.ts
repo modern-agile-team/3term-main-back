@@ -85,8 +85,9 @@ export class ReportsService {
 
   async createReport(createReportDto: CreateReportDto) {
     const { head, headNo, reportUserNo, checks, description } = createReportDto;
-    const set = new Set(checks);
-    const uniqueCheck = [...set];
+    const uniqueCheck = checks.filter((el, i) => {
+      return checks.indexOf(el) === i;
+    });
     const checkInfo = uniqueCheck.map(async (el) => {
       const info = await this.reportCheckboxRepository.selectCheckConfirm(el);
 
