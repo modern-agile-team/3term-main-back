@@ -121,13 +121,15 @@ export class ReportsService {
             '신고자를 찾을 수 없습니다.',
           );
 
-          const { insertId, affectedRows } =
+          const createBoardReportResult =
             await this.reportedBoardRepository.createBoardReport(description);
-          if (!affectedRows) {
+          if (!createBoardReportResult.affectedRows) {
             throw new InternalServerErrorException('게시글 신고 저장 실패');
           }
           const newBoardReport: ReportedBoard =
-            await this.reportedBoardRepository.readOneReportedBoard(insertId);
+            await this.reportedBoardRepository.readOneReportedBoard(
+              createBoardReportResult.insertId,
+            );
 
           checkInfo.forEach(async (checkNo) => {
             await this.boardReportChecksRepository.saveBoardReportChecks(
@@ -146,7 +148,7 @@ export class ReportsService {
 
           return {
             success: true,
-            reportNo: insertId,
+            reportNo: createBoardReportResult.insertId,
           };
         // 유저 신고일 때의 로직
         case 'user':
@@ -171,15 +173,17 @@ export class ReportsService {
             '신고자를 찾을 수 없습니다.',
           );
 
-          const { insertId, affectedRows } =
+          const createUserReportResult =
             await this.reportedUserRepository.createUserReport(description);
-          if (!affectedRows) {
+          if (!createUserReportResult.affectedRows) {
             throw new InternalServerErrorException(
               '유저 신고가 접수되지 않았습니다.',
             );
           }
           const newUserReport: ReportedUser =
-            await this.reportedUserRepository.readOneReportedUser(insertId);
+            await this.reportedUserRepository.readOneReportedUser(
+              createUserReportResult.insertId,
+            );
 
           checkInfo.forEach(async (checkNo) => {
             await this.userReportChecksRepository.saveUserReportChecks(
@@ -201,7 +205,7 @@ export class ReportsService {
 
           return {
             success: true,
-            reportNo: insertId,
+            reportNo: createUserReportResult.insertId,
           };
         default:
           this.errorConfirm.notFoundError('', '해당 경로를 찾을 수 없습니다.');
