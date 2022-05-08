@@ -1,4 +1,5 @@
 import { Controller, Get, Param, Query } from '@nestjs/common';
+import { ApiOperation } from '@nestjs/swagger';
 import { Mailbox } from './entity/mailbox.entity';
 import { MailboxesService } from './mailboxes.service';
 
@@ -6,7 +7,10 @@ import { MailboxesService } from './mailboxes.service';
 export class MailboxesController {
   constructor(private mailboxesService: MailboxesService) {}
 
-  // 유저가 우측 하단 알림 버튼을 클릭했을 때
+  @ApiOperation({
+    summary: '로그인한 유저의 쪽지함 전체 조회',
+    description: '로그인한 유저의 쪽지함 전체를 조회하는 API',
+  })
   @Get('/:loginUserNo')
   async readAllMailboxes(
     @Param('loginUserNo') loginUserNo: number,
@@ -22,7 +26,10 @@ export class MailboxesController {
     });
   }
 
-  // 유저가 알림창에 있는 쪽지함 리스트 중에 하나를 클릭했을 때
+  @ApiOperation({
+    summary: '쪽지함 목록에 있는 한 개의 쪽지함을 클릭',
+    description: '클릭한 쪽지함 내용을 조회하는 API',
+  })
   @Get('/letter/:mailboxNo')
   async searchMailbox(
     @Param('mailboxNo') mailboxNo: number,
@@ -40,6 +47,11 @@ export class MailboxesController {
     });
   }
 
+  @ApiOperation({
+    summary: '로그인한 유저와 상대방의 유저의 채팅 내역이 있는지 확인',
+    description:
+      '채팅 내역이 존재하면 채팅 내역 리턴, 없으면 아무 내용도 리턴하지 않는 API',
+  })
   @Get('/confirm/:oneselfNo/:opponentNo')
   async checkMailbox(
     @Param('oneselfNo') oneselfNo: number,
