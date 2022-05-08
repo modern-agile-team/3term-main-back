@@ -8,7 +8,10 @@ import {
   Post,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { JudgeDuplicateNicknameDto } from './dto/update-profile.dto';
+import {
+  JudgeDuplicateNicknameDto,
+  UpdateProfileDto,
+} from './dto/update-profile.dto';
 import { ProfilesService } from './profiles.service';
 
 @Controller('profile')
@@ -26,9 +29,7 @@ export class ProfilesController {
         profileUserNo,
         userNo,
       );
-
       return Object.assign({
-        success: true,
         statusCode: 200,
         msg: '프로필 조회에 성공했습니다.',
         response,
@@ -37,8 +38,8 @@ export class ProfilesController {
       throw err;
     }
   }
-  // 중복된 닉네임에 걸맞는 주소 짓기
-  @Post()
+
+  @Post('/check-nickname')
   async judgeDuplicateNickname(
     @Body() judgeDuplicateNicknameDto: JudgeDuplicateNicknameDto,
   ) {
@@ -48,8 +49,7 @@ export class ProfilesController {
       );
 
       return Object.assign({
-        success: true,
-        statusCode: 204,
+        statusCode: 200,
         msg: '사용가능한 닉네임입니다.',
       });
     } catch (err) {
@@ -60,16 +60,14 @@ export class ProfilesController {
   @Patch(':no')
   async updateProfile(
     @Param('no', ParseIntPipe) no: number,
-    @Body() updateProfileDto,
+    @Body() updateProfileDto: UpdateProfileDto,
   ): Promise<number> {
     try {
       const response = await this.profileService.updateProfile(
         no,
         updateProfileDto,
       );
-
       return Object.assign({
-        success: true,
         statusCode: 201,
         msg: '프로필 정보 수정이 완료되었습니다.',
         userNo: response,

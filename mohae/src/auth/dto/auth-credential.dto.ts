@@ -3,6 +3,7 @@ import {
   IsBoolean,
   IsNotEmpty,
   IsNumber,
+  IsOptional,
   IsString,
   Matches,
 } from 'class-validator';
@@ -21,12 +22,14 @@ export class CreateUserDto {
   @IsNotEmpty()
   name: string;
 
+  @IsOptional()
   @IsNumber()
-  school: number;
+  school?: number;
 
+  @IsOptional()
   @IsNumber()
   // Matches 사용하여 DB에 있는 전공 값 맞춰보기
-  major: number;
+  major?: number;
 
   @IsString()
   phone: string;
@@ -37,11 +40,13 @@ export class CreateUserDto {
   @IsBoolean()
   manager: boolean;
 
+  @IsOptional()
   @IsString()
-  photo_url: string;
+  photo_url?: string;
 
+  @IsOptional()
   @IsArray()
-  categories: [];
+  categories?: [];
 }
 
 export class SignInDto {
