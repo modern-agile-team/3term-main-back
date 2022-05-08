@@ -1,14 +1,19 @@
 import { Controller, Get, Param, Query } from '@nestjs/common';
+import { Mailbox } from './entity/mailbox.entity';
 import { MailboxesService } from './mailboxes.service';
 
 @Controller('mailboxes')
 export class MailboxesController {
   constructor(private mailboxesService: MailboxesService) {}
 
-  // 유저가 알림버튼을 클릭했을 때 API
+  // 유저가 우측 하단 알림 버튼을 클릭했을 때
   @Get('/:loginUserNo')
-  async findAllMailboxes(@Param('loginUserNo') loginUserNo: number) {
-    const response = await this.mailboxesService.findAllMailboxes(loginUserNo);
+  async readAllMailboxes(
+    @Param('loginUserNo') loginUserNo: number,
+  ): Promise<object> {
+    const response: Mailbox[] = await this.mailboxesService.readAllMailboxes(
+      loginUserNo,
+    );
 
     return Object.assign({
       statusCode: 200,
@@ -17,13 +22,13 @@ export class MailboxesController {
     });
   }
 
-  // 유저가 알림창에 있는 쪽지함을 클릭했을 때
+  // 유저가 알림창에 있는 쪽지함 리스트 중에 하나를 클릭했을 때
   @Get('/letter/:mailboxNo')
   async searchMailbox(
     @Param('mailboxNo') mailboxNo: number,
     @Query('limit') limit: number,
-  ) {
-    const response = await this.mailboxesService.searchMailbox(
+  ): Promise<object> {
+    const response: Mailbox = await this.mailboxesService.searchMailbox(
       mailboxNo,
       limit,
     );
@@ -39,11 +44,9 @@ export class MailboxesController {
   async checkMailbox(
     @Param('oneselfNo') oneselfNo: number,
     @Param('opponentNo') opponentNo: number,
-  ) {
-    const { success, mailboxNo } = await this.mailboxesService.checkMailbox(
-      oneselfNo,
-      opponentNo,
-    );
+  ): Promise<object> {
+    const { success, mailboxNo }: any =
+      await this.mailboxesService.checkMailbox(oneselfNo, opponentNo);
 
     if (!success) {
       return Object.assign({
@@ -52,7 +55,10 @@ export class MailboxesController {
       });
     }
 
-    const response = await this.mailboxesService.searchMailbox(mailboxNo, 0);
+    const response: Mailbox = await this.mailboxesService.searchMailbox(
+      mailboxNo,
+      0,
+    );
 
     return Object.assign({
       statusCode: 200,

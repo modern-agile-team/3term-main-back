@@ -50,14 +50,16 @@ export class Letter extends BaseEntity {
   @ManyToOne((type) => User, (user) => user.no, {
     onDelete: 'SET NULL',
   })
-  @JoinColumn({ name: 'sender_no' })
+  @JoinColumn({
+    name: 'sender_no',
+  })
   sender: User;
 
   @ManyToOne((type) => User, (user) => user.no, {
     onDelete: 'SET NULL',
   })
-  @JoinColumn({ name: 'receiver_no' })
+  @JoinColumn({
+    name: 'receiver_no',
+  })
   receiver: User;
-
-  board: number;
 }
