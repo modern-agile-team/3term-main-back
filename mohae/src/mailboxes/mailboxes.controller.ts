@@ -1,9 +1,10 @@
 import { Controller, Get, Param, Query } from '@nestjs/common';
-import { ApiOperation } from '@nestjs/swagger';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Mailbox } from './entity/mailbox.entity';
 import { MailboxesService } from './mailboxes.service';
 
 @Controller('mailboxes')
+@ApiTags('Mailboxes')
 export class MailboxesController {
   constructor(private mailboxesService: MailboxesService) {}
 
