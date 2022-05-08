@@ -92,9 +92,7 @@ export class ReportsService {
       return checks.indexOf(el) === i;
     });
     const checkInfo: Promise<ReportCheckbox>[] = uniqueCheck.map(async (el) => {
-      const info = await this.reportCheckboxRepository.selectCheckConfirm(el);
-
-      return info;
+      return await this.reportCheckboxRepository.selectCheckConfirm(el);
     });
 
     try {
