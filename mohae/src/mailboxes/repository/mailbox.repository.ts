@@ -8,14 +8,16 @@ export class MailboxRepository extends Repository<Mailbox> {
   async searchMailbox(mailboxNo: number, limit: number) {
     try {
       const mailbox = await this.createQueryBuilder('mailboxes')
-        .leftJoin('mailboxes.users', 'users')
+        .leftJoin('mailboxes.mailboxUsers', 'mailboxUsers')
+        .leftJoin('mailboxUsers.mailbox', 'mailbox')
+        .leftJoin('mailboxUsers.user', 'user')
         .leftJoin('mailboxes.letters', 'letter')
         .limit(limit * 2 + 19)
         .select([
           'mailboxes.no',
-          'users.no',
-          'users.nickname',
-          'users.photo_url',
+          'mailboxUsers.no',
+          'mailbox.no',
+          'user.no',
           'letter.no',
           'letter.description',
           'letter.reading_flag',
@@ -35,14 +37,13 @@ export class MailboxRepository extends Repository<Mailbox> {
 
   async createMailbox() {
     try {
-      const newMailbox = await this.createQueryBuilder('mailboxes')
+      const { raw } = await this.createQueryBuilder('mailboxes')
         .insert()
         .into(Mailbox)
         .values({})
         .execute();
-      const { insertId } = newMailbox.raw;
 
-      return insertId;
+      return raw.insertId;
     } catch {
       throw new InternalServerErrorException(
         '### 새로운 쪽지방을 생성 : 알 수 없는 서버 에러입니다.',
@@ -50,51 +51,14 @@ export class MailboxRepository extends Repository<Mailbox> {
     }
   }
 
-  async findOneMailbox(mailboxNo: number) {
+  async mailboxRelation(no: number, value: any, relation: string) {
     try {
-      const mailbox = await this.createQueryBuilder('mailboxes')
-        .leftJoinAndSelect('mailboxes.users', 'users')
-        .leftJoinAndSelect('mailboxes.letters', 'letters')
-        .where('mailboxes.no = :mailboxNo', { mailboxNo })
-        .getMany();
-
-      return mailbox;
-    } catch {
-      throw new InternalServerErrorException(
-        '### 쪽지함 : 알 수 없는 서버 에러입니다.',
-      );
-    }
-  }
-
-  async checkMailbox(oneselfNo: number, opponentNo: number) {
-    try {
-      const mailbox = await this.createQueryBuilder('mailboxes')
-        .leftJoinAndSelect(
-          'mailboxes.users',
-          'user',
-          'user.no = :oneselfNo AND user.no = :opponentNo',
-          {
-            oneselfNo,
-            opponentNo,
-          },
-        )
-        .leftJoinAndSelect('mailboxes.letters', 'letter')
-        .select([
-          'mailboxes.no',
-          'user.no',
-          'user.nickname',
-          'letter.no',
-          'letter.description',
-          'letter.reading_flag',
-          'letter.createdAt',
-        ])
-        .getOne();
-
-      return mailbox;
+      await this.createQueryBuilder()
+        .relation(Mailbox, relation)
+        .of(no)
+        .add(value);
     } catch (e) {
-      throw new InternalServerErrorException(
-        '### 쪽지함 여부 확인 : 알 수 없는 서버 에러입니다.',
-      );
+      throw new InternalServerErrorException('MailboxRelation 값 추가 에러');
     }
   }
 }
@@ -103,13 +67,53 @@ export class MailboxRepository extends Repository<Mailbox> {
 export class MailboxUserRepository extends Repository<MailboxUser> {
   async saveMailboxUser(mailbox: Mailbox, user: User) {
     try {
-      await this.createQueryBuilder('board_report_checks')
+      const { raw } = await this.createQueryBuilder()
         .insert()
         .into(MailboxUser)
-        .values({ mailbox, user })
+        .values({
+          user,
+          mailbox,
+        })
         .execute();
+
+      return raw.insertId;
     } catch (e) {
       throw new InternalServerErrorException('MailboxUserRepository 에러');
+    }
+  }
+
+  async mailboxUserRelation(no: number, value: any, relation: string) {
+    try {
+      await this.createQueryBuilder()
+        .relation(MailboxUser, relation)
+        .of(no)
+        .add(value);
+    } catch (e) {
+      throw new InternalServerErrorException(
+        'MailboxUserRelation 값 추가 에러',
+      );
+    }
+  }
+
+  async searchMailboxUser(oneselfNo: number, opponentNo: number) {
+    try {
+      const mailboxNo = await this.createQueryBuilder('firstMU')
+        .innerJoin('firstMU.mailbox', 'innerMailbox')
+        .innerJoin(
+          'innerMailbox.mailboxUsers',
+          'secondMU',
+          'firstMU.mailbox = secondMU.mailbox',
+        )
+        .select(['firstMU.mailbox AS mailboxNo'])
+        .where('firstMU.user = :oneselfNo AND secondMU.user = :opponentNo', {
+          oneselfNo,
+          opponentNo,
+        })
+        .getRawOne();
+
+      return mailboxNo;
+    } catch (e) {
+      throw new InternalServerErrorException(`${e} ### se 오류`);
     }
   }
 }

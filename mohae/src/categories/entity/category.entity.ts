@@ -26,6 +26,12 @@ export class Category extends BaseEntity {
   })
   boards: Board[];
 
+  @Column({
+    type: 'varchar',
+    comment: '카테고리 사진',
+  })
+  photo_url: string;
+
   @ManyToMany((type) => User, (user) => user.categories)
   users: User[];
 }
