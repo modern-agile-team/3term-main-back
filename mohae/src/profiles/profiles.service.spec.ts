@@ -2,13 +2,10 @@ import { ConflictException, NotFoundException } from '@nestjs/common';
 import { PassportModule } from '@nestjs/passport';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { profile } from 'console';
-import { response } from 'express';
 import { UserRepository } from 'src/auth/repository/user.repository';
 import { CategoryRepository } from 'src/categories/repository/category.repository';
 import { LikeRepository } from 'src/like/repository/like.repository';
 import { MajorRepository } from 'src/majors/repository/major.repository';
-import { ReportCheckbox } from 'src/reports/entity/report.entity';
 import { SchoolRepository } from 'src/schools/repository/school.repository';
 import { ErrorConfirm } from 'src/utils/error';
 import { Repository } from 'typeorm';
@@ -110,7 +107,7 @@ describe('ProfilesService', () => {
         photo_url: 'asdfasdf',
         email: '4@4e32.com',
         nickname: '저는 4e32시민입니다',
-        createdAt: '2022-04-28',
+        createdAt: new Date(),
         boards: [],
         school: { no: 1, name: '인덕대학교' },
         major: { no: 4, name: '선택안함' },
@@ -137,7 +134,7 @@ describe('ProfilesService', () => {
         email: '4@4e32.com',
         nickname: '저는 4e32시민입니다',
         photo_url: 'asdfasdf',
-        createdAt: '2022-04-28',
+        userCreatedAt: '2022.5.8',
         likedNum: 0,
         islike: false,
         boards: [],
@@ -182,7 +179,7 @@ describe('ProfilesService', () => {
         isLock: false,
         latestLogin: '2022-04-29',
         deletedAt: null,
-        createdAt: '2022-04-28',
+        userCreatedAt: '2022-04-28',
       });
       userRepository['duplicateCheck'].mockResolvedValue(undefined);
     });
