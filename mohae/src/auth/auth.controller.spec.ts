@@ -1,8 +1,7 @@
-import { ConsoleLogger, UnauthorizedException } from '@nestjs/common';
-import { JwtModule, JwtService } from '@nestjs/jwt';
+import { UnauthorizedException } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { Test, TestingModule } from '@nestjs/testing';
-import { response } from 'express';
 import { CategoryRepository } from 'src/categories/repository/category.repository';
 import { MajorRepository } from 'src/majors/repository/major.repository';
 import { SchoolRepository } from 'src/schools/repository/school.repository';

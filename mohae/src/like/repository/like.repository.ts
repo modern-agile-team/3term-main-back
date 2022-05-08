@@ -36,8 +36,8 @@ export class LikeRepository extends Repository<UserLike> {
     try {
       const numberOfLikes = await this.createQueryBuilder('user_like')
         .select()
-        .where('likedMeNo = :profileUserNo', { profileUserNo })
-        .andWhere('likedUserNo = :userNo', { userNo })
+        .where('likedUserNo = :profileUserNo', { profileUserNo })
+        .andWhere('likedMeNo = :userNo', { userNo })
         .execute();
       return numberOfLikes.length;
     } catch (err) {

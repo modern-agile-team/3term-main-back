@@ -40,9 +40,10 @@ export class LikeService {
 
       if (judge) {
         const countedLikeUser = await this.likeRepository.isLike(
-          user.no,
           likedUser.no,
+          user.no,
         );
+        console.log(countedLikeUser);
         if (countedLikeUser) {
           throw new ConflictException(
             '좋아요를 중복해서 요청할 수 없습니다 (좋아요 취소는 judge false로 넣어주세요)',

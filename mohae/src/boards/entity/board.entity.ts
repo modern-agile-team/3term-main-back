@@ -76,6 +76,12 @@ export class Board extends BaseEntity {
   })
   target: boolean;
 
+  @Column({
+    type: 'int',
+    default: 0,
+  })
+  likeCount: number;
+
   @CreateDateColumn({
     comment: '게시글 생성일',
   })

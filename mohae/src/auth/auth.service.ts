@@ -87,7 +87,6 @@ export class AuthService {
       schoolRepo,
       majorRepo,
     );
-
     if (!user) {
       throw new NotFoundException(
         '유저 생성이 정상적으로 이루어지지 않았습니다.',
