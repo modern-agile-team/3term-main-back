@@ -25,7 +25,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { Letter } from 'src/letters/entity/letter.entity';
-import { Mailbox } from 'src/mailboxes/entity/mailbox.entity';
+import { Mailbox, MailboxUser } from 'src/mailboxes/entity/mailbox.entity';
 import { Spec } from 'src/specs/entity/spec.entity';
 import { Faq } from 'src/faqs/entity/faq.entity';
 import { Notice } from 'src/notices/entity/notice.entity';
@@ -79,6 +79,7 @@ export class User extends BaseEntity {
   @Column({
     type: 'varchar',
     comment: '암호화된 비밀번호',
+    select: false,
   })
   salt: string;
 
@@ -131,11 +132,13 @@ export class User extends BaseEntity {
 
   @OneToMany((type) => Letter, (letter) => letter.sender, {
     nullable: true,
+    onDelete: 'SET NULL',
   })
   sendLetters: Letter[];
 
   @OneToMany((type) => Letter, (letter) => letter.receiver, {
     nullable: true,
+    onDelete: 'SET NULL',
   })
   receivedLetters: Letter[];
 
@@ -161,19 +164,16 @@ export class User extends BaseEntity {
 
   @OneToMany((type) => ReportedUser, (user) => user.reportedUser, {
     nullable: true,
-    eager: true,
   })
   reports: ReportedUser[];
 
   @OneToMany((type) => ReportedUser, (user) => user.reportUser, {
     nullable: true,
-    eager: true,
   })
   userReport: ReportedUser[];
 
   @OneToMany((type) => ReportedBoard, (board) => board.reportUser, {
     nullable: true,
-    eager: true,
   })
   boardReport: ReportedBoard[];
 
@@ -199,8 +199,11 @@ export class User extends BaseEntity {
   @JoinTable({ name: 'user_in_category' })
   categories: Category[];
 
-  @ManyToMany((type) => Mailbox, (mailbox) => mailbox.users)
-  mailboxes: Mailbox[];
+  @OneToMany(() => MailboxUser, (mailboxUser) => mailboxUser.user, {
+    nullable: true,
+    onDelete: 'SET NULL',
+  })
+  mailboxUsers: MailboxUser[];
 
   @ManyToMany((type) => Board, (board) => board.likedUser, {
     cascade: true,

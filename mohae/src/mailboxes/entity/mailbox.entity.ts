@@ -6,6 +6,7 @@ import {
   Entity,
   JoinTable,
   ManyToMany,
+  ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
@@ -19,15 +20,32 @@ export class Mailbox extends BaseEntity {
   @CreateDateColumn()
   createAt: Date | null;
 
-  @DeleteDateColumn()
+  @DeleteDateColumn({
+    select: false,
+  })
   deleteAt: Date | null;
 
   @OneToMany((type) => Letter, (letters) => letters.mailbox)
   letters: Letter[];
 
-  @ManyToMany((type) => User, (users) => users.mailboxes)
-  @JoinTable({
-    name: 'mailbox_of_user',
+  @OneToMany(() => MailboxUser, (mailboxUser) => mailboxUser.mailbox)
+  mailboxUsers: MailboxUser[];
+}
+
+@Entity('mailbox_user')
+export class MailboxUser extends BaseEntity {
+  @PrimaryGeneratedColumn()
+  no: number;
+
+  @ManyToOne(() => Mailbox, (mailbox) => mailbox.mailboxUsers, {
+    nullable: true,
+    onDelete: 'SET NULL',
   })
-  users: User[];
+  mailbox: Mailbox;
+
+  @ManyToOne(() => User, (user) => user.mailboxUsers, {
+    nullable: true,
+    onDelete: 'SET NULL',
+  })
+  user: User;
 }

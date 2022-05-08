@@ -89,6 +89,7 @@ export class Board extends BaseEntity {
   @Column({
     comment: '게시글 마감일',
     type: 'datetime',
+    nullable: true,
   })
   deadline: Date;
 
@@ -123,6 +124,6 @@ export class Board extends BaseEntity {
   area: Area;
 
   @ManyToMany((type) => User, (user) => user.likedBoard)
-  @JoinTable({ name: 'userLike' })
+  @JoinTable({ name: 'board_like' })
   likedUser: User[];
 }

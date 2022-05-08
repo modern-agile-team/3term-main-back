@@ -1,49 +1,34 @@
 import { InternalServerErrorException } from '@nestjs/common';
+import { User } from 'src/auth/entity/user.entity';
 import { EntityRepository, Repository } from 'typeorm';
-import { Mailbox } from '../entity/mailbox.entity';
+import { Mailbox, MailboxUser } from '../entity/mailbox.entity';
 
 @EntityRepository(Mailbox)
 export class MailboxRepository extends Repository<Mailbox> {
-  async findAllMailboxes(loginUserNo: number) {
+  async searchMailbox(mailboxNo: number, limit: number) {
     try {
       const mailbox = await this.createQueryBuilder('mailboxes')
-        .leftJoinAndSelect('mailboxes.users', 'users')
-        .leftJoinAndSelect('mailboxes.letters', 'letters')
-        .leftJoinAndSelect('letters.sender', 'sender')
-        .leftJoinAndSelect('letters.receiver', 'receiver')
-        .where('users.no = :loginUserNo', { loginUserNo })
-        .getMany();
+        .leftJoin('mailboxes.mailboxUsers', 'mailboxUsers')
+        .leftJoin('mailboxUsers.mailbox', 'mailbox')
+        .leftJoin('mailboxUsers.user', 'user')
+        .leftJoin('mailboxes.letters', 'letter')
+        .limit(limit * 2 + 19)
+        .select([
+          'mailboxes.no',
+          'mailboxUsers.no',
+          'mailbox.no',
+          'user.no',
+          'letter.no',
+          'letter.description',
+          'letter.reading_flag',
+          'letter.createdAt',
+        ])
+        .where('mailboxes.no = :mailboxNo', { mailboxNo })
+        .orderBy('letter.createdAt', 'ASC')
+        .getOne();
 
       return mailbox;
-    } catch {
-      throw new InternalServerErrorException(
-        '### 유저 쪽지함 목록 조회 : 알 수 없는 서버 에러입니다.',
-      );
-    }
-  }
-
-  async searchMailbox(loignUserNo: number, clickedUserNo: number) {
-    try {
-      const mailbox = await this.createQueryBuilder('mailboxes')
-        .leftJoinAndSelect('mailboxes.users', 'users')
-        .select(['mailboxes.no', 'users.no'])
-        .getMany();
-
-      for (const user of mailbox) {
-        const { users } = user;
-        if (!users[0] || !users[1]) {
-          return 0;
-        }
-
-        if (users[0].no === loignUserNo || users[1].no === loignUserNo) {
-          if (users[0].no === clickedUserNo || users[1].no === clickedUserNo) {
-            return user.no;
-          }
-        }
-      }
-
-      return 0;
-    } catch {
+    } catch (e) {
       throw new InternalServerErrorException(
         '### 쪽지함이 있는지 찾음 : 알 수 없는 서버 에러입니다.',
       );
@@ -52,14 +37,13 @@ export class MailboxRepository extends Repository<Mailbox> {
 
   async createMailbox() {
     try {
-      const newMailbox = await this.createQueryBuilder('mailboxes')
+      const { raw } = await this.createQueryBuilder('mailboxes')
         .insert()
         .into(Mailbox)
-        .values({ users: [] })
+        .values({})
         .execute();
-      const { insertId } = newMailbox.raw;
 
-      return insertId;
+      return raw.insertId;
     } catch {
       throw new InternalServerErrorException(
         '### 새로운 쪽지방을 생성 : 알 수 없는 서버 에러입니다.',
@@ -67,19 +51,69 @@ export class MailboxRepository extends Repository<Mailbox> {
     }
   }
 
-  async findOneMailbox(mailboxNo: number) {
+  async mailboxRelation(no: number, value: any, relation: string) {
     try {
-      const mailbox = await this.createQueryBuilder('mailboxes')
-        .leftJoinAndSelect('mailboxes.users', 'users')
-        .leftJoinAndSelect('mailboxes.letters', 'letters')
-        .where('mailboxes.no = :mailboxNo', { mailboxNo })
-        .getMany();
+      await this.createQueryBuilder()
+        .relation(Mailbox, relation)
+        .of(no)
+        .add(value);
+    } catch (e) {
+      throw new InternalServerErrorException('MailboxRelation 값 추가 에러');
+    }
+  }
+}
 
-      return mailbox;
-    } catch {
+@EntityRepository(MailboxUser)
+export class MailboxUserRepository extends Repository<MailboxUser> {
+  async saveMailboxUser(mailbox: Mailbox, user: User) {
+    try {
+      const { raw } = await this.createQueryBuilder()
+        .insert()
+        .into(MailboxUser)
+        .values({
+          user,
+          mailbox,
+        })
+        .execute();
+
+      return raw.insertId;
+    } catch (e) {
+      throw new InternalServerErrorException('MailboxUserRepository 에러');
+    }
+  }
+
+  async mailboxUserRelation(no: number, value: any, relation: string) {
+    try {
+      await this.createQueryBuilder()
+        .relation(MailboxUser, relation)
+        .of(no)
+        .add(value);
+    } catch (e) {
       throw new InternalServerErrorException(
-        '### 쪽지함 : 알 수 없는 서버 에러입니다.',
+        'MailboxUserRelation 값 추가 에러',
       );
+    }
+  }
+
+  async searchMailboxUser(oneselfNo: number, opponentNo: number) {
+    try {
+      const mailboxNo = await this.createQueryBuilder('firstMU')
+        .innerJoin('firstMU.mailbox', 'innerMailbox')
+        .innerJoin(
+          'innerMailbox.mailboxUsers',
+          'secondMU',
+          'firstMU.mailbox = secondMU.mailbox',
+        )
+        .select(['firstMU.mailbox AS mailboxNo'])
+        .where('firstMU.user = :oneselfNo AND secondMU.user = :opponentNo', {
+          oneselfNo,
+          opponentNo,
+        })
+        .getRawOne();
+
+      return mailboxNo;
+    } catch (e) {
+      throw new InternalServerErrorException(`${e} ### se 오류`);
     }
   }
 }

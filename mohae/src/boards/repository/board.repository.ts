@@ -5,12 +5,8 @@ import {
 import { Area } from 'src/areas/entity/areas.entity';
 import { User } from 'src/auth/entity/user.entity';
 import { Category } from 'src/categories/entity/category.entity';
-import { DeleteResult, EntityRepository, Repository } from 'typeorm';
-import {
-  CreateBoardDto,
-  SearchBoardDto,
-  UpdateBoardDto,
-} from '../dto/board.dto';
+import { DeleteResult, EntityRepository, IsNull, Repository } from 'typeorm';
+import { CreateBoardDto, UpdateBoardDto } from '../dto/board.dto';
 import { Board } from '../entity/board.entity';
 
 @EntityRepository(Board)
@@ -67,26 +63,23 @@ export class BoardRepository extends Repository<Board> {
   async readHotBoards(): Promise<Board[]> {
     try {
       const boards = await this.createQueryBuilder('boards')
-        .leftJoinAndSelect('boards.area', 'areas')
-        .leftJoinAndSelect('boards.category', 'categories')
+        .leftJoin('boards.area', 'areas')
+        .leftJoin('boards.category', 'categories')
+        .leftJoin('boards.user', 'users')
         .select([
           'boards.no',
           'boards.title',
-          'boards.description',
           'boards.createdAt',
           'boards.deadLine',
           'boards.isDeadLine',
           'boards.hit',
           'boards.price',
-          'boards.summary',
           'boards.target',
-          'boards.note1',
-          'boards.note2',
-          'boards.note3',
           'areas.name',
           'categories.name',
+          'users.name',
         ])
-        .orderBy('boards.thumb', 'DESC')
+        .orderBy('boards.hit', 'DESC')
         .limit(3)
         .getMany();
 
@@ -116,9 +109,9 @@ export class BoardRepository extends Repository<Board> {
     }
   }
 
-  async cancelClosedBoard(no: number): Promise<object> {
+  async cancelClosedBoard(no: number) {
     try {
-      const affected = await this.createQueryBuilder()
+      const { affected } = await this.createQueryBuilder()
         .update(Board)
         .set({ isDeadline: false })
         .where('no = :no', { no })
@@ -154,13 +147,16 @@ export class BoardRepository extends Repository<Board> {
 
   async closingBoard(currentTime: Date) {
     try {
-      const closedBoard = await this.createQueryBuilder()
+      const { affected } = await this.createQueryBuilder()
         .update(Board)
         .set({ isDeadline: true })
         .where('deadline <= :currentTime', { currentTime })
         .execute();
 
-      return closedBoard;
+      if (!affected) {
+        return { success: false };
+      }
+      return { success: true };
     } catch (e) {
       throw new InternalServerErrorException(
         `${e} ### 게시판 마감 처리 : 알 수 없는 서버 에러입니다.`,
@@ -171,21 +167,21 @@ export class BoardRepository extends Repository<Board> {
   async searchAllBoards({ title }): Promise<Board[]> {
     try {
       const boards = await this.createQueryBuilder('boards')
-        .leftJoinAndSelect('boards.area', 'areas')
-        .leftJoinAndSelect('boards.category', 'categories')
+        .leftJoin('boards.area', 'areas')
+        .leftJoin('boards.category', 'categories')
+        .leftJoin('boards.user', 'users')
         .select([
           'boards.no',
           'boards.title',
-          'boards.description',
           'boards.createdAt',
           'boards.deadLine',
           'boards.isDeadLine',
           'boards.hit',
           'boards.price',
-          'boards.summary',
           'boards.target',
           'areas.name',
           'categories.name',
+          'users.name',
         ])
         .where('boards.title like :title', { title: `%${title}%` })
         .orderBy('boards.no', 'DESC')
@@ -200,10 +196,11 @@ export class BoardRepository extends Repository<Board> {
   }
 
   async filteredBoards(
+    no: number,
     sort: any,
+    title: string,
     popular: string,
     areaNo: number,
-    categoryNo: number,
     max: number,
     min: number,
     target: boolean,
@@ -214,33 +211,29 @@ export class BoardRepository extends Repository<Board> {
   ): Promise<Board[]> {
     try {
       const boardFiltering = this.createQueryBuilder('boards')
-        .leftJoinAndSelect('boards.area', 'areas')
-        .leftJoinAndSelect('boards.category', 'categories')
+        .leftJoin('boards.area', 'areas')
+        .leftJoin('boards.category', 'categories')
+        .leftJoin('boards.user', 'users')
         .select([
           'boards.no',
           'boards.title',
-          'boards.description',
           'boards.createdAt',
           'boards.deadline',
           'boards.isDeadLine',
-          'boards.thumb',
-          'boards.hit',
           'boards.price',
-          'boards.summary',
           'boards.target',
-          'boards.note1',
-          'boards.note2',
-          'boards.note3',
           'areas.name',
           'categories.name',
+          'users.name',
         ])
+        .where('boards.category = :no', { no })
         .orderBy('boards.no', sort);
 
-      if (areaNo) boardFiltering.andWhere('boards.area = :areaNo', { areaNo });
-      if (categoryNo)
-        boardFiltering.andWhere('boards.category = :categoryNo', {
-          categoryNo,
+      if (title)
+        boardFiltering.andWhere('boards.title like :title', {
+          title: `%${title}%`,
         });
+      if (areaNo) boardFiltering.andWhere('boards.area = :areaNo', { areaNo });
       if (max) boardFiltering.andWhere('boards.price < :max', { max });
       if (min) boardFiltering.andWhere('boards.price >= :min', { min });
       if (target)
@@ -265,11 +258,26 @@ export class BoardRepository extends Repository<Board> {
   async getAllBoards(): Promise<Board[]> {
     try {
       const boards = await this.createQueryBuilder('boards')
-        .leftJoinAndSelect('boards.area', 'areas')
-        .leftJoinAndSelect('boards.category', 'categories')
+        .leftJoin('boards.area', 'areas')
+        .leftJoin('boards.category', 'categories')
+        .leftJoin('boards.user', 'users')
+        .select([
+          'boards.no',
+          'boards.title',
+          'boards.createdAt',
+          'boards.deadline',
+          'boards.isDeadline',
+          'boards.hit',
+          'boards.price',
+          'boards.target',
+          'areas.name',
+          'categories.name',
+          'users.name',
+          'datediff(boards.deadline ,now())',
+        ])
         .where('boards.area = areas.no')
         .andWhere('boards.category = categories.no')
-        .orderBy('boards.no', 'ASC')
+        .orderBy('boards.no', 'DESC')
         .getMany();
 
       return boards;
@@ -334,44 +342,15 @@ export class BoardRepository extends Repository<Board> {
     }
   }
 
-  async updateBoard(
-    no: number,
-    category: Category,
-    area: Area,
-    updateBoardDto: UpdateBoardDto,
-    endTime: Date,
-  ): Promise<object> {
+  async updateBoard(no: number, deletedNullBoardKey: any): Promise<object> {
     const board = await this.findOne(no);
     if (!board) {
       throw new NotFoundException(`No: ${no} 게시글을 찾을 수 없습니다.`);
     }
     try {
-      const {
-        title,
-        description,
-        price,
-        summary,
-        target,
-        note1,
-        note2,
-        note3,
-      } = updateBoardDto;
-
       const updatedBoard = await this.createQueryBuilder()
         .update(Board)
-        .set({
-          title,
-          description,
-          price,
-          summary,
-          target,
-          category,
-          area,
-          note1,
-          note2,
-          note3,
-          deadline: endTime,
-        })
+        .set(deletedNullBoardKey)
         .where('no = :no', { no })
         .execute();
       const { affected } = updatedBoard;
