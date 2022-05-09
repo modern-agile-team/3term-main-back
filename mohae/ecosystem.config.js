@@ -3,7 +3,7 @@ module.exports = {
     {
       name: 'mohae-back/mohae',
       script: 'npm',
-      args: 'start',
+      args: 'run start:dev',
     },
   ],
 };
