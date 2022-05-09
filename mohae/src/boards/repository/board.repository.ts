@@ -273,6 +273,7 @@ export class BoardRepository extends Repository<Board> {
           'areas.name',
           'categories.name',
           'users.name',
+          'datediff(boards.deadline ,now())',
         ])
         .where('boards.area = areas.no')
         .andWhere('boards.category = categories.no')
