@@ -2,8 +2,8 @@ module.exports = {
   apps: [
     {
       name: 'mohae-back/mohae',
-      script: 'npm',
-      args: 'run start:dev',
+      script: 'pm2',
+      args: 'start ./dist/main.js',
     },
   ],
 };
