@@ -1,7 +1,7 @@
 module.exports = {
   apps: [
     {
-      name: 'mohae-back/mohae',
+      name: 'main',
       script: 'pm2',
       args: 'start ./dist/main.js',
     },
