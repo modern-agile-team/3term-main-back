@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { CacheModule, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -21,6 +21,7 @@ import { NoticesModule } from './notices/notices.module';
 import { SpecsModule } from './specs/specs.module';
 import { PhotoModule } from './photo/photo.module';
 import { LikeModule } from './like/like.module';
+import { CachingModule } from './caching/caching.module';
 
 @Module({
   imports: [
@@ -43,6 +44,7 @@ import { LikeModule } from './like/like.module';
     SpecsModule,
     PhotoModule,
     LikeModule,
+    CachingModule,
   ],
   controllers: [AppController],
   providers: [AppService],
