@@ -40,9 +40,6 @@ export class BoardsService {
     const boards = await this.boardRepository.getAllBoards();
     this.errorConfirm.notFoundError(boards, '게시글을 찾을 수 없습니다.');
 
-    const currentTime = new Date();
-    currentTime.setHours(currentTime.getHours() + 9);
-
     return { allBoardNum: boards.length, boards };
   }
 
@@ -151,6 +148,7 @@ export class BoardsService {
 
   async readHotBoards(): Promise<Object> {
     const currentTime = new Date();
+    currentTime.setHours(currentTime.getHours() + 9);
     const year = currentTime.getFullYear();
     const month = currentTime.getMonth();
 

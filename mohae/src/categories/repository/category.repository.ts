@@ -23,6 +23,7 @@ export class CategoryRepository extends Repository<Category> {
         .leftJoinAndSelect('categories.users', 'users')
         .select([
           'categories.no',
+          'categories.hit',
           'categories.name',
           'boards.no',
           'boards.title',
@@ -71,6 +72,60 @@ export class CategoryRepository extends Repository<Category> {
       }
     } catch (e) {
       throw e;
+    }
+  }
+
+  async addCategoryHit(no: number, { hit }) {
+    try {
+      const qb = await this.createQueryBuilder()
+        .update(Category)
+        .set({ hit: hit + 1 })
+        .where('no = :no', { no })
+        .execute();
+
+      if (!qb.affected) {
+        return { success: false };
+      }
+
+      return { success: true };
+    } catch (e) {
+      throw new InternalServerErrorException(
+        `${e} ### 카테고리 조회수 증가 : 알 수 없는 서버 에러입니다.`,
+      );
+    }
+  }
+
+  async readHotCategories(): Promise<Category[]> {
+    try {
+      return await this.createQueryBuilder('categories')
+        .select(['categories.no', 'categories.name'])
+        .orderBy('categories.hit', 'DESC')
+        .where('categories.hit > 0')
+        .limit(3)
+        .getMany();
+    } catch (e) {
+      throw new InternalServerErrorException(
+        `${e} ### 인기 카테고리 조회 : 알 수 없는 서버 에러입니다.`,
+      );
+    }
+  }
+
+  async resetCategoryHit() {
+    try {
+      const { affected } = await this.createQueryBuilder()
+        .update(Category)
+        .set({ hit: 0 })
+        .execute();
+
+      if (!affected) {
+        return { success: false };
+      }
+
+      return { success: true };
+    } catch (e) {
+      throw new InternalServerErrorException(
+        `${e} ### 게시판 마감 처리 : 알 수 없는 서버 에러입니다.`,
+      );
     }
   }
 }

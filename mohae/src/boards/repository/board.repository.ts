@@ -77,7 +77,10 @@ export class BoardRepository extends Repository<Board> {
         ])
         .where('Year(boards.createdAt) = :year', { year })
         .andWhere('Month(boards.createdAt) = :month', { month })
-        .orderBy('(boards.hit + boards.likeCount) / 2', 'DESC')
+        .orderBy(
+          '(boards.hit + boards.likeCount) / DATEDIFF(now(), boards.createdAt)',
+          'DESC',
+        )
         .limit(3)
         .getRawMany();
 
