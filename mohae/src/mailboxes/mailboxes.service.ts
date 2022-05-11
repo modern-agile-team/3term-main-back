@@ -104,14 +104,10 @@ export class MailboxesService {
         opponentNo,
       );
 
-      return !mailbox
-        ? {
-            success: false,
-          }
-        : {
-            success: true,
-            mailboxNo: mailbox.mailboxNo,
-          };
+      return {
+        success: !!mailbox,
+        mailboxNo: mailbox?.mailboxNo,
+      };
     } catch (e) {
       throw e;
     }

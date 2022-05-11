@@ -63,7 +63,7 @@ export class MailboxesController {
 
     if (!success) {
       return Object.assign({
-        statusCode: 200,
+        statusCode: 202,
         msg: '해당 유저와의 쪽지함이 존재하지 않습니다.',
       });
     }
