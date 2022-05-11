@@ -4,6 +4,6 @@ import { RedisCacheService } from './redis-cache.service';
 
 @Module({
   controllers: [RedisCacheController],
-  providers: [RedisCacheService]
+  providers: [RedisCacheService],
 })
 export class RedisCacheModule {}

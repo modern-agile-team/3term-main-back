@@ -44,7 +44,9 @@ import { RedisCacheModule } from './redis-cache/redis-cache.module';
     SpecsModule,
     PhotoModule,
     LikeModule,
-    CacheModule,
+    CacheModule.register({
+      isGlobal: true,
+    }),
     RedisCacheModule,
   ],
   controllers: [AppController],
