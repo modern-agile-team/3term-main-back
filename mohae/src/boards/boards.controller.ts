@@ -87,8 +87,8 @@ export class BoardsController {
   }
 
   @Get('/hot')
-  async readHotBoards(): Promise<Object> {
-    const response = await this.boardService.readHotBoards();
+  async readHotBoards(@Query('select') select: number): Promise<Object> {
+    const response = await this.boardService.readHotBoards(select);
 
     return Object.assign({
       statusCode: 200,

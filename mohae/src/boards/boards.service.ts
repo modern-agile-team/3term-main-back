@@ -12,11 +12,9 @@ import {
   SearchBoardDto,
   UpdateBoardDto,
 } from './dto/board.dto';
-import { Board } from './entity/board.entity';
 import { BoardRepository } from './repository/board.repository';
 import { ErrorConfirm } from 'src/utils/error';
 import { UserRepository } from 'src/auth/repository/user.repository';
-import { profile } from 'console';
 
 @Injectable()
 export class BoardsService {
@@ -146,7 +144,7 @@ export class BoardsService {
     return { filteredBoardNum: boards.length, boards };
   }
 
-  async readHotBoards(): Promise<Object> {
+  async readHotBoards(select: number): Promise<Object> {
     const currentTime = new Date();
     currentTime.setHours(currentTime.getHours() + 9);
     const year = currentTime.getFullYear();
@@ -156,10 +154,17 @@ export class BoardsService {
       year - 1;
     }
 
-    const boards = await this.boardRepository.readHotBoards(year, month);
-    this.errorConfirm.notFoundError(boards, '게시글을 찾을 수 없습니다.');
+    const filteredHotBoards = await this.boardRepository.readHotBoards(
+      select,
+      year,
+      month,
+    );
+    this.errorConfirm.notFoundError(
+      filteredHotBoards,
+      '인기게시글이 존재하지 얺습니다.',
+    );
 
-    return boards;
+    return filteredHotBoards;
   }
 
   async getByOneBoard(no: number) {

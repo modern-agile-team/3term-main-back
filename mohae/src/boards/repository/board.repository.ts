@@ -1,11 +1,8 @@
-import {
-  InternalServerErrorException,
-  NotFoundException,
-} from '@nestjs/common';
+import { InternalServerErrorException } from '@nestjs/common';
 import { User } from 'src/auth/entity/user.entity';
 import { Category } from 'src/categories/entity/category.entity';
 import { DeleteResult, EntityRepository, Repository } from 'typeorm';
-import { CreateBoardDto, UpdateBoardDto } from '../dto/board.dto';
+import { CreateBoardDto } from '../dto/board.dto';
 import { Board } from '../entity/board.entity';
 
 @EntityRepository(Board)
@@ -59,9 +56,13 @@ export class BoardRepository extends Repository<Board> {
     }
   }
 
-  async readHotBoards(year: number, month: number): Promise<Object> {
+  async readHotBoards(
+    select: number,
+    year: number,
+    month: number,
+  ): Promise<Object> {
     try {
-      const boards = await this.createQueryBuilder('boards')
+      const hotBoards = this.createQueryBuilder('boards')
         .leftJoin('boards.area', 'areas')
         .leftJoin('boards.user', 'users')
         .select([
@@ -75,16 +76,24 @@ export class BoardRepository extends Repository<Board> {
           'areas.name AS area_name',
           'users.nickname AS user_nickname',
         ])
-        .where('Year(boards.createdAt) = :year', { year })
-        .andWhere('Month(boards.createdAt) = :month', { month })
+        .where('Year(boards.createdAt) <= :year', { year })
+        .andWhere('Month(boards.createdAt) <= :month', { month })
         .orderBy(
           '(boards.hit + boards.likeCount) / DATEDIFF(now(), boards.createdAt)',
           'DESC',
         )
-        .limit(3)
-        .getRawMany();
+        .limit(3);
 
-      return { year, month, boards };
+      if (select === 1) {
+        hotBoards.andWhere('boards.isDeadline = false');
+      }
+
+      if (select === 2) {
+        hotBoards.andWhere('boards.isDeadline = true');
+      }
+      const filteredHotBoards = await hotBoards.getRawMany();
+
+      return { year, month, filteredHotBoards };
     } catch (e) {
       `${e} ### 인기 게시판 순위 조회 : 알 수 없는 서버 에러입니다.`;
     }
