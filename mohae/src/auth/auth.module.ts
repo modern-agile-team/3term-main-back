@@ -19,12 +19,15 @@ import { LoginProcess } from 'src/utils/login';
 import { User } from './entity/user.entity';
 import { SpecRepository } from 'src/specs/repository/spec.repository';
 import { LikeRepository } from 'src/like/repository/like.repository';
+import { ScheduleModule } from '@nestjs/schedule';
 
 const jwtConfig = config.get('jwt');
 
 @Module({
   imports: [
     PassportModule.register({ defaultStrategy: 'jwt' }),
+    //1
+    ScheduleModule.forRoot(),
     JwtModule.register({
       secret: process.env.JWT_SECRET || jwtConfig.secret,
       signOptions: {
