@@ -21,7 +21,7 @@ import { NoticesModule } from './notices/notices.module';
 import { SpecsModule } from './specs/specs.module';
 import { PhotoModule } from './photo/photo.module';
 import { LikeModule } from './like/like.module';
-import { CachingModule } from './caching/caching.module';
+import { RedisCacheModule } from './redis-cache/redis-cache.module';
 
 @Module({
   imports: [
@@ -44,7 +44,8 @@ import { CachingModule } from './caching/caching.module';
     SpecsModule,
     PhotoModule,
     LikeModule,
-    CachingModule,
+    CacheModule,
+    RedisCacheModule,
   ],
   controllers: [AppController],
   providers: [AppService],
