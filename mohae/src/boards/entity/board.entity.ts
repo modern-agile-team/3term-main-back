@@ -45,6 +45,12 @@ export class Board extends BaseEntity {
     type: 'int',
     default: 0,
   })
+  likeCount: number;
+
+  @Column({
+    type: 'int',
+    default: 0,
+  })
   hit: number;
 
   @Column({

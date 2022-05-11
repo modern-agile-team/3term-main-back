@@ -77,7 +77,6 @@ export class ReviewRepository extends Repository<Review> {
 
       return { reviews, count };
     } catch (e) {
-      console.log(e);
       throw new InternalServerErrorException(
         `${e} ### 리뷰 선택 조회 : 알 수 없는 서버 에러입니다.`,
       );
