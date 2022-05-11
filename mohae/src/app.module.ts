@@ -1,4 +1,4 @@
-import { CacheModule, Module } from '@nestjs/common';
+import { CacheInterceptor, CacheModule, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -22,6 +22,7 @@ import { SpecsModule } from './specs/specs.module';
 import { PhotoModule } from './photo/photo.module';
 import { LikeModule } from './like/like.module';
 import { RedisCacheModule } from './redis-cache/redis-cache.module';
+import { APP_INTERCEPTOR } from '@nestjs/core';
 
 @Module({
   imports: [
@@ -50,6 +51,12 @@ import { RedisCacheModule } from './redis-cache/redis-cache.module';
     RedisCacheModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: CacheInterceptor,
+    },
+  ],
 })
 export class AppModule {}
