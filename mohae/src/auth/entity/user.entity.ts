@@ -79,6 +79,7 @@ export class User extends BaseEntity {
   @Column({
     type: 'varchar',
     comment: '암호화된 비밀번호',
+    select: false,
   })
   salt: string;
 
@@ -163,19 +164,16 @@ export class User extends BaseEntity {
 
   @OneToMany((type) => ReportedUser, (user) => user.reportedUser, {
     nullable: true,
-    eager: true,
   })
   reports: ReportedUser[];
 
   @OneToMany((type) => ReportedUser, (user) => user.reportUser, {
     nullable: true,
-    eager: true,
   })
   userReport: ReportedUser[];
 
   @OneToMany((type) => ReportedBoard, (board) => board.reportUser, {
     nullable: true,
-    eager: true,
   })
   boardReport: ReportedBoard[];
 

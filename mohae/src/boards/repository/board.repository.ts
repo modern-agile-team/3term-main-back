@@ -308,6 +308,7 @@ export class BoardRepository extends Repository<Board> {
         .leftJoin('boards.category', 'categories')
         .leftJoin('boards.user', 'users')
         .select([
+<<<<<<< HEAD
           'DATEDIFF(boards.deadline, now()) AS D_day',
           'boards.no AS no',
           'boards.title AS title',
@@ -318,6 +319,20 @@ export class BoardRepository extends Repository<Board> {
           'areas.no AS area_no',
           'areas.name AS area_name',
           'users.nickname AS user_nickname',
+=======
+          'boards.no',
+          'boards.title',
+          'boards.createdAt',
+          'boards.deadline',
+          'boards.isDeadline',
+          'boards.hit',
+          'boards.price',
+          'boards.target',
+          'areas.name',
+          'categories.name',
+          'users.name',
+          'datediff(boards.deadline ,now())',
+>>>>>>> 042c0462f6cc102a590e00ab0ccb1831731cc39e
         ])
         .where('boards.area = areas.no')
         .andWhere('boards.category = categories.no')
