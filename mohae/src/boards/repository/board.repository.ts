@@ -95,7 +95,7 @@ export class BoardRepository extends Repository<Board> {
 
       return { year, month, filteredHotBoards };
     } catch (e) {
-      `${e} ### 인기 게시판 순위 조회 : 알 수 없는 서버 에러입니다.`;
+      `${e} ### 인기 게시판 조회 : 알 수 없는 서버 에러입니다.`;
     }
   }
 
