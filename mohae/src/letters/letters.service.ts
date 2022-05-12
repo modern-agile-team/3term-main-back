@@ -10,7 +10,6 @@ import {
 import { ErrorConfirm } from 'src/utils/error';
 import { Connection } from 'typeorm';
 import { SendLetterDto } from './dto/letter.dto';
-import { Letter } from './entity/letter.entity';
 import { LetterRepository } from './repository/letter.repository';
 
 @Injectable()
@@ -50,9 +49,10 @@ export class LettersService {
           .getCustomRepository(MailboxRepository)
           .createMailbox());
 
-      if (!confirmedMailboxNo) {
-        throw new Error('쪽지 생성중 쪽지함 번호 유무 판단 조건문 에러');
-      }
+      this.errorConfirm.badGatewayError(
+        confirmedMailboxNo,
+        '쪽지함 번호 유무 판단 에러',
+      );
 
       const sender: User = await this.userRepository.findOne(senderNo, {
         select: ['no'],
@@ -83,14 +83,14 @@ export class LettersService {
 
       const newLetterNo = insertId;
 
-      this.errorConfirm.notFoundError(newLetterNo, 'newLetterNo 생성 실패');
+      this.errorConfirm.badGatewayError(newLetterNo, 'newLetterNo 생성 실패');
 
       if (!mailboxNo) {
         const senderMailboxUserNo: MailboxUser = await queryRunner.manager
           .getCustomRepository(MailboxUserRepository)
           .saveMailboxUser(mailbox, sender);
 
-        this.errorConfirm.notFoundError(
+        this.errorConfirm.badGatewayError(
           senderMailboxUserNo,
           'senderMailboxUser 생성 실패',
         );
@@ -99,7 +99,7 @@ export class LettersService {
           .getCustomRepository(MailboxUserRepository)
           .saveMailboxUser(mailbox, receiver);
 
-        this.errorConfirm.notFoundError(
+        this.errorConfirm.badGatewayError(
           receiverMailboxUserNo,
           'receiverMailboxUserNo 생성 실패',
         );
@@ -144,7 +144,7 @@ export class LettersService {
       // 에러가 발생시 롤백
       await queryRunner.rollbackTransaction();
       throw new InternalServerErrorException(
-        `${err}, 쪽지 전송중 알 수 없는 에러 발생`,
+        `${err}, 쪽지 저장 도중 알 수 없는 에러 발생`,
       );
     } finally {
       // 직접 생성한 QueryRunner는 해제시켜 주어야 함
