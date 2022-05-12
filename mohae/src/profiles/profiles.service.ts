@@ -53,7 +53,6 @@ export class ProfilesService {
       if (isliked === 1) {
         islike = true;
       }
-
       const {
         likedMe,
         name,
@@ -94,10 +93,11 @@ export class ProfilesService {
   ) {
     try {
       const { no, nickname } = judgeDuplicateNicknameDto;
-
-      const user = await this.userRepository.findOne(no);
-      if (user.nickname === nickname) {
-        throw new ConflictException('현재 닉네임입니다.');
+      if (no) {
+        const user = await this.userRepository.findOne(no);
+        if (user.nickname === nickname) {
+          throw new ConflictException('현재 닉네임입니다.');
+        }
       }
       const duplicateNickname = await this.userRepository.duplicateCheck(
         'nickname',
@@ -111,7 +111,10 @@ export class ProfilesService {
     }
   }
 
-  async updateProfile(no: number, updateProfileDto): Promise<number> {
+  async updateProfile(
+    no: number,
+    updateProfileDto: UpdateProfileDto,
+  ): Promise<number> {
     try {
       const profile = await this.userRepository.findOne(no, {
         relations: ['categories'],
@@ -127,18 +130,17 @@ export class ProfilesService {
           ? (deletedNullprofile[item] = updateProfileDto[item])
           : 0;
       });
-
       const { nickname, school, major, categories } = updateProfileDto;
-
       for (const key of Object.keys(deletedNullprofile)) {
         switch (key) {
           case 'phone':
           case 'photo_url':
-            profile[`${key}`] = updateProfileDto[`${key}`];
+            profile[key] = updateProfileDto[key];
             break;
           case 'school':
             const schoolRepo = await this.schoolRepository.findOne(school);
             profile.school = schoolRepo;
+            // set 조져야댐
             break;
           case 'major':
             const majorRepo = await this.majorRepository.findOne(major);
@@ -165,7 +167,12 @@ export class ProfilesService {
             break;
         }
       }
+      // await this.userRepository.updateProfile(no, deletedNullprofile);
       await this.userRepository.save(profile);
+      // const updateProfile = await this.userRepository.updateProfile(
+      //   no,
+      //   profile,
+      // );
 
       return profile.no;
     } catch (err) {
