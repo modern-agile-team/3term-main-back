@@ -7,50 +7,44 @@ import { Board } from '../entity/board.entity';
 
 @EntityRepository(Board)
 export class BoardRepository extends Repository<Board> {
-  async getByOneBoard(no: number) {
+  async getByOneBoard(no: number): Promise<Board> {
     try {
-      const qb = this.createQueryBuilder('boards')
+      return await this.createQueryBuilder('boards')
         .leftJoin('boards.area', 'areas')
         .leftJoin('boards.category', 'categories')
         .leftJoin('boards.user', 'users')
         .leftJoin('users.school', 'school')
         .leftJoin('users.major', 'major')
+        .leftJoin('boards.likedUser', 'likedUser')
         .select([
-          'users.no',
-          'users.name',
-          'users.nickname',
-          'users.photo_url',
-          'school.name',
-          'major.name',
-          'boards.no',
-          'boards.title',
-          'boards.description',
-          'boards.createdAt',
-          'boards.deadline',
-          'boards.isDeadline',
-          'boards.likeCount',
-          'boards.hit',
-          'boards.price',
-          'boards.summary',
-          'boards.target',
-          'boards.note1',
-          'boards.note2',
-          'boards.note3',
-          'areas.no',
-          'areas.name',
-          'categories.no',
-          'categories.name',
+          'boards.no AS no',
+          'DATEDIFF(boards.deadline, now()) AS decimalDay',
+          'boards.title AS title',
+          'boards.description AS description',
+          'boards.isDeadline AS isDeadline',
+          'boards.hit AS hit',
+          'COUNT(likedUser.no) AS likeCount',
+          'boards.price AS price',
+          'boards.summary AS summary',
+          'boards.target AS target',
+          'boards.note1 AS note1',
+          'boards.note2 AS note2',
+          'boards.note3 AS note3',
+          'areas.no AS areaNo',
+          'areas.name AS areaName',
+          'categories.no AS categoryNo',
+          'categories.name AS categoryName',
+          'users.no AS userNo',
+          'users.name AS userName',
+          'users.nickname AS userNickname',
+          'users.photo_url AS userPhotoUrl',
+          'school.name AS userSchool',
+          'major.name AS userMajor',
         ])
         .where('boards.no = :no', { no })
         .andWhere('boards.area = areas.no')
-        .andWhere('boards.category = categories.no');
-
-      const board = await qb.getOne();
-
-      const { D_day } = await qb
-        .addSelect('DATEDIFF(boards.deadline, now())', 'D_day')
+        .andWhere('boards.category = categories.no')
         .getRawOne();
-      return { D_day, board };
     } catch (e) {
       `${e} ### 게시판 상세 조회 : 알 수 없는 서버 에러입니다.`;
     }
@@ -99,59 +93,15 @@ export class BoardRepository extends Repository<Board> {
     }
   }
 
-  async addBoardHit(no: number, { hit }) {
+  async addBoardHit({ no, hit }): Promise<Number> {
     try {
-      const boardHit = await this.createQueryBuilder()
+      const { affected } = await this.createQueryBuilder()
         .update(Board)
         .set({ hit: hit + 1 })
         .where('no = :no', { no })
         .execute();
 
-      if (!boardHit.affected) {
-        return { success: false };
-      }
-
-      return { success: true };
-    } catch (e) {
-      throw new InternalServerErrorException(
-        `${e} ### 게시판 조회수 증가 : 알 수 없는 서버 에러입니다.`,
-      );
-    }
-  }
-
-  async likeCountUp(no: number, { likeCount }) {
-    try {
-      const boardHit = await this.createQueryBuilder()
-        .update(Board)
-        .set({ likeCount: likeCount + 1 })
-        .where('no = :no', { no })
-        .execute();
-
-      if (!boardHit.affected) {
-        return { success: false };
-      }
-
-      return { success: true };
-    } catch (e) {
-      throw new InternalServerErrorException(
-        `${e} ### 게시판 조회수 증가 : 알 수 없는 서버 에러입니다.`,
-      );
-    }
-  }
-
-  async likeCountDown(no: number, { likeCount }) {
-    try {
-      const boardHit = await this.createQueryBuilder()
-        .update(Board)
-        .set({ likeCount: likeCount - 1 })
-        .where('no = :no', { no })
-        .execute();
-
-      if (!boardHit.affected) {
-        return { success: false };
-      }
-
-      return { success: true };
+      return affected;
     } catch (e) {
       throw new InternalServerErrorException(
         `${e} ### 게시판 조회수 증가 : 알 수 없는 서버 에러입니다.`,
@@ -183,11 +133,7 @@ export class BoardRepository extends Repository<Board> {
         .where('no = :no', { no })
         .execute();
 
-      if (!affected) {
-        return { success: false };
-      }
-
-      return { success: true };
+      return affected;
     } catch (e) {
       throw new InternalServerErrorException(
         `${e} ### 게시판 비활성화 : 알 수 없는 서버 에러입니다.`,
@@ -205,10 +151,7 @@ export class BoardRepository extends Repository<Board> {
         .andWhere('isDeadline = false')
         .execute();
 
-      if (!affected) {
-        return { success: false };
-      }
-      return { success: true };
+      return affected;
     } catch (e) {
       throw new InternalServerErrorException(
         `${e} ### 게시판 마감 처리 : 알 수 없는 서버 에러입니다.`,
@@ -223,14 +166,14 @@ export class BoardRepository extends Repository<Board> {
         .leftJoin('boards.user', 'users')
         .select([
           'boards.no AS no',
-          'DATEDIFF(boards.deadline, now()) AS D_day',
+          'DATEDIFF(boards.deadline, now()) AS decimalDay',
           'boards.title AS title',
           'boards.isDeadline AS isDeadline',
           'boards.price AS price',
           'boards.target AS target',
-          'areas.no AS area_no',
-          'areas.name AS area_name',
-          'users.nickname AS user_nickname',
+          'areas.no AS areaNo',
+          'areas.name AS areaName',
+          'users.nickname AS userNickname',
         ])
         .where('boards.title like :title', { title: `%${title}%` })
         .orderBy('boards.no', 'DESC')
@@ -265,17 +208,17 @@ export class BoardRepository extends Repository<Board> {
         .leftJoin('boards.user', 'users')
         .select([
           'boards.no AS no',
-          'DATEDIFF(boards.deadline, now()) AS D_day',
+          'DATEDIFF(boards.deadline, now()) AS decimalDay',
           'boards.title AS title',
-          'boards.createdAt AS createdAt',
           'boards.isDeadline AS isDeadline',
           'boards.price AS price',
           'boards.target AS target',
-          'areas.no AS area_no',
-          'areas.name AS area_name',
-          'users.nickname AS user_nickname',
+          'areas.no AS areaNo',
+          'areas.name AS areaName',
+          'users.nickname AS userNickname',
         ])
         .orderBy('boards.no', sort);
+
       if (categoryNo) {
         boardFiltering.andWhere('boards.category = :categoryNo', {
           categoryNo,
@@ -303,40 +246,37 @@ export class BoardRepository extends Repository<Board> {
       if (popular) boardFiltering.orderBy('boards.hit', 'DESC');
 
       return await boardFiltering.getRawMany();
-    } catch (e) {
+    } catch (err) {
       throw new InternalServerErrorException(
-        `${e} ### 게시판 필터링 조회 : 알 수 없는 서버 에러입니다.`,
+        `${err} ### 게시판 필터링 조회 : 알 수 없는 서버 에러입니다.`,
       );
     }
   }
 
   async getAllBoards(): Promise<Board[]> {
     try {
-      const boards = await this.createQueryBuilder('boards')
+      return await this.createQueryBuilder('boards')
         .leftJoin('boards.area', 'areas')
         .leftJoin('boards.category', 'categories')
         .leftJoin('boards.user', 'users')
         .select([
-          'DATEDIFF(boards.deadline, now()) AS D_day',
+          'DATEDIFF(boards.deadline, now()) AS decimalDay',
           'boards.no AS no',
           'boards.title AS title',
-          'boards.createdAt AS createdAt',
           'boards.isDeadline AS isDeadline',
           'boards.price AS price',
           'boards.target AS target',
-          'areas.no AS area_no',
-          'areas.name AS area_name',
-          'users.nickname AS user_nickname',
+          'areas.no AS areaNo',
+          'areas.name AS areaName',
+          'users.nickname AS userNickname',
         ])
         .where('boards.area = areas.no')
         .andWhere('boards.category = categories.no')
         .orderBy('boards.no', 'DESC')
         .getRawMany();
-
-      return boards;
-    } catch (e) {
+    } catch (err) {
       throw new InternalServerErrorException(
-        `${e} ### 게시판 전체 조회 : 알 수 없는 서버 에러입니다.`,
+        `${err} ### 게시판 전체 조회 : 알 수 없는 서버 에러입니다.`,
       );
     }
   }
@@ -347,7 +287,7 @@ export class BoardRepository extends Repository<Board> {
     user: User,
     createBoardDto: CreateBoardDto,
     endTime: Date,
-  ): Promise<Board> {
+  ) {
     try {
       const {
         price,
@@ -380,38 +320,26 @@ export class BoardRepository extends Repository<Board> {
         ])
         .execute();
 
-      const { affectedRows, insertId } = board.raw;
-      if (affectedRows) {
-        return await this.createQueryBuilder('boards')
-          .leftJoinAndSelect('boards.category', 'category')
-          .leftJoinAndSelect('boards.area', 'area')
-          .where('boards.no = :no', { no: insertId })
-          .getOne();
-      }
-    } catch (e) {
+      return board.raw;
+    } catch (err) {
       throw new InternalServerErrorException(
-        `${e} ### 게시판 생성: 알 수 없는 서버 에러입니다.`,
+        `${err} ### 게시판 생성: 알 수 없는 서버 에러입니다.`,
       );
     }
   }
 
   async updateBoard(no: number, deletedNullBoardKey: any): Promise<Object> {
     try {
-      const updatedBoard = await this.createQueryBuilder()
+      const { affected } = await this.createQueryBuilder()
         .update(Board)
         .set(deletedNullBoardKey)
         .where('no = :no', { no })
         .execute();
-      const { affected } = updatedBoard;
 
-      if (!affected) {
-        return { success: false };
-      }
-
-      return { success: true };
-    } catch (e) {
+      return affected;
+    } catch (err) {
       throw new InternalServerErrorException(
-        `${e} ### 게시판 수정: 알 수 없는 서버 에러입니다.`,
+        `${err} ### 게시판 수정: 알 수 없는 서버 에러입니다.`,
       );
     }
   }
@@ -425,9 +353,9 @@ export class BoardRepository extends Repository<Board> {
         .execute();
 
       return result;
-    } catch (e) {
+    } catch (err) {
       throw new InternalServerErrorException(
-        `${e} ### 게시판 삭제: 알 수 없는 서버 에러입니다.`,
+        `${err} ### 게시판 삭제: 알 수 없는 서버 에러입니다.`,
       );
     }
   }
@@ -439,6 +367,17 @@ export class BoardRepository extends Repository<Board> {
         .of(categoryNo)
         .add(board);
     } catch (e) {
+      throw new InternalServerErrorException();
+    }
+  }
+
+  async saveLikedUser(userNo: number, board: Board) {
+    try {
+      await this.createQueryBuilder()
+        .relation(User, 'likedBoard')
+        .of(userNo)
+        .add(board);
+    } catch (err) {
       throw new InternalServerErrorException();
     }
   }

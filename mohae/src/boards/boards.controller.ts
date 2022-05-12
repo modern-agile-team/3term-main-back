@@ -32,17 +32,14 @@ export class BoardsController {
 
   @Cron('0 1 * * * *')
   async handleCron() {
-    const response = await this.boardService.closingBoard();
-    if (!response.success) {
-      this.logger.error('게시글 마감처리 로직 에러');
-    }
+    const isClosed: Number = await this.boardService.closingBoard();
 
-    this.logger.verbose('게시글 마감처리 로직 작동');
+    this.logger.verbose(`게시글 ${isClosed}개 마감처리`);
   }
 
   @Get()
   async getAllBoards(): Promise<Object> {
-    const response = await this.boardService.getAllBoards();
+    const response: Object = await this.boardService.getAllBoards();
 
     return Object.assign({
       statusCode: 200,
@@ -133,7 +130,7 @@ export class BoardsController {
   }
 
   @Get('/:no')
-  async getByOneBoard(@Param('no') no: number) {
+  async getByOneBoard(@Param('no') no: number): Promise<Object> {
     const response = await this.boardService.getByOneBoard(no);
 
     return Object.assign({

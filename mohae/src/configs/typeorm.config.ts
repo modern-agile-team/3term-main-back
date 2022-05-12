@@ -31,6 +31,7 @@ const { DB_HOST, DB_PORT, DB_USER, DB_PSWORD, DB_DATABASE } = process.env;
 
 export const typeORMConfig: TypeOrmModuleOptions = {
   timezone: 'Z',
+  dateStrings: true,
   type: dbConfig.type,
   host: DB_HOST || dbConfig.host,
   port: DB_PORT || dbConfig.port,
