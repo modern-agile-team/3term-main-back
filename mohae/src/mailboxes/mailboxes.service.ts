@@ -76,16 +76,7 @@ export class MailboxesService {
         limit,
       );
 
-      const notReadLetter: Letter[] =
-        await this.letterRepository.notReadingLetter(mailboxNo);
-      this.errorConfirm.notFoundError(
-        notReadLetter,
-        '경로를 찾을 수 없습니다.',
-      );
-
-      notReadLetter.forEach(async (letter) => {
-        await this.letterRepository.updateReading(letter.no);
-      });
+      await this.letterRepository.updateReading(mailboxNo);
 
       return mailbox;
     } catch (e) {
