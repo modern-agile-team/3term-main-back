@@ -167,7 +167,7 @@ export class UserRepository extends Repository<User> {
           'users.no',
           'users.email',
           'users.nickname',
-          'users.createdAt',
+          `users.createdAt`,
           'users.name',
           'users.photo_url',
           'likedUser',

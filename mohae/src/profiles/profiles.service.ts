@@ -41,6 +41,7 @@ export class ProfilesService {
   async findOneProfile(profileUserNo, userNo): Promise<object> {
     try {
       const profile = await this.userRepository.findOneUser(profileUserNo);
+
       if (!profile) {
         throw new NotFoundException(
           `No: ${profileUserNo} 일치하는 유저가 없습니다.`,
