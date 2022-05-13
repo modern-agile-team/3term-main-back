@@ -1,6 +1,7 @@
 import { Area } from 'src/areas/entity/areas.entity';
 import { User } from 'src/auth/entity/user.entity';
 import { Category } from 'src/categories/entity/category.entity';
+import { BoardLike } from 'src/like/entity/board.like.entity';
 import { ReportedBoard } from 'src/reports/entity/report.entity';
 import { Review } from 'src/reviews/entity/review.entity';
 import {
@@ -129,7 +130,14 @@ export class Board extends BaseEntity {
   })
   area: Area;
 
-  @ManyToMany((type) => User, (user) => user.likedBoard)
-  @JoinTable({ name: 'board_like' })
-  likedUser: User[];
+  @OneToMany((type) => BoardLike, (boardLike) => boardLike.likedUser, {
+    nullable: true,
+  })
+  likedUser: BoardLike[];
+
+  //   @ManyToMany((type) => User, (user) => user.likedBoard, {
+  //     onDelete: 'SET NULL',
+  //   })
+  //   @JoinTable({ name: 'board_liked' })
+  //   likedUser: User[];
 }

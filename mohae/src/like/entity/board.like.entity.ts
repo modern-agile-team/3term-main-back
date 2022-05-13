@@ -1,15 +1,16 @@
 import { User } from 'src/auth/entity/user.entity';
+import { Board } from 'src/boards/entity/board.entity';
 import { BaseEntity, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 
-@Entity('user_like')
-export class UserLike extends BaseEntity {
+@Entity('board_like')
+export class BoardLike extends BaseEntity {
   @PrimaryGeneratedColumn()
   no: number;
 
-  @ManyToOne((type) => User, (user) => user.no, {
+  @ManyToOne((type) => Board, (board) => board.no, {
     onDelete: 'SET NULL',
   })
-  likedMe: User;
+  likedBoard: Board;
 
   @ManyToOne((type) => User, (user) => user.no, {
     onDelete: 'SET NULL',
