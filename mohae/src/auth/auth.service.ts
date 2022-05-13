@@ -153,13 +153,12 @@ export class AuthService {
         return accessToken;
       }
       await this.userRepository.plusLoginFailCount(user);
-      if (user.loginFailCount + 1 >= 5) {
-        await this.userRepository.changeIsLock(user.no, !user.isLock);
+      const afterUser = await this.userRepository.findOne(user.no);
+      if (afterUser.loginFailCount >= 5) {
+        await this.userRepository.changeIsLock(afterUser.no, afterUser.isLock);
       }
       throw new UnauthorizedException(
-        `아이디 또는 비밀번호가 일치하지 않습니다. 로그인 실패 횟수: ${
-          user.loginFailCount + 1
-        } `,
+        `아이디 또는 비밀번호가 일치하지 않습니다. 로그인 실패 횟수: ${afterUser.loginFailCount} `,
       );
     } catch (err) {
       throw err;
@@ -169,17 +168,7 @@ export class AuthService {
   async confirmUser(signInDto: SignInDto) {
     try {
       const { email }: SignInDto = signInDto;
-      const user: User = await this.userRepository
-        .createQueryBuilder('users')
-        .select([
-          'users.no',
-          'users.salt',
-          'users.isLock',
-          'users.latestLogin',
-          'users.loginFailCount',
-        ])
-        .where('users.email = :email', { email })
-        .getOne();
+      const user: User = await this.userRepository.confirmUser(email);
       this.errorConfirm.notFoundError(
         user,
         '아이디 또는 비밀번호가 일치하지 않습니다.',
@@ -207,7 +196,6 @@ export class AuthService {
   async signDown(no: number): Promise<void> {
     try {
       const affected: number = await this.userRepository.signDown(no);
-
       if (!affected) {
         throw new InternalServerErrorException(
           `${no} 회원님의 회원탈퇴가 정상적으로 이루어 지지 않았습니다.`,
@@ -246,9 +234,8 @@ export class AuthService {
           email,
           hashedPassword,
         );
-        if (affected) {
-          return affected;
-        }
+        if (affected) return affected;
+
         throw new InternalServerErrorException(
           '비밀번호 변경중 알 수 없는 오류입니다.',
         );
@@ -292,9 +279,8 @@ export class AuthService {
           email,
           hashedPassword,
         );
-        if (affected) {
-          return affected;
-        }
+        if (affected) return affected;
+
         throw new InternalServerErrorException(
           '비밀번호 변경중 알 수 없는 오류입니다.',
         );

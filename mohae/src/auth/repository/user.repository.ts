@@ -62,6 +62,27 @@ export class UserRepository extends Repository<User> {
     }
   }
 
+  async confirmUser(email: string): Promise<User> {
+    try {
+      const user: User = await this.createQueryBuilder('users')
+        .select([
+          'users.no',
+          'users.salt',
+          'users.isLock',
+          'users.latestLogin',
+          'users.loginFailCount',
+        ])
+        .where('users.email = :email', { email })
+        .getOne();
+
+      return user;
+    } catch (err) {
+      throw new InternalServerErrorException(
+        `${err} 로그인 도중 유저 comfirm 관련 서버에러`,
+      );
+    }
+  }
+
   async signDown(no: number): Promise<number> {
     try {
       const { affected }: UpdateResult = await this.createQueryBuilder()
@@ -127,7 +148,6 @@ export class UserRepository extends Repository<User> {
         .set({ isLock: !isLock })
         .where('no = :userNo', { userNo })
         .execute();
-      console.log(isLock);
       return affected;
     } catch (err) {
       throw new InternalServerErrorException(
