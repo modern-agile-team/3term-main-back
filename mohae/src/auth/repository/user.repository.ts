@@ -100,6 +100,7 @@ export class UserRepository extends Repository<User> {
   async duplicateCheck(string: string, duplicateCheck: string): Promise<User> {
     try {
       const duplicate: User = await this.createQueryBuilder('users')
+        .select(['users.no', 'users.nickname'])
         .where(`users.${string}= :duplicateCheck`, { duplicateCheck })
         .getOne();
 

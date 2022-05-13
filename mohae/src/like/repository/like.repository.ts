@@ -32,13 +32,16 @@ export class LikeRepository extends Repository<UserLike> {
     }
   }
 
-  async isLike(profileUserNo, userNo) {
+  async isLike(profileUserNo: number, userNo: number): Promise<number> {
     try {
-      const numberOfLikes = await this.createQueryBuilder('user_like')
+      const numberOfLikes: Array<User> = await this.createQueryBuilder(
+        'user_like',
+      )
         .select()
         .where('likedUserNo = :profileUserNo', { profileUserNo })
         .andWhere('likedMeNo = :userNo', { userNo })
         .execute();
+      console.log(numberOfLikes);
       return numberOfLikes.length;
     } catch (err) {
       throw err;
