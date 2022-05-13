@@ -79,7 +79,7 @@ export class BoardsService {
     }
 
     if (!findUser) {
-      board.likedUser.push(user);
+      // board.likedUser.push(user);
 
       await this.boardRepository.save(board);
 
