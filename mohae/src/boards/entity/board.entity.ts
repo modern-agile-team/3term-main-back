@@ -130,7 +130,7 @@ export class Board extends BaseEntity {
   })
   area: Area;
 
-  @OneToMany((type) => BoardLike, (boardLike) => boardLike.likedUser, {
+  @OneToMany((type) => BoardLike, (boardLike) => boardLike.likedBoard, {
     nullable: true,
   })
   likedUser: BoardLike[];

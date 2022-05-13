@@ -42,21 +42,26 @@ export class CategoryRepository extends Repository<Category> {
     }
   }
   async selectCategory(categories: Array<number>) {
-    const categoryInfo = [
-      await this.createQueryBuilder('categories')
-        .select()
-        .where('categories.no = :no', { no: categories[0] })
-        .getOne(),
-      await this.createQueryBuilder('categories')
-        .select()
-        .where('categories.no = :no', { no: categories[1] })
-        .getOne(),
-      await this.createQueryBuilder('categories')
-        .select()
-        .where('categories.no = :no', { no: categories[2] })
-        .getOne(),
-    ];
-    return categoryInfo;
+    try {
+      return [
+        await this.createQueryBuilder('categories')
+          .select()
+          .where('categories.no = :no', { no: categories[0] })
+          .getOne(),
+        await this.createQueryBuilder('categories')
+          .select()
+          .where('categories.no = :no', { no: categories[1] })
+          .getOne(),
+        await this.createQueryBuilder('categories')
+          .select()
+          .where('categories.no = :no', { no: categories[2] })
+          .getOne(),
+      ];
+    } catch (err) {
+      throw new InternalServerErrorException(
+        `${err} selectCategory 메소드 관련 서버에러`,
+      );
+    }
   }
 
   async addUser(categoryNo: number, user: User) {

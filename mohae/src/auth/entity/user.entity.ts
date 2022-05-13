@@ -206,7 +206,7 @@ export class User extends BaseEntity {
   })
   mailboxUsers: MailboxUser[];
 
-  @OneToMany((type) => BoardLike, (boardLike) => boardLike.likedBoard, {
+  @OneToMany((type) => BoardLike, (boardLike) => boardLike.likedUser, {
     nullable: true,
   })
   likedBoard: BoardLike[];

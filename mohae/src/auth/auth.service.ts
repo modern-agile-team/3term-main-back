@@ -6,21 +6,27 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { CreateUserDto, SignInDto } from './dto/auth-credential.dto';
+import {
+  ChangePasswordDto,
+  CreateUserDto,
+  ForgetPasswordDto,
+  SignInDto,
+} from './dto/auth-credential.dto';
 import { UserRepository } from './repository/user.repository';
 import * as bcrypt from 'bcryptjs';
 import { JwtService } from '@nestjs/jwt';
 import { User } from './entity/user.entity';
 import { SchoolRepository } from 'src/schools/repository/school.repository';
-import { DeleteResult, UpdateResult } from 'typeorm';
+import { UpdateResult } from 'typeorm';
 import { MajorRepository } from 'src/majors/repository/major.repository';
 import * as config from 'config';
 import { CategoryRepository } from 'src/categories/repository/category.repository';
 import { ErrorConfirm } from 'src/utils/error';
-import { create } from 'domain';
-import { copyFileSync } from 'fs';
+import { School } from 'src/schools/entity/school.entity';
+import { Major } from 'src/majors/entity/major.entity';
+import { Category } from 'src/categories/entity/category.entity';
 
-const jwtConfig = config.get('jwt');
+const jwtConfig: any = config.get('jwt');
 @Injectable()
 export class AuthService {
   constructor(
@@ -40,89 +46,112 @@ export class AuthService {
     private jwtService: JwtService,
   ) {}
   async signUp(createUserDto: CreateUserDto): Promise<User> {
-    const { school, major, email, nickname, categories, password } =
-      createUserDto;
-    const schoolRepo = await this.schoolRepository.findOne(school, {
-      select: ['no'],
-    });
-    const majorRepo = await this.majorRepository.findOne(major, {
-      select: ['no'],
-    });
-    if (!schoolRepo || !majorRepo) {
-      const notFoundObj = { 학교: schoolRepo, 전공: majorRepo };
-      const notFoundKey = Object.keys(notFoundObj).filter(
-        (key) => !notFoundObj[key],
+    try {
+      const {
+        school,
+        major,
+        email,
+        nickname,
+        categories,
+        password,
+      }: CreateUserDto = createUserDto;
+      const schoolRepo: School = await this.schoolRepository.findOne(school, {
+        select: ['no'],
+      });
+      const majorRepo: Major = await this.majorRepository.findOne(major, {
+        select: ['no'],
+      });
+
+      if (!schoolRepo || !majorRepo) {
+        const notFoundObj: object = { 학교: schoolRepo, 전공: majorRepo };
+        const notFoundKey: Array<string> = Object.keys(notFoundObj).filter(
+          (key) => !notFoundObj[key],
+        );
+
+        if (notFoundKey.length) {
+          throw new NotFoundException(
+            `해당 번호에 해당하는 ${notFoundKey}이(가) 존재하지 않습니다.`,
+          );
+        }
+      }
+
+      const categoriesRepo: Array<Category> =
+        await this.categoriesRepository.selectCategory(categories);
+      const duplicateEmail: User = await this.userRepository.duplicateCheck(
+        'email',
+        email,
       );
-      if (notFoundKey.length) {
+      const duplicateNickname: User = await this.userRepository.duplicateCheck(
+        'nickname',
+        nickname,
+      );
+      const duplicateObj: object = {
+        이메일: duplicateEmail,
+        닉네임: duplicateNickname,
+      };
+      const duplicateKeys: Array<string> = Object.keys(duplicateObj).filter(
+        (key) => duplicateObj[key],
+      );
+
+      if (duplicateKeys.length) {
+        throw new ConflictException(`해당 ${duplicateKeys}이 이미 존재합니다.`);
+      }
+
+      const salt: string = await bcrypt.genSalt();
+      const hashedPassword: string = await bcrypt.hash(password, salt);
+      createUserDto.password = hashedPassword;
+      const user: User = await this.userRepository.createUser(
+        createUserDto,
+        schoolRepo,
+        majorRepo,
+      );
+
+      if (!user) {
         throw new NotFoundException(
-          `해당 번호에 해당하는 ${notFoundKey}이(가) 존재하지 않습니다.`,
+          '유저 생성이 정상적으로 이루어지지 않았습니다.',
         );
       }
-    }
 
-    const categoriesRepo = await this.categoriesRepository.selectCategory(
-      categories,
-    );
-    const duplicateEmail = await this.userRepository.duplicateCheck(
-      'email',
-      email,
-    );
-    const duplicateNickname = await this.userRepository.duplicateCheck(
-      'nickname',
-      nickname,
-    );
-    const duplicateObj = { 이메일: duplicateEmail, 닉네임: duplicateNickname };
-    const duplicateKeys = Object.keys(duplicateObj).filter(
-      (key) => duplicateObj[key],
-    );
+      const filteredCategories: Array<Category> = categoriesRepo.filter(
+        (element) => element !== undefined,
+      );
 
-    if (duplicateKeys.length) {
-      throw new ConflictException(`해당 ${duplicateKeys}이 이미 존재합니다.`);
-    }
-    const salt = await bcrypt.genSalt();
-    const hashedPassword = await bcrypt.hash(password, salt);
-    createUserDto.password = hashedPassword;
-    const user: User = await this.userRepository.createUser(
-      createUserDto,
-      schoolRepo,
-      majorRepo,
-    );
-    if (!user) {
-      throw new NotFoundException(
-        '유저 생성이 정상적으로 이루어지지 않았습니다.',
+      for (const categoryNo of filteredCategories) {
+        await this.categoriesRepository.addUser(categoryNo.no, user);
+      }
+      await this.schoolRepository.addUser(schoolRepo.no, user);
+      await this.majorRepository.addUser(majorRepo.no, user);
+
+      return user;
+    } catch (err) {
+      throw new InternalServerErrorException(
+        `${err} 회원가입 도중 서비스에서 일어난 알 수 없는 오류`,
       );
     }
-    const filteredCategories = categoriesRepo.filter(
-      (element) => element !== undefined,
-    );
-    for (const categoryNo of filteredCategories) {
-      await this.categoriesRepository.addUser(categoryNo.no, user);
-    }
-
-    await this.schoolRepository.addUser(schoolRepo.no, user);
-    await this.majorRepository.addUser(majorRepo.no, user);
-
-    return user;
   }
 
-  async signIn(signInDto: SignInDto): Promise<{ accessToken: string }> {
+  async signIn(signInDto: SignInDto): Promise<string> {
     try {
-      const { email, password } = signInDto;
-      const user = await this.userRepository.signIn(email);
+      const { email, password }: SignInDto = signInDto;
+      const user: User = await this.userRepository.signIn(email);
       this.errorConfirm.notFoundError(
         user,
         '아이디 또는 비밀번호가 일치하지 않습니다.',
       );
-      const loginTerm = await this.userRepository.checkLoginTerm(user.no);
+      const loginTerm: number = await this.userRepository.checkLoginTerm(
+        user.no,
+      );
+
       if (user.isLock && loginTerm > 10) {
         await this.userRepository.changeIsLock(user.no, user.isLock);
       }
-      const isLockUser = await this.userRepository.signIn(email);
-      const isPassword = await bcrypt.compare(password, user.salt);
+
+      const isLockUser: User = await this.userRepository.signIn(email);
+      const isPassword: boolean = await bcrypt.compare(password, user.salt);
 
       if (!isLockUser.isLock) {
         if (user && isPassword) {
-          const payload: Object = {
+          const payload: object = {
             email,
             userNo: user.no,
             issuer: 'modern-agile',
@@ -131,13 +160,13 @@ export class AuthService {
 
           await this.userRepository.clearLoginCount(user.no);
 
-          const accessToken = await this.jwtService.sign(payload);
+          const accessToken: string = await this.jwtService.sign(payload);
 
-          return { accessToken };
+          return accessToken;
         }
-
         await this.userRepository.plusLoginFailCount(isLockUser);
-        const afterUser = await this.userRepository.signIn(email);
+
+        const afterUser: User = await this.userRepository.signIn(email);
 
         if (afterUser.loginFailCount >= 5) {
           await this.userRepository.changeIsLock(
@@ -156,50 +185,57 @@ export class AuthService {
           10 - loginTerm,
         )}초 뒤에 다시 로그인 해주세요`,
       );
-    } catch (e) {
-      throw e;
+    } catch (err) {
+      if (err instanceof NotFoundException) {
+        throw err;
+      }
+      throw err;
     }
   }
   async signDown(no: number): Promise<void> {
     try {
-      const isAffected = await this.userRepository.signDown(no);
+      const affected: number = await this.userRepository.signDown(no);
 
-      if (!isAffected) {
+      if (!affected) {
         throw new InternalServerErrorException(
           `${no} 회원님의 회원탈퇴가 정상적으로 이루어 지지 않았습니다.`,
         );
       }
-    } catch (e) {
-      throw e;
+    } catch (err) {
+      throw err;
     }
   }
 
-  async changePassword(changePasswordDto): Promise<UpdateResult> {
+  async changePassword(changePasswordDto: ChangePasswordDto): Promise<Number> {
     try {
-      const { email, nowPassword, changePassword, confirmChangePassword } =
-        changePasswordDto;
+      const {
+        email,
+        nowPassword,
+        changePassword,
+        confirmChangePassword,
+      }: ChangePasswordDto = changePasswordDto;
 
       if (changePassword !== confirmChangePassword) {
         throw new UnauthorizedException(
           '새비밀번호와 새비밀번호 확인이 일치하지 않습니다',
         );
       }
-      const user = await this.userRepository.signIn(email);
-      const isPassword = await bcrypt.compare(nowPassword, user.salt);
+      const user: User = await this.userRepository.signIn(email);
+      const isPassword: boolean = await bcrypt.compare(nowPassword, user.salt);
       if (user && isPassword) {
         if (nowPassword === changePassword) {
           throw new UnauthorizedException(
             '이전의 비밀번호로는 변경하실 수 없습니다.',
           );
         }
-        const salt = await bcrypt.genSalt();
-        const hashedPassword = await bcrypt.hash(changePassword, salt);
-        const result = await this.userRepository.changePassword(
+        const salt: string = await bcrypt.genSalt();
+        const hashedPassword: string = await bcrypt.hash(changePassword, salt);
+        const affected: number = await this.userRepository.changePassword(
           email,
           hashedPassword,
         );
-        if (result.affected) {
-          return result;
+        if (affected) {
+          return affected;
         }
         throw new InternalServerErrorException(
           '비밀번호 변경중 알 수 없는 오류입니다.',
@@ -208,46 +244,52 @@ export class AuthService {
       throw new UnauthorizedException(
         '아이디 또는 비밀번호가 일치하지 않습니다.',
       );
-    } catch (e) {
-      throw e;
+    } catch (err) {
+      throw err;
     }
   }
-  async forgetPassword(forgetPasswordDto): Promise<UpdateResult> {
+  async forgetPassword(forgetPasswordDto: ForgetPasswordDto): Promise<Number> {
     try {
-      const { email, changePassword, confirmChangePassword } =
-        forgetPasswordDto;
+      const {
+        email,
+        changePassword,
+        confirmChangePassword,
+      }: ForgetPasswordDto = forgetPasswordDto;
 
       if (changePassword !== confirmChangePassword) {
         throw new UnauthorizedException(
           '새비밀번호와 새비밀번호 확인이 일치하지 않습니다',
         );
       }
-      const user = await this.userRepository.signIn(email);
+      const user: User = await this.userRepository.signIn(email);
 
       if (user) {
-        const isPassword = await bcrypt.compare(changePassword, user.salt);
+        const isPassword: boolean = await bcrypt.compare(
+          changePassword,
+          user.salt,
+        );
 
         if (isPassword) {
           throw new UnauthorizedException(
             '이전 비밀번호로는 변경하실 수 없습니다.',
           );
         }
-        const salt = await bcrypt.genSalt();
-        const hashedPassword = await bcrypt.hash(changePassword, salt);
-        const result = await this.userRepository.changePassword(
+        const salt: string = await bcrypt.genSalt();
+        const hashedPassword: string = await bcrypt.hash(changePassword, salt);
+        const affected: number = await this.userRepository.changePassword(
           email,
           hashedPassword,
         );
-        if (result.affected) {
-          return result;
+        if (affected) {
+          return affected;
         }
         throw new InternalServerErrorException(
           '비밀번호 변경중 알 수 없는 오류입니다.',
         );
       }
       throw new UnauthorizedException('존재하지 않는 이메일 입니다.');
-    } catch (e) {
-      throw e;
+    } catch (err) {
+      throw err;
     }
   }
 }
