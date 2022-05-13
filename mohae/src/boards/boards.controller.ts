@@ -168,15 +168,15 @@ export class BoardsController {
     });
   }
 
-  @Post('like')
-  async likeBoard(@Body() likeBoardDto: LikeBoardDto): Promise<Board> {
-    const response = await this.boardService.likeBoard(likeBoardDto);
+  // @Post('like')
+  // async likeBoard(@Body() likeBoardDto: LikeBoardDto): Promise<Board> {
+  //   const response = await this.boardService.likeBoard(likeBoardDto);
 
-    return Object.assign({
-      statusCode: 200,
-      response,
-    });
-  }
+  //   return Object.assign({
+  //     statusCode: 200,
+  //     response,
+  //   });
+  // }
 
   @Delete('/:no')
   async deleteBoard(@Param('no') no: number): Promise<DeleteResult> {

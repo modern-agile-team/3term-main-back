@@ -1,6 +1,6 @@
 import { Body, Controller, Post } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { LikeUserDto } from './dto/user-like.dto';
+import { LikeBoardDto, LikeUserDto } from './dto/user-like.dto';
 import { LikeService } from './like.service';
 
 @Controller('like')
@@ -12,6 +12,20 @@ export class LikeController {
   async likeUser(@Body() likeUserDto: LikeUserDto) {
     try {
       await this.likeService.likeUser(likeUserDto);
+      return Object.assign({
+        success: true,
+        msg: '성공적으로 요청이 처리되었습니다.',
+      });
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  @Post('/board')
+  async likeBoard(@Body() likeBoardDto: LikeBoardDto) {
+    try {
+      await this.likeService.likeBoard(likeBoardDto);
+
       return Object.assign({
         success: true,
         msg: '성공적으로 요청이 처리되었습니다.',

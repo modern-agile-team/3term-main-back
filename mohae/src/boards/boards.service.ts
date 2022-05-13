@@ -54,46 +54,46 @@ export class BoardsService {
     return result;
   }
 
-  async likeBoard({ boardNo, userNo, judge }) {
-    const board: Board = await this.boardRepository.findOne(boardNo, {
-      relations: ['likedUser'],
-    });
-    this.errorConfirm.notFoundError(board, '게시글을 찾을 수 없습니다.');
+  // async likeBoard({ boardNo, userNo, judge }) {
+  //   const board: Board = await this.boardRepository.findOne(boardNo, {
+  //     relations: ['likedUser'],
+  //   });
+  //   this.errorConfirm.notFoundError(board, '게시글을 찾을 수 없습니다.');
 
-    const user: User = await this.userRepository.findOne(userNo);
-    this.errorConfirm.notFoundError(user, '회원을 찾을 수 없습니다.');
+  //   const user: User = await this.userRepository.findOne(userNo);
+  //   this.errorConfirm.notFoundError(user, '회원을 찾을 수 없습니다.');
 
-    const findUser = board.likedUser.find(
-      (thumbUser) => thumbUser.no === user.no,
-    );
+  //   const findUser = board.likedUser.find(
+  //     (thumbUser) => thumbUser.no === user.no,
+  //   );
 
-    if ((findUser && judge) || (!findUser && !judge)) {
-      return {
-        isSuccess: false,
-        msg: '좋아요가 중복되었거나 좋아요 취소가 실패하였습니다.',
-      };
-    }
-    if (!findUser) {
-      await this.boardRepository.saveLikedUser(user.no, board);
-      return {
-        isSuccess: true,
-        msg: '좋아요 등록',
-      };
-    }
+  //   if ((findUser && judge) || (!findUser && !judge)) {
+  //     return {
+  //       isSuccess: false,
+  //       msg: '좋아요가 중복되었거나 좋아요 취소가 실패하였습니다.',
+  //     };
+  //   }
+  //   if (!findUser) {
+  //     await this.boardRepository.saveLikedUser(user.no, board);
+  //     return {
+  //       isSuccess: true,
+  //       msg: '좋아요 등록',
+  //     };
+  //   }
 
-    for (let i = 0; i < board.likedUser.length; i++) {
-      if (board.likedUser[i].no === userNo) {
-        board.likedUser.splice(i, 1);
-      }
-    }
+  //   for (let i = 0; i < board.likedUser.length; i++) {
+  //     if (board.likedUser[i].no === userNo) {
+  //       board.likedUser.splice(i, 1);
+  //     }
+  //   }
 
-    await this.boardRepository.save(board);
+  //   await this.boardRepository.save(board);
 
-    return {
-      isSuccess: true,
-      msg: '좋아요 취소',
-    };
-  }
+  //   return {
+  //     isSuccess: true,
+  //     msg: '좋아요 취소',
+  //   };
+  // }
 
   async filteredBoards(
     categoryNo: number,

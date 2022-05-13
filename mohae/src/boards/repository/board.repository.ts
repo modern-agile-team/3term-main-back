@@ -371,14 +371,14 @@ export class BoardRepository extends Repository<Board> {
     }
   }
 
-  async saveLikedUser(userNo: number, board: Board) {
-    try {
-      await this.createQueryBuilder()
-        .relation(User, 'likedBoard')
-        .of(userNo)
-        .add(board);
-    } catch (err) {
-      throw new InternalServerErrorException();
-    }
-  }
+  // async saveLikedUser(userNo: number, board: Board) {
+  //   try {
+  //     await this.createQueryBuilder()
+  //       .relation(User, 'likedBoard')
+  //       .of(userNo)
+  //       .add(board);
+  //   } catch (err) {
+  //     throw new InternalServerErrorException();
+  //   }
+  // }
 }

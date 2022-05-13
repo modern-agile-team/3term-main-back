@@ -32,6 +32,7 @@ import { Notice } from 'src/notices/entity/notice.entity';
 import { Board } from 'src/boards/entity/board.entity';
 import { userInfo } from 'os';
 import { UserLike } from 'src/like/entity/user.like.entity';
+import { BoardLike } from 'src/like/entity/board.like.entity';
 
 @Entity('users')
 export class User extends BaseEntity {
@@ -205,8 +206,14 @@ export class User extends BaseEntity {
   })
   mailboxUsers: MailboxUser[];
 
-  @ManyToMany((type) => Board, (board) => board.likedUser, {
-    cascade: true,
+  // 내가 좋아한 게시글
+  @OneToMany((type) => BoardLike, (boardLike) => boardLike.likedBoard, {
+    nullable: true,
   })
-  likedBoard: Board[];
+  likedBoard: BoardLike[];
+
+  // @ManyToMany((type) => Board, (board) => board.likedUser, {
+  //   cascade: true,
+  // })
+  // likedBoard: Board[];
 }
