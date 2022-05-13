@@ -1,9 +1,4 @@
-import {
-  Injectable,
-  InternalServerErrorException,
-  NotFoundException,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/auth/entity/user.entity';
 import { UserRepository } from 'src/auth/repository/user.repository';
@@ -42,21 +37,14 @@ export class LettersService {
     description,
   }: SendLetterDto) {
     try {
-      const newMailboxNo: number = !mailboxNo
+      const confirmedMailboxNo: number = !mailboxNo
         ? await this.mailboxRepository.createMailbox()
         : mailboxNo;
-      if (!newMailboxNo) {
-        throw new InternalServerErrorException('쪽지 보내기 에러');
+      if (!confirmedMailboxNo) {
+        throw new Error('쪽지 생성중 쪽지함 번호 유무 판단 조건문 에러');
       }
-      const mailbox: Mailbox = await this.mailboxRepository.findOne(
-        newMailboxNo,
-        {
-          select: ['no'],
-          relations: ['letters', 'mailboxUsers'],
-        },
-      );
       const sender: User = await this.userRepository.findOne(senderNo, {
-        relations: ['sendLetters', 'mailboxUsers'],
+        select: ['no'],
       });
       this.errorConfirm.notFoundError(
         sender,
@@ -64,16 +52,25 @@ export class LettersService {
       );
 
       const receiver: User = await this.userRepository.findOne(receiverNo, {
-        relations: ['receivedLetters', 'mailboxUsers'],
+        select: ['no'],
       });
       this.errorConfirm.notFoundError(receiver, '상대방을 찾을 수 없습니다.');
 
-      const newLetterNo: Letter = await this.letterRepository.sendLetter(
+      const mailbox: Mailbox = await this.mailboxRepository.searchMailbox(
+        confirmedMailboxNo,
+        0,
+      );
+
+      const { insertId, affectedRows } = await this.letterRepository.sendLetter(
         sender,
         receiver,
         mailbox,
         description,
       );
+      if (!affectedRows) {
+        throw new Error('쪽지가 정상적으로 저장되지 않았습니다.');
+      }
+      const newLetterNo = insertId;
       this.errorConfirm.notFoundError(newLetterNo, 'newLetterNo 생성 실패');
 
       if (!mailboxNo) {
@@ -91,61 +88,47 @@ export class LettersService {
           'receiverMailboxUserNo 생성 실패',
         );
 
-        await this.userRepository
-          .createQueryBuilder()
-          .relation(User, 'mailboxUsers')
-          .of(sender)
-          .add(senderMailboxUserNo);
-        await this.userRepository
-          .createQueryBuilder()
-          .relation(User, 'mailboxUsers')
-          .of(receiver)
-          .add(receiverMailboxUserNo);
+        await this.userRepository.userRelation(
+          sender,
+          senderMailboxUserNo,
+          'mailboxUsers',
+        );
+        await this.userRepository.userRelation(
+          receiver,
+          receiverMailboxUserNo,
+          'mailboxUsers',
+        );
         await this.mailboxRepository.mailboxRelation(
-          newMailboxNo,
+          confirmedMailboxNo,
           senderMailboxUserNo,
           'mailboxUsers',
         );
         await this.mailboxRepository.mailboxRelation(
-          newMailboxNo,
+          confirmedMailboxNo,
           receiverMailboxUserNo,
           'mailboxUsers',
         );
       }
-      await this.userRepository
-        .createQueryBuilder()
-        .relation(User, 'sendLetters')
-        .of(sender)
-        .add(newLetterNo);
-      await this.userRepository
-        .createQueryBuilder()
-        .relation(User, 'receivedLetters')
-        .of(receiver)
-        .add(newLetterNo);
-      await this.mailboxRepository
-        .createQueryBuilder()
-        .relation(Mailbox, 'letters')
-        .of(newMailboxNo)
-        .add(newLetterNo);
-
-      return { success: true };
       // userRepository에 userRelation이 생성되면 사용할 코드들
-      // await this.userRepository.userRelation(sender, newLetter, 'sendLetters');
-      // await this.userRepository.userRelation(
-      //   receiver,
-      //   newLetter,
-      //   'receivedLetters',
-      // );
-      // await this.userRepository.userRelation(
-      //   sender,
-      //   senderMailboxUserNo,
-      //   'mailboxUsers',
-      // );
-      // await this.userRepository.userRelation(
-      //   receiver,
-      //   receiverMailboxUserNo,
-      //   'mailboxUsers',
-      // );
+      await this.userRepository.userRelation(
+        sender,
+        newLetterNo,
+        'sendLetters',
+      );
+      await this.userRepository.userRelation(
+        receiver,
+        newLetterNo,
+        'receivedLetters',
+      );
+      await this.mailboxRepository.mailboxRelation(
+        confirmedMailboxNo,
+        newLetterNo,
+        'letters',
+      );
+
+      return {
+        success: true,
+      };
     } catch (e) {
       throw e;
     }
