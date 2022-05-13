@@ -127,6 +127,7 @@ export class UserRepository extends Repository<User> {
         .set({ isLock: !isLock })
         .where('no = :userNo', { userNo })
         .execute();
+      console.log(isLock);
       return affected;
     } catch (err) {
       throw new InternalServerErrorException(

@@ -27,17 +27,12 @@ export class AuthController {
   @Post('/signup')
   async signUp(@Body() createUserDto: CreateUserDto): Promise<Object> {
     try {
-      const { nickname, email }: User = await this.authService.signUp(
-        createUserDto,
-      );
+      const response = await this.authService.signUp(createUserDto);
 
       return Object.assign({
         statusCode: 201,
         msg: `성공적으로 회원가입이 되었습니다.`,
-        response: {
-          nickname,
-          email,
-        },
+        response,
       });
     } catch (err) {
       throw err;
@@ -47,7 +42,13 @@ export class AuthController {
   @Post('/signin')
   async signIn(@Body() signInDto: SignInDto): Promise<Object> {
     try {
-      const accessToken: string = await this.authService.signIn(signInDto);
+      // id 맞는지 확인 + 패널티 시간 지나지 않았을 때 로그인 시도했을 때 알림
+      const userInfo: User = await this.authService.confirmUser(signInDto);
+      // 성공했을 때 + 비밀번호 틀렸을 때
+      const accessToken: string = await this.authService.passwordConfirm(
+        userInfo,
+        signInDto.password,
+      );
 
       return Object.assign({
         statusCode: 200,
