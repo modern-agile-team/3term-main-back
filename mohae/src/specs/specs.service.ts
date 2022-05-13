@@ -6,11 +6,14 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { NotFoundError, throwIfEmpty } from 'rxjs';
+import { User } from 'src/auth/entity/user.entity';
 import { UserRepository } from 'src/auth/repository/user.repository';
+import { CreateBoardDto } from 'src/boards/dto/board.dto';
 import { SpecPhotoRepository } from 'src/photo/repository/photo.repository';
 import { ErrorConfirm } from 'src/utils/error';
 import { UpdateResult } from 'typeorm';
-import { UpdateSpecDto } from './dto/spec.dto';
+import { CreateSpecDto, UpdateSpecDto } from './dto/spec.dto';
+import { Spec } from './entity/spec.entity';
 import { SpecRepository } from './repository/spec.repository';
 
 @Injectable()
@@ -22,10 +25,10 @@ export class SpecsService {
     private specPhotoRepository: SpecPhotoRepository,
     private errorConfirm: ErrorConfirm,
   ) {}
-  async getAllSpec(no: number) {
+  async getAllSpec(no: number): Promise<any> {
     try {
-      const user = await this.userRepository.findOne(no);
-      const specs = await this.specRepository.getAllSpec(no);
+      const user: User = await this.userRepository.findOne(no);
+      const specs: Array<Spec> = await this.specRepository.getAllSpec(no);
       this.errorConfirm.notFoundError(user, '존재하지 않는 유저 입니다.');
       if (specs.length === 0) {
         return '현재 등록된 스펙이 없습니다.';
@@ -38,7 +41,7 @@ export class SpecsService {
 
   async getOneSpec(no: number) {
     try {
-      const spec = await this.specRepository.getOneSpec(no);
+      const spec: Spec = await this.specRepository.getOneSpec(no);
 
       this.errorConfirm.notFoundError(spec, '해당 스펙이 존재하지 않습니다.');
       return spec;
@@ -47,15 +50,18 @@ export class SpecsService {
     }
   }
 
-  async registSpec(createSpecDto) {
+  async registSpec(createSpecDto: CreateSpecDto): Promise<void> {
     try {
       const { userNo, specPhoto } = createSpecDto;
-      const user = await this.userRepository.findOne(userNo, {
+      const user: User = await this.userRepository.findOne(userNo, {
         relations: ['specs'],
       });
-      const specNo = await this.specRepository.registSpec(createSpecDto, user);
+      const specNo: number = await this.specRepository.registSpec(
+        createSpecDto,
+        user,
+      );
 
-      const spec = await this.specRepository.findOne(specNo, {
+      const spec: Spec = await this.specRepository.findOne(specNo, {
         relations: ['specPhotos'],
       });
       if (!userNo) {
@@ -90,28 +96,32 @@ export class SpecsService {
     }
   }
 
-  async updateSpec(specNo, updateSpec) {
+  async updateSpec(specNo: number, updateSpec: UpdateSpecDto): Promise<void> {
     try {
-      const spec = await this.specRepository.getOneSpec(specNo);
+      const spec: Spec = await this.specRepository.getOneSpec(specNo);
 
       this.errorConfirm.notFoundError(spec, '해당 스펙이 존재하지 않습니다.');
 
-      const specKeys = Object.keys(updateSpec);
-      const deletedNullSpec = {};
+      const specKeys: Array<string> = Object.keys(updateSpec);
+      const deletedNullSpec: object = {};
 
       specKeys.forEach((item) => {
         updateSpec[item] ? (deletedNullSpec[item] = updateSpec[item]) : 0;
       });
 
       if (deletedNullSpec['photo_url']) {
-        const specPhotoNo = Object.values(deletedNullSpec['photo_url']);
+        const specPhotoNo: Array<any> = Object.values(
+          deletedNullSpec['photo_url'],
+        );
 
-        function getKeyByValue(object, value) {
+        function getKeyByValue(object: object, value: number) {
           return Object.keys(object).find((key) => object[key] === value);
         }
 
         for (const photoNo of specPhotoNo) {
-          const judgeNo = await this.specPhotoRepository.getSpecNo(photoNo);
+          const judgeNo: number = await this.specPhotoRepository.getSpecNo(
+            photoNo,
+          );
           if (judgeNo !== specNo)
             throw new UnauthorizedException(
               '스펙 번호와 스펙사진의 스펙번호가 맞지 않습니다.',
@@ -119,12 +129,15 @@ export class SpecsService {
         }
 
         for (const no of specPhotoNo) {
-          const new_url = getKeyByValue(deletedNullSpec['photo_url'], no);
+          const new_url: string = getKeyByValue(
+            deletedNullSpec['photo_url'],
+            no,
+          );
           await this.specPhotoRepository.updatePhoto(no, new_url);
         }
         delete deletedNullSpec['photo_url'];
       }
-      const isUpdate = await this.specRepository.updateSpec(
+      const isUpdate: number = await this.specRepository.updateSpec(
         specNo,
         deletedNullSpec,
       );
@@ -138,9 +151,9 @@ export class SpecsService {
     }
   }
 
-  async deleteSpec(specNo) {
+  async deleteSpec(specNo: number): Promise<number> {
     try {
-      const isDelete = await this.specRepository.deleteSpec(specNo);
+      const isDelete: number = await this.specRepository.deleteSpec(specNo);
 
       if (!isDelete) {
         throw new InternalServerErrorException(

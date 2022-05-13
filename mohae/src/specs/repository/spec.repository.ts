@@ -1,6 +1,14 @@
 import { InternalServerErrorException } from '@nestjs/common';
 import { onErrorResumeNext } from 'rxjs/operators';
-import { EntityRepository, Repository } from 'typeorm';
+import { User } from 'src/auth/entity/user.entity';
+import {
+  DeleteResult,
+  EntityRepository,
+  InsertResult,
+  Repository,
+  UpdateResult,
+} from 'typeorm';
+import { CreateSpecDto } from '../dto/spec.dto';
 import { Spec } from '../entity/spec.entity';
 
 @EntityRepository(Spec)
@@ -55,9 +63,12 @@ export class SpecRepository extends Repository<Spec> {
     }
   }
 
-  async registSpec({ title, description }, user) {
+  async registSpec(
+    { title, description }: CreateSpecDto,
+    user: User,
+  ): Promise<number> {
     try {
-      const { raw } = await this.createQueryBuilder('spec')
+      const { raw }: InsertResult = await this.createQueryBuilder('spec')
         .insert()
         .into(Spec)
         .values([
@@ -77,9 +88,9 @@ export class SpecRepository extends Repository<Spec> {
     }
   }
 
-  async updateSpec(no, deletedNullSpec) {
+  async updateSpec(no: number, deletedNullSpec: object): Promise<number> {
     try {
-      const { affected } = await this.createQueryBuilder('spec')
+      const { affected }: UpdateResult = await this.createQueryBuilder('spec')
         .update(Spec)
         .set(deletedNullSpec)
         .where('no = :no', { no })
@@ -94,9 +105,9 @@ export class SpecRepository extends Repository<Spec> {
     }
   }
 
-  async deleteSpec(no) {
+  async deleteSpec(no: number): Promise<number> {
     try {
-      const { affected } = await this.createQueryBuilder('spec')
+      const { affected }: DeleteResult = await this.createQueryBuilder('spec')
         .softDelete()
         .from(Spec)
         .where('no = :no', { no })

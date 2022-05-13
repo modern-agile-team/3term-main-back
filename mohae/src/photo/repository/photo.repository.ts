@@ -1,5 +1,6 @@
 import { InternalServerErrorException } from '@nestjs/common';
-import { EntityRepository, Repository } from 'typeorm';
+import { Spec } from 'src/specs/entity/spec.entity';
+import { EntityRepository, Repository, UpdateResult } from 'typeorm';
 import { SpecPhoto } from '../entity/photo.entity';
 
 @EntityRepository(SpecPhoto)
@@ -20,9 +21,11 @@ export class SpecPhotoRepository extends Repository<SpecPhoto> {
     }
   }
 
-  async updatePhoto(no, new_url) {
+  async updatePhoto(no: number, new_url: string) {
     try {
-      const { affected } = await this.createQueryBuilder('specPhoto')
+      const { affected }: UpdateResult = await this.createQueryBuilder(
+        'specPhoto',
+      )
         .update(SpecPhoto)
         .set({ photo_url: new_url })
         .where('no = :no', { no })
@@ -40,9 +43,9 @@ export class SpecPhotoRepository extends Repository<SpecPhoto> {
     }
   }
 
-  async getSpecNo(no) {
+  async getSpecNo(no: number): Promise<number> {
     try {
-      const { spec } = await this.createQueryBuilder('specPhoto')
+      const { spec }: any = await this.createQueryBuilder('specPhoto')
         .leftJoinAndSelect('specPhoto.spec', 'spec')
         .select(['specPhoto.no', 'spec.no'])
         .where('specPhoto.no = :no', { no })
