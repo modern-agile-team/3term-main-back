@@ -41,9 +41,11 @@ export class ProfilesService {
     private errorConfirm: ErrorConfirm,
   ) {}
 
-  async findOneProfile(profileUserNo, userNo): Promise<object> {
+  async findOneProfile(profileUserNo: number, userNo: number): Promise<object> {
     try {
-      const profile = await this.userRepository.findOneUser(profileUserNo);
+      const profile: User = await this.userRepository.findOneUser(
+        profileUserNo,
+      );
 
       if (!profile) {
         throw new NotFoundException(
