@@ -1,6 +1,8 @@
 import { InternalServerErrorException } from '@nestjs/common';
 import { onErrorResumeNext } from 'rxjs/operators';
 import { User } from 'src/auth/entity/user.entity';
+import { SpecPhoto } from 'src/photo/entity/photo.entity';
+import { SpecPhotoRepository } from 'src/photo/repository/photo.repository';
 import {
   DeleteResult,
   EntityRepository,
@@ -59,6 +61,19 @@ export class SpecRepository extends Repository<Spec> {
       throw new InternalServerErrorException(
         '스펙 상세 조회 관련 서버 에러입니다',
         err,
+      );
+    }
+  }
+
+  async addSpecPhoto(specNo: number, specPhotoRepo: SpecPhoto) {
+    try {
+      await this.createQueryBuilder()
+        .relation(Spec, 'specPhotos')
+        .of(specNo)
+        .add(specPhotoRepo);
+    } catch (err) {
+      throw new InternalServerErrorException(
+        `${err} 스펙 사진 저장 도중 발생한 서버에러`,
       );
     }
   }

@@ -1,13 +1,18 @@
 import { InternalServerErrorException } from '@nestjs/common';
 import { Spec } from 'src/specs/entity/spec.entity';
-import { EntityRepository, Repository, UpdateResult } from 'typeorm';
+import {
+  EntityRepository,
+  InsertResult,
+  Repository,
+  UpdateResult,
+} from 'typeorm';
 import { SpecPhoto } from '../entity/photo.entity';
 
 @EntityRepository(SpecPhoto)
 export class SpecPhotoRepository extends Repository<SpecPhoto> {
-  async saveSpecPhoto(photo_url, spec) {
+  async saveSpecPhoto(photo_url: string, spec: Spec): Promise<number> {
     try {
-      const { raw } = await this.createQueryBuilder('specPhoto')
+      const { raw }: InsertResult = await this.createQueryBuilder('specPhoto')
         .insert()
         .into(SpecPhoto)
         .values([{ photo_url, spec }])
@@ -21,7 +26,7 @@ export class SpecPhotoRepository extends Repository<SpecPhoto> {
     }
   }
 
-  async updatePhoto(no: number, new_url: string) {
+  async updatePhoto(no: number, new_url: string): Promise<number> {
     try {
       const { affected }: UpdateResult = await this.createQueryBuilder(
         'specPhoto',

@@ -5,13 +5,12 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { NotFoundError, throwIfEmpty } from 'rxjs';
+import { throws } from 'assert';
 import { User } from 'src/auth/entity/user.entity';
 import { UserRepository } from 'src/auth/repository/user.repository';
-import { CreateBoardDto } from 'src/boards/dto/board.dto';
+import { SpecPhoto } from 'src/photo/entity/photo.entity';
 import { SpecPhotoRepository } from 'src/photo/repository/photo.repository';
 import { ErrorConfirm } from 'src/utils/error';
-import { UpdateResult } from 'typeorm';
 import { CreateSpecDto, UpdateSpecDto } from './dto/spec.dto';
 import { Spec } from './entity/spec.entity';
 import { SpecRepository } from './repository/spec.repository';
@@ -52,7 +51,7 @@ export class SpecsService {
 
   async registSpec(createSpecDto: CreateSpecDto): Promise<void> {
     try {
-      const { userNo, specPhoto } = createSpecDto;
+      const { userNo, specPhoto }: CreateSpecDto = createSpecDto;
       const user: User = await this.userRepository.findOne(userNo, {
         relations: ['specs'],
       });
@@ -76,18 +75,16 @@ export class SpecsService {
       }
 
       for (const photo of specPhoto) {
-        const specPhotoNo = await this.specPhotoRepository.saveSpecPhoto(
-          photo,
-          spec,
-        );
-        const specPhotoRepo = await this.specPhotoRepository.findOne(
+        const specPhotoNo: number =
+          await this.specPhotoRepository.saveSpecPhoto(photo, spec);
+        const specPhotoRepo: SpecPhoto = await this.specPhotoRepository.findOne(
           specPhotoNo,
         );
-        spec.specPhotos.push(specPhotoRepo);
+        await this.specRepository.addSpecPhoto(spec.no, specPhotoRepo);
       }
 
       if (spec) {
-        user.specs.push(spec);
+        await this.userRepository.userRelation(userNo, spec, 'specs');
       }
     } catch (err) {
       throw new InternalServerErrorException(
