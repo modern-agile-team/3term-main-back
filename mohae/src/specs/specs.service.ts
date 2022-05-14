@@ -5,7 +5,6 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { throws } from 'assert';
 import { User } from 'src/auth/entity/user.entity';
 import { UserRepository } from 'src/auth/repository/user.repository';
 import { SpecPhoto } from 'src/photo/entity/photo.entity';
@@ -14,14 +13,21 @@ import { ErrorConfirm } from 'src/utils/error';
 import { CreateSpecDto, UpdateSpecDto } from './dto/spec.dto';
 import { Spec } from './entity/spec.entity';
 import { SpecRepository } from './repository/spec.repository';
+import { Connection } from 'typeorm';
 
 @Injectable()
 export class SpecsService {
   constructor(
     @InjectRepository(SpecRepository)
     private specRepository: SpecRepository,
+
+    @InjectRepository(UserRepository)
     private userRepository: UserRepository,
+
+    @InjectRepository(SpecPhotoRepository)
     private specPhotoRepository: SpecPhotoRepository,
+
+    private connection: Connection,
     private errorConfirm: ErrorConfirm,
   ) {}
   async getAllSpec(no: number): Promise<any> {
@@ -50,19 +56,20 @@ export class SpecsService {
   }
 
   async registSpec(createSpecDto: CreateSpecDto): Promise<void> {
+    const queryRunner = this.connection.createQueryRunner();
+
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
     try {
       const { userNo, specPhoto }: CreateSpecDto = createSpecDto;
       const user: User = await this.userRepository.findOne(userNo, {
         relations: ['specs'],
       });
-      const specNo: number = await this.specRepository.registSpec(
-        createSpecDto,
-        user,
-      );
 
-      const spec: Spec = await this.specRepository.findOne(specNo, {
-        relations: ['specPhotos'],
-      });
+      const specNo: Spec = await queryRunner.manager
+        .getCustomRepository(SpecRepository)
+        .registSpec(createSpecDto, user);
       if (!userNo) {
         throw new UnauthorizedException(
           `${userNo}에 해당하는 유저가 존재하지 않습니다.`,
@@ -73,27 +80,38 @@ export class SpecsService {
           '스펙의 사진이 없다면 null 이라도 넣어주셔야 스펙 등록이 가능합니다.',
         );
       }
-
       for (const photo of specPhoto) {
-        const specPhotoNo: number =
-          await this.specPhotoRepository.saveSpecPhoto(photo, spec);
+        const specPhotoNo: number = await queryRunner.manager
+          .getCustomRepository(SpecPhotoRepository)
+          .saveSpecPhoto(photo, specNo);
         const specPhotoRepo: SpecPhoto = await this.specPhotoRepository.findOne(
           specPhotoNo,
         );
-        await this.specRepository.addSpecPhoto(spec.no, specPhotoRepo);
+        await queryRunner.manager
+          .getCustomRepository(SpecRepository)
+          .addSpecPhoto(specNo, specPhotoRepo);
       }
 
-      if (spec) {
-        await this.userRepository.userRelation(userNo, spec, 'specs');
+      if (specNo) {
+        await queryRunner.manager
+          .getCustomRepository(UserRepository)
+          .userRelation(userNo, specNo, 'specs');
       }
+      await queryRunner.commitTransaction();
     } catch (err) {
-      throw new InternalServerErrorException(
-        ` ${err}####스펙등록 중 발생한 서버 에러입니다.`,
-      );
+      await queryRunner.rollbackTransaction();
+      throw err;
+    } finally {
+      await queryRunner.release();
     }
   }
 
   async updateSpec(specNo: number, updateSpec: UpdateSpecDto): Promise<void> {
+    const queryRunner = this.connection.createQueryRunner();
+
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
     try {
       const spec: Spec = await this.specRepository.getOneSpec(specNo);
 
@@ -130,21 +148,27 @@ export class SpecsService {
             deletedNullSpec['photo_url'],
             no,
           );
-          await this.specPhotoRepository.updatePhoto(no, new_url);
+          await queryRunner.manager
+            .getCustomRepository(SpecPhotoRepository)
+            .updatePhoto(no, new_url);
         }
         delete deletedNullSpec['photo_url'];
       }
-      const isUpdate: number = await this.specRepository.updateSpec(
-        specNo,
-        deletedNullSpec,
-      );
+      const isUpdate: number = await queryRunner.manager
+        .getCustomRepository(SpecRepository)
+        .updateSpec(specNo, deletedNullSpec);
+
       if (!isUpdate) {
         throw new InternalServerErrorException(
           '스팩 업데이트가 제대로 이루어지지 않았습니다.',
         );
       }
+      await queryRunner.commitTransaction();
     } catch (err) {
+      await queryRunner.rollbackTransaction();
       throw err;
+    } finally {
+      await queryRunner.release();
     }
   }
 

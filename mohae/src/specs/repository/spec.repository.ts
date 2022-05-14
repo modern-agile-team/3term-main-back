@@ -65,7 +65,7 @@ export class SpecRepository extends Repository<Spec> {
     }
   }
 
-  async addSpecPhoto(specNo: number, specPhotoRepo: SpecPhoto) {
+  async addSpecPhoto(specNo: Spec, specPhotoRepo: SpecPhoto) {
     try {
       await this.createQueryBuilder()
         .relation(Spec, 'specPhotos')
@@ -81,7 +81,7 @@ export class SpecRepository extends Repository<Spec> {
   async registSpec(
     { title, description }: CreateSpecDto,
     user: User,
-  ): Promise<number> {
+  ): Promise<Spec> {
     try {
       const { raw }: InsertResult = await this.createQueryBuilder('spec')
         .insert()
