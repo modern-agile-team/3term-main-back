@@ -15,13 +15,13 @@ export class UserLike extends BaseEntity {
   no: number;
 
   // 좋아요를 누른 유저
-  @ManyToOne((type) => User, (user) => user.no, {
+  @ManyToOne((type) => User, (user) => user.likedUser, {
     onDelete: 'SET NULL',
   })
   likedMe: User;
 
   // 좋아요를 받은 유저
-  @ManyToOne((type) => User, (user) => user.no, {
+  @ManyToOne((type) => User, (user) => user.likedMe, {
     onDelete: 'SET NULL',
   })
   likedUser: User;
