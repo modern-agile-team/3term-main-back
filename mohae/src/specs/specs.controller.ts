@@ -8,6 +8,7 @@ import {
   Post,
 } from '@nestjs/common';
 import { CreateSpecDto, UpdateSpecDto } from './dto/spec.dto';
+import { Spec } from './entity/spec.entity';
 import { SpecsService } from './specs.service';
 
 @Controller('specs')
@@ -17,7 +18,7 @@ export class SpecsController {
   @Get('/user/:no')
   async getAllSpec(@Param('no') no: number) {
     try {
-      const specs = await this.specsService.getAllSpec(no);
+      const specs: Spec = await this.specsService.getAllSpec(no);
 
       return Object.assign({
         statusCode: 200,
@@ -29,10 +30,10 @@ export class SpecsController {
     }
   }
 
-  @Get('user/spec/:no')
+  @Get('/user/spec/:no')
   async getOneSpec(@Param('no') no: number) {
     try {
-      const spec = await this.specsService.getOneSpec(no);
+      const spec: Spec = await this.specsService.getOneSpec(no);
 
       return Object.assign({
         statusCode: 200,
@@ -59,7 +60,10 @@ export class SpecsController {
   }
 
   @Patch('/:no')
-  async updateSpec(@Param('no') specNo: number, @Body() updateSpec) {
+  async updateSpec(
+    @Param('no') specNo: number,
+    @Body() updateSpec: UpdateSpecDto,
+  ) {
     try {
       await this.specsService.updateSpec(specNo, updateSpec);
 
