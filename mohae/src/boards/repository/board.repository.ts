@@ -10,12 +10,21 @@ export class BoardRepository extends Repository<Board> {
   async getByOneBoard(no: number) {
     try {
       return await this.createQueryBuilder('boards')
-        .leftJoin('boards.area', 'areas')
-        .leftJoin('boards.category', 'categories')
+        .leftJoin('boards.area', 'areas', 'areas.no = boards.area')
+        .leftJoin(
+          'boards.category',
+          'categories',
+          'categories.no = boards.category',
+        )
         .leftJoin('boards.user', 'users')
         .leftJoin('users.school', 'school')
         .leftJoin('users.major', 'major')
-        .leftJoin('boards.likedUser', 'likedUser')
+        .leftJoin(
+          'boards.likedUser',
+          'likedUser',
+          'likedUser.likedBoardNo = :no',
+          { no },
+        )
         .select([
           'boards.no AS no',
           'DATEDIFF(boards.deadline, now()) AS decimalDay',
@@ -42,9 +51,6 @@ export class BoardRepository extends Repository<Board> {
           'major.name AS userMajor',
         ])
         .where('boards.no = :no', { no })
-        .andWhere('boards.area = areas.no')
-        .andWhere('boards.category = categories.no')
-        .andWhere('likedUser.likedBoardNo = :no', { no })
         .getRawOne();
     } catch (e) {
       `${e} ### 게시판 상세 조회 : 알 수 없는 서버 에러입니다.`;
@@ -245,7 +251,7 @@ export class BoardRepository extends Repository<Board> {
     user: User,
     createBoardDto: CreateBoardDto,
     endTime: Date,
-  ) {
+  ): Promise<Board> {
     try {
       const {
         price,
@@ -278,10 +284,17 @@ export class BoardRepository extends Repository<Board> {
         ])
         .execute();
 
-      return board.raw;
-    } catch (err) {
+      const { affectedRows, insertId } = board.raw;
+      if (affectedRows) {
+        return await this.createQueryBuilder('boards')
+          .leftJoinAndSelect('boards.category', 'category')
+          .leftJoinAndSelect('boards.area', 'area')
+          .where('boards.no = :no', { no: insertId })
+          .getOne();
+      }
+    } catch (e) {
       throw new InternalServerErrorException(
-        `${err} ### 게시판 생성: 알 수 없는 서버 에러입니다.`,
+        `${e} ### 게시판 생성: 알 수 없는 서버 에러입니다.`,
       );
     }
   }

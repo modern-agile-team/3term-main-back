@@ -126,6 +126,12 @@ export class BoardsService {
     const board = await this.boardRepository.getByOneBoard(no);
     this.errorConfirm.notFoundError(board, `해당 게시글을 찾을 수 없습니다.`);
 
+    if (!board.no) {
+      throw new InternalServerErrorException(
+        `${no}번 게시글은 삭제된 게시글 입니다.`,
+      );
+    }
+
     const boardHit: Number = await this.boardRepository.addBoardHit(board);
 
     if (!boardHit) {
@@ -161,10 +167,12 @@ export class BoardsService {
     const currentTime: Date = new Date();
     currentTime.setHours(currentTime.getHours() + 9);
 
-    if (board.deadline <= currentTime) {
-      throw new InternalServerErrorException(
-        '시간이 지나 마감된 게시글 입니다.',
-      );
+    if (board.deadline !== null) {
+      if (board.deadline <= currentTime) {
+        throw new InternalServerErrorException(
+          '시간이 지나 마감된 게시글 입니다.',
+        );
+      }
     }
 
     if (!board.isDeadline) {
@@ -227,16 +235,19 @@ export class BoardsService {
       endTime.setSeconds(endTime.getSeconds() + deadline);
     }
 
-    const { affectedRows }: any = await this.boardRepository.createBoard(
+    const board: any = await this.boardRepository.createBoard(
       category,
       area,
       user,
       createBoardDto,
       endTime,
     );
+
+    console.log(board);
+
     // await this.boardRepository.saveCategory(categoryNo, board);
 
-    if (!affectedRows) {
+    if (!board) {
       return { isSuccess: false, msg: '게시글 생성이 되지 않았습니다.' };
     }
 
@@ -280,12 +291,12 @@ export class BoardsService {
     if (deadline && endTime <= currentTime) {
       throw new BadRequestException('다른 기간을 선택해 주십시오');
     }
-    console.log(typeof Object.keys(updateBoardDto));
+
     const boardKey: any = Object.keys(updateBoardDto);
 
     const deletedNullBoardKey = {};
 
-    boardKey.forEach((item) => {
+    boardKey.forEach((item: any) => {
       updateBoardDto[item] !== null
         ? (deletedNullBoardKey[item] = updateBoardDto[item])
         : 0;

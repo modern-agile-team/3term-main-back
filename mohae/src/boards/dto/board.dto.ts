@@ -5,6 +5,7 @@ import {
   IsNumber,
   IsOptional,
   IsString,
+  Max,
   MaxLength,
   MinLength,
 } from 'class-validator';
@@ -16,6 +17,7 @@ export abstract class BoardContent {
     required: true,
   })
   @IsNumber()
+  @Max(1000001)
   price: number;
 
   @ApiProperty({
@@ -108,6 +110,7 @@ export class LikeBoardDto {
 export abstract class UpdateBoardDto {
   @IsOptional()
   @IsNumber()
+  @Max(1000001)
   price?: number;
 
   @IsOptional()

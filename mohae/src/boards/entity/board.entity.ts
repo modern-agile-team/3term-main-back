@@ -10,6 +10,7 @@ import {
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
+  InsertQueryBuilder,
   JoinTable,
   ManyToMany,
   ManyToOne,
