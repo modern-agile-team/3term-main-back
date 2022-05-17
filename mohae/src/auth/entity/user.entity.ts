@@ -114,13 +114,13 @@ export class User extends BaseEntity {
   })
   createdAt: Date;
 
-  // 내가 좋아요 한 유저 목록
+  // 나를 좋아요 한 유저 목록
   @OneToMany((type) => UserLike, (userLike) => userLike.likedUser, {
     nullable: true,
   })
   likedUser: UserLike[];
 
-  // 나를 좋아요한 유저 목록
+  // 내가 좋아요한 유저 목록
   @OneToMany((type) => UserLike, (userLike) => userLike.likedMe, {
     nullable: true,
   })

@@ -27,12 +27,13 @@ export class LetterRepository extends Repository<Letter> {
     return letter;
   }
 
-  async updateReading(no: number) {
+  async updateReading(mailboxNo: number) {
     try {
       const { affected } = await this.createQueryBuilder()
         .update(Letter)
         .set({ reading_flag: true })
-        .where('letters.no = :no', { no })
+        .where('mailbox = :mailboxNo', { mailboxNo })
+        .andWhere('reading_flag = false')
         .execute();
 
       return affected;
