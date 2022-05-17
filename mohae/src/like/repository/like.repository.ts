@@ -1,12 +1,17 @@
 import { User } from 'src/auth/entity/user.entity';
-import { Entity, EntityRepository, Repository } from 'typeorm';
+import {
+  DeleteResult,
+  EntityRepository,
+  InsertResult,
+  Repository,
+} from 'typeorm';
 import { UserLike } from '../entity/user.like.entity';
 
 @EntityRepository(UserLike)
 export class LikeRepository extends Repository<UserLike> {
-  async likeUser(likedMe, likedUser) {
+  async likeUser(likedMe: User, likedUser: User): Promise<number> {
     try {
-      const { raw } = await this.createQueryBuilder('user_like')
+      const { raw }: InsertResult = await this.createQueryBuilder('user_like')
         .insert()
         .into(UserLike)
         .values({ likedMe, likedUser })
@@ -18,9 +23,11 @@ export class LikeRepository extends Repository<UserLike> {
     }
   }
 
-  async dislikeUser(user, dislikedUser) {
+  async dislikeUser(user: number, dislikedUser: number): Promise<number> {
     try {
-      const { affected } = await this.createQueryBuilder('user_like')
+      const { affected }: DeleteResult = await this.createQueryBuilder(
+        'user_like',
+      )
         .delete()
         .where('likedMeNo = :user', { user })
         .andWhere('likedUserNo = :dislikedUser', { dislikedUser })
@@ -32,12 +39,14 @@ export class LikeRepository extends Repository<UserLike> {
     }
   }
 
-  async isLike(profileUserNo, userNo) {
+  async isLike(profileUserNo: number, userNo: number): Promise<number> {
     try {
-      const numberOfLikes = await this.createQueryBuilder('user_like')
+      const numberOfLikes: Array<User> = await this.createQueryBuilder(
+        'user_like',
+      )
         .select()
-        .where('likedMeNo = :profileUserNo', { profileUserNo })
-        .andWhere('likedUserNo = :userNo', { userNo })
+        .where('likedUserNo = :profileUserNo', { profileUserNo })
+        .andWhere('likedMeNo = :userNo', { userNo })
         .execute();
       return numberOfLikes.length;
     } catch (err) {

@@ -4,6 +4,7 @@ import { UserRepository } from 'src/auth/repository/user.repository';
 import { Letter } from 'src/letters/entity/letter.entity';
 import { LetterRepository } from 'src/letters/repository/letter.repository';
 import { ErrorConfirm } from 'src/utils/error';
+import { Mailbox } from './entity/mailbox.entity';
 import {
   MailboxRepository,
   MailboxUserRepository,
@@ -27,9 +28,9 @@ export class MailboxesService {
     private errorConfirm: ErrorConfirm,
   ) {}
 
-  async findAllMailboxes(loginUserNo: number) {
+  async readAllMailboxes(loginUserNo: number): Promise<Mailbox[]> {
     try {
-      const Letters = this.letterRepository
+      const Letters: string = this.letterRepository
         .createQueryBuilder()
         .subQuery()
         .select([
@@ -44,7 +45,7 @@ export class MailboxesService {
         .orderBy('letter.createdAt', 'DESC')
         .getQuery();
 
-      const mailbox = await this.userRepository
+      const mailbox: Mailbox[] = await this.userRepository
         .createQueryBuilder('user')
         .where('user.no = :loginUserNo', { loginUserNo })
         .leftJoin('user.mailboxUsers', 'mailboxUsers')
@@ -68,42 +69,49 @@ export class MailboxesService {
     }
   }
 
-  async searchMailbox(mailboxNo: number, limit: number) {
+  async searchMailbox(mailboxNo: number, limit: number): Promise<Mailbox> {
     try {
-      const mailbox = await this.mailboxRepository.searchMailbox(
+      const mailbox: Mailbox = await this.mailboxRepository.searchMailbox(
         mailboxNo,
         limit,
       );
 
-      const notReadLetter = await this.letterRepository.notReadingLetter(
-        mailboxNo,
-      );
+      const notReadLetter: Letter[] =
+        await this.letterRepository.notReadingLetter(mailboxNo);
       this.errorConfirm.notFoundError(
         notReadLetter,
         '경로를 찾을 수 없습니다.',
       );
 
-      for (const letter of notReadLetter) {
+      notReadLetter.forEach(async (letter) => {
         await this.letterRepository.updateReading(letter.no);
-      }
+      });
+
       return mailbox;
     } catch (e) {
       throw e;
     }
   }
 
-  async checkMailbox(oneselfNo: number, opponentNo: number) {
+  async checkMailbox(oneselfNo: number, opponentNo: number): Promise<any> {
     try {
-      const mailbox = await this.userRepository
-        .createQueryBuilder('users')
-        .leftJoinAndSelect('users.mailboxUsers', 'mailboxUser')
-        .leftJoinAndSelect('mailboxUser.user', 'MBUser')
-        .leftJoinAndSelect('mailboxUser.mailbox', 'mailbox')
-        .where('users.no = :oneselfNo', { oneselfNo })
-        .getMany();
+      this.errorConfirm.unauthorizedError(
+        oneselfNo !== opponentNo,
+        '자기 자신에게 쪽지를 보낼 수 없습니다.',
+      );
+      const mailbox: any = await this.mailboxUserRepository.searchMailboxUser(
+        oneselfNo,
+        opponentNo,
+      );
 
-      // 1,2 조회는 되는데 2,1 조회랑 다른 게 안됨;;;;; 사ㅣ 발라비ㅏㅣㅏㅅ
-      return mailbox;
+      return !mailbox
+        ? {
+            success: false,
+          }
+        : {
+            success: true,
+            mailboxNo: mailbox.mailboxNo,
+          };
     } catch (e) {
       throw e;
     }

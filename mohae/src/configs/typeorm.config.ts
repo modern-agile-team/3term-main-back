@@ -25,6 +25,7 @@ import {
   BoardReportChecks,
   UserReportChecks,
 } from 'src/reports/entity/report-checks.entity';
+import { BoardLike } from 'src/like/entity/board.like.entity';
 const dbConfig = config.get('db');
 
 const { DB_HOST, DB_PORT, DB_USER, DB_PSWORD, DB_DATABASE } = process.env;
@@ -60,6 +61,7 @@ export const typeORMConfig: TypeOrmModuleOptions = {
     BoardReportChecks,
     UserReportChecks,
     MailboxUser,
+    BoardLike,
   ],
   // entities: [__dirname + '/../**/*.entity.{ts,js}'],
   synchronize: dbConfig.synchronize,

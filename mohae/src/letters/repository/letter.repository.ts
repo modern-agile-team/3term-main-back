@@ -14,7 +14,7 @@ export class LetterRepository extends Repository<Letter> {
       .select([
         'letters.no',
         'letters.description',
-        'letters.reading_flag',
+        'letters.reading_flag AS isReading',
         'sender.no',
         'sender.email',
         'receiver.no',
@@ -27,12 +27,13 @@ export class LetterRepository extends Repository<Letter> {
     return letter;
   }
 
-  async updateReading(no: number) {
+  async updateReading(mailboxNo: number) {
     try {
       const { affected } = await this.createQueryBuilder()
         .update(Letter)
         .set({ reading_flag: true })
-        .where('letters.no = :no', { no })
+        .where('mailbox = :mailboxNo', { mailboxNo })
+        .andWhere('reading_flag = false')
         .execute();
 
       return affected;
@@ -91,13 +92,7 @@ export class LetterRepository extends Repository<Letter> {
         ])
         .execute();
 
-      if (!raw.affectedRows) {
-        throw new InternalServerErrorException(
-          '### 정상적으로 저장되지 않았습니다.',
-        );
-      }
-
-      return raw.insertId;
+      return raw;
     } catch (e) {
       throw new InternalServerErrorException(e);
     }
