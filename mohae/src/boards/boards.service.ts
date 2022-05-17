@@ -124,13 +124,10 @@ export class BoardsService {
 
   async getByOneBoard(no: number) {
     const board = await this.boardRepository.getByOneBoard(no);
-    this.errorConfirm.notFoundError(board, `해당 게시글을 찾을 수 없습니다.`);
-
-    if (!board.no) {
-      throw new InternalServerErrorException(
-        `${no}번 게시글은 삭제된 게시글 입니다.`,
-      );
-    }
+    this.errorConfirm.notFoundError(
+      board.no,
+      `해당 게시글을 찾을 수 없습니다.`,
+    );
 
     const boardHit: Number = await this.boardRepository.addBoardHit(board);
 
@@ -146,7 +143,7 @@ export class BoardsService {
 
   async boardClosed(no: number): Promise<Object> {
     const board: Board = await this.boardRepository.findOne(no);
-    this.errorConfirm.notFoundError(board, '게시글을 찾을 수 없습니다.');
+    this.errorConfirm.notFoundError(board.no, '게시글을 찾을 수 없습니다.');
     if (board.isDeadline) {
       throw new InternalServerErrorException('이미 마감된 게시글 입니다.');
     }
@@ -162,7 +159,10 @@ export class BoardsService {
 
   async cancelClosedBoard(no: number): Promise<Object> {
     const board: Board = await this.boardRepository.findOne(no);
-    this.errorConfirm.notFoundError(board, `해당 게시글을 찾을 수 없습니다.`);
+    this.errorConfirm.notFoundError(
+      board.no,
+      `해당 게시글을 찾을 수 없습니다.`,
+    );
 
     const currentTime: Date = new Date();
     currentTime.setHours(currentTime.getHours() + 9);
@@ -243,8 +243,6 @@ export class BoardsService {
       endTime,
     );
 
-    console.log(board);
-
     // await this.boardRepository.saveCategory(categoryNo, board);
 
     if (!board) {
@@ -256,7 +254,10 @@ export class BoardsService {
 
   async deleteBoard(no: number): Promise<DeleteResult> {
     const board: Board = await this.boardRepository.findOne(no);
-    this.errorConfirm.notFoundError(board, `해당 게시글을 찾을 수 없습니다.`);
+    this.errorConfirm.notFoundError(
+      board.no,
+      `해당 게시글을 찾을 수 없습니다.`,
+    );
 
     const result = await this.boardRepository.deleteBoard(no);
 
@@ -276,7 +277,10 @@ export class BoardsService {
     const { category, area, deadline } = updateBoardDto;
 
     const board: Board = await this.boardRepository.findOne(no);
-    this.errorConfirm.notFoundError(board, `해당 게시글을 찾을 수 없습니다.`);
+    this.errorConfirm.notFoundError(
+      board.no,
+      `해당 게시글을 찾을 수 없습니다.`,
+    );
 
     let endTime: Date = new Date(board.createdAt);
 
