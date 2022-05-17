@@ -1,13 +1,19 @@
 import { InternalServerErrorException } from '@nestjs/common';
+import { connect } from 'http2';
 import { User } from 'src/auth/entity/user.entity';
 import { Category } from 'src/categories/entity/category.entity';
-import { DeleteResult, EntityRepository, Repository } from 'typeorm';
+import {
+  Connection,
+  DeleteResult,
+  EntityRepository,
+  Repository,
+} from 'typeorm';
 import { CreateBoardDto } from '../dto/board.dto';
 import { Board } from '../entity/board.entity';
 
 @EntityRepository(Board)
 export class BoardRepository extends Repository<Board> {
-  async getByOneBoard(no: number): Promise<Board> {
+  async getByOneBoard(no: number) {
     try {
       return await this.createQueryBuilder('boards')
         .leftJoin('boards.area', 'areas')
@@ -23,7 +29,7 @@ export class BoardRepository extends Repository<Board> {
           'boards.description AS description',
           'boards.isDeadline AS isDeadline',
           'boards.hit AS hit',
-          'COUNT(likedUser.no) AS likeCount',
+          'COUNT(likedUser.likedBoardNo) AS likeCount',
           'boards.price AS price',
           'boards.summary AS summary',
           'boards.target AS target',
@@ -44,6 +50,7 @@ export class BoardRepository extends Repository<Board> {
         .where('boards.no = :no', { no })
         .andWhere('boards.area = areas.no')
         .andWhere('boards.category = categories.no')
+        .andWhere('likedUser.likedBoardNo = :no', { no })
         .getRawOne();
     } catch (e) {
       `${e} ### 게시판 상세 조회 : 알 수 없는 서버 에러입니다.`;
@@ -59,23 +66,22 @@ export class BoardRepository extends Repository<Board> {
       const hotBoards = this.createQueryBuilder('boards')
         .leftJoin('boards.area', 'areas')
         .leftJoin('boards.user', 'users')
+        .leftJoin('boards.likedUser', 'likedUsers')
         .select([
+          'likedUsers',
           'boards.no AS no',
-          'DATEDIFF(boards.deadline, now()) AS D_day',
+          'DATEDIFF(boards.deadline, now()) AS decimalDay',
           'boards.title AS title',
           'boards.isDeadline AS isDeadline',
           'boards.price AS price',
           'boards.target AS target',
-          'areas.no AS area_no',
-          'areas.name AS area_name',
-          'users.nickname AS user_nickname',
+          'areas.no AS areaNo',
+          'areas.name AS areaName',
+          'users.nickname AS userNickname',
         ])
         .where('Year(boards.createdAt) <= :year', { year })
         .andWhere('Month(boards.createdAt) <= :month', { month })
-        .orderBy(
-          '(boards.hit + boards.likeCount) / DATEDIFF(now(), boards.createdAt)',
-          'DESC',
-        )
+        .orderBy('boards.hit / DATEDIFF(now(), boards.createdAt)', 'DESC')
         .limit(3);
 
       if (select === 1) {
@@ -370,15 +376,4 @@ export class BoardRepository extends Repository<Board> {
       throw new InternalServerErrorException();
     }
   }
-
-  // async saveLikedUser(userNo: number, board: Board) {
-  //   try {
-  //     await this.createQueryBuilder()
-  //       .relation(User, 'likedBoard')
-  //       .of(userNo)
-  //       .add(board);
-  //   } catch (err) {
-  //     throw new InternalServerErrorException();
-  //   }
-  // }
 }
