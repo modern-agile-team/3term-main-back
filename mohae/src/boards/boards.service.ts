@@ -54,47 +54,6 @@ export class BoardsService {
     return result;
   }
 
-  // async likeBoard({ boardNo, userNo, judge }) {
-  //   const board: Board = await this.boardRepository.findOne(boardNo, {
-  //     relations: ['likedUser'],
-  //   });
-  //   this.errorConfirm.notFoundError(board, '게시글을 찾을 수 없습니다.');
-
-  //   const user: User = await this.userRepository.findOne(userNo);
-  //   this.errorConfirm.notFoundError(user, '회원을 찾을 수 없습니다.');
-
-  //   const findUser = board.likedUser.find(
-  //     (thumbUser) => thumbUser.no === user.no,
-  //   );
-
-  //   if ((findUser && judge) || (!findUser && !judge)) {
-  //     return {
-  //       isSuccess: false,
-  //       msg: '좋아요가 중복되었거나 좋아요 취소가 실패하였습니다.',
-  //     };
-  //   }
-  //   if (!findUser) {
-  //     await this.boardRepository.saveLikedUser(user.no, board);
-  //     return {
-  //       isSuccess: true,
-  //       msg: '좋아요 등록',
-  //     };
-  //   }
-
-  //   for (let i = 0; i < board.likedUser.length; i++) {
-  //     if (board.likedUser[i].no === userNo) {
-  //       board.likedUser.splice(i, 1);
-  //     }
-  //   }
-
-  //   await this.boardRepository.save(board);
-
-  //   return {
-  //     isSuccess: true,
-  //     msg: '좋아요 취소',
-  //   };
-  // }
-
   async filteredBoards(
     categoryNo: number,
     sort: any,
@@ -154,6 +113,7 @@ export class BoardsService {
       year,
       month,
     );
+
     this.errorConfirm.notFoundError(
       filteredHotBoards,
       '인기게시글이 존재하지 얺습니다.',
@@ -162,8 +122,8 @@ export class BoardsService {
     return filteredHotBoards;
   }
 
-  async getByOneBoard(no: number): Promise<Board> {
-    const board: Board = await this.boardRepository.getByOneBoard(no);
+  async getByOneBoard(no: number) {
+    const board = await this.boardRepository.getByOneBoard(no);
     this.errorConfirm.notFoundError(board, `해당 게시글을 찾을 수 없습니다.`);
 
     const boardHit: Number = await this.boardRepository.addBoardHit(board);

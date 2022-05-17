@@ -8,13 +8,19 @@ import { UserRepository } from 'src/auth/repository/user.repository';
 import { BoardRepository } from 'src/boards/repository/board.repository';
 import { ErrorConfirm } from 'src/utils/error';
 import { LikeUserDto, LikeBoardDto } from './dto/user-like.dto';
-import { LikeRepository } from './repository/like.repository';
+import {
+  BoardLikeRepository,
+  LikeRepository,
+} from './repository/like.repository';
 
 @Injectable()
 export class LikeService {
   constructor(
     @InjectRepository(LikeRepository)
     private likeRepository: LikeRepository,
+
+    @InjectRepository(BoardLikeRepository)
+    private boardLikeRepository: BoardLikeRepository,
 
     @InjectRepository(UserRepository)
     private userRepository: UserRepository,
@@ -94,7 +100,7 @@ export class LikeService {
       );
 
       if (judge) {
-        const countedLikeBoard = await this.likeRepository.isBoardLike(
+        const countedLikeBoard = await this.boardLikeRepository.isBoardLike(
           board.no,
           user.no,
         );
@@ -103,14 +109,17 @@ export class LikeService {
             '좋아요를 중복해서 요청할 수 없습니다 (좋아요 취소는 judge false로 넣어주세요)',
           );
         }
-        const isLikeBoard = await this.likeRepository.likeBoard(board, user);
+        const isLikeBoard = await this.boardLikeRepository.likeBoard(
+          board,
+          user,
+        );
 
         if (!isLikeBoard) {
-          throw new Error('유저 좋아요도중 일어난 알수 없는 오류 입니당');
+          throw new Error('게시글 좋아요 도중 일어난 알수 없는 오류 입니당');
         }
         return isLikeBoard;
       }
-      const isLikeBoard = await this.likeRepository.dislikeBoard(
+      const isLikeBoard = await this.boardLikeRepository.dislikeBoard(
         board.no,
         user.no,
       );

@@ -206,14 +206,8 @@ export class User extends BaseEntity {
   })
   mailboxUsers: MailboxUser[];
 
-  // 내가 좋아한 게시글
-  @OneToMany((type) => BoardLike, (boardLike) => boardLike.likedBoard, {
+  @OneToMany((type) => BoardLike, (boardLike) => boardLike.likedUser, {
     nullable: true,
   })
   likedBoard: BoardLike[];
-
-  // @ManyToMany((type) => Board, (board) => board.likedUser, {
-  //   cascade: true,
-  // })
-  // likedBoard: Board[];
 }

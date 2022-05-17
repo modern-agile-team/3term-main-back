@@ -46,12 +46,6 @@ export class Board extends BaseEntity {
     type: 'int',
     default: 0,
   })
-  likeCount: number;
-
-  @Column({
-    type: 'int',
-    default: 0,
-  })
   hit: number;
 
   @Column({
@@ -115,6 +109,11 @@ export class Board extends BaseEntity {
   })
   reviews: Review[];
 
+  @OneToMany((type) => BoardLike, (boardLike) => boardLike.likedBoard, {
+    nullable: true,
+  })
+  likedUser: BoardLike[];
+
   @ManyToOne((type) => User, (user) => user.boards, {
     onDelete: 'SET NULL',
   })
@@ -129,15 +128,4 @@ export class Board extends BaseEntity {
     onDelete: 'SET NULL',
   })
   area: Area;
-
-  @OneToMany((type) => BoardLike, (boardLike) => boardLike.likedUser, {
-    nullable: true,
-  })
-  likedUser: BoardLike[];
-
-  //   @ManyToMany((type) => User, (user) => user.likedBoard, {
-  //     onDelete: 'SET NULL',
-  //   })
-  //   @JoinTable({ name: 'board_liked' })
-  //   likedUser: User[];
 }
