@@ -62,7 +62,6 @@ export class BoardRepository extends Repository<Board> {
         .leftJoin('boards.user', 'users')
         .leftJoin('boards.likedUser', 'likedUsers')
         .select([
-          'likedUsers',
           'boards.no AS no',
           'DATEDIFF(boards.deadline, now()) AS decimalDay',
           'boards.title AS title',
