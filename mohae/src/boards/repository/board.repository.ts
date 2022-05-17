@@ -1,13 +1,7 @@
 import { InternalServerErrorException } from '@nestjs/common';
-import { connect } from 'http2';
 import { User } from 'src/auth/entity/user.entity';
 import { Category } from 'src/categories/entity/category.entity';
-import {
-  Connection,
-  DeleteResult,
-  EntityRepository,
-  Repository,
-} from 'typeorm';
+import { DeleteResult, EntityRepository, Repository } from 'typeorm';
 import { CreateBoardDto } from '../dto/board.dto';
 import { Board } from '../entity/board.entity';
 
