@@ -1,10 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger';
 import {
+  IsArray,
   IsBoolean,
   IsNotEmpty,
   IsNumber,
   IsOptional,
   IsString,
+  Max,
   MaxLength,
   MinLength,
 } from 'class-validator';
@@ -16,6 +18,7 @@ export abstract class BoardContent {
     required: true,
   })
   @IsNumber()
+  @Max(1000001)
   price: number;
 
   @ApiProperty({
@@ -78,6 +81,9 @@ export abstract class BoardContent {
   @IsString()
   @MaxLength(100)
   note3: string;
+
+  @IsArray()
+  photo_url?: [];
 }
 
 export class CreateBoardDto extends BoardContent {
@@ -108,6 +114,7 @@ export class LikeBoardDto {
 export abstract class UpdateBoardDto {
   @IsOptional()
   @IsNumber()
+  @Max(1000001)
   price?: number;
 
   @IsOptional()

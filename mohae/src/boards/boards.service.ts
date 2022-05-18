@@ -19,12 +19,16 @@ import { Board } from './entity/board.entity';
 import { Category } from 'src/categories/entity/category.entity';
 import { Area } from 'src/areas/entity/areas.entity';
 import { User } from 'src/auth/entity/user.entity';
+import { BoardPhotoRepository } from 'src/photo/repository/photo.repository';
 
 @Injectable()
 export class BoardsService {
   constructor(
     @InjectRepository(BoardRepository)
     private boardRepository: BoardRepository,
+
+    @InjectRepository(BoardPhotoRepository)
+    private boardPhotoRepository: BoardPhotoRepository,
 
     @InjectRepository(AreasRepository)
     private areaRepository: AreasRepository,
@@ -124,7 +128,10 @@ export class BoardsService {
 
   async getByOneBoard(no: number) {
     const board = await this.boardRepository.getByOneBoard(no);
-    this.errorConfirm.notFoundError(board, `해당 게시글을 찾을 수 없습니다.`);
+    this.errorConfirm.notFoundError(
+      board.no,
+      `해당 게시글을 찾을 수 없습니다.`,
+    );
 
     const boardHit: Number = await this.boardRepository.addBoardHit(board);
 
@@ -140,7 +147,7 @@ export class BoardsService {
 
   async boardClosed(no: number): Promise<Object> {
     const board: Board = await this.boardRepository.findOne(no);
-    this.errorConfirm.notFoundError(board, '게시글을 찾을 수 없습니다.');
+    this.errorConfirm.notFoundError(board.no, '게시글을 찾을 수 없습니다.');
     if (board.isDeadline) {
       throw new InternalServerErrorException('이미 마감된 게시글 입니다.');
     }
@@ -156,15 +163,20 @@ export class BoardsService {
 
   async cancelClosedBoard(no: number): Promise<Object> {
     const board: Board = await this.boardRepository.findOne(no);
-    this.errorConfirm.notFoundError(board, `해당 게시글을 찾을 수 없습니다.`);
+    this.errorConfirm.notFoundError(
+      board.no,
+      `해당 게시글을 찾을 수 없습니다.`,
+    );
 
     const currentTime: Date = new Date();
     currentTime.setHours(currentTime.getHours() + 9);
 
-    if (board.deadline <= currentTime) {
-      throw new InternalServerErrorException(
-        '시간이 지나 마감된 게시글 입니다.',
-      );
+    if (board.deadline !== null) {
+      if (board.deadline <= currentTime) {
+        throw new InternalServerErrorException(
+          '시간이 지나 마감된 게시글 입니다.',
+        );
+      }
     }
 
     if (!board.isDeadline) {
@@ -227,16 +239,22 @@ export class BoardsService {
       endTime.setSeconds(endTime.getSeconds() + deadline);
     }
 
-    const { affectedRows }: any = await this.boardRepository.createBoard(
+    const board: any = await this.boardRepository.createBoard(
       category,
       area,
       user,
       createBoardDto,
       endTime,
     );
+    const { photo_url } = createBoardDto;
+
+    for (const photo of photo_url) {
+      const test = await this.boardPhotoRepository.createPhoto(photo, board.no);
+    }
+
     // await this.boardRepository.saveCategory(categoryNo, board);
 
-    if (!affectedRows) {
+    if (!board) {
       return { isSuccess: false, msg: '게시글 생성이 되지 않았습니다.' };
     }
 
@@ -245,7 +263,10 @@ export class BoardsService {
 
   async deleteBoard(no: number): Promise<DeleteResult> {
     const board: Board = await this.boardRepository.findOne(no);
-    this.errorConfirm.notFoundError(board, `해당 게시글을 찾을 수 없습니다.`);
+    this.errorConfirm.notFoundError(
+      board.no,
+      `해당 게시글을 찾을 수 없습니다.`,
+    );
 
     const result = await this.boardRepository.deleteBoard(no);
 
@@ -265,7 +286,10 @@ export class BoardsService {
     const { category, area, deadline } = updateBoardDto;
 
     const board: Board = await this.boardRepository.findOne(no);
-    this.errorConfirm.notFoundError(board, `해당 게시글을 찾을 수 없습니다.`);
+    this.errorConfirm.notFoundError(
+      board.no,
+      `해당 게시글을 찾을 수 없습니다.`,
+    );
 
     let endTime: Date = new Date(board.createdAt);
 
@@ -280,12 +304,12 @@ export class BoardsService {
     if (deadline && endTime <= currentTime) {
       throw new BadRequestException('다른 기간을 선택해 주십시오');
     }
-    console.log(typeof Object.keys(updateBoardDto));
+
     const boardKey: any = Object.keys(updateBoardDto);
 
     const deletedNullBoardKey = {};
 
-    boardKey.forEach((item) => {
+    boardKey.forEach((item: any) => {
       updateBoardDto[item] !== null
         ? (deletedNullBoardKey[item] = updateBoardDto[item])
         : 0;

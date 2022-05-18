@@ -10,12 +10,21 @@ export class BoardRepository extends Repository<Board> {
   async getByOneBoard(no: number) {
     try {
       return await this.createQueryBuilder('boards')
-        .leftJoin('boards.area', 'areas')
-        .leftJoin('boards.category', 'categories')
+        .leftJoin('boards.area', 'areas', 'areas.no = boards.area')
+        .leftJoin(
+          'boards.category',
+          'categories',
+          'categories.no = boards.category',
+        )
         .leftJoin('boards.user', 'users')
         .leftJoin('users.school', 'school')
         .leftJoin('users.major', 'major')
-        .leftJoin('boards.likedUser', 'likedUser')
+        .leftJoin(
+          'boards.likedUser',
+          'likedUser',
+          'likedUser.likedBoardNo = :no',
+          { no },
+        )
         .select([
           'boards.no AS no',
           'DATEDIFF(boards.deadline, now()) AS decimalDay',
@@ -42,53 +51,9 @@ export class BoardRepository extends Repository<Board> {
           'major.name AS userMajor',
         ])
         .where('boards.no = :no', { no })
-        .andWhere('boards.area = areas.no')
-        .andWhere('boards.category = categories.no')
-        .andWhere('likedUser.likedBoardNo = :no', { no })
         .getRawOne();
     } catch (e) {
       `${e} ### 게시판 상세 조회 : 알 수 없는 서버 에러입니다.`;
-    }
-  }
-
-  async readHotBoards(
-    select: number,
-    year: number,
-    month: number,
-  ): Promise<Object> {
-    try {
-      const hotBoards = this.createQueryBuilder('boards')
-        .leftJoin('boards.area', 'areas')
-        .leftJoin('boards.user', 'users')
-        .leftJoin('boards.likedUser', 'likedUsers')
-        .select([
-          'boards.no AS no',
-          'DATEDIFF(boards.deadline, now()) AS decimalDay',
-          'boards.title AS title',
-          'boards.isDeadline AS isDeadline',
-          'boards.price AS price',
-          'boards.target AS target',
-          'areas.no AS areaNo',
-          'areas.name AS areaName',
-          'users.nickname AS userNickname',
-        ])
-        .where('Year(boards.createdAt) <= :year', { year })
-        .andWhere('Month(boards.createdAt) <= :month', { month })
-        .orderBy('boards.hit / DATEDIFF(now(), boards.createdAt)', 'DESC')
-        .limit(3);
-
-      if (select === 1) {
-        hotBoards.andWhere('boards.isDeadline = false');
-      }
-
-      if (select === 2) {
-        hotBoards.andWhere('boards.isDeadline = true');
-      }
-      const filteredHotBoards = await hotBoards.getRawMany();
-
-      return { year, month, filteredHotBoards };
-    } catch (e) {
-      `${e} ### 인기 게시판 조회 : 알 수 없는 서버 에러입니다.`;
     }
   }
 
@@ -286,7 +251,7 @@ export class BoardRepository extends Repository<Board> {
     user: User,
     createBoardDto: CreateBoardDto,
     endTime: Date,
-  ) {
+  ): Promise<Board> {
     try {
       const {
         price,
@@ -319,10 +284,17 @@ export class BoardRepository extends Repository<Board> {
         ])
         .execute();
 
-      return board.raw;
-    } catch (err) {
+      const { affectedRows, insertId } = board.raw;
+      if (affectedRows) {
+        return await this.createQueryBuilder('boards')
+          .leftJoinAndSelect('boards.category', 'category')
+          .leftJoinAndSelect('boards.area', 'area')
+          .where('boards.no = :no', { no: insertId })
+          .getOne();
+      }
+    } catch (e) {
       throw new InternalServerErrorException(
-        `${err} ### 게시판 생성: 알 수 없는 서버 에러입니다.`,
+        `${e} ### 게시판 생성: 알 수 없는 서버 에러입니다.`,
       );
     }
   }
@@ -367,6 +339,51 @@ export class BoardRepository extends Repository<Board> {
         .add(board);
     } catch (e) {
       throw new InternalServerErrorException();
+    }
+  }
+
+  async readHotBoards(
+    select: number,
+    year: number,
+    month: number,
+  ): Promise<Object> {
+    try {
+      const hotBoards = this.createQueryBuilder('boards')
+        .leftJoin('boards.area', 'areas')
+        .leftJoin('boards.user', 'users')
+        .leftJoin('boards.likedUser', 'likedUsers')
+        .select([
+          'boards.no AS no',
+          'DATEDIFF(boards.deadline, now()) AS decimalDay',
+          'boards.title AS title',
+          'boards.isDeadline AS isDeadline',
+          'boards.price AS price',
+          'boards.target AS target',
+          'areas.no AS areaNo',
+          'areas.name AS areaName',
+          'users.nickname AS userNickname',
+        ])
+        .where('Year(boards.createdAt) <= :year', { year })
+        .andWhere('Month(boards.createdAt) <= :month', { month })
+        .groupBy('likedUsers.likedBoardNo')
+        .orderBy(
+          '(boards.hit + COUNT(likedUsers.likedBoardNo)) / DATEDIFF(now(), boards.createdAt)',
+          'DESC',
+        )
+        .limit(3);
+
+      if (select === 1) {
+        hotBoards.andWhere('boards.isDeadline = false');
+      }
+
+      if (select === 2) {
+        hotBoards.andWhere('boards.isDeadline = true');
+      }
+      const filteredHotBoards = await hotBoards.getRawMany();
+
+      return filteredHotBoards;
+    } catch (err) {
+      `${err} ### 인기 게시판 조회 : 알 수 없는 서버 에러입니다.`;
     }
   }
 }
