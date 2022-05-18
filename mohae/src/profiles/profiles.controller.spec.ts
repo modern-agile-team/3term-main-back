@@ -6,7 +6,7 @@ import { CategoryRepository } from 'src/categories/repository/category.repositor
 import { LikeRepository } from 'src/like/repository/like.repository';
 import { MajorRepository } from 'src/majors/repository/major.repository';
 import { SchoolRepository } from 'src/schools/repository/school.repository';
-import { ErrorConfirm } from 'src/utils/error';
+import { ErrorConfirm } from 'src/common/utils/error';
 import {
   JudgeDuplicateNicknameDto,
   UpdateProfileDto,

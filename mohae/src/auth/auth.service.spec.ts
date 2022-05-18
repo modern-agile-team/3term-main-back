@@ -11,7 +11,7 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { CategoryRepository } from 'src/categories/repository/category.repository';
 import { MajorRepository } from 'src/majors/repository/major.repository';
 import { SchoolRepository } from 'src/schools/repository/school.repository';
-import { ErrorConfirm } from 'src/utils/error';
+import { ErrorConfirm } from 'src/common/utils/error';
 import { Repository } from 'typeorm';
 import { AuthService } from './auth.service';
 import { CreateUserDto, SignInDto } from './dto/auth-credential.dto';

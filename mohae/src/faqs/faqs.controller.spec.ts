@@ -1,7 +1,7 @@
 import { PassportModule } from '@nestjs/passport';
 import { Test, TestingModule } from '@nestjs/testing';
 import { UserRepository } from 'src/auth/repository/user.repository';
-import { ErrorConfirm } from 'src/utils/error';
+import { ErrorConfirm } from 'src/common/utils/error';
 import { CreateFaqDto, UpdateFaqDto } from './dto/faq.dto';
 import { FaqsController } from './faqs.controller';
 import { FaqsService } from './faqs.service';

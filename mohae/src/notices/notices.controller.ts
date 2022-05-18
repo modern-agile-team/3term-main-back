@@ -10,8 +10,8 @@ import {
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
-import { Role } from 'src/decorators/roles.decorator';
-import { RolesGuard } from 'src/guards/roles.guard';
+import { Role } from 'src/common/decorators/roles.decorator';
+import { RolesGuard } from 'src/common/guards/roles.guard';
 import { CreateNoticeDto, UpdateNoticeDto } from './dto/notice.dto';
 import { Notice } from './entity/notice.entity';
 import { NoticesService } from './notices.service';

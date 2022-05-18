@@ -13,7 +13,7 @@ import {
   UpdateBoardDto,
 } from './dto/board.dto';
 import { BoardRepository } from './repository/board.repository';
-import { ErrorConfirm } from 'src/utils/error';
+import { ErrorConfirm } from 'src/common/utils/error';
 import { UserRepository } from 'src/auth/repository/user.repository';
 import { Board } from './entity/board.entity';
 import { Category } from 'src/categories/entity/category.entity';
@@ -42,18 +42,18 @@ export class BoardsService {
     private errorConfirm: ErrorConfirm,
   ) {}
 
-  async getAllBoards(): Promise<Object> {
+  async getAllBoards(): Promise<object> {
     const boards: Board[] = await this.boardRepository.getAllBoards();
     this.errorConfirm.notFoundError(boards, '게시글을 찾을 수 없습니다.');
 
     return { allBoardNum: boards.length, boards };
   }
 
-  async closingBoard(): Promise<Number> {
+  async closingBoard(): Promise<number> {
     const currentTime: Date = new Date();
     currentTime.setHours(currentTime.getHours() + 9);
 
-    const result: Number = await this.boardRepository.closingBoard(currentTime);
+    const result: number = await this.boardRepository.closingBoard(currentTime);
 
     return result;
   }
@@ -69,7 +69,7 @@ export class BoardsService {
     target: boolean,
     date: any,
     free: string,
-  ): Promise<Object> {
+  ): Promise<object> {
     const currentTime: Date = new Date();
     currentTime.setHours(currentTime.getHours() + 9);
 
@@ -102,7 +102,7 @@ export class BoardsService {
     return { filteredBoardNum: boards.length, boards };
   }
 
-  async readHotBoards(select: number): Promise<Object> {
+  async readHotBoards(select: number): Promise<object> {
     const currentTime: Date = new Date();
     currentTime.setHours(currentTime.getHours() + 9);
     const year: number = currentTime.getFullYear();
@@ -112,7 +112,7 @@ export class BoardsService {
       year - 1;
     }
 
-    const filteredHotBoards: Object = await this.boardRepository.readHotBoards(
+    const filteredHotBoards: object = await this.boardRepository.readHotBoards(
       select,
       year,
       month,
@@ -133,7 +133,7 @@ export class BoardsService {
       `해당 게시글을 찾을 수 없습니다.`,
     );
 
-    const boardHit: Number = await this.boardRepository.addBoardHit(board);
+    const boardHit: number = await this.boardRepository.addBoardHit(board);
 
     if (!boardHit) {
       throw new InternalServerErrorException(
@@ -145,14 +145,14 @@ export class BoardsService {
     return board;
   }
 
-  async boardClosed(no: number): Promise<Object> {
+  async boardClosed(no: number): Promise<object> {
     const board: Board = await this.boardRepository.findOne(no);
     this.errorConfirm.notFoundError(board.no, '게시글을 찾을 수 없습니다.');
     if (board.isDeadline) {
       throw new InternalServerErrorException('이미 마감된 게시글 입니다.');
     }
 
-    const result: Object = await this.boardRepository.boardClosed(no);
+    const result: number = await this.boardRepository.boardClosed(no);
 
     if (!result) {
       throw new InternalServerErrorException('게시글 마감이 되지 않았습니다');
@@ -161,7 +161,7 @@ export class BoardsService {
     return { isSuccess: true };
   }
 
-  async cancelClosedBoard(no: number): Promise<Object> {
+  async cancelClosedBoard(no: number): Promise<object> {
     const board: Board = await this.boardRepository.findOne(no);
     this.errorConfirm.notFoundError(
       board.no,
@@ -194,7 +194,7 @@ export class BoardsService {
     return { isSuccess: true };
   }
 
-  async searchAllBoards(searchBoardDto: SearchBoardDto): Promise<Object> {
+  async searchAllBoards(searchBoardDto: SearchBoardDto): Promise<object> {
     const { title }: any = searchBoardDto;
     const boards: Board[] = await this.boardRepository.searchAllBoards(title);
     this.errorConfirm.notFoundError(boards, '게시글을 찾을 수 없습니다.');
@@ -202,7 +202,7 @@ export class BoardsService {
     return { foundedBoardNum: boards.length, search: title, boards };
   }
 
-  async createBoard(createBoardDto: CreateBoardDto): Promise<Object> {
+  async createBoard(createBoardDto: CreateBoardDto): Promise<object> {
     const { categoryNo, areaNo, deadline, userNo }: any = createBoardDto;
     const category: Category = await this.categoryRepository.findOne(
       categoryNo,
@@ -282,7 +282,7 @@ export class BoardsService {
   async updateBoard(
     no: number,
     updateBoardDto: UpdateBoardDto,
-  ): Promise<Object> {
+  ): Promise<object> {
     const { category, area, deadline } = updateBoardDto;
 
     const board: Board = await this.boardRepository.findOne(no);
@@ -343,7 +343,7 @@ export class BoardsService {
       this.errorConfirm.notFoundError(getArea, `해당 지역을 찾을 수 없습니다.`);
     }
 
-    const updatedBoard: object = await this.boardRepository.updateBoard(
+    const updatedBoard: number = await this.boardRepository.updateBoard(
       no,
       deletedNullBoardKey,
     );

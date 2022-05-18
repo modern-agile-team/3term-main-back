@@ -4,7 +4,7 @@ import { User } from 'src/auth/entity/user.entity';
 import { UserRepository } from 'src/auth/repository/user.repository';
 import { Board } from 'src/boards/entity/board.entity';
 import { BoardRepository } from 'src/boards/repository/board.repository';
-import { ErrorConfirm } from 'src/utils/error';
+import { ErrorConfirm } from 'src/common/utils/error';
 import { CreateReportDto } from './dto/report.dto';
 import {
   ReportCheckbox,

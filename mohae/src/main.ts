@@ -2,7 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import * as config from 'config';
 import { Logger, ValidationPipe } from '@nestjs/common';
-import { setupSwagger } from './utils/swagger';
+import { setupSwagger } from './common/utils/swagger';
 import * as expressBasicAuth from 'express-basic-auth';
 
 declare const module: any;

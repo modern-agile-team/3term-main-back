@@ -9,7 +9,7 @@ import { User } from 'src/auth/entity/user.entity';
 import { UserRepository } from 'src/auth/repository/user.repository';
 import { SpecPhoto } from 'src/photo/entity/photo.entity';
 import { SpecPhotoRepository } from 'src/photo/repository/photo.repository';
-import { ErrorConfirm } from 'src/utils/error';
+import { ErrorConfirm } from 'src/common/utils/error';
 import { CreateSpecDto, UpdateSpecDto } from './dto/spec.dto';
 import { Spec } from './entity/spec.entity';
 import { SpecRepository } from './repository/spec.repository';

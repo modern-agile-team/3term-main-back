@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { UserRepository } from 'src/auth/repository/user.repository';
 import { Letter } from 'src/letters/entity/letter.entity';
 import { LetterRepository } from 'src/letters/repository/letter.repository';
-import { ErrorConfirm } from 'src/utils/error';
+import { ErrorConfirm } from 'src/common/utils/error';
 import { Mailbox } from './entity/mailbox.entity';
 import {
   MailboxRepository,

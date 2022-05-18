@@ -10,7 +10,7 @@ import { CategoriesService } from 'src/categories/categories.service';
 import { CategoryRepository } from 'src/categories/repository/category.repository';
 import { BoardPhotoRepository } from 'src/photo/repository/photo.repository';
 import { ReviewRepository } from 'src/reviews/repository/review.repository';
-import { ErrorConfirm } from 'src/utils/error';
+import { ErrorConfirm } from 'src/common/utils/error';
 import { BoardsController } from './boards.controller';
 import { BoardsService } from './boards.service';
 import { BoardRepository } from './repository/board.repository';

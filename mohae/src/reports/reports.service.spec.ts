@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { UserRepository } from 'src/auth/repository/user.repository';
 import { BoardRepository } from 'src/boards/repository/board.repository';
-import { ErrorConfirm } from 'src/utils/error';
+import { ErrorConfirm } from 'src/common/utils/error';
 import { Repository } from 'typeorm';
 import {
   BoardReportChecksRepository,

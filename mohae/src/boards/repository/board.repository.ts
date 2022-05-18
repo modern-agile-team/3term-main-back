@@ -57,7 +57,7 @@ export class BoardRepository extends Repository<Board> {
     }
   }
 
-  async addBoardHit({ no, hit }): Promise<Number> {
+  async addBoardHit({ no, hit }): Promise<number> {
     try {
       const { affected } = await this.createQueryBuilder()
         .update(Board)
@@ -89,7 +89,7 @@ export class BoardRepository extends Repository<Board> {
     }
   }
 
-  async boardClosed(no: number): Promise<Object> {
+  async boardClosed(no: number): Promise<number> {
     try {
       const { affected } = await this.createQueryBuilder()
         .update(Board)
@@ -299,7 +299,7 @@ export class BoardRepository extends Repository<Board> {
     }
   }
 
-  async updateBoard(no: number, deletedNullBoardKey: any): Promise<Object> {
+  async updateBoard(no: number, deletedNullBoardKey: any): Promise<number> {
     try {
       const { affected } = await this.createQueryBuilder()
         .update(Board)
@@ -346,7 +346,7 @@ export class BoardRepository extends Repository<Board> {
     select: number,
     year: number,
     month: number,
-  ): Promise<Object> {
+  ): Promise<object> {
     try {
       const hotBoards = this.createQueryBuilder('boards')
         .leftJoin('boards.area', 'areas')

@@ -5,7 +5,7 @@ import {
   MailboxRepository,
   MailboxUserRepository,
 } from 'src/mailboxes/repository/mailbox.repository';
-import { ErrorConfirm } from 'src/utils/error';
+import { ErrorConfirm } from 'src/common/utils/error';
 import { Repository } from 'typeorm';
 import { SendLetterDto } from './dto/letter.dto';
 import { LettersService } from './letters.service';

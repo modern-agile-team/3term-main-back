@@ -20,7 +20,7 @@ import { SchoolRepository } from 'src/schools/repository/school.repository';
 import { MajorRepository } from 'src/majors/repository/major.repository';
 import * as config from 'config';
 import { CategoryRepository } from 'src/categories/repository/category.repository';
-import { ErrorConfirm } from 'src/utils/error';
+import { ErrorConfirm } from 'src/common/utils/error';
 import { School } from 'src/schools/entity/school.entity';
 import { Major } from 'src/majors/entity/major.entity';
 import { Category } from 'src/categories/entity/category.entity';
@@ -209,7 +209,7 @@ export class AuthService {
     }
   }
 
-  async changePassword(changePasswordDto: ChangePasswordDto): Promise<Number> {
+  async changePassword(changePasswordDto: ChangePasswordDto): Promise<number> {
     try {
       const {
         email,
@@ -250,7 +250,7 @@ export class AuthService {
       throw err;
     }
   }
-  async forgetPassword(forgetPasswordDto: ForgetPasswordDto): Promise<Number> {
+  async forgetPassword(forgetPasswordDto: ForgetPasswordDto): Promise<number> {
     try {
       const {
         email,

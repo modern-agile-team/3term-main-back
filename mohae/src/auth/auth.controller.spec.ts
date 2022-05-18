@@ -5,7 +5,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { CategoryRepository } from 'src/categories/repository/category.repository';
 import { MajorRepository } from 'src/majors/repository/major.repository';
 import { SchoolRepository } from 'src/schools/repository/school.repository';
-import { ErrorConfirm } from 'src/utils/error';
+import { ErrorConfirm } from 'src/common/utils/error';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import {

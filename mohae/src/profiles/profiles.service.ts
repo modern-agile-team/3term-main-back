@@ -14,7 +14,7 @@ import { Major } from 'src/majors/entity/major.entity';
 import { MajorRepository } from 'src/majors/repository/major.repository';
 import { School } from 'src/schools/entity/school.entity';
 import { SchoolRepository } from 'src/schools/repository/school.repository';
-import { ErrorConfirm } from 'src/utils/error';
+import { ErrorConfirm } from 'src/common/utils/error';
 import {
   JudgeDuplicateNicknameDto,
   UpdateProfileDto,
@@ -71,7 +71,7 @@ export class ProfilesService {
         boards,
       }: User = profile;
       const likedNum: number = likedUser.length;
-      const userCreatedAt: string = `${createdAt.getFullYear()}.${
+      const userCreatedAt = `${createdAt.getFullYear()}.${
         createdAt.getMonth() + 1
       }.${createdAt.getDate()}`;
 

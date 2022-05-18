@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UserRepository } from 'src/auth/repository/user.repository';
-import { ErrorConfirm } from 'src/utils/error';
+import { ErrorConfirm } from 'src/common/utils/error';
 import { CreateFaqDto, UpdateFaqDto } from './dto/faq.dto';
 import { Faq } from './entity/faq.entity';
 import { FaqRepository } from './repository/faq.repository';

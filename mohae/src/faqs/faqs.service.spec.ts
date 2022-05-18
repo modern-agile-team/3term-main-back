@@ -2,7 +2,7 @@ import { NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { UserRepository } from 'src/auth/repository/user.repository';
-import { ErrorConfirm } from 'src/utils/error';
+import { ErrorConfirm } from 'src/common/utils/error';
 import { Repository } from 'typeorm';
 import { CreateFaqDto } from './dto/faq.dto';
 import { FaqsService } from './faqs.service';

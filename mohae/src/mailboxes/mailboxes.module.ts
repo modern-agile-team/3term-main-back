@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserRepository } from 'src/auth/repository/user.repository';
 import { LetterRepository } from 'src/letters/repository/letter.repository';
-import { ErrorConfirm } from 'src/utils/error';
+import { ErrorConfirm } from 'src/common/utils/error';
 import { MailboxesController } from './mailboxes.controller';
 import { MailboxesService } from './mailboxes.service';
 import {

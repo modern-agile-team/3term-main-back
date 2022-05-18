@@ -10,7 +10,7 @@ import { MajorsModule } from 'src/majors/majors.module';
 import { MajorRepository } from 'src/majors/repository/major.repository';
 import { SchoolRepository } from 'src/schools/repository/school.repository';
 import { SchoolsModule } from 'src/schools/schools.module';
-import { ErrorConfirm } from 'src/utils/error';
+import { ErrorConfirm } from 'src/common/utils/error';
 import { ProfilesController } from './profiles.controller';
 import { ProfilesService } from './profiles.service';
 

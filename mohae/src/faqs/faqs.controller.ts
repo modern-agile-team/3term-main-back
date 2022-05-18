@@ -13,8 +13,8 @@ import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { CreateFaqDto, UpdateFaqDto } from './dto/faq.dto';
 import { Faq } from './entity/faq.entity';
 import { FaqsService } from './faqs.service';
-import { Role } from 'src/decorators/roles.decorator';
-import { RolesGuard } from 'src/guards/roles.guard';
+import { Role } from 'src/common/decorators/roles.decorator';
+import { RolesGuard } from 'src/common/guards/roles.guard';
 import { AuthGuard } from '@nestjs/passport';
 
 @Controller('faqs')

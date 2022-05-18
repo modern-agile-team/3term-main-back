@@ -6,7 +6,7 @@ import {
   MailboxRepository,
   MailboxUserRepository,
 } from 'src/mailboxes/repository/mailbox.repository';
-import { ErrorConfirm } from 'src/utils/error';
+import { ErrorConfirm } from 'src/common/utils/error';
 import { LettersController } from './letters.controller';
 import { LettersService } from './letters.service';
 import { LetterRepository } from './repository/letter.repository';
