@@ -9,7 +9,7 @@ import {
   Post,
   UseGuards,
 } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { CreateFaqDto, UpdateFaqDto } from './dto/faq.dto';
 import { Faq } from './entity/faq.entity';
 import { FaqsService } from './faqs.service';
@@ -23,6 +23,10 @@ export class FaqsController {
   private logger = new Logger('FaqsController');
   constructor(private faqsService: FaqsService) {}
 
+  @ApiOperation({
+    summary: 'FAQ 전체 조회 기능',
+    description: 'FAQ를 전체 조회하는 API',
+  })
   @Get()
   async readFaqs(): Promise<Faq[]> {
     const response = await this.faqsService.readFaqs();
@@ -34,6 +38,10 @@ export class FaqsController {
     });
   }
 
+  @ApiOperation({
+    summary: 'FAQ 생성 기능',
+    description: 'FAQ를 생성하는 API',
+  })
   @Post()
   @Role(true)
   @UseGuards(RolesGuard)
@@ -48,6 +56,10 @@ export class FaqsController {
     });
   }
 
+  @ApiOperation({
+    summary: 'FAQ 수정 기능',
+    description: 'FAQ를 수정하는 API',
+  })
   @Patch('/:faqNo')
   @Role(true)
   @UseGuards(RolesGuard)
@@ -65,6 +77,10 @@ export class FaqsController {
     });
   }
 
+  @ApiOperation({
+    summary: 'FAQ 삭제 기능',
+    description: 'FAQ를 삭제하는 API',
+  })
   @Delete('/:faqNo')
   @Role(true)
   @UseGuards(RolesGuard)
