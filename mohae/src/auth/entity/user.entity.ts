@@ -20,17 +20,14 @@ import {
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
-  Timestamp,
-  Unique,
   UpdateDateColumn,
 } from 'typeorm';
 import { Letter } from 'src/letters/entity/letter.entity';
-import { Mailbox, MailboxUser } from 'src/mailboxes/entity/mailbox.entity';
+import { MailboxUser } from 'src/mailboxes/entity/mailbox.entity';
 import { Spec } from 'src/specs/entity/spec.entity';
 import { Faq } from 'src/faqs/entity/faq.entity';
 import { Notice } from 'src/notices/entity/notice.entity';
 import { Board } from 'src/boards/entity/board.entity';
-import { userInfo } from 'os';
 import { UserLike } from 'src/like/entity/user.like.entity';
 import { BoardLike } from 'src/like/entity/board.like.entity';
 
@@ -210,8 +207,4 @@ export class User extends BaseEntity {
     nullable: true,
   })
   likedBoard: BoardLike[];
-  // @ManyToMany((type) => Board, (board) => board.likedUser, {
-  //   cascade: true,
-  // })
-  // likedBoard: Board[];
 }
