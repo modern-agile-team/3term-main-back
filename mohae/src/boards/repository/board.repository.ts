@@ -25,8 +25,12 @@ export class BoardRepository extends Repository<Board> {
           'likedUser.likedBoardNo = :no',
           { no },
         )
+        .leftJoinAndSelect('boards.photos', 'photos', 'photos.board_no = :no', {
+          no,
+        })
         .select([
           'boards.no AS no',
+          'photos',
           'DATEDIFF(boards.deadline, now()) AS decimalDay',
           'boards.title AS title',
           'boards.description AS description',
