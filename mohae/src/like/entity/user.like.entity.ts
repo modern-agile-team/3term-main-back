@@ -1,13 +1,5 @@
 import { User } from 'src/auth/entity/user.entity';
-import {
-  BaseEntity,
-  Column,
-  Entity,
-  ManyToOne,
-  OneToMany,
-  OneToOne,
-  PrimaryGeneratedColumn,
-} from 'typeorm';
+import { BaseEntity, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity('user_like')
 export class UserLike extends BaseEntity {

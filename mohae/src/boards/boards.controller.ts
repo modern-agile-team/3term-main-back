@@ -32,17 +32,14 @@ export class BoardsController {
 
   @Cron('0 1 * * * *')
   async handleCron() {
-    const response = await this.boardService.closingBoard();
-    if (!response.success) {
-      this.logger.error('게시글 마감처리 로직 에러');
-    }
+    const isClosed: Number = await this.boardService.closingBoard();
 
-    this.logger.verbose('게시글 마감처리 로직 작동');
+    this.logger.verbose(`게시글 ${isClosed}개 마감처리`);
   }
 
   @Get()
-  async getAllBoards(): Promise<object> {
-    const response = await this.boardService.getAllBoards();
+  async getAllBoards(): Promise<Object> {
+    const response: Object = await this.boardService.getAllBoards();
 
     return Object.assign({
       statusCode: 200,
@@ -51,16 +48,10 @@ export class BoardsController {
     });
   }
 
-  @Get('/filter/:no')
-  async filteredBoards(
-    @Param('no') no: number,
-    @Query() paginationQuery,
-  ): Promise<object> {
-    const { sort, title, popular, areaNo, max, min, target, date, free } =
-      paginationQuery;
-
-    const response = await this.boardService.filteredBoards(
-      no,
+  @Get('/filter')
+  async filteredBoards(@Query() paginationQuery): Promise<Object> {
+    const {
+      categoryNo,
       sort,
       title,
       popular,
@@ -69,6 +60,19 @@ export class BoardsController {
       min,
       target,
       date,
+      free,
+    } = paginationQuery;
+
+    const response = await this.boardService.filteredBoards(
+      categoryNo,
+      sort,
+      title,
+      popular,
+      areaNo,
+      max,
+      min,
+      target,
+      Number(date),
       free,
     );
 
@@ -80,8 +84,8 @@ export class BoardsController {
   }
 
   @Get('/hot')
-  async readHotBoards(): Promise<Board[]> {
-    const response = await this.boardService.readHotBoards();
+  async readHotBoards(@Query('select') select: number): Promise<Object> {
+    const response = await this.boardService.readHotBoards(select);
 
     return Object.assign({
       statusCode: 200,
@@ -93,7 +97,7 @@ export class BoardsController {
   @Get('search')
   async searchAllBoards(
     @Query() searchBoardDto: SearchBoardDto,
-  ): Promise<object> {
+  ): Promise<Object> {
     const response = await this.boardService.searchAllBoards(searchBoardDto);
 
     return Object.assign({
@@ -104,7 +108,7 @@ export class BoardsController {
   }
 
   @Patch('/cancel/:no')
-  async cancelClosedBoard(@Param('no') no: number): Promise<object> {
+  async cancelClosedBoard(@Param('no') no: number): Promise<Object> {
     const response = await this.boardService.cancelClosedBoard(no);
 
     return Object.assign({
@@ -115,7 +119,7 @@ export class BoardsController {
   }
 
   @Patch('/close/:no')
-  async boardClosed(@Param('no') no: number): Promise<object> {
+  async boardClosed(@Param('no') no: number): Promise<Object> {
     const response = await this.boardService.boardClosed(no);
 
     return Object.assign({
@@ -126,7 +130,7 @@ export class BoardsController {
   }
 
   @Get('/:no')
-  async getByOneBoard(@Param('no') no: number) {
+  async getByOneBoard(@Param('no') no: number): Promise<Object> {
     const response = await this.boardService.getByOneBoard(no);
 
     return Object.assign({
@@ -160,17 +164,6 @@ export class BoardsController {
 
     return Object.assign({
       statusCode: 201,
-      msg: '게시글 생성이 완료되었습니다.',
-      response,
-    });
-  }
-
-  @Post('like')
-  async likeBoard(@Body() likeBoardDto: LikeBoardDto): Promise<Board> {
-    const response = await this.boardService.likeBoard(likeBoardDto);
-
-    return Object.assign({
-      statusCode: 200,
       response,
     });
   }
@@ -189,7 +182,7 @@ export class BoardsController {
   async updateBoard(
     @Param('no') no: number,
     @Body() updateBoardDto: UpdateBoardDto,
-  ): Promise<object> {
+  ): Promise<Object> {
     const response = await this.boardService.updateBoard(no, updateBoardDto);
 
     return Object.assign({

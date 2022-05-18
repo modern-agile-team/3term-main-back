@@ -11,6 +11,7 @@ import {
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
+  InsertQueryBuilder,
   JoinTable,
   ManyToMany,
   ManyToOne,
@@ -116,6 +117,16 @@ export class Board extends BaseEntity {
   })
   reviews: Review[];
 
+  @OneToMany((type) => BoardLike, (boardLike) => boardLike.likedBoard, {
+    nullable: true,
+  })
+  likedUser: BoardLike[];
+
+  @OneToMany((type) => BoardPhoto, (photo) => photo.board, {
+    nullable: true,
+  })
+  photos: BoardPhoto[];
+
   @ManyToOne((type) => User, (user) => user.boards, {
     onDelete: 'SET NULL',
   })
@@ -130,14 +141,4 @@ export class Board extends BaseEntity {
     onDelete: 'SET NULL',
   })
   area: Area;
-
-  @OneToMany((type) => BoardLike, (boardLike) => boardLike.likedBoard, {
-    nullable: true,
-  })
-  likedUser: BoardLike[];
-  
-  @OneToMany((type) => BoardPhoto, (photo) => photo.board, {
-    nullable: true,
-  })
-  photos: BoardPhoto[];
 }

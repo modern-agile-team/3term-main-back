@@ -10,3 +10,14 @@ export class LikeUserDto {
   @IsBoolean()
   judge: boolean;
 }
+
+export class LikeBoardDto {
+  @IsNumber()
+  userNo: number;
+
+  @IsNumber()
+  boardNo: number;
+
+  @IsBoolean()
+  judge: boolean;
+}

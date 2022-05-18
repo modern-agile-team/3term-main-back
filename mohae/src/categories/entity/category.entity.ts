@@ -27,6 +27,13 @@ export class Category extends BaseEntity {
   })
   photo_url: string;
 
+  @Column({
+    type: 'int',
+    comment: '카테고리 조회수',
+    default: 0,
+  })
+  hit: number;
+
   @OneToMany((type) => Board, (board) => board.category, {
     nullable: true,
   })
