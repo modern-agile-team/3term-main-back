@@ -19,13 +19,13 @@ import { ProfilesService } from './profiles.service';
 export class ProfilesController {
   constructor(private profileService: ProfilesService) {}
 
-  @Get(':profileUserNo/:userNo')
+  @Get('/:profileUserNo/:userNo')
   async findOneProfile(
     @Param('profileUserNo', ParseIntPipe) profileUserNo: number,
     @Param('userNo', ParseIntPipe) userNo: number,
   ): Promise<object> {
     try {
-      const response = await this.profileService.findOneProfile(
+      const response: object = await this.profileService.findOneProfile(
         profileUserNo,
         userNo,
       );
@@ -57,13 +57,13 @@ export class ProfilesController {
     }
   }
 
-  @Patch(':no')
+  @Patch('/:no')
   async updateProfile(
     @Param('no', ParseIntPipe) no: number,
     @Body() updateProfileDto: UpdateProfileDto,
   ): Promise<number> {
     try {
-      const response = await this.profileService.updateProfile(
+      const response: number = await this.profileService.updateProfile(
         no,
         updateProfileDto,
       );

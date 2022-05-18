@@ -20,18 +20,16 @@ import {
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
-  Timestamp,
-  Unique,
   UpdateDateColumn,
 } from 'typeorm';
 import { Letter } from 'src/letters/entity/letter.entity';
-import { Mailbox, MailboxUser } from 'src/mailboxes/entity/mailbox.entity';
+import { MailboxUser } from 'src/mailboxes/entity/mailbox.entity';
 import { Spec } from 'src/specs/entity/spec.entity';
 import { Faq } from 'src/faqs/entity/faq.entity';
 import { Notice } from 'src/notices/entity/notice.entity';
 import { Board } from 'src/boards/entity/board.entity';
-import { userInfo } from 'os';
 import { UserLike } from 'src/like/entity/user.like.entity';
+import { BoardLike } from 'src/like/entity/board.like.entity';
 
 @Entity('users')
 export class User extends BaseEntity {
@@ -113,13 +111,13 @@ export class User extends BaseEntity {
   })
   createdAt: Date;
 
-  // 내가 좋아요 한 유저 목록
+  // 나를 좋아요 한 유저 목록
   @OneToMany((type) => UserLike, (userLike) => userLike.likedUser, {
     nullable: true,
   })
   likedUser: UserLike[];
 
-  // 나를 좋아요한 유저 목록
+  // 내가 좋아요한 유저 목록
   @OneToMany((type) => UserLike, (userLike) => userLike.likedMe, {
     nullable: true,
   })
@@ -205,8 +203,8 @@ export class User extends BaseEntity {
   })
   mailboxUsers: MailboxUser[];
 
-  @ManyToMany((type) => Board, (board) => board.likedUser, {
-    cascade: true,
+  @OneToMany((type) => BoardLike, (boardLike) => boardLike.likedUser, {
+    nullable: true,
   })
-  likedBoard: Board[];
+  likedBoard: BoardLike[];
 }
