@@ -8,6 +8,7 @@ import { UserRepository } from 'src/auth/repository/user.repository';
 import { CategoriesModule } from 'src/categories/categories.module';
 import { CategoriesService } from 'src/categories/categories.service';
 import { CategoryRepository } from 'src/categories/repository/category.repository';
+import { BoardPhotoRepository } from 'src/photo/repository/photo.repository';
 import { ReviewRepository } from 'src/reviews/repository/review.repository';
 import { ErrorConfirm } from 'src/utils/error';
 import { BoardsController } from './boards.controller';
@@ -23,6 +24,7 @@ import { BoardRepository } from './repository/board.repository';
       CategoryRepository,
       AreasRepository,
       UserRepository,
+      BoardPhotoRepository,
     ]),
     CategoriesModule,
     AreasModule,

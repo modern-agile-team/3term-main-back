@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import {
+  IsArray,
   IsBoolean,
   IsNotEmpty,
   IsNumber,
@@ -80,6 +81,9 @@ export abstract class BoardContent {
   @IsString()
   @MaxLength(100)
   note3: string;
+
+  @IsArray()
+  photo_url?: [];
 }
 
 export class CreateBoardDto extends BoardContent {

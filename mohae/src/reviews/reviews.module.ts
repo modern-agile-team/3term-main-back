@@ -7,6 +7,7 @@ import { BoardsModule } from 'src/boards/boards.module';
 import { BoardsService } from 'src/boards/boards.service';
 import { BoardRepository } from 'src/boards/repository/board.repository';
 import { CategoryRepository } from 'src/categories/repository/category.repository';
+import { BoardPhotoRepository } from 'src/photo/repository/photo.repository';
 import { ErrorConfirm } from 'src/utils/error';
 import { ReviewRepository } from './repository/review.repository';
 import { ReviewsController } from './reviews.controller';
@@ -20,6 +21,7 @@ import { ReviewsService } from './reviews.service';
       CategoryRepository,
       AreasRepository,
       UserRepository,
+      BoardPhotoRepository,
     ]),
     BoardsModule,
     AuthModule,

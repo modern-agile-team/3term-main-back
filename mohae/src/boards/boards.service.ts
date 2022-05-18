@@ -19,12 +19,16 @@ import { Board } from './entity/board.entity';
 import { Category } from 'src/categories/entity/category.entity';
 import { Area } from 'src/areas/entity/areas.entity';
 import { User } from 'src/auth/entity/user.entity';
+import { BoardPhotoRepository } from 'src/photo/repository/photo.repository';
 
 @Injectable()
 export class BoardsService {
   constructor(
     @InjectRepository(BoardRepository)
     private boardRepository: BoardRepository,
+
+    @InjectRepository(BoardPhotoRepository)
+    private boardPhotoRepository: BoardPhotoRepository,
 
     @InjectRepository(AreasRepository)
     private areaRepository: AreasRepository,
@@ -242,6 +246,11 @@ export class BoardsService {
       createBoardDto,
       endTime,
     );
+    const { photo_url } = createBoardDto;
+
+    for (const photo of photo_url) {
+      const test = await this.boardPhotoRepository.createPhoto(photo, board.no);
+    }
 
     // await this.boardRepository.saveCategory(categoryNo, board);
 
