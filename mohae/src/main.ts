@@ -2,8 +2,8 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import * as config from 'config';
 import { Logger, ValidationPipe } from '@nestjs/common';
-import { getConnection } from 'typeorm';
 import { setupSwagger } from './utils/swagger';
+import * as expressBasicAuth from 'express-basic-auth';
 
 declare const module: any;
 
@@ -11,6 +11,17 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const serverConfig = config.get('server');
   const port = serverConfig.port;
+  const { SWAGGER_USER, SWAGGER_PASSWORD } = config.get('swagger');
+
+  app.use(
+    ['/mohae-api-docs'],
+    expressBasicAuth({
+      challenge: true,
+      users: {
+        [SWAGGER_USER]: SWAGGER_PASSWORD,
+      },
+    }),
+  );
 
   app.useGlobalPipes(
     new ValidationPipe({
