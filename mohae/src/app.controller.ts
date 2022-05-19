@@ -3,6 +3,7 @@ import {
   CacheKey,
   CacheTTL,
   Controller,
+  Delete,
   Get,
   Post,
   UploadedFile,
