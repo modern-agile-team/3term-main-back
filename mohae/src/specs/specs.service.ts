@@ -171,26 +171,6 @@ export class SpecsService {
     }
   }
 
-  // async updateSpecPhoto(specNo, specPhoto) {
-  //   try {
-  //     const { specPhotos } = await this.specRepository.findOne(specNo, {
-  //       select: ['no', 'specPhotos'],
-  //       relations: ['specPhotos'],
-  //     });
-  //     await this.specPhotoRepository.deleteBeforePhoto(specPhotos);
-  //     const photoArr: Array<object> = specPhoto.map((photo) => {
-  //       return {
-  //         photo_url: photo,
-  //         spec: specNo,
-  //         order: specPhoto.indexOf(photo) + 1,
-  //       };
-  //     });
-  //     await this.specPhotoRepository.saveSpecPhoto(photoArr);
-  //   } catch (err) {
-  //     throw err;
-  //   }
-  // }
-
   async deleteSpec(specNo: number): Promise<number> {
     try {
       const isDelete: number = await this.specRepository.deleteSpec(specNo);
