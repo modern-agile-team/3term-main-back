@@ -7,13 +7,13 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/auth/entity/user.entity';
 import { UserRepository } from 'src/auth/repository/user.repository';
-import { SpecPhoto } from 'src/photo/entity/photo.entity';
 import { SpecPhotoRepository } from 'src/photo/repository/photo.repository';
 import { ErrorConfirm } from 'src/common/utils/error';
 import { CreateSpecDto, UpdateSpecDto } from './dto/spec.dto';
 import { Spec } from './entity/spec.entity';
 import { SpecRepository } from './repository/spec.repository';
 import { Connection } from 'typeorm';
+import { SpecPhoto } from 'src/photo/entity/photo.entity';
 
 @Injectable()
 export class SpecsService {
@@ -80,17 +80,25 @@ export class SpecsService {
           '스펙의 사진이 없다면 null 이라도 넣어주셔야 스펙 등록이 가능합니다.',
         );
       }
-      for (const photo of specPhoto) {
-        const specPhotoNo: number = await queryRunner.manager
-          .getCustomRepository(SpecPhotoRepository)
-          .saveSpecPhoto(photo, specNo);
-        const specPhotoRepo: SpecPhoto = await this.specPhotoRepository.findOne(
-          specPhotoNo,
+      const photoArr: Array<object> = specPhoto.map((photo) => {
+        return {
+          photo_url: photo,
+          spec: specNo,
+          order: specPhoto.indexOf(photo) + 1,
+        };
+      });
+      const specPhotoNo: Array<object> = await queryRunner.manager
+        .getCustomRepository(SpecPhotoRepository)
+        .saveSpecPhoto(photoArr);
+      if (photoArr.length !== specPhotoNo.length) {
+        throw new InternalServerErrorException(
+          '스팩 사진 등록 도중 네트워크 오류',
         );
-        await queryRunner.manager
-          .getCustomRepository(SpecRepository)
-          .addSpecPhoto(specNo, specPhotoRepo);
       }
+
+      await queryRunner.manager
+        .getCustomRepository(SpecRepository)
+        .addSpecPhoto(specNo, specPhotoNo);
 
       if (specNo) {
         await queryRunner.manager
@@ -113,6 +121,7 @@ export class SpecsService {
     await queryRunner.startTransaction();
 
     try {
+      const { specPhoto } = updateSpec;
       const spec: Spec = await this.specRepository.getOneSpec(specNo);
 
       this.errorConfirm.notFoundError(spec, '해당 스펙이 존재하지 않습니다.');
@@ -124,36 +133,26 @@ export class SpecsService {
         updateSpec[item] ? (deletedNullSpec[item] = updateSpec[item]) : 0;
       });
 
-      if (deletedNullSpec['photo_url']) {
-        const specPhotoNo: Array<any> = Object.values(
-          deletedNullSpec['photo_url'],
-        );
+      const { specPhotos }: Spec = await this.specRepository.findOne(specNo, {
+        select: ['no', 'specPhotos'],
+        relations: ['specPhotos'],
+      });
 
-        function getKeyByValue(object: object, value: number) {
-          return Object.keys(object).find((key) => object[key] === value);
-        }
+      await queryRunner.manager
+        .getCustomRepository(SpecPhotoRepository)
+        .deleteBeforePhoto(specPhotos);
+      const photoArr: Array<object> = specPhoto.map((photo) => {
+        return {
+          photo_url: photo,
+          spec: specNo,
+          order: specPhoto.indexOf(photo) + 1,
+        };
+      });
+      await queryRunner.manager
+        .getCustomRepository(SpecPhotoRepository)
+        .saveSpecPhoto(photoArr);
+      delete deletedNullSpec['specPhoto'];
 
-        for (const photoNo of specPhotoNo) {
-          const judgeNo: number = await this.specPhotoRepository.getSpecNo(
-            photoNo,
-          );
-          if (judgeNo !== specNo)
-            throw new UnauthorizedException(
-              '스펙 번호와 스펙사진의 스펙번호가 맞지 않습니다.',
-            );
-        }
-
-        for (const no of specPhotoNo) {
-          const new_url: string = getKeyByValue(
-            deletedNullSpec['photo_url'],
-            no,
-          );
-          await queryRunner.manager
-            .getCustomRepository(SpecPhotoRepository)
-            .updatePhoto(no, new_url);
-        }
-        delete deletedNullSpec['photo_url'];
-      }
       const isUpdate: number = await queryRunner.manager
         .getCustomRepository(SpecRepository)
         .updateSpec(specNo, deletedNullSpec);

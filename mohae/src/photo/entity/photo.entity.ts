@@ -25,4 +25,11 @@ export class SpecPhoto extends BaseEntity {
   })
   @JoinColumn({ name: 'spec_no' })
   spec: Spec;
+
+  @Column({
+    type: 'int',
+    comment: '스펙 순서',
+    default: null,
+  })
+  order: number;
 }
