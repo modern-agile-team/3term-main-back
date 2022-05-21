@@ -47,12 +47,12 @@ import * as redisStore from 'cache-manager-redis-store';
     PhotoModule,
     LikeModule,
     CacheModule.register({
-      //   //   isGlobal: true,
-      //   //   store: redisStore,
-      //   //   socket: {
-      //   //     host: 'localhost',
-      //   //     port: 6379,
-      //   //   },
+      //   isGlobal: true,
+      //   store: redisStore,
+      //   socket: {
+      //     host: 'localhost',
+      //     port: 6379,
+      //   },
     }),
     RedisCacheModule,
   ],
