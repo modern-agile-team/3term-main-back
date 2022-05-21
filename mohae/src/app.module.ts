@@ -23,7 +23,7 @@ import { PhotoModule } from './photo/photo.module';
 import { LikeModule } from './like/like.module';
 import { RedisCacheModule } from './redis-cache/redis-cache.module';
 import { APP_INTERCEPTOR } from '@nestjs/core';
-// import * as redisStore from 'cache-manager-redis-store';
+import * as redisStore from 'cache-manager-redis-store';
 
 @Module({
   imports: [

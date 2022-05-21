@@ -65,15 +65,15 @@ export class SpecRepository extends Repository<Spec> {
     }
   }
 
-  async addSpecPhoto(specNo: Spec, specPhotoRepo: SpecPhoto) {
+  async addSpecPhoto(specNo: Spec, specPhoto: Array<object>): Promise<void> {
     try {
       await this.createQueryBuilder()
         .relation(Spec, 'specPhotos')
         .of(specNo)
-        .add(specPhotoRepo);
+        .add(specPhoto);
     } catch (err) {
       throw new InternalServerErrorException(
-        `${err} 스펙 사진 저장 도중 발생한 서버에러`,
+        `${err} 스펙 사진 저장 관계 형성 도중 발생한 서버에러`,
       );
     }
   }
