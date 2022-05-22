@@ -1,8 +1,9 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UserRepository } from 'src/auth/repository/user.repository';
 import { ErrorConfirm } from 'src/common/utils/error';
-import { CreateFaqDto, UpdateFaqDto } from './dto/faq.dto';
+import { CreateFaqDto } from './dto/create-faq.dto';
+import { UpdateFaqDto } from './dto/update-faq.dto';
 import { Faq } from './entity/faq.entity';
 import { FaqRepository } from './repository/faq.repository';
 
@@ -12,20 +13,18 @@ export class FaqsService {
     @InjectRepository(FaqRepository)
     private faqRepository: FaqRepository,
 
-    @InjectRepository(UserRepository)
     private userRepository: UserRepository,
-
     private errorConfirm: ErrorConfirm,
   ) {}
 
-  async readFaqs(): Promise<Faq[]> {
+  async readAllFaq(): Promise<Faq | Faq[]> {
     try {
-      const faqs = await this.faqRepository.readFaqs();
+      const faqs = await this.faqRepository.readAllFaq();
       this.errorConfirm.notFoundError(faqs, '자주 묻는 질문이 없습니다.');
 
       return faqs;
-    } catch (e) {
-      throw e;
+    } catch (err) {
+      throw new BadRequestException(err.message);
     }
   }
 
@@ -60,10 +59,10 @@ export class FaqsService {
   }
 
   async updateFaq(no: number, updateFaqDto: UpdateFaqDto) {
-    const { modifiedManagerNo } = updateFaqDto;
+    const { managerNo } = updateFaqDto;
 
     try {
-      const manager = await this.userRepository.findOne(modifiedManagerNo, {
+      const manager = await this.userRepository.findOne(managerNo, {
         relations: ['modifiedFaqs'],
       });
       this.errorConfirm.notFoundError(

@@ -10,26 +10,27 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
-import { CreateFaqDto, UpdateFaqDto } from './dto/faq.dto';
+import { CreateFaqDto } from './dto/create-faq.dto';
 import { Faq } from './entity/faq.entity';
 import { FaqsService } from './faqs.service';
 import { Role } from 'src/common/decorators/roles.decorator';
 import { RolesGuard } from 'src/common/guards/roles.guard';
 import { AuthGuard } from '@nestjs/passport';
+import { UpdateFaqDto } from './dto/update-faq.dto';
 
 @Controller('faqs')
 @ApiTags('Faqs')
 export class FaqsController {
   private logger = new Logger('FaqsController');
-  constructor(private faqsService: FaqsService) {}
+  constructor(private readonly faqsService: FaqsService) {}
 
   @ApiOperation({
     summary: 'FAQ 전체 조회 기능',
     description: 'FAQ를 전체 조회하는 API',
   })
   @Get()
-  async readFaqs(): Promise<Faq[]> {
-    const response = await this.faqsService.readFaqs();
+  async readAllFaq(): Promise<Faq[]> {
+    const response = await this.faqsService.readAllFaq();
 
     return Object.assign({
       statusCode: 200,

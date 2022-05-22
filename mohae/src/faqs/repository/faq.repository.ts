@@ -5,7 +5,7 @@ import { Faq } from '../entity/faq.entity';
 
 @EntityRepository(Faq)
 export class FaqRepository extends Repository<Faq> {
-  async readFaqs(): Promise<Faq[]> {
+  async readAllFaq(): Promise<Faq | Faq[]> {
     try {
       const faqs = await this.createQueryBuilder('faqs')
         .select(['faqs.no', 'faqs.title', 'faqs.description', 'faqs.createdAt'])
@@ -13,8 +13,8 @@ export class FaqRepository extends Repository<Faq> {
         .getMany();
 
       return faqs;
-    } catch (e) {
-      throw new InternalServerErrorException(e);
+    } catch (err) {
+      throw new InternalServerErrorException(err);
     }
   }
 
@@ -34,8 +34,8 @@ export class FaqRepository extends Repository<Faq> {
         .execute();
 
       return raw;
-    } catch (e) {
-      throw new InternalServerErrorException(e);
+    } catch (err) {
+      throw new InternalServerErrorException(err);
     }
   }
 
@@ -52,8 +52,8 @@ export class FaqRepository extends Repository<Faq> {
         .execute();
 
       return affected;
-    } catch (e) {
-      throw new InternalServerErrorException(e);
+    } catch (err) {
+      throw new InternalServerErrorException(err);
     }
   }
 
@@ -66,8 +66,8 @@ export class FaqRepository extends Repository<Faq> {
         .execute();
 
       return affected;
-    } catch (e) {
-      throw new InternalServerErrorException(e);
+    } catch (err) {
+      throw new InternalServerErrorException(err);
     }
   }
 }
