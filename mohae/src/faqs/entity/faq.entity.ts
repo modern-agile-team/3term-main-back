@@ -60,11 +60,13 @@ export class Faq extends BaseEntity {
   deletedAt: Date | null;
 
   /* 관리자 번호 */
-  @IsNotEmpty({ message: '관리자가 아닙니다.' })
+  @IsNotEmpty()
   @IsNumber()
   @RelationId((faq: Faq) => faq.manager)
   managerNo: number;
 
+  @IsNotEmpty()
+  @IsNumber()
   @RelationId((faq: Faq) => faq.lastEditor)
   lastEditorNo: number;
 
