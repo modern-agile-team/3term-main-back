@@ -29,7 +29,7 @@ export class Notice extends BaseEntity {
   @Length(3, 45, { message: '제목은 3자 ~ 45자 입력해 주세요.' })
   @Column({
     type: 'varchar',
-    length: 30,
+    length: 45,
     comment: '공지사항 제목',
   })
   title: string;
@@ -72,9 +72,11 @@ export class Notice extends BaseEntity {
   lastEditorNo: number;
 
   /* 공지사항 외래키 */
-  @ManyToOne((type) => User, (user) => user.no, { onDelete: 'SET NULL' })
+  @ManyToOne((type) => User, (user) => user.notices, { onDelete: 'SET NULL' })
   manager: User;
 
-  @ManyToOne((type) => User, (user) => user.no, { onDelete: 'SET NULL' })
+  @ManyToOne((type) => User, (user) => user.modifiedNotices, {
+    onDelete: 'SET NULL',
+  })
   lastEditor: User;
 }

@@ -29,8 +29,9 @@ export class NoticesController {
     description: '공지사항을 전체 조회하는 API',
   })
   @Get()
-  async readAllNotices(): Promise<Notice[]> {
-    const response = await this.noticesService.readAllNotices();
+  async readAllNotices(): Promise<object> {
+    const response: Notice | Notice[] =
+      await this.noticesService.readAllNotices();
 
     return Object.assign({
       statusCode: 200,
@@ -50,8 +51,8 @@ export class NoticesController {
   async createNotice(
     @Body() createNoticeDto: CreateNoticeDto,
     @CurrentUser() manager: User,
-  ) {
-    const response = await this.noticesService.createNotice(
+  ): Promise<object> {
+    const response: boolean = await this.noticesService.createNotice(
       createNoticeDto,
       manager,
     );
@@ -59,7 +60,7 @@ export class NoticesController {
     return Object.assign({
       statusCode: 201,
       msg: `Notice 생성 완료`,
-      response,
+      success: response,
     });
   }
 
@@ -75,8 +76,8 @@ export class NoticesController {
     @Param('noticeNo') noticeNo: number,
     @Body() UpdateNoticeDto: UpdateNoticeDto,
     @CurrentUser() manager: User,
-  ) {
-    const response = await this.noticesService.updateNotice(
+  ): Promise<object> {
+    const response: boolean = await this.noticesService.updateNotice(
       noticeNo,
       UpdateNoticeDto,
       manager,
@@ -85,7 +86,7 @@ export class NoticesController {
     return Object.assign({
       statusCode: 204,
       msg: `Notice 수정 완료`,
-      response,
+      success: response,
     });
   }
 
@@ -97,13 +98,13 @@ export class NoticesController {
   @Role(true)
   @UseGuards(RolesGuard)
   @UseGuards(AuthGuard())
-  async deleteNotice(@Param('noticeNo') noticeNo: number) {
-    const { success } = await this.noticesService.deleteNotice(noticeNo);
+  async deleteNotice(@Param('noticeNo') noticeNo: number): Promise<object> {
+    const response: boolean = await this.noticesService.deleteNotice(noticeNo);
 
     return Object.assign({
       statusCode: 204,
       msg: `Notice 삭제 완료`,
-      success,
+      success: response,
     });
   }
 }

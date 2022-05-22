@@ -1,13 +1,17 @@
 import { InternalServerErrorException } from '@nestjs/common';
 import { User } from 'src/auth/entity/user.entity';
 import { EntityRepository, Repository } from 'typeorm';
+import { CreateNoticeDto } from '../dto/create-notice.dto';
+import { UpdateNoticeDto } from '../dto/update-notice.dtd';
 import { Notice } from '../entity/notice.entity';
 
 @EntityRepository(Notice)
 export class NoticeRepository extends Repository<Notice> {
-  async readAllNotices(): Promise<Notice[]> {
+  async readAllNotices(): Promise<Notice | Notice[]> {
     try {
-      const notices = this.createQueryBuilder('notices')
+      const notices: Notice | Notice[] = await this.createQueryBuilder(
+        'notices',
+      )
         .select([
           'notices.no',
           'notices.title',
@@ -18,17 +22,17 @@ export class NoticeRepository extends Repository<Notice> {
         .getMany();
 
       return notices;
-    } catch (e) {
-      throw new InternalServerErrorException(
-        e,
-        '### 공지사항 전체 조회 에러 : 알 수 없는 서버 에러입니다.',
-      );
+    } catch (err) {
+      throw new InternalServerErrorException(err.message);
     }
   }
 
-  async createNotice({ title, description }, manager: User) {
+  async createNotice(
+    { title, description }: CreateNoticeDto,
+    manager: User,
+  ): Promise<any> {
     try {
-      const { raw } = await this.createQueryBuilder('notices')
+      const { raw }: any = await this.createQueryBuilder('notices')
         .insert()
         .into(Notice)
         .values({
@@ -40,46 +44,44 @@ export class NoticeRepository extends Repository<Notice> {
         .execute();
 
       return raw;
-    } catch (e) {
-      throw new InternalServerErrorException(
-        e,
-        '### 공지사항 작성 에러 : 알 수 업는 서버 에러입니다.',
-      );
+    } catch (err) {
+      throw new InternalServerErrorException(err.message);
     }
   }
 
-  async updateNotice(no: number, { title, description }, manager: User) {
+  async updateNotice(
+    noticeNo: number,
+    { title, description }: UpdateNoticeDto,
+    manager: User,
+  ): Promise<number> {
     try {
-      const { affected } = await this.createQueryBuilder()
+      const { affected }: any = await this.createQueryBuilder()
         .update(Notice)
         .set({
           title,
           description,
           lastEditor: manager,
         })
-        .where('no = :no', { no })
+        .where('no = :noticeNo', { noticeNo })
         .execute();
 
       return affected;
-    } catch (e) {
-      throw new InternalServerErrorException(e);
+    } catch (err) {
+      throw new InternalServerErrorException(err.message);
     }
   }
 
-  async deleteNotice(no: number) {
+  async deleteNotice(noticeNo: number): Promise<number> {
     try {
-      const { affected } = await this.createQueryBuilder()
+      const { affected }: any = await this.createQueryBuilder()
         .softDelete()
         .from(Notice)
-        .where('no = :no', { no })
+        .where('no = :noticeNo', { noticeNo })
         .execute();
 
       return affected;
-    } catch (e) {
-      throw new InternalServerErrorException(
-        e,
-        '### 공지사항 삭제 에러 : 알 수 없는 서버 에러엡니다.',
-      );
+    } catch (err) {
+      throw new InternalServerErrorException(err.message);
     }
   }
 }
