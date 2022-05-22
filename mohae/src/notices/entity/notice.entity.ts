@@ -72,11 +72,11 @@ export class Notice extends BaseEntity {
   lastEditorNo: number;
 
   /* 공지사항 외래키 */
-  @ManyToOne((type) => User, (user) => user.notices, { onDelete: 'SET NULL' })
+  @ManyToOne((type) => User, (user) => user.notices, { onUpdate: 'CASCADE' })
   manager: User;
 
   @ManyToOne((type) => User, (user) => user.modifiedNotices, {
-    onDelete: 'SET NULL',
+    onUpdate: 'CASCADE',
   })
   lastEditor: User;
 }
