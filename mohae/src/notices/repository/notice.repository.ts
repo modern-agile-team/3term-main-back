@@ -5,7 +5,7 @@ import { Notice } from '../entity/notice.entity';
 
 @EntityRepository(Notice)
 export class NoticeRepository extends Repository<Notice> {
-  async readNotices(): Promise<Notice[]> {
+  async readAllNotices(): Promise<Notice[]> {
     try {
       const notices = this.createQueryBuilder('notices')
         .select([

@@ -1,11 +1,8 @@
-import {
-  Injectable,
-  InternalServerErrorException,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UserRepository } from 'src/auth/repository/user.repository';
-import { CreateNoticeDto, UpdateNoticeDto } from './dto/notice.dto';
+import { CreateNoticeDto } from './dto/create-notice.dto';
+import { UpdateNoticeDto } from './dto/update-notice.dtd';
 import { Notice } from './entity/notice.entity';
 import { NoticeRepository } from './repository/notice.repository';
 
@@ -19,9 +16,9 @@ export class NoticesService {
     private userRepository: UserRepository,
   ) {}
 
-  async readNotices(): Promise<Notice[]> {
+  async readAllNotices(): Promise<Notice[]> {
     try {
-      const notices = await this.noticeRepository.readNotices();
+      const notices = await this.noticeRepository.readAllNotices();
 
       return notices;
     } catch (e) {

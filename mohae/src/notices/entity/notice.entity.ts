@@ -1,3 +1,11 @@
+import { Exclude } from 'class-transformer';
+import {
+  IsNotEmpty,
+  IsNumber,
+  IsString,
+  Length,
+  MaxLength,
+} from 'class-validator';
 import { User } from 'src/auth/entity/user.entity';
 import {
   BaseEntity,
@@ -16,6 +24,9 @@ export class Notice extends BaseEntity {
   @PrimaryGeneratedColumn()
   no: number;
 
+  @IsNotEmpty({ message: '제목을 입력해 주세요.' })
+  @IsString()
+  @Length(3, 45, { message: '제목은 3자 ~ 45자 입력해 주세요.' })
   @Column({
     type: 'varchar',
     length: 30,
@@ -23,6 +34,9 @@ export class Notice extends BaseEntity {
   })
   title: string;
 
+  @IsNotEmpty({ message: '내용을 입력해 주세요.' })
+  @IsString()
+  @MaxLength(1000, { message: '내용은 1000자 이내로 입력해 주세요.' })
   @Column({
     type: 'mediumtext',
     comment: '공지사항 내용',
@@ -40,15 +54,20 @@ export class Notice extends BaseEntity {
   })
   updatedAt: Date | null;
 
+  @Exclude()
   @DeleteDateColumn({
     comment: 'FAQ 삭제일',
   })
   deletedAt: Date | null;
 
   /* 관리자 번호 */
+  @IsNotEmpty()
+  @IsNumber()
   @RelationId((notice: Notice) => notice.manager)
   managerNo: number;
 
+  @IsNotEmpty()
+  @IsNumber()
   @RelationId((notice: Notice) => notice.lastEditor)
   lastEditorNo: number;
 

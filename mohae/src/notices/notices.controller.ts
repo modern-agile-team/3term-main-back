@@ -10,9 +10,12 @@ import {
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { User } from 'src/auth/entity/user.entity';
+import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 import { Role } from 'src/common/decorators/roles.decorator';
 import { RolesGuard } from 'src/common/guards/roles.guard';
-import { CreateNoticeDto, UpdateNoticeDto } from './dto/notice.dto';
+import { CreateNoticeDto } from './dto/create-notice.dto';
+import { UpdateNoticeDto } from './dto/update-notice.dtd';
 import { Notice } from './entity/notice.entity';
 import { NoticesService } from './notices.service';
 
@@ -26,8 +29,8 @@ export class NoticesController {
     description: '공지사항을 전체 조회하는 API',
   })
   @Get()
-  async readNotices(): Promise<Notice[]> {
-    const response = await this.noticesService.readNotices();
+  async readAllNotices(): Promise<Notice[]> {
+    const response = await this.noticesService.readAllNotices();
 
     return Object.assign({
       statusCode: 200,
@@ -44,8 +47,14 @@ export class NoticesController {
   @Role(true)
   @UseGuards(RolesGuard)
   @UseGuards(AuthGuard())
-  async createNotice(@Body() createNoticeDto: CreateNoticeDto) {
-    const response = await this.noticesService.createNotice(createNoticeDto);
+  async createNotice(
+    @Body() createNoticeDto: CreateNoticeDto,
+    @CurrentUser() manager: User,
+  ) {
+    const response = await this.noticesService.createNotice(
+      createNoticeDto,
+      manager,
+    );
 
     return Object.assign({
       statusCode: 201,
@@ -63,12 +72,14 @@ export class NoticesController {
   @UseGuards(RolesGuard)
   @UseGuards(AuthGuard())
   async updateNotice(
-    @Param('noticeNo') no: number,
+    @Param('noticeNo') noticeNo: number,
     @Body() UpdateNoticeDto: UpdateNoticeDto,
+    @CurrentUser() manager: User,
   ) {
     const response = await this.noticesService.updateNotice(
-      no,
+      noticeNo,
       UpdateNoticeDto,
+      manager,
     );
 
     return Object.assign({
@@ -86,8 +97,8 @@ export class NoticesController {
   @Role(true)
   @UseGuards(RolesGuard)
   @UseGuards(AuthGuard())
-  async deleteNotice(@Param('noticeNo') no: number) {
-    const { success } = await this.noticesService.deleteNotice(no);
+  async deleteNotice(@Param('noticeNo') noticeNo: number) {
+    const { success } = await this.noticesService.deleteNotice(noticeNo);
 
     return Object.assign({
       statusCode: 204,
