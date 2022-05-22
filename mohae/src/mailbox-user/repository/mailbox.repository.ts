@@ -36,9 +36,9 @@ export class MailboxUserRepository extends Repository<MailboxUser> {
     }
   }
 
-  async searchMailboxUser(oneselfNo: number, opponentNo: number) {
+  async searchMailboxUser(oneselfNo: number, opponentNo: number): Promise<any> {
     try {
-      const mailboxNo = await this.createQueryBuilder('firstMU')
+      const { mailboxNo }: any = await this.createQueryBuilder('firstMU')
         .innerJoin('firstMU.mailbox', 'innerMailbox')
         .innerJoin(
           'innerMailbox.mailboxUsers',
@@ -53,8 +53,8 @@ export class MailboxUserRepository extends Repository<MailboxUser> {
         .getRawOne();
 
       return mailboxNo;
-    } catch (e) {
-      throw new InternalServerErrorException(`${e} ### se 오류`);
+    } catch (err) {
+      throw new InternalServerErrorException(err.message);
     }
   }
 }

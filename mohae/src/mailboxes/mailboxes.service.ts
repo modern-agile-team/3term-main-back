@@ -7,6 +7,7 @@ import { ErrorConfirm } from 'src/common/utils/error';
 import { Mailbox } from './entity/mailbox.entity';
 import { MailboxRepository } from './repository/mailbox.repository';
 import { MailboxUserRepository } from 'src/mailbox-user/repository/mailbox.repository';
+import { User } from 'src/auth/entity/user.entity';
 
 @Injectable()
 export class MailboxesService {
@@ -20,9 +21,7 @@ export class MailboxesService {
     private errorConfirm: ErrorConfirm,
   ) {}
 
-  async readAllMailboxes(
-    loginUserNo: number,
-  ): Promise<Mailbox | Mailbox[] | null> {
+  async readAllMailboxes(loginUserNo: number): Promise<Mailbox | Mailbox[]> {
     try {
       const Letters: string = this.letterRepository
         .createQueryBuilder()
@@ -39,7 +38,7 @@ export class MailboxesService {
         .orderBy('letter.createdAt', 'DESC')
         .getQuery();
 
-      const mailbox: Mailbox | Mailbox[] | null = await this.userRepository
+      const mailbox: Mailbox | Mailbox[] = await this.userRepository
         .createQueryBuilder('user')
         .where('user.no = :loginUserNo', { loginUserNo })
         .leftJoin('user.mailboxUsers', 'mailboxUsers')
@@ -68,8 +67,15 @@ export class MailboxesService {
     limit: number,
   ): Promise<Mailbox | null> {
     try {
-      const mailbox: Mailbox | null =
-        await this.mailboxRepository.searchMailbox(mailboxNo, limit);
+      const mailbox: Mailbox = await this.mailboxRepository.searchMailbox(
+        mailboxNo,
+        limit,
+      );
+
+      this.errorConfirm.notFoundError(
+        mailbox,
+        '해당 쪽지함을 찾지 못했습니다.',
+      );
 
       await this.letterRepository.updateReading(mailboxNo);
 
@@ -79,14 +85,14 @@ export class MailboxesService {
     }
   }
 
-  async checkMailbox(oneselfNo: number, opponentNo: number): Promise<any> {
+  async checkMailbox(oneself: User, opponentNo: number): Promise<any> {
     try {
       this.errorConfirm.unauthorizedError(
-        oneselfNo !== opponentNo,
+        oneself.no !== opponentNo,
         '자기 자신에게 쪽지를 보낼 수 없습니다.',
       );
       const mailbox: any = await this.mailboxUserRepository.searchMailboxUser(
-        oneselfNo,
+        oneself.no,
         opponentNo,
       );
 

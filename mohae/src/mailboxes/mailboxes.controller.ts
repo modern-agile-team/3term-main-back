@@ -1,5 +1,7 @@
 import { Controller, Get, Param, Query } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { User } from 'src/auth/entity/user.entity';
+import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 import { Mailbox } from './entity/mailbox.entity';
 import { MailboxesService } from './mailboxes.service';
 
@@ -16,7 +18,7 @@ export class MailboxesController {
   async readAllMailboxes(
     @Param('loginUserNo') loginUserNo: number,
   ): Promise<object> {
-    const response: Mailbox | Mailbox[] | null =
+    const response: Mailbox | Mailbox[] =
       await this.mailboxesService.readAllMailboxes(loginUserNo);
 
     return Object.assign({
@@ -52,13 +54,13 @@ export class MailboxesController {
     description:
       '채팅 내역이 존재하면 채팅 내역 리턴, 없으면 아무 내용도 리턴하지 않는 API',
   })
-  @Get('/confirm/:oneselfNo/:opponentNo')
+  @Get('/confirm/:opponentNo')
   async checkMailbox(
-    @Param('oneselfNo') oneselfNo: number,
+    @CurrentUser() oneself: User,
     @Param('opponentNo') opponentNo: number,
   ): Promise<object> {
     const { success, mailboxNo }: any =
-      await this.mailboxesService.checkMailbox(oneselfNo, opponentNo);
+      await this.mailboxesService.checkMailbox(oneself, opponentNo);
 
     if (!success) {
       return Object.assign({
