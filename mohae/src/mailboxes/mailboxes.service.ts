@@ -5,10 +5,8 @@ import { Letter } from 'src/letters/entity/letter.entity';
 import { LetterRepository } from 'src/letters/repository/letter.repository';
 import { ErrorConfirm } from 'src/common/utils/error';
 import { Mailbox } from './entity/mailbox.entity';
-import {
-  MailboxRepository,
-  MailboxUserRepository,
-} from './repository/mailbox.repository';
+import { MailboxRepository } from './repository/mailbox.repository';
+import { MailboxUserRepository } from 'src/mailbox-user/repository/mailbox.repository';
 
 @Injectable()
 export class MailboxesService {

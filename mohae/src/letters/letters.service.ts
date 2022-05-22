@@ -2,15 +2,14 @@ import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/auth/entity/user.entity';
 import { UserRepository } from 'src/auth/repository/user.repository';
-import { Mailbox, MailboxUser } from 'src/mailboxes/entity/mailbox.entity';
-import {
-  MailboxRepository,
-  MailboxUserRepository,
-} from 'src/mailboxes/repository/mailbox.repository';
+import { Mailbox } from 'src/mailboxes/entity/mailbox.entity';
+import { MailboxRepository } from 'src/mailboxes/repository/mailbox.repository';
 import { ErrorConfirm } from 'src/common/utils/error';
 import { Connection } from 'typeorm';
 import { SendLetterDto } from './dto/letter.dto';
 import { LetterRepository } from './repository/letter.repository';
+import { MailboxUser } from 'src/mailbox-user/entity/mailbox-user.entity';
+import { MailboxUserRepository } from 'src/mailbox-user/repository/mailbox.repository';
 
 @Injectable()
 export class LettersService {
