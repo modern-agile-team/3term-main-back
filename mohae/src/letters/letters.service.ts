@@ -111,14 +111,14 @@ export class LettersService {
           .userRelation(receiver, receiverMailboxUserNo, 'mailboxUsers');
         await queryRunner.manager
           .getCustomRepository(MailboxRepository)
-          .mailboxRelation(
+          .mailboxAddRelation(
             confirmedMailboxNo,
             senderMailboxUserNo,
             'mailboxUsers',
           );
         await queryRunner.manager
           .getCustomRepository(MailboxRepository)
-          .mailboxRelation(
+          .mailboxAddRelation(
             confirmedMailboxNo,
             receiverMailboxUserNo,
             'mailboxUsers',
@@ -133,7 +133,7 @@ export class LettersService {
         .userRelation(sender, newLetterNo, 'sendLetters');
       await queryRunner.manager
         .getCustomRepository(MailboxRepository)
-        .mailboxRelation(confirmedMailboxNo, newLetterNo, 'letters');
+        .mailboxAddRelation(confirmedMailboxNo, newLetterNo, 'letters');
 
       await queryRunner.commitTransaction();
       return {

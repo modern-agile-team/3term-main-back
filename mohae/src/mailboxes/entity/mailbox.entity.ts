@@ -1,3 +1,4 @@
+import { Exclude } from 'class-transformer';
 import { Letter } from 'src/letters/entity/letter.entity';
 import { MailboxUser } from 'src/mailbox-user/entity/mailbox-user.entity';
 import {
@@ -17,6 +18,7 @@ export class Mailbox extends BaseEntity {
   @CreateDateColumn()
   createAt: Date | null;
 
+  @Exclude()
   @DeleteDateColumn({
     select: false,
   })

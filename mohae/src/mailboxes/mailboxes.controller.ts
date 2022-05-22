@@ -16,9 +16,8 @@ export class MailboxesController {
   async readAllMailboxes(
     @Param('loginUserNo') loginUserNo: number,
   ): Promise<object> {
-    const response: Mailbox[] = await this.mailboxesService.readAllMailboxes(
-      loginUserNo,
-    );
+    const response: Mailbox | Mailbox[] | null =
+      await this.mailboxesService.readAllMailboxes(loginUserNo);
 
     return Object.assign({
       statusCode: 200,

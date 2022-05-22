@@ -4,9 +4,9 @@ import { Mailbox } from '../entity/mailbox.entity';
 
 @EntityRepository(Mailbox)
 export class MailboxRepository extends Repository<Mailbox> {
-  async searchMailbox(mailboxNo: number, limit: number) {
+  async searchMailbox(mailboxNo: number, limit: number): Promise<Mailbox> {
     try {
-      const mailbox = await this.createQueryBuilder('mailboxes')
+      const mailbox: Mailbox = await this.createQueryBuilder('mailboxes')
         .leftJoin('mailboxes.mailboxUsers', 'mailboxUsers')
         .leftJoin('mailboxUsers.mailbox', 'mailbox')
         .leftJoin('mailboxUsers.user', 'user')
@@ -27,37 +27,37 @@ export class MailboxRepository extends Repository<Mailbox> {
         .getOne();
 
       return mailbox;
-    } catch (e) {
-      throw new InternalServerErrorException(
-        '### 쪽지함이 있는지 찾음 : 알 수 없는 서버 에러입니다.',
-      );
+    } catch (err) {
+      throw new InternalServerErrorException(err.message);
     }
   }
 
-  async createMailbox() {
+  async createMailbox(): Promise<number> {
     try {
-      const { raw } = await this.createQueryBuilder('mailboxes')
+      const { raw }: any = await this.createQueryBuilder('mailboxes')
         .insert()
         .into(Mailbox)
         .values({})
         .execute();
 
       return raw.insertId;
-    } catch {
-      throw new InternalServerErrorException(
-        '### 새로운 쪽지방을 생성 : 알 수 없는 서버 에러입니다.',
-      );
+    } catch (err) {
+      throw new InternalServerErrorException(err.message);
     }
   }
 
-  async mailboxRelation(no: number, value: any, relation: string) {
+  async mailboxAddRelation(
+    no: number,
+    value: any,
+    relation: string,
+  ): Promise<void> {
     try {
       await this.createQueryBuilder()
         .relation(Mailbox, relation)
         .of(no)
         .add(value);
-    } catch (e) {
-      throw new InternalServerErrorException('MailboxRelation 값 추가 에러');
+    } catch (err) {
+      throw new InternalServerErrorException(err.message);
     }
   }
 }

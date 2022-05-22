@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UserRepository } from 'src/auth/repository/user.repository';
 import { Letter } from 'src/letters/entity/letter.entity';
@@ -14,19 +14,15 @@ export class MailboxesService {
     @InjectRepository(MailboxRepository)
     private mailboxRepository: MailboxRepository,
 
-    @InjectRepository(UserRepository)
     private userRepository: UserRepository,
-
-    @InjectRepository(LetterRepository)
     private letterRepository: LetterRepository,
-
-    @InjectRepository(MailboxUserRepository)
     private mailboxUserRepository: MailboxUserRepository,
-
     private errorConfirm: ErrorConfirm,
   ) {}
 
-  async readAllMailboxes(loginUserNo: number): Promise<Mailbox[]> {
+  async readAllMailboxes(
+    loginUserNo: number,
+  ): Promise<Mailbox | Mailbox[] | null> {
     try {
       const Letters: string = this.letterRepository
         .createQueryBuilder()
@@ -43,7 +39,7 @@ export class MailboxesService {
         .orderBy('letter.createdAt', 'DESC')
         .getQuery();
 
-      const mailbox: Mailbox[] = await this.userRepository
+      const mailbox: Mailbox | Mailbox[] | null = await this.userRepository
         .createQueryBuilder('user')
         .where('user.no = :loginUserNo', { loginUserNo })
         .leftJoin('user.mailboxUsers', 'mailboxUsers')
@@ -62,23 +58,24 @@ export class MailboxesService {
         .getRawMany();
 
       return mailbox;
-    } catch (e) {
-      throw e;
+    } catch (err) {
+      throw new BadRequestException(err.message);
     }
   }
 
-  async searchMailbox(mailboxNo: number, limit: number): Promise<Mailbox> {
+  async searchMailbox(
+    mailboxNo: number,
+    limit: number,
+  ): Promise<Mailbox | null> {
     try {
-      const mailbox: Mailbox = await this.mailboxRepository.searchMailbox(
-        mailboxNo,
-        limit,
-      );
+      const mailbox: Mailbox | null =
+        await this.mailboxRepository.searchMailbox(mailboxNo, limit);
 
       await this.letterRepository.updateReading(mailboxNo);
 
       return mailbox;
-    } catch (e) {
-      throw e;
+    } catch (err) {
+      throw new BadRequestException(err.message);
     }
   }
 
@@ -97,8 +94,8 @@ export class MailboxesService {
         success: !!mailbox,
         mailboxNo: mailbox?.mailboxNo,
       };
-    } catch (e) {
-      throw e;
+    } catch (err) {
+      throw new BadRequestException(err.message);
     }
   }
 }
