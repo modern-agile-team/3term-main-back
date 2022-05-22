@@ -4,13 +4,13 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { UserRepository } from 'src/auth/repository/user.repository';
 import { ErrorConfirm } from 'src/common/utils/error';
 import { Repository } from 'typeorm';
-import { CreateFaqDto } from './dto/faq.dto';
+import { CreateFaqDto } from './dto/create-faq.dto';
 import { FaqsService } from './faqs.service';
 import { FaqRepository } from './repository/faq.repository';
 
 const MockFaqRepository = () => ({
   findOne: jest.fn(),
-  readFaqs: jest.fn(),
+  readAllFaq: jest.fn(),
   createFaq: jest.fn(),
   updateFaq: jest.fn(),
   deleteFaq: jest.fn(),
@@ -54,9 +54,9 @@ describe('FaqsService', () => {
     errorConfirm = module.get<ErrorConfirm>(ErrorConfirm);
   });
 
-  describe('readFaqs', () => {
+  describe('readAllFaq', () => {
     beforeEach(async () => {
-      faqRepository['readFaqs'].mockResolvedValue([
+      faqRepository['readAllFaq'].mockResolvedValue([
         {
           no: 1,
           title: '타이틀',
@@ -64,17 +64,17 @@ describe('FaqsService', () => {
         },
       ]);
 
-      await faqService.readFaqs();
+      await faqService.readAllFaq();
     });
     it('FAQ 전체 읽어 오기', async () => {
-      expect(faqRepository['readFaqs']).toHaveBeenCalled();
+      expect(faqRepository['readAllFaq']).toHaveBeenCalled();
     });
 
     it('FAQ가 하나도 없을 때', async () => {
-      faqRepository['readFaqs'].mockResolvedValue(undefined);
+      faqRepository['readAllFaq'].mockResolvedValue(undefined);
 
       try {
-        await faqService.readFaqs();
+        await faqService.readAllFaq();
       } catch (error) {
         expect(error).toBeInstanceOf(NotFoundException);
       }
@@ -168,7 +168,7 @@ describe('FaqsService', () => {
     it('FAQ 수정', async () => {
       const { success } = await faqService.updateFaq(1, {
         title: '제목',
-        modifiedManagerNo: 1,
+        managerNo: 1,
         description: '내용',
       });
 

@@ -10,26 +10,29 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
-import { CreateFaqDto, UpdateFaqDto } from './dto/faq.dto';
+import { CreateFaqDto } from './dto/create-faq.dto';
 import { Faq } from './entity/faq.entity';
 import { FaqsService } from './faqs.service';
 import { Role } from 'src/common/decorators/roles.decorator';
 import { RolesGuard } from 'src/common/guards/roles.guard';
 import { AuthGuard } from '@nestjs/passport';
+import { UpdateFaqDto } from './dto/update-faq.dto';
+import { CurrentUser } from 'src/common/decorators/current-user.decorator';
+import { User } from 'src/auth/entity/user.entity';
 
 @Controller('faqs')
 @ApiTags('Faqs')
 export class FaqsController {
   private logger = new Logger('FaqsController');
-  constructor(private faqsService: FaqsService) {}
+  constructor(private readonly faqsService: FaqsService) {}
 
   @ApiOperation({
     summary: 'FAQ 전체 조회 기능',
     description: 'FAQ를 전체 조회하는 API',
   })
   @Get()
-  async readFaqs(): Promise<Faq[]> {
-    const response = await this.faqsService.readFaqs();
+  async readAllFaq(): Promise<Faq[]> {
+    const response: Faq | Faq[] = await this.faqsService.readAllFaq();
 
     return Object.assign({
       statusCode: 200,
@@ -46,13 +49,19 @@ export class FaqsController {
   @Role(true)
   @UseGuards(RolesGuard)
   @UseGuards(AuthGuard())
-  async createFaq(@Body() createFaqDto: CreateFaqDto) {
-    const response = await this.faqsService.createFaq(createFaqDto);
+  async createFaq(
+    @Body() createFaqDto: CreateFaqDto,
+    @CurrentUser() manager: User,
+  ): Promise<object> {
+    const response: boolean = await this.faqsService.createFaq(
+      createFaqDto,
+      manager,
+    );
 
     return Object.assign({
       statusCode: 201,
       msg: `FAQ 생성 완료`,
-      response,
+      success: response,
     });
   }
 
@@ -65,15 +74,20 @@ export class FaqsController {
   @UseGuards(RolesGuard)
   @UseGuards(AuthGuard())
   async updateFaq(
-    @Param('faqNo') no: number,
+    @Param('faqNo') faqNo: number,
     @Body() updateFaqDto: UpdateFaqDto,
-  ) {
-    const response = await this.faqsService.updateFaq(no, updateFaqDto);
+    @CurrentUser() manager: User,
+  ): Promise<object> {
+    const response: boolean = await this.faqsService.updateFaq(
+      faqNo,
+      updateFaqDto,
+      manager,
+    );
 
     return Object.assign({
       statusCode: 204,
       msg: `FAQ 수정 완료`,
-      response,
+      success: response,
     });
   }
 
@@ -85,13 +99,13 @@ export class FaqsController {
   @Role(true)
   @UseGuards(RolesGuard)
   @UseGuards(AuthGuard())
-  async deleteFaq(@Param('faqNo') no: number) {
-    const response = await this.faqsService.deleteFaq(no);
+  async deleteFaq(@Param('faqNo') faqNo: number): Promise<object> {
+    const response: boolean = await this.faqsService.deleteFaq(faqNo);
 
     return Object.assign({
       statusCode: 204,
       msg: `FAQ 삭제 완료`,
-      response,
+      success: response,
     });
   }
 }
