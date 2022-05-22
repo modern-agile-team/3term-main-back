@@ -29,7 +29,7 @@ export class Faq extends BaseEntity {
   @Length(3, 45, { message: '제목은 3자 ~ 45자 입력해 주세요.' })
   @Column({
     type: 'varchar',
-    length: 30,
+    length: 45,
     comment: 'FAQ 제목',
   })
   title: string;
@@ -71,11 +71,11 @@ export class Faq extends BaseEntity {
   lastEditorNo: number;
 
   /* FAQ 외래키 */
-  @ManyToOne((type) => User, (user) => user.faqs, { onDelete: 'SET NULL' })
+  @ManyToOne((type) => User, (user) => user.faqs, { onUpdate: 'CASCADE' })
   manager: User;
 
   @ManyToOne((type) => User, (user) => user.modifiedFaqs, {
-    onDelete: 'SET NULL',
+    onUpdate: 'CASCADE',
   })
   lastEditor: User;
 }
