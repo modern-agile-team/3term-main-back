@@ -13,6 +13,9 @@ async function bootstrap() {
   const port = serverConfig.port;
   const { SWAGGER_USER, SWAGGER_PASSWORD } = config.get('swagger');
 
+  // Cors 적용
+  // app.enableCors();
+
   app.use(
     ['/mohae-api-docs'],
     expressBasicAuth({
