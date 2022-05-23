@@ -68,6 +68,7 @@ export class UserRepository extends Repository<User> {
         .select([
           'users.no',
           'users.salt',
+          'users.email',
           'users.isLock',
           'users.latestLogin',
           'users.loginFailCount',
@@ -142,7 +143,7 @@ export class UserRepository extends Repository<User> {
       );
     }
   }
-  async changeIsLock(userNo: Number, isLock: Boolean): Promise<number> {
+  async changeIsLock(userNo: number, isLock: boolean): Promise<number> {
     try {
       const { affected }: UpdateResult = await this.createQueryBuilder()
         .update(User)
@@ -157,7 +158,7 @@ export class UserRepository extends Repository<User> {
     }
   }
 
-  async checkLoginTerm(userNo: Number): Promise<number> {
+  async checkLoginTerm(userNo: number): Promise<number> {
     try {
       const { term }: any = await this.createQueryBuilder('users')
         .select('timestampdiff(second, latestLogin, now()) AS term')
