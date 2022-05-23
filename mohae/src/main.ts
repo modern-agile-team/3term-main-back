@@ -11,8 +11,7 @@ declare const module: any;
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  const serverConfig = config.get('server');
-  const port = serverConfig.port;
+  const { port } = config.get('server');
   const { SWAGGER_USER, SWAGGER_PASSWORD } = config.get('swagger');
 
   // Cors 적용
