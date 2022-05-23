@@ -14,6 +14,7 @@ async function bootstrap() {
   const serverConfig = config.get('server');
   const port = serverConfig.port;
   const { SWAGGER_USER, SWAGGER_PASSWORD } = config.get('swagger');
+
   // Cors 적용
   // app.enableCors();
 
