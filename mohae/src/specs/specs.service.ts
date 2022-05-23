@@ -32,9 +32,7 @@ export class SpecsService {
   ) {}
   async getAllSpec(no: number): Promise<any> {
     try {
-      const user: User = await this.userRepository.findOne(no);
       const specs: Array<Spec> = await this.specRepository.getAllSpec(no);
-      this.errorConfirm.notFoundError(user, '존재하지 않는 유저 입니다.');
       if (specs.length === 0) {
         return '현재 등록된 스펙이 없습니다.';
       }

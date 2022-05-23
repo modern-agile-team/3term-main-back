@@ -20,12 +20,12 @@ export class ProfilesController {
   constructor(private profileService: ProfilesService) {}
 
   @Get('/:profileUserNo/:userNo')
-  async findOneProfile(
+  async findUserProfile(
     @Param('profileUserNo', ParseIntPipe) profileUserNo: number,
     @Param('userNo', ParseIntPipe) userNo: number,
   ): Promise<object> {
     try {
-      const response: object = await this.profileService.findOneProfile(
+      const response: object = await this.profileService.findUserProfile(
         profileUserNo,
         userNo,
       );

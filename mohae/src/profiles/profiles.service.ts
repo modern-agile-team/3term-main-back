@@ -19,6 +19,7 @@ import {
   JudgeDuplicateNicknameDto,
   UpdateProfileDto,
 } from './dto/update-profile.dto';
+import { create } from 'domain';
 
 @Injectable()
 export class ProfilesService {
@@ -41,9 +42,12 @@ export class ProfilesService {
     private errorConfirm: ErrorConfirm,
   ) {}
 
-  async findOneProfile(profileUserNo: number, userNo: number): Promise<object> {
+  async findUserProfile(
+    profileUserNo: number,
+    userNo: number,
+  ): Promise<object> {
     try {
-      const profile: User = await this.userRepository.findOneUser(
+      const profile: User = await this.userRepository.findUserProfile(
         profileUserNo,
       );
 
@@ -57,38 +61,20 @@ export class ProfilesService {
         userNo,
       );
       const islike: boolean = liked ? true : false;
-      const {
-        likedUser,
-        name,
-        email,
-        nickname,
-        createdAt,
-        photo_url,
-        school,
-        major,
-        specs,
-        categories,
-        boards,
-      }: User = profile;
-      const likedNum: number = likedUser.length;
+
+      const { likedUser, createdAt }: User = profile;
       const userCreatedAt = `${createdAt.getFullYear()}.${
         createdAt.getMonth() + 1
       }.${createdAt.getDate()}`;
 
+      delete profile.likedUser;
+      delete profile.createdAt;
+      profile['userCreatedAt'] = `${userCreatedAt}`;
+      profile['likedNum'] = likedUser.length;
+      profile['islike'] = islike;
+
       return {
-        profileUserNo,
-        name,
-        email,
-        nickname,
-        photo_url,
-        userCreatedAt,
-        likedNum,
-        islike,
-        boards,
-        school,
-        major,
-        specs,
-        categories,
+        profile,
       };
     } catch (err) {
       throw err;

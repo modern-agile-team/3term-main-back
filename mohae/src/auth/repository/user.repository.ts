@@ -187,14 +187,11 @@ export class UserRepository extends Repository<User> {
     }
   }
   // 프로필 관련 기능
-  async findOneUser(no: number): Promise<User> {
+  async findUserProfile(no: number): Promise<User> {
     try {
       const user: User = await this.createQueryBuilder('users')
-        .leftJoin('users.boards', 'boards')
         .leftJoin('users.school', 'school')
         .leftJoin('users.major', 'major')
-        .leftJoin('users.reports', 'reports')
-        .leftJoin('users.specs', 'specs')
         .leftJoin('users.categories', 'categories')
         .leftJoin('users.likedUser', 'likedUser')
         .select([
@@ -205,15 +202,10 @@ export class UserRepository extends Repository<User> {
           'users.name',
           'users.photo_url',
           'likedUser',
-          'boards.no',
-          'boards.title',
-          'boards.target',
           'school.no',
           'school.name',
           'major.no',
           'major.name',
-          'specs.no',
-          'specs.title',
           'categories.no',
           'categories.name',
         ])

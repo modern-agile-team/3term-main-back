@@ -18,8 +18,8 @@ export class SpecRepository extends Repository<Spec> {
   async getAllSpec(no: number) {
     try {
       const specs = await this.createQueryBuilder('spec')
-        .leftJoinAndSelect('spec.user', 'user')
-        .leftJoinAndSelect('spec.specPhotos', 'specPhotos')
+        .leftJoin('spec.specPhotos', 'specPhotos')
+        .leftJoin('spec.user', 'user')
         .select([
           'spec.no',
           'spec.title',
@@ -29,6 +29,7 @@ export class SpecRepository extends Repository<Spec> {
         ])
         .where('user.no = :no', { no })
         .andWhere('spec.no = specPhotos.spec')
+        .take(3)
         .getMany();
 
       return specs;
