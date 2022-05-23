@@ -1,11 +1,5 @@
 import { ApiProperty, PickType } from '@nestjs/swagger';
-import {
-  IsNotEmpty,
-  IsNumber,
-  IsOptional,
-  IsString,
-  MaxLength,
-} from 'class-validator';
+import { IsNumber, IsOptional } from 'class-validator';
 import { Letter } from '../entity/letter.entity';
 
 export class SendLetterDto extends PickType(Letter, [
@@ -20,11 +14,4 @@ export class SendLetterDto extends PickType(Letter, [
   @IsOptional()
   @IsNumber()
   mailboxNo?: number;
-
-  @ApiProperty({
-    example: '쪽지 내용 전송',
-    description: '쪽지 내용',
-    required: true,
-  })
-  description: string;
 }

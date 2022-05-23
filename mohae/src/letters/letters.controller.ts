@@ -6,8 +6,9 @@ import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 import { SendLetterDto } from './dto/letter.dto';
 import { LettersService } from './letters.service';
 
-@Controller('letters')
+@UseGuards(AuthGuard('jwt'))
 @ApiTags('Letters')
+@Controller('letters')
 export class LettersController {
   constructor(private lettersService: LettersService) {}
 
@@ -16,7 +17,6 @@ export class LettersController {
     description:
       '유저 간 쪽지 보내기 기능, 쪽지함이 없을 경우 생성하고 있으면 저장 API',
   })
-  @UseGuards(AuthGuard('jwt'))
   @Post()
   async sendLetter(
     @CurrentUser() sender: User,

@@ -6,9 +6,9 @@ import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 import { Mailbox } from './entity/mailbox.entity';
 import { MailboxesService } from './mailboxes.service';
 
-@Controller('mailboxes')
 @UseGuards(AuthGuard('jwt'))
 @ApiTags('Mailboxes')
+@Controller('mailboxes')
 export class MailboxesController {
   constructor(private mailboxesService: MailboxesService) {}
 
@@ -18,13 +18,17 @@ export class MailboxesController {
   })
   @Get()
   async readAllMailboxes(@CurrentUser() user: User): Promise<object> {
-    const response: any = await this.mailboxesService.readAllMailboxes(user);
+    try {
+      const response: any = await this.mailboxesService.readAllMailboxes(user);
 
-    return Object.assign({
-      statusCode: 200,
-      msg: '쪽지함 조회 완료',
-      response,
-    });
+      return Object.assign({
+        statusCode: 200,
+        msg: '쪽지함 조회 완료',
+        response,
+      });
+    } catch (err) {
+      throw new Error(err.message);
+    }
   }
 
   @ApiOperation({
@@ -36,16 +40,20 @@ export class MailboxesController {
     @Param('mailboxNo') mailboxNo: number,
     @Query('limit') limit: number,
   ): Promise<object> {
-    const response: Mailbox = await this.mailboxesService.searchMailbox(
-      mailboxNo,
-      limit,
-    );
+    try {
+      const response: Mailbox = await this.mailboxesService.searchMailbox(
+        mailboxNo,
+        limit,
+      );
 
-    return Object.assign({
-      statusCode: 200,
-      msg: '쪽지 전송 화면 조회 완료',
-      response,
-    });
+      return Object.assign({
+        statusCode: 200,
+        msg: '쪽지 전송 화면 조회 완료',
+        response,
+      });
+    } catch (err) {
+      throw new Error(err.message);
+    }
   }
 
   @ApiOperation({
@@ -58,24 +66,28 @@ export class MailboxesController {
     @CurrentUser() oneself: User,
     @Param('opponentNo') opponentNo: number,
   ): Promise<object> {
-    const { success, mailboxNo }: any =
-      await this.mailboxesService.checkMailbox(oneself, opponentNo);
-    if (!success) {
+    try {
+      const { success, mailboxNo }: any =
+        await this.mailboxesService.checkMailbox(oneself, opponentNo);
+      if (!success) {
+        return Object.assign({
+          statusCode: 202,
+          msg: '해당 유저와의 쪽지함이 존재하지 않습니다.',
+        });
+      }
+
+      const response: Mailbox = await this.mailboxesService.searchMailbox(
+        mailboxNo,
+        0,
+      );
+
       return Object.assign({
-        statusCode: 202,
-        msg: '해당 유저와의 쪽지함이 존재하지 않습니다.',
+        statusCode: 200,
+        msg: '쪽지함 존재 여부 확인 완료',
+        response,
       });
+    } catch (err) {
+      throw new Error(err.message);
     }
-
-    const response: Mailbox = await this.mailboxesService.searchMailbox(
-      mailboxNo,
-      0,
-    );
-
-    return Object.assign({
-      statusCode: 200,
-      msg: '쪽지함 존재 여부 확인 완료',
-      response,
-    });
   }
 }
