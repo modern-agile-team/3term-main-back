@@ -40,27 +40,6 @@ export class SpecPhotoRepository extends Repository<SpecPhoto> {
       throw err;
     }
   }
-  // async updatePhoto(no: number, new_url: string): Promise<number> {
-  //   try {
-  //     const { affected }: UpdateResult = await this.createQueryBuilder(
-  //       'specPhoto',
-  //     )
-  //       .update(SpecPhoto)
-  //       .set({ photo_url: new_url })
-  //       .where('no = :no', { no })
-  //       .execute();
-
-  //     if (!affected) {
-  //       throw new InternalServerErrorException(
-  //         '스펙 사진 업데이트 중 오류가 발생 하였습니다.(아마 specPhoto no 문제일 가능성 매우높음)',
-  //       );
-  //     }
-
-  //     return affected;
-  //   } catch (err) {
-  //     throw err;
-  //   }
-  // }
 
   async getSpecNo(no: number): Promise<number> {
     try {
@@ -96,21 +75,6 @@ export class BoardPhotoRepository extends Repository<BoardPhoto> {
       );
     }
   }
-  // async saveSpecPhoto(photo_url: string, board_no: Board): Promise<number> {
-  //   try {
-  //     const { raw }: InsertResult = await this.createQueryBuilder('specPhoto')
-  //       .insert()
-  //       .into(BoardPhoto)
-  //       .values([{ photo_url, board_no }])
-  //       .execute();
-
-  //     return raw.insertId;
-  //   } catch (err) {
-  //     throw new InternalServerErrorException(
-  //       `스펙 사진 저장도중 에러가 발생 하였습니다.${err}`,
-  //     );
-  //   }
-  // }
 
   async updatePhoto(no: number, new_url: string): Promise<number> {
     try {
