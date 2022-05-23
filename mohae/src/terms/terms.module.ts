@@ -5,11 +5,7 @@ import { AuthModule } from 'src/auth/auth.module';
 import { UserRepository } from 'src/auth/repository/user.repository';
 
 @Module({
-  imports: [
-    // TypeOrmModule.forFeature([UserRepository]),
-    PassportModule.register({ defaultStrategy: 'jwt' }),
-    // AuthModule,
-  ],
+  imports: [PassportModule.register({ defaultStrategy: 'jwt' })],
   exports: [],
 })
 export class TermsModule {}

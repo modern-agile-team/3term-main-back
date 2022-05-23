@@ -131,22 +131,19 @@ export class AuthService {
           terms: index + 1,
         };
       });
+      console.log(termsArr);
       const termsUserNums: Array<object> = await queryRunner.manager
         .getCustomRepository(TermsUserReporitory)
         .addTermsUser(termsArr);
 
-      termsUserNums.forEach(
-        async (termsUserNum, index) =>
-          await queryRunner.manager
-            .getCustomRepository(TermsReporitory)
-            .addUser(index + 1, termsUserNum['no']),
-      );
-      termsUserNums.forEach(
-        async (termsUserNum) =>
-          await queryRunner.manager
-            .getCustomRepository(UserRepository)
-            .userRelation(user, termsUserNum['no'], 'userTerms'),
-      );
+      termsUserNums.forEach((termsUserNum, index) => {
+        queryRunner.manager
+          .getCustomRepository(TermsReporitory)
+          .termsAddRelation(index + 1, termsUserNum['no']);
+        queryRunner.manager
+          .getCustomRepository(UserRepository)
+          .userRelation(user, termsUserNum['no'], 'userTerms');
+      });
 
       const filteredCategories: Array<Category> = categoriesRepo.filter(
         (element) => element !== undefined,

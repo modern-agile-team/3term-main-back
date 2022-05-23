@@ -50,12 +50,12 @@ export class TermsUser extends BaseEntity {
   })
   agree: boolean;
 
-  @ManyToOne((type) => User, (user) => user.no, {
+  @ManyToOne((type) => User, (user) => user.userTerms, {
     onDelete: 'SET NULL',
   })
   user: User;
 
-  @ManyToOne((type) => Terms, (terms) => terms.no, {
+  @ManyToOne((type) => Terms, (terms) => terms.userTerms, {
     onDelete: 'SET NULL',
   })
   terms: Terms;

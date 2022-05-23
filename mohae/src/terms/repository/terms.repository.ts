@@ -4,7 +4,7 @@ import { Terms, TermsUser } from '../entity/terms.entity';
 
 @EntityRepository(Terms)
 export class TermsReporitory extends Repository<Terms> {
-  async addUser(termsNo: number, termsUserNum: number): Promise<void> {
+  async termsAddRelation(termsNo: number, termsUserNum: number): Promise<void> {
     try {
       await this.createQueryBuilder()
         .relation(Terms, 'userTerms')
