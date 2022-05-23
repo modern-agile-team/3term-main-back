@@ -21,7 +21,6 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   async validate(payload) {
-    console.log(payload);
     const { email } = payload;
     const user: User = await this.userRepository.signIn(email);
 
