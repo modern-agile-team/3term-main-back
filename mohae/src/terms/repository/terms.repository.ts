@@ -1,19 +1,18 @@
 import { InternalServerErrorException } from '@nestjs/common';
-import { User } from 'src/auth/entity/user.entity';
 import { EntityRepository, InsertResult, Repository } from 'typeorm';
 import { Terms, TermsUser } from '../entity/terms.entity';
 
 @EntityRepository(Terms)
 export class TermsReporitory extends Repository<Terms> {
-  async addUser(no: User, termsUserNo: object) {
+  async addUser(termsNo: number, termsUserNum: number) {
     try {
       await this.createQueryBuilder()
         .relation(Terms, 'userTerms')
-        .of(no)
-        .add(termsUserNo);
+        .of(termsNo)
+        .add(termsUserNum);
     } catch (e) {
       throw new InternalServerErrorException(`
-            ${e} ### 유저 회원 가입도중 약관 저장 관련 알 수없는 서버에러입니다. `);
+            ${e} ### 회원 가입도중 약관 저장 관계 형성도중 알 수 없는 서버에러입니다. `);
     }
   }
 }

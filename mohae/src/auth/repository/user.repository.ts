@@ -68,6 +68,7 @@ export class UserRepository extends Repository<User> {
         .select([
           'users.no',
           'users.salt',
+          'users.email',
           'users.isLock',
           'users.latestLogin',
           'users.loginFailCount',

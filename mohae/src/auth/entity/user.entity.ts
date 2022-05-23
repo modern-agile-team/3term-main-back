@@ -112,9 +112,8 @@ export class User extends BaseEntity {
   })
   createdAt: Date;
 
-  @OneToMany((type) => TermsUser, (userTerms) => userTerms.no, {
+  @OneToMany((type) => TermsUser, (termsUser) => termsUser.user, {
     nullable: true,
-    onDelete: 'SET NULL',
   })
   userTerms: TermsUser[];
 

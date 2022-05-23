@@ -131,18 +131,22 @@ export class AuthService {
           terms: index + 1,
         };
       });
-      const termsUserNo = await queryRunner.manager
+      const termsUserNums = await queryRunner.manager
         .getCustomRepository(TermsUserReporitory)
         .addTermsUser(termsArr);
+      termsUserNums.forEach(
+        async (termsUserNum, index) =>
+          await queryRunner.manager
+            .getCustomRepository(TermsReporitory)
+            .addUser(index + 1, termsUserNum['no']),
+      );
+      termsUserNums.forEach(
+        async (termsUserNum) =>
+          await queryRunner.manager
+            .getCustomRepository(UserRepository)
+            .userRelation(user, termsUserNum['no'], 'userTerms'),
+      );
 
-      // for (const termsUserId of termsUserNo) {
-      //   await queryRunner.manager
-      //     .getCustomRepository(TermsReporitory)
-      //     .addUser(user, termsUserId);
-      //   await queryRunner.manager
-      //     .getCustomRepository(UserRepository)
-      //     .userRelation(user, termsUserId, 'userTerms');
-      // }
       const filteredCategories: Array<Category> = categoriesRepo.filter(
         (element) => element !== undefined,
       );
