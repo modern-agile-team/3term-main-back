@@ -39,6 +39,7 @@ async function bootstrap() {
   setupSwagger(app);
 
   await app.listen(port);
+
   Logger.log(`Start Run: ${port}`);
 
   if (module.hot) {
