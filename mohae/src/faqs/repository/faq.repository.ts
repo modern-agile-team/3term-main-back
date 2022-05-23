@@ -1,26 +1,31 @@
 import { InternalServerErrorException } from '@nestjs/common';
 import { User } from 'src/auth/entity/user.entity';
 import { EntityRepository, Repository } from 'typeorm';
+import { CreateFaqDto } from '../dto/create-faq.dto';
+import { UpdateFaqDto } from '../dto/update-faq.dto';
 import { Faq } from '../entity/faq.entity';
 
 @EntityRepository(Faq)
 export class FaqRepository extends Repository<Faq> {
-  async readFaqs(): Promise<Faq[]> {
+  async readAllFaq(): Promise<Faq | Faq[]> {
     try {
-      const faqs = await this.createQueryBuilder('faqs')
+      const faqs: Faq | Faq[] = await this.createQueryBuilder('faqs')
         .select(['faqs.no', 'faqs.title', 'faqs.description', 'faqs.createdAt'])
         .orderBy('faqs.updatedAt', 'DESC')
         .getMany();
 
       return faqs;
-    } catch (e) {
-      throw new InternalServerErrorException(e);
+    } catch (err) {
+      throw new InternalServerErrorException(err.message);
     }
   }
 
-  async createFaq({ title, description }, manager: User) {
+  async createFaq(
+    { title, description }: CreateFaqDto,
+    manager: User,
+  ): Promise<any> {
     try {
-      const { raw } = await this.createQueryBuilder()
+      const { raw }: any = await this.createQueryBuilder()
         .insert()
         .into(Faq)
         .values([
@@ -34,40 +39,44 @@ export class FaqRepository extends Repository<Faq> {
         .execute();
 
       return raw;
-    } catch (e) {
-      throw new InternalServerErrorException(e);
+    } catch (err) {
+      throw new InternalServerErrorException(err.message);
     }
   }
 
-  async updateFaq(no: number, { title, description }, manager: User) {
+  async updateFaq(
+    faqNo: number,
+    { title, description }: UpdateFaqDto,
+    manager: User,
+  ): Promise<number> {
     try {
-      const { affected } = await this.createQueryBuilder()
+      const { affected }: any = await this.createQueryBuilder()
         .update(Faq)
         .set({
           title,
           description,
           lastEditor: manager,
         })
-        .where('no = :no', { no })
+        .where('no = :faqNo', { faqNo })
         .execute();
 
       return affected;
-    } catch (e) {
-      throw new InternalServerErrorException(e);
+    } catch (err) {
+      throw new InternalServerErrorException(err.message);
     }
   }
 
-  async deleteFaq(no: number) {
+  async deleteFaq(no: number): Promise<number> {
     try {
-      const { affected } = await this.createQueryBuilder()
+      const { affected }: any = await this.createQueryBuilder()
         .softDelete()
         .from(Faq)
         .where('no = :no', { no })
         .execute();
 
       return affected;
-    } catch (e) {
-      throw new InternalServerErrorException(e);
+    } catch (err) {
+      throw new InternalServerErrorException(err.message);
     }
   }
 }

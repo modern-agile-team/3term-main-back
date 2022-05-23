@@ -47,6 +47,10 @@ export class CreateUserDto {
   @IsOptional()
   @IsArray()
   categories?: [];
+
+  @IsArray()
+  @IsNotEmpty()
+  terms: [];
 }
 
 export class SignInDto {
