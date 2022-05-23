@@ -89,15 +89,14 @@ export class MailboxesService {
         '자기 자신에게 쪽지를 보낼 수 없습니다.',
       );
 
-      const mailboxNo: number | undefined =
-        await this.mailboxUserRepository.searchMailboxUser(
-          oneself.no,
-          opponentNo,
-        );
+      const mailbox: any = await this.mailboxUserRepository.searchMailboxUser(
+        oneself.no,
+        opponentNo,
+      );
 
       return {
-        success: !!mailboxNo,
-        mailboxNo,
+        success: !!mailbox,
+        mailboxNo: mailbox?.mailboxNo,
       };
     } catch (err) {
       throw new BadRequestException(err.message);

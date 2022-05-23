@@ -60,7 +60,6 @@ export class MailboxesController {
   ): Promise<object> {
     const { success, mailboxNo }: any =
       await this.mailboxesService.checkMailbox(oneself, opponentNo);
-
     if (!success) {
       return Object.assign({
         statusCode: 202,

@@ -44,7 +44,7 @@ export class MailboxUserRepository extends Repository<MailboxUser> {
 
   async searchMailboxUser(oneselfNo: number, opponentNo: number): Promise<any> {
     try {
-      const { mailboxNo }: any = await this.createQueryBuilder('firstMU')
+      const mailboxNo: any = await this.createQueryBuilder('firstMU')
         .innerJoin('firstMU.mailbox', 'innerMailbox')
         .innerJoin(
           'innerMailbox.mailboxUsers',
