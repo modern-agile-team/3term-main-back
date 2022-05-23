@@ -1,15 +1,15 @@
 import { forwardRef, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { MailboxesModule } from 'src/mailboxes/mailboxes.module';
-import { MailboxUser } from './entity/mailbox-user.entity';
 import { MailboxUserRepository } from './repository/mailbox.repository';
+import { MailboxUserService } from './mailbox-user.service';
 
 @Module({
   imports: [
     forwardRef(() => MailboxesModule),
-    TypeOrmModule.forFeature([MailboxUser]),
+    TypeOrmModule.forFeature([MailboxUserRepository]),
   ],
-  providers: [MailboxUserRepository],
-  exports: [MailboxUserRepository],
+  providers: [MailboxUserService],
+  exports: [MailboxUserService],
 })
 export class MailboxUserModule {}

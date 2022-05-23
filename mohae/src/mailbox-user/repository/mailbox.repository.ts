@@ -1,4 +1,5 @@
 import { InternalServerErrorException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/auth/entity/user.entity';
 import { Mailbox } from 'src/mailboxes/entity/mailbox.entity';
 import { EntityRepository, Repository } from 'typeorm';
@@ -6,6 +7,11 @@ import { MailboxUser } from '../entity/mailbox-user.entity';
 
 @EntityRepository(MailboxUser)
 export class MailboxUserRepository extends Repository<MailboxUser> {
+  // constructor(
+  //   @InjectRepository(MailboxUserRepository)
+  //   private mailboxUserRepository: MailboxUserRepository,
+  // ) {}
+
   async saveMailboxUser(mailbox: Mailbox, user: User) {
     try {
       const { raw } = await this.createQueryBuilder()

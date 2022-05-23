@@ -6,17 +6,23 @@ import { LettersController } from './letters.controller';
 import { LettersService } from './letters.service';
 import { LetterRepository } from './repository/letter.repository';
 import { MailboxUserModule } from 'src/mailbox-user/mailbox-user.module';
-import { Letter } from './entity/letter.entity';
 import { MailboxesModule } from 'src/mailboxes/mailboxes.module';
+import { MailboxRepository } from 'src/mailboxes/repository/mailbox.repository';
+import { MailboxUserRepository } from 'src/mailbox-user/repository/mailbox.repository';
 
 @Module({
   imports: [
     MailboxUserModule,
     forwardRef(() => MailboxesModule),
-    TypeOrmModule.forFeature([Letter, UserRepository]),
+    TypeOrmModule.forFeature([
+      LetterRepository,
+      MailboxRepository,
+      MailboxUserRepository,
+      UserRepository,
+    ]),
   ],
   controllers: [LettersController],
-  providers: [LettersService, LetterRepository, ErrorConfirm],
-  exports: [LettersService, LetterRepository],
+  providers: [LettersService, ErrorConfirm],
+  exports: [LettersService],
 })
 export class LettersModule {}

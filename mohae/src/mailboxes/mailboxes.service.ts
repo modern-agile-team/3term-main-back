@@ -21,10 +21,10 @@ export class MailboxesService {
     private errorConfirm: ErrorConfirm,
   ) {}
 
-  async readAllMailboxes(loginUserNo: number): Promise<Mailbox | Mailbox[]> {
+  async readAllMailboxes(loginUserNo: number): Promise<any> {
     try {
       const Letters: string = this.letterRepository
-        .createQueryBuilder()
+        .createQueryBuilder('letter')
         .subQuery()
         .select([
           'letter.no AS no',
@@ -38,7 +38,7 @@ export class MailboxesService {
         .orderBy('letter.createdAt', 'DESC')
         .getQuery();
 
-      const mailbox: Mailbox | Mailbox[] = await this.userRepository
+      const mailbox = await this.userRepository
         .createQueryBuilder('user')
         .where('user.no = :loginUserNo', { loginUserNo })
         .leftJoin('user.mailboxUsers', 'mailboxUsers')
@@ -62,10 +62,7 @@ export class MailboxesService {
     }
   }
 
-  async searchMailbox(
-    mailboxNo: number,
-    limit: number,
-  ): Promise<Mailbox | null> {
+  async searchMailbox(mailboxNo: number, limit: number): Promise<Mailbox> {
     try {
       const mailbox: Mailbox = await this.mailboxRepository.searchMailbox(
         mailboxNo,
@@ -91,14 +88,16 @@ export class MailboxesService {
         oneself.no !== opponentNo,
         '자기 자신에게 쪽지를 보낼 수 없습니다.',
       );
-      const mailbox: any = await this.mailboxUserRepository.searchMailboxUser(
-        oneself.no,
-        opponentNo,
-      );
+
+      const mailboxNo: number | undefined =
+        await this.mailboxUserRepository.searchMailboxUser(
+          oneself.no,
+          opponentNo,
+        );
 
       return {
-        success: !!mailbox,
-        mailboxNo: mailbox?.mailboxNo,
+        success: !!mailboxNo,
+        mailboxNo,
       };
     } catch (err) {
       throw new BadRequestException(err.message);

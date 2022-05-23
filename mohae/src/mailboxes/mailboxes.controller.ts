@@ -1,4 +1,5 @@
-import { Controller, Get, Param, Query } from '@nestjs/common';
+import { Controller, Get, Param, Query, UseGuards } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { User } from 'src/auth/entity/user.entity';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
