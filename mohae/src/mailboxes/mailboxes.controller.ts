@@ -15,12 +15,9 @@ export class MailboxesController {
     summary: '로그인한 유저의 쪽지함 전체 조회',
     description: '로그인한 유저의 쪽지함 전체를 조회하는 API',
   })
-  @Get('/:loginUserNo')
-  async readAllMailboxes(
-    @Param('loginUserNo') loginUserNo: number,
-  ): Promise<object> {
-    const response: Mailbox | Mailbox[] =
-      await this.mailboxesService.readAllMailboxes(loginUserNo);
+  @Get()
+  async readAllMailboxes(@CurrentUser() user: User): Promise<object> {
+    const response: any = await this.mailboxesService.readAllMailboxes(user);
 
     return Object.assign({
       statusCode: 200,
@@ -33,7 +30,7 @@ export class MailboxesController {
     summary: '쪽지함 목록에 있는 한 개의 쪽지함을 클릭',
     description: '클릭한 쪽지함 내용을 조회하는 API',
   })
-  @Get('/letter/:mailboxNo')
+  @Get('/:mailboxNo')
   async searchMailbox(
     @Param('mailboxNo') mailboxNo: number,
     @Query('limit') limit: number,

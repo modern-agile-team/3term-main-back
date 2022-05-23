@@ -21,7 +21,7 @@ export class MailboxesService {
     private errorConfirm: ErrorConfirm,
   ) {}
 
-  async readAllMailboxes(loginUserNo: number): Promise<any> {
+  async readAllMailboxes(user: User): Promise<any> {
     try {
       const Letters: string = this.letterRepository
         .createQueryBuilder('letter')
@@ -38,9 +38,9 @@ export class MailboxesService {
         .orderBy('letter.createdAt', 'DESC')
         .getQuery();
 
-      const mailbox = await this.userRepository
+      const mailbox: any = await this.userRepository
         .createQueryBuilder('user')
-        .where('user.no = :loginUserNo', { loginUserNo })
+        .where('user.no = :loginUserNo', { loginUserNo: user.no })
         .leftJoin('user.mailboxUsers', 'mailboxUsers')
         .leftJoin('mailboxUsers.mailbox', 'mailbox')
         .leftJoin(Letters, 'letter', 'letter.mailbox = mailbox.no')
