@@ -22,9 +22,9 @@ export class FaqsService {
     private errorConfirm: ErrorConfirm,
   ) {}
 
-  async readAllFaq(): Promise<Faq | Faq[]> {
+  async readAllFaqs(): Promise<Faq | Faq[]> {
     try {
-      const faqs = await this.faqRepository.readAllFaq();
+      const faqs = await this.faqRepository.readAllFaqs();
       this.errorConfirm.notFoundError(faqs, '자주 묻는 질문이 없습니다.');
 
       return faqs;

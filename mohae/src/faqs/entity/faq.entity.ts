@@ -60,15 +60,11 @@ export class Faq extends BaseEntity {
   deletedAt: Date | null;
 
   /* 관리자 번호 */
-  @IsNotEmpty()
-  @IsNumber()
-  @RelationId((faq: Faq) => faq.manager)
-  managerNo: number;
+  // @RelationId((faq: Faq) => faq.manager)
+  // managerNo: number;
 
-  @IsNotEmpty()
-  @IsNumber()
-  @RelationId((faq: Faq) => faq.lastEditor)
-  lastEditorNo: number;
+  // @RelationId((faq: Faq) => faq.lastEditor)
+  // lastEditorNo: number;
 
   /* FAQ 외래키 */
   @ManyToOne((type) => User, (user) => user.faqs, { onUpdate: 'CASCADE' })
