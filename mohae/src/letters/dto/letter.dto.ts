@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, PickType } from '@nestjs/swagger';
 import {
   IsNotEmpty,
   IsNumber,
@@ -6,26 +6,12 @@ import {
   IsString,
   MaxLength,
 } from 'class-validator';
+import { Letter } from '../entity/letter.entity';
 
-export class SendLetterDto {
-  @ApiProperty({
-    example: 1,
-    description: '쪽지 보낸 유저 번호',
-    required: true,
-  })
-  @IsNotEmpty()
-  @IsNumber()
-  senderNo: number;
-
-  @ApiProperty({
-    example: 2,
-    description: '쪽지 받은 유저 번호',
-    required: true,
-  })
-  @IsNotEmpty()
-  @IsNumber()
-  receiverNo: number;
-
+export class SendLetterDto extends PickType(Letter, [
+  'receiver',
+  'description',
+] as const) {
   @ApiProperty({
     example: null,
     description: '쪽지함이 존재하지 않을 경우 null, 있으면 mailboxNo',
@@ -40,8 +26,5 @@ export class SendLetterDto {
     description: '쪽지 내용',
     required: true,
   })
-  @IsNotEmpty()
-  @IsString()
-  @MaxLength(500)
   description: string;
 }
