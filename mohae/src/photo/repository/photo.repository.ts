@@ -2,12 +2,7 @@ import { InternalServerErrorException } from '@nestjs/common';
 import { CreateBoardDto } from 'src/boards/dto/board.dto';
 import { Board } from 'src/boards/entity/board.entity';
 import { Spec } from 'src/specs/entity/spec.entity';
-import {
-  EntityRepository,
-  InsertResult,
-  Repository,
-  UpdateResult,
-} from 'typeorm';
+import { EntityRepository, InsertResult, Repository } from 'typeorm';
 import { BoardPhoto } from '../entity/board.photo.entity';
 import { SpecPhoto } from '../entity/photo.entity';
 
