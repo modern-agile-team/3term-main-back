@@ -187,7 +187,7 @@ export class UserRepository extends Repository<User> {
     }
   }
   // 프로필 관련 기능
-  async findUserProfile(no: number): Promise<User> {
+  async findUserProfile(userNo: number): Promise<User> {
     try {
       const user: User = await this.createQueryBuilder('users')
         .leftJoin('users.school', 'school')
@@ -209,7 +209,7 @@ export class UserRepository extends Repository<User> {
           'categories.no',
           'categories.name',
         ])
-        .where('users.no = :no', { no })
+        .where('users.no = :userNo', { userNo })
         .getOne();
 
       return user;
@@ -220,11 +220,11 @@ export class UserRepository extends Repository<User> {
     }
   }
 
-  async findOneUserinfo(no: number): Promise<User> {
+  async findOneUserinfo(userNo: number): Promise<User> {
     try {
       const user: User = await this.createQueryBuilder('users')
         .select(['no', 'email', 'nickname', 'name'])
-        .where('no = :no', { no })
+        .where('no = :userNo', { userNo })
         .getOne();
 
       return user;

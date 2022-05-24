@@ -1,8 +1,5 @@
 import { InternalServerErrorException } from '@nestjs/common';
-import { onErrorResumeNext } from 'rxjs/operators';
 import { User } from 'src/auth/entity/user.entity';
-import { SpecPhoto } from 'src/photo/entity/photo.entity';
-import { SpecPhotoRepository } from 'src/photo/repository/photo.repository';
 import {
   DeleteResult,
   EntityRepository,
@@ -15,7 +12,7 @@ import { Spec } from '../entity/spec.entity';
 
 @EntityRepository(Spec)
 export class SpecRepository extends Repository<Spec> {
-  async getAllSpec(no: number) {
+  async getAllSpec(userNo: number) {
     try {
       const specs = await this.createQueryBuilder('spec')
         .leftJoin('spec.specPhotos', 'specPhotos')
@@ -27,7 +24,7 @@ export class SpecRepository extends Repository<Spec> {
           'specPhotos.photo_url',
           'user.no',
         ])
-        .where('user.no = :no', { no })
+        .where('user.no = :userNo', { userNo })
         .andWhere('spec.no = specPhotos.spec')
         .take(3)
         .getMany();
@@ -40,7 +37,7 @@ export class SpecRepository extends Repository<Spec> {
     }
   }
 
-  async getOneSpec(no: number) {
+  async getOneSpec(specNo: number) {
     try {
       const spec = await this.createQueryBuilder('spec')
         .leftJoinAndSelect('spec.specPhotos', 'specPhotos')
@@ -53,7 +50,7 @@ export class SpecRepository extends Repository<Spec> {
           'spec.createdAt',
           'spec.latestUpdateSpec',
         ])
-        .where('spec.no = :no', { no })
+        .where('spec.no = :specNo', { specNo })
         .andWhere('spec.no = specPhotos.spec')
         .getOne();
 
@@ -66,12 +63,12 @@ export class SpecRepository extends Repository<Spec> {
     }
   }
 
-  async addSpecPhoto(specNo: Spec, specPhotoRepo: SpecPhoto) {
+  async addSpecPhoto(specNo: Spec, savedSpecPhotos: Array<object>) {
     try {
       await this.createQueryBuilder()
         .relation(Spec, 'specPhotos')
         .of(specNo)
-        .add(specPhotoRepo);
+        .add(savedSpecPhotos);
     } catch (err) {
       throw new InternalServerErrorException(
         `${err} 스펙 사진 저장 도중 발생한 서버에러`,
@@ -104,29 +101,28 @@ export class SpecRepository extends Repository<Spec> {
     }
   }
 
-  async updateSpec(no: number, deletedNullSpec: object): Promise<number> {
+  async updateSpec(specNo: number, deletedNullSpec: object): Promise<number> {
     try {
       const { affected }: UpdateResult = await this.createQueryBuilder('spec')
         .update(Spec)
         .set(deletedNullSpec)
-        .where('no = :no', { no })
+        .where('no = :specNo', { specNo })
         .execute();
 
       return affected;
     } catch (err) {
       throw new InternalServerErrorException(
-        '스팩 업데이트 도중 발생한 서버에러',
-        err,
+        `스팩 업데이트 도중 발생한 서버에러${err}`,
       );
     }
   }
 
-  async deleteSpec(no: number): Promise<number> {
+  async deleteSpec(specNo: number): Promise<number> {
     try {
       const { affected }: DeleteResult = await this.createQueryBuilder('spec')
         .softDelete()
         .from(Spec)
-        .where('no = :no', { no })
+        .where('no = :specNo', { specNo })
         .execute();
 
       return affected;
