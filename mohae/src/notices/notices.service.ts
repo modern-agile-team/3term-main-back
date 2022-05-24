@@ -1,11 +1,15 @@
 import {
+  BadGatewayException,
+  BadRequestException,
   Injectable,
   InternalServerErrorException,
-  NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { User } from 'src/auth/entity/user.entity';
 import { UserRepository } from 'src/auth/repository/user.repository';
-import { CreateNoticeDto, UpdateNoticeDto } from './dto/notice.dto';
+import { ErrorConfirm } from 'src/common/utils/error';
+import { CreateNoticeDto } from './dto/create-notice.dto';
+import { UpdateNoticeDto } from './dto/update-notice.dtd';
 import { Notice } from './entity/notice.entity';
 import { NoticeRepository } from './repository/notice.repository';
 
@@ -15,81 +19,84 @@ export class NoticesService {
     @InjectRepository(NoticeRepository)
     private noticeRepository: NoticeRepository,
 
-    @InjectRepository(UserRepository)
     private userRepository: UserRepository,
+    private readonly errorConfirm: ErrorConfirm,
   ) {}
 
-  async readNotices(): Promise<Notice[]> {
+  async readAllNotices(): Promise<Notice | Notice[]> {
     try {
-      const notices = await this.noticeRepository.readNotices();
+      const notices: Notice | Notice[] =
+        await this.noticeRepository.readAllNotices();
+
+      this.errorConfirm.notFoundError(notices, '공지사항이 없습니다.');
 
       return notices;
-    } catch (e) {
-      throw e;
+    } catch (err) {
+      throw new BadRequestException(err.message);
     }
   }
 
-  async createNotice(createNoticeDto: CreateNoticeDto) {
+  async createNotice(
+    createNoticeDto: CreateNoticeDto,
+    manager: User,
+  ): Promise<boolean> {
     try {
-      const { managerNo } = createNoticeDto;
-      const manager = await this.userRepository.findOne(managerNo, {
-        relations: ['notices'],
-      });
-      const createdResult = await this.noticeRepository.createNotice(
-        createNoticeDto,
-        manager,
-      );
-      if (!createdResult.affectedRows) {
-        return { success: false };
+      const { affectedRows, insertId }: any =
+        await this.noticeRepository.createNotice(createNoticeDto, manager);
+
+      if (!affectedRows) {
+        throw new BadGatewayException('공지사항 생성 실패');
       }
-      const notice = await this.noticeRepository.findOne(
-        createdResult.insertId,
-      );
 
-      manager.notices.push(notice);
+      await this.userRepository.userRelation(manager.no, insertId, 'notices');
 
-      await this.userRepository.save(manager);
-
-      return { success: true };
-    } catch (e) {
-      throw e;
+      return true;
+    } catch (err) {
+      throw new BadRequestException(err.message);
     }
   }
 
-  async updateNotice(no: number, updateNoticeDto: UpdateNoticeDto) {
+  async updateNotice(
+    noticeNo: number,
+    updateNoticeDto: UpdateNoticeDto,
+    manager: User,
+  ): Promise<boolean> {
     try {
-      const { managerNo } = updateNoticeDto;
-
-      const manager = await this.userRepository.findOne(managerNo, {
-        relations: ['modifiedNotices'],
-      });
       const updateResult = await this.noticeRepository.updateNotice(
-        no,
+        noticeNo,
         updateNoticeDto,
         manager,
       );
 
-      const notice = await this.noticeRepository.findOne(no);
-      manager.modifiedNotices.push(notice);
+      if (!updateResult) {
+        throw new BadGatewayException('공지사항 수정 실패');
+      }
 
-      await this.userRepository.save(manager);
+      await this.userRepository.userRelation(
+        manager.no,
+        noticeNo,
+        'modifiedNotices',
+      );
 
-      return updateResult ? { success: true } : { success: false };
-    } catch (e) {
-      throw e;
+      return true;
+    } catch (err) {
+      throw new BadRequestException(err.message);
     }
   }
 
-  async deleteNotice(no: number) {
+  async deleteNotice(noticeNo: number): Promise<boolean> {
     try {
-      const deleteResult = await this.noticeRepository.deleteNotice(no);
+      const deleteResult: number = await this.noticeRepository.deleteNotice(
+        noticeNo,
+      );
 
       if (!deleteResult) {
-        throw new InternalServerErrorException('공지 삭제 실패');
+        throw new BadGatewayException('공지사항 삭제 실패');
       }
-      return { success: true };
-    } catch (e) {
-      throw e;
+
+      return true;
+    } catch (err) {
+      throw new BadRequestException(err.message);
     }
   }
 }
