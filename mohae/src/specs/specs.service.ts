@@ -35,7 +35,7 @@ export class SpecsService {
       const user: User = await this.userRepository.findOne(no);
       const specs: Array<Spec> = await this.specRepository.getAllSpec(no);
       this.errorConfirm.notFoundError(user, '존재하지 않는 유저 입니다.');
-      if (specs.length === 0) {
+      if (!specs.length) {
         return '현재 등록된 스펙이 없습니다.';
       }
       return specs;
@@ -75,7 +75,7 @@ export class SpecsService {
           `${userNo}에 해당하는 유저가 존재하지 않습니다.`,
         );
       }
-      if (specPhoto.length === 0) {
+      if (!specPhoto.length) {
         throw new BadRequestException(
           '스펙의 사진이 없다면 null 이라도 넣어주셔야 스펙 등록이 가능합니다.',
         );
@@ -131,7 +131,7 @@ export class SpecsService {
       specKeys.forEach((item) => {
         updateSpec[item] ? (deletedNullSpec[item] = updateSpec[item]) : 0;
       });
-      if (specPhoto !== null) {
+      if (specPhoto) {
         const { specPhotos }: Spec = await this.specRepository.findOne(specNo, {
           select: ['no', 'specPhotos'],
           relations: ['specPhotos'],
@@ -139,7 +139,7 @@ export class SpecsService {
         await queryRunner.manager
           .getCustomRepository(SpecPhotoRepository)
           .deleteBeforePhoto(specPhotos);
-        const photoArr: Array<object> = specPhoto.map((photo) => {
+        const specPhotoArr: Array<object> = specPhoto.map((photo) => {
           return {
             photo_url: photo,
             spec: specNo,
@@ -148,7 +148,7 @@ export class SpecsService {
         });
         await queryRunner.manager
           .getCustomRepository(SpecPhotoRepository)
-          .saveSpecPhoto(photoArr);
+          .saveSpecPhoto(specPhotoArr);
         delete deletedNullSpec['specPhoto'];
       }
       const isUpdate: number = await queryRunner.manager
