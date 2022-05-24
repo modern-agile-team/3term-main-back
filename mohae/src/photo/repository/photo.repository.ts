@@ -85,37 +85,19 @@ export class BoardPhotoRepository extends Repository<BoardPhoto> {
       );
     }
   }
-  // async saveSpecPhoto(photo_url: string, board_no: Board): Promise<number> {
-  //   try {
-  //     const { raw }: InsertResult = await this.createQueryBuilder('specPhoto')
-  //       .insert()
-  //       .into(BoardPhoto)
-  //       .values([{ photo_url, board_no }])
-  //       .execute();
 
-  //     return raw.insertId;
-  //   } catch (err) {
-  //     throw new InternalServerErrorException(
-  //       `스펙 사진 저장도중 에러가 발생 하였습니다.${err}`,
-  //     );
-  //   }
-  // }
-
-  async updatePhoto(no: number, new_url: string): Promise<number> {
+  async updatePhoto(
+    no: number,
+    photo_url: string,
+    sequence_no: number,
+  ): Promise<number> {
     try {
-      const { affected }: UpdateResult = await this.createQueryBuilder(
-        'specPhoto',
-      )
+      const { affected }: UpdateResult = await this.createQueryBuilder()
         .update(BoardPhoto)
-        .set({ photo_url: new_url })
-        .where('no = :no', { no })
+        .set({ photo_url })
+        .where('board_no = :no', { no })
+        .andWhere('sequence_no = :no', { no: sequence_no })
         .execute();
-
-      if (!affected) {
-        throw new InternalServerErrorException(
-          '스펙 사진 업데이트 중 오류가 발생 하였습니다.(아마 specPhoto no 문제일 가능성 매우높음)',
-        );
-      }
 
       return affected;
     } catch (err) {
@@ -123,18 +105,16 @@ export class BoardPhotoRepository extends Repository<BoardPhoto> {
     }
   }
 
-  async getSpecNo(no: number): Promise<number> {
+  async deletePhoto(no: number) {
     try {
-      const { spec }: any = await this.createQueryBuilder('boardPhotos')
-        .leftJoinAndSelect('boardPhotos.spec', 'spec')
-        .select(['boardPhotos.no', 'spec.no'])
-        .where('boardPhoto.no = :no', { no })
-        .getOne();
-
-      return spec.no;
+      await this.createQueryBuilder('boardPhotos')
+        .delete()
+        .from(BoardPhoto)
+        .where('board_no = :no', { no })
+        .execute();
     } catch (err) {
       throw new InternalServerErrorException(
-        `스펙 번호 가져오기 도중 오류가 발생 하였습니다.${err}`,
+        `게시글 사진 지우는 로직 에러 발생 ${err}`,
       );
     }
   }

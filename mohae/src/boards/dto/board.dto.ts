@@ -1,14 +1,17 @@
 import { ApiProperty } from '@nestjs/swagger';
 import {
+  ArrayMaxSize,
   IsArray,
   IsBoolean,
   IsNotEmpty,
   IsNumber,
+  IsObject,
   IsOptional,
   IsString,
   Max,
   MaxLength,
   MinLength,
+  Validate,
 } from 'class-validator';
 
 export abstract class BoardContent {
@@ -165,4 +168,9 @@ export abstract class UpdateBoardDto {
   @IsOptional()
   @IsNumber()
   deadline?: any;
+
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(5)
+  photo_url: [];
 }

@@ -203,7 +203,9 @@ export class BoardsService {
   }
 
   async createBoard(createBoardDto: CreateBoardDto): Promise<object> {
-    const { categoryNo, areaNo, deadline, userNo }: any = createBoardDto;
+    const { categoryNo, areaNo, deadline, userNo, photo_url }: any =
+      createBoardDto;
+
     const category: Category = await this.categoryRepository.findOne(
       categoryNo,
       {
@@ -211,20 +213,20 @@ export class BoardsService {
       },
     );
 
-    const area: Area = await this.areaRepository.findOne(areaNo, {
-      relations: ['boards'],
-    });
-
-    const user: User = await this.userRepository.findOne(userNo, {
-      relations: ['boards'],
-    });
-
     this.errorConfirm.notFoundError(
       category,
       `해당 카테고리를 찾을 수 없습니다.`,
     );
 
+    const area: Area = await this.areaRepository.findOne(areaNo, {
+      relations: ['boards'],
+    });
+
     this.errorConfirm.notFoundError(area, `해당 지역을 찾을 수 없습니다.`);
+
+    const user: User = await this.userRepository.findOne(userNo, {
+      relations: ['boards'],
+    });
 
     this.errorConfirm.notFoundError(user, `해당 회원을 찾을 수 없습니다.`);
 
@@ -233,10 +235,8 @@ export class BoardsService {
 
     if (!deadline) {
       endTime = null;
-    }
-
-    if (deadline) {
-      endTime.setSeconds(endTime.getSeconds() + deadline);
+    } else if (deadline) {
+      endTime.setDate(endTime.getDate() + deadline);
     }
 
     const board: any = await this.boardRepository.createBoard(
@@ -246,13 +246,12 @@ export class BoardsService {
       createBoardDto,
       endTime,
     );
-    const { photo_url } = createBoardDto;
 
     for (const photo of photo_url) {
-      const test = await this.boardPhotoRepository.createPhoto(photo, board.no);
+      await this.boardPhotoRepository.createPhoto(photo, board.no);
     }
 
-    // await this.boardRepository.saveCategory(categoryNo, board);
+    await this.boardRepository.saveCategory(categoryNo, board);
 
     if (!board) {
       return { isSuccess: false, msg: '게시글 생성이 되지 않았습니다.' };
@@ -283,7 +282,7 @@ export class BoardsService {
     no: number,
     updateBoardDto: UpdateBoardDto,
   ): Promise<object> {
-    const { category, area, deadline } = updateBoardDto;
+    const { category, area, deadline, photo_url } = updateBoardDto;
 
     const board: Board = await this.boardRepository.findOne(no);
     this.errorConfirm.notFoundError(
@@ -341,6 +340,17 @@ export class BoardsService {
       });
 
       this.errorConfirm.notFoundError(getArea, `해당 지역을 찾을 수 없습니다.`);
+    }
+
+    if (Object.keys(deletedNullBoardKey).includes('photo_url')) {
+      await this.boardPhotoRepository.deletePhoto(no);
+      for (const photo of photo_url) {
+        this.boardPhotoRepository.createPhoto(photo, no);
+      }
+    }
+
+    if (Object.keys(deletedNullBoardKey).includes('photo_url')) {
+      delete deletedNullBoardKey['photo_url'];
     }
 
     const updatedBoard: number = await this.boardRepository.updateBoard(
