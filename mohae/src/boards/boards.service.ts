@@ -210,8 +210,13 @@ export class BoardsService {
     await queryRunner.connect();
     await queryRunner.startTransaction();
     try {
-      const { categoryNo, areaNo, deadline, userNo, photo_url }: any =
-        createBoardDto;
+      const {
+        categoryNo,
+        areaNo,
+        deadline,
+        userNo,
+        photo_url,
+      }: CreateBoardDto = createBoardDto;
 
       const category: Category = await this.categoryRepository.findOne(
         categoryNo,
