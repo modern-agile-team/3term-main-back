@@ -18,8 +18,8 @@ export class SpecRepository extends Repository<Spec> {
   async getAllSpec(no: number) {
     try {
       const specs = await this.createQueryBuilder('spec')
-        .leftJoinAndSelect('spec.user', 'user')
-        .leftJoinAndSelect('spec.specPhotos', 'specPhotos')
+        .leftJoin('spec.specPhotos', 'specPhotos')
+        .leftJoin('spec.user', 'user')
         .select([
           'spec.no',
           'spec.title',
@@ -65,15 +65,15 @@ export class SpecRepository extends Repository<Spec> {
     }
   }
 
-  async addSpecPhoto(specNo: Spec, specPhoto: Array<object>): Promise<void> {
+  async addSpecPhoto(specNo: Spec, specPhotoRepo: Array<object>) {
     try {
       await this.createQueryBuilder()
         .relation(Spec, 'specPhotos')
         .of(specNo)
-        .add(specPhoto);
+        .add(specPhotoRepo);
     } catch (err) {
       throw new InternalServerErrorException(
-        `${err} 스펙 사진 저장 관계 형성 도중 발생한 서버에러`,
+        `${err} 스펙 사진 저장 도중 발생한 서버에러`,
       );
     }
   }

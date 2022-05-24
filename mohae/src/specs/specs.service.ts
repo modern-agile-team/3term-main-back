@@ -128,31 +128,29 @@ export class SpecsService {
 
       const specKeys: Array<string> = Object.keys(updateSpec);
       const deletedNullSpec: object = {};
-
       specKeys.forEach((item) => {
         updateSpec[item] ? (deletedNullSpec[item] = updateSpec[item]) : 0;
       });
-
-      const { specPhotos }: Spec = await this.specRepository.findOne(specNo, {
-        select: ['no', 'specPhotos'],
-        relations: ['specPhotos'],
-      });
-
-      await queryRunner.manager
-        .getCustomRepository(SpecPhotoRepository)
-        .deleteBeforePhoto(specPhotos);
-      const photoArr: Array<object> = specPhoto.map((photo) => {
-        return {
-          photo_url: photo,
-          spec: specNo,
-          order: specPhoto.indexOf(photo) + 1,
-        };
-      });
-      await queryRunner.manager
-        .getCustomRepository(SpecPhotoRepository)
-        .saveSpecPhoto(photoArr);
-      delete deletedNullSpec['specPhoto'];
-
+      if (specPhoto !== null) {
+        const { specPhotos }: Spec = await this.specRepository.findOne(specNo, {
+          select: ['no', 'specPhotos'],
+          relations: ['specPhotos'],
+        });
+        await queryRunner.manager
+          .getCustomRepository(SpecPhotoRepository)
+          .deleteBeforePhoto(specPhotos);
+        const photoArr: Array<object> = specPhoto.map((photo) => {
+          return {
+            photo_url: photo,
+            spec: specNo,
+            order: specPhoto.indexOf(photo) + 1,
+          };
+        });
+        await queryRunner.manager
+          .getCustomRepository(SpecPhotoRepository)
+          .saveSpecPhoto(photoArr);
+        delete deletedNullSpec['specPhoto'];
+      }
       const isUpdate: number = await queryRunner.manager
         .getCustomRepository(SpecRepository)
         .updateSpec(specNo, deletedNullSpec);
