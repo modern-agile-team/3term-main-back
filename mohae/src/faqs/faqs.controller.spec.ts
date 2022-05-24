@@ -2,7 +2,8 @@ import { PassportModule } from '@nestjs/passport';
 import { Test, TestingModule } from '@nestjs/testing';
 import { UserRepository } from 'src/auth/repository/user.repository';
 import { ErrorConfirm } from 'src/common/utils/error';
-import { CreateFaqDto, UpdateFaqDto } from './dto/faq.dto';
+import { CreateFaqDto } from './dto/create-faq.dto';
+import { UpdateFaqDto } from './dto/update-faq.dto';
 import { FaqsController } from './faqs.controller';
 import { FaqsService } from './faqs.service';
 import { FaqRepository } from './repository/faq.repository';
@@ -27,7 +28,7 @@ describe('FaqsController', () => {
 
   describe('/GET faqs, readFaqs()', () => {
     it('FAQ 전체 조회', async () => {
-      faqsService.readFaqs = jest.fn().mockResolvedValue([
+      faqsService.readAllFaq = jest.fn().mockResolvedValue([
         {
           no: 1,
           title: '제목',
@@ -40,8 +41,8 @@ describe('FaqsController', () => {
         },
       ]);
 
-      const MockReadFaqs = await faqsService.readFaqs();
-      const response = await faqsController.readFaqs();
+      const MockReadFaqs = await faqsService.readAllFaq();
+      const response = await faqsController.readAllFaq();
 
       expect(response).toStrictEqual({
         statusCode: 200,
@@ -83,7 +84,7 @@ describe('FaqsController', () => {
       const faqNo = 1;
       const updateFaqDto: UpdateFaqDto = {
         title: 'test',
-        modifiedManagerNo: 1,
+        managerNo: 1,
         description: 'test',
       };
       const MockupdateFaq = await faqsService.updateFaq(faqNo, updateFaqDto);
