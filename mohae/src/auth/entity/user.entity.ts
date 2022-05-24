@@ -23,13 +23,15 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { Letter } from 'src/letters/entity/letter.entity';
-import { MailboxUser } from 'src/mailboxes/entity/mailbox.entity';
 import { Spec } from 'src/specs/entity/spec.entity';
 import { Faq } from 'src/faqs/entity/faq.entity';
 import { Notice } from 'src/notices/entity/notice.entity';
 import { Board } from 'src/boards/entity/board.entity';
 import { UserLike } from 'src/like/entity/user.like.entity';
 import { BoardLike } from 'src/like/entity/board.like.entity';
+import { MailboxUser } from 'src/mailbox-user/entity/mailbox-user.entity';
+import { TermsUser } from 'src/terms/entity/terms.entity';
+import { Terms } from 'src/terms/entity/terms.entity';
 
 @Entity('users')
 export class User extends BaseEntity {
@@ -110,6 +112,11 @@ export class User extends BaseEntity {
     comment: '회원가입 시간',
   })
   createdAt: Date;
+
+  @OneToMany((type) => TermsUser, (termsUser) => termsUser.user, {
+    nullable: true,
+  })
+  userTerms: TermsUser[];
 
   // 나를 좋아요 한 유저 목록
   @OneToMany((type) => UserLike, (userLike) => userLike.likedUser, {

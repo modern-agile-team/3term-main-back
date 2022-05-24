@@ -23,7 +23,9 @@ import { PhotoModule } from './photo/photo.module';
 import { LikeModule } from './like/like.module';
 import { RedisCacheModule } from './redis-cache/redis-cache.module';
 import { APP_INTERCEPTOR } from '@nestjs/core';
+import { MailboxUserModule } from './mailbox-user/mailbox-user.module';
 import * as redisStore from 'cache-manager-redis-store';
+import { TermsModule } from './terms/terms.module';
 
 @Module({
   imports: [
@@ -46,6 +48,7 @@ import * as redisStore from 'cache-manager-redis-store';
     SpecsModule,
     PhotoModule,
     LikeModule,
+    TermsModule,
     CacheModule.register({
       //   isGlobal: true,
       //   store: redisStore,
@@ -55,6 +58,7 @@ import * as redisStore from 'cache-manager-redis-store';
       //   },
     }),
     RedisCacheModule,
+    MailboxUserModule,
   ],
   controllers: [AppController],
   providers: [
