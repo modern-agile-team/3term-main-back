@@ -1,8 +1,14 @@
-import { Injectable } from '@nestjs/common';
+import {
+  BadGatewayException,
+  BadRequestException,
+  Injectable,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { User } from 'src/auth/entity/user.entity';
 import { UserRepository } from 'src/auth/repository/user.repository';
 import { ErrorConfirm } from 'src/common/utils/error';
-import { CreateFaqDto, UpdateFaqDto } from './dto/faq.dto';
+import { CreateFaqDto } from './dto/create-faq.dto';
+import { UpdateFaqDto } from './dto/update-faq.dto';
 import { Faq } from './entity/faq.entity';
 import { FaqRepository } from './repository/faq.repository';
 
@@ -12,96 +18,73 @@ export class FaqsService {
     @InjectRepository(FaqRepository)
     private faqRepository: FaqRepository,
 
-    @InjectRepository(UserRepository)
     private userRepository: UserRepository,
-
     private errorConfirm: ErrorConfirm,
   ) {}
 
-  async readFaqs(): Promise<Faq[]> {
+  async readAllFaqs(): Promise<Faq | Faq[]> {
     try {
-      const faqs = await this.faqRepository.readFaqs();
+      const faqs = await this.faqRepository.readAllFaqs();
       this.errorConfirm.notFoundError(faqs, '자주 묻는 질문이 없습니다.');
 
       return faqs;
-    } catch (e) {
-      throw e;
+    } catch (err) {
+      throw new BadRequestException(err.message);
     }
   }
 
-  async createFaq(createFaqDto: CreateFaqDto) {
+  async createFaq(createFaqDto: CreateFaqDto, manager: User): Promise<boolean> {
     try {
-      const { managerNo } = createFaqDto;
-      const manager = await this.userRepository.findOne(managerNo, {
-        relations: ['faqs'],
-      });
-      this.errorConfirm.notFoundError(
-        manager,
-        '해당 매니저를 찾을 수 없습니다.',
-      );
-      const { affectedRows, insertId } = await this.faqRepository.createFaq(
-        createFaqDto,
-        manager,
-      );
-      const faq = await this.faqRepository.findOne(insertId);
+      const { affectedRows, insertId }: any =
+        await this.faqRepository.createFaq(createFaqDto, manager);
 
-      manager.faqs.push(faq);
+      await this.userRepository.userRelation(manager.no, insertId, 'faqs');
 
-      await this.userRepository.save(manager);
-
-      if (affectedRows) {
-        return { success: true };
+      if (!affectedRows) {
+        throw new BadGatewayException('FAQ 생성 실패');
       }
 
-      return { success: false, msg: '해당 FAQ가 생성되지 않았습니다.' };
-    } catch (e) {
-      throw e;
+      return true;
+    } catch (err) {
+      throw new BadRequestException(err.message);
     }
   }
 
-  async updateFaq(no: number, updateFaqDto: UpdateFaqDto) {
-    const { modifiedManagerNo } = updateFaqDto;
-
+  async updateFaq(
+    faqNo: number,
+    updateFaqDto: UpdateFaqDto,
+    manager: User,
+  ): Promise<boolean> {
     try {
-      const manager = await this.userRepository.findOne(modifiedManagerNo, {
-        relations: ['modifiedFaqs'],
-      });
-      this.errorConfirm.notFoundError(
-        manager,
-        '해당 매니저를 찾을 수 없습니다.',
-      );
-      const updateResult = this.faqRepository.updateFaq(
-        no,
+      const updateResult: number = await this.faqRepository.updateFaq(
+        faqNo,
         updateFaqDto,
         manager,
       );
-      const faq = await this.faqRepository.findOne(no);
 
-      manager.modifiedFaqs.push(faq);
+      await this.userRepository.userRelation(manager.no, faqNo, 'modifiedFaqs');
 
-      await this.userRepository.save(manager);
-
-      if (updateResult) {
-        return { success: true };
+      if (!updateResult) {
+        throw new BadGatewayException('FAQ 수정 실패');
       }
 
-      return { success: false };
-    } catch (e) {
-      throw e;
+      return true;
+    } catch (err) {
+      throw new BadRequestException(err.message);
     }
   }
 
-  async deleteFaq(no: number) {
+  async deleteFaq(faqNo: number): Promise<boolean> {
     try {
-      const deleteResult = await this.faqRepository.deleteFaq(no);
+      const deleteResult: number = await this.faqRepository.deleteFaq(faqNo);
 
-      if (deleteResult) {
-        return { success: true };
+      if (!deleteResult) {
+        throw new BadGatewayException('FAQ 수정 실패');
       }
 
-      return { success: false };
-    } catch (e) {
-      throw e;
+      return true;
+    } catch (err) {
+      throw new BadRequestException(err.message);
     }
   }
 }

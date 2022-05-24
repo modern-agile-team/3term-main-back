@@ -1,16 +1,14 @@
+import { Exclude } from 'class-transformer';
 import { Letter } from 'src/letters/entity/letter.entity';
+import { MailboxUser } from 'src/mailbox-user/entity/mailbox-user.entity';
 import {
   BaseEntity,
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
-  JoinTable,
-  ManyToMany,
-  ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { User } from '../../auth/entity/user.entity';
 
 @Entity('mailboxes')
 export class Mailbox extends BaseEntity {
@@ -20,6 +18,7 @@ export class Mailbox extends BaseEntity {
   @CreateDateColumn()
   createAt: Date | null;
 
+  @Exclude()
   @DeleteDateColumn({
     select: false,
   })
@@ -30,22 +29,4 @@ export class Mailbox extends BaseEntity {
 
   @OneToMany(() => MailboxUser, (mailboxUser) => mailboxUser.mailbox)
   mailboxUsers: MailboxUser[];
-}
-
-@Entity('mailbox_user')
-export class MailboxUser extends BaseEntity {
-  @PrimaryGeneratedColumn()
-  no: number;
-
-  @ManyToOne(() => Mailbox, (mailbox) => mailbox.mailboxUsers, {
-    nullable: true,
-    onDelete: 'SET NULL',
-  })
-  mailbox: Mailbox;
-
-  @ManyToOne(() => User, (user) => user.mailboxUsers, {
-    nullable: true,
-    onDelete: 'SET NULL',
-  })
-  user: User;
 }

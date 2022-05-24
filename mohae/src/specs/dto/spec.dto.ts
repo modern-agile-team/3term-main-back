@@ -31,6 +31,6 @@ export class UpdateSpecDto {
   description: string;
 
   @IsOptional()
-  @IsObject()
-  photo_url: string;
+  @IsArray()
+  specPhoto: [];
 }

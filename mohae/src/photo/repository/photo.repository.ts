@@ -13,15 +13,15 @@ import { SpecPhoto } from '../entity/photo.entity';
 
 @EntityRepository(SpecPhoto)
 export class SpecPhotoRepository extends Repository<SpecPhoto> {
-  async saveSpecPhoto(photo_url: string, spec: Spec): Promise<number> {
+  async saveSpecPhoto(specPhotoArr: Array<object>): Promise<Array<object>> {
     try {
-      const { raw }: InsertResult = await this.createQueryBuilder('specPhoto')
+      const result: InsertResult = await this.createQueryBuilder('specPhoto')
         .insert()
         .into(SpecPhoto)
-        .values([{ photo_url, spec }])
+        .values(specPhotoArr)
         .execute();
 
-      return raw.insertId;
+      return result.identifiers;
     } catch (err) {
       throw new InternalServerErrorException(
         `스펙 사진 저장도중 에러가 발생 하였습니다.${err}`,
@@ -29,23 +29,13 @@ export class SpecPhotoRepository extends Repository<SpecPhoto> {
     }
   }
 
-  async updatePhoto(no: number, new_url: string): Promise<number> {
+  async deleteBeforePhoto(specPhotos: Array<SpecPhoto>): Promise<void> {
     try {
-      const { affected }: UpdateResult = await this.createQueryBuilder(
-        'specPhoto',
-      )
-        .update(SpecPhoto)
-        .set({ photo_url: new_url })
-        .where('no = :no', { no })
+      await this.createQueryBuilder('specPhoto')
+        .delete()
+        .from(SpecPhoto)
+        .where(specPhotos)
         .execute();
-
-      if (!affected) {
-        throw new InternalServerErrorException(
-          '스펙 사진 업데이트 중 오류가 발생 하였습니다.(아마 specPhoto no 문제일 가능성 매우높음)',
-        );
-      }
-
-      return affected;
     } catch (err) {
       throw err;
     }

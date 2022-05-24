@@ -347,9 +347,6 @@ export class BoardsService {
       for (const photo of photo_url) {
         this.boardPhotoRepository.createPhoto(photo, no);
       }
-    }
-
-    if (Object.keys(deletedNullBoardKey).includes('photo_url')) {
       delete deletedNullBoardKey['photo_url'];
     }
 

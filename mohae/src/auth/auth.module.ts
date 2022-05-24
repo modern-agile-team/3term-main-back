@@ -16,10 +16,14 @@ import { CategoryRepository } from 'src/categories/repository/category.repositor
 import { CategoriesModule } from 'src/categories/categories.module';
 import { ErrorConfirm } from 'src/common/utils/error';
 import { LoginProcess } from 'src/common/utils/login';
-import { User } from './entity/user.entity';
 import { SpecRepository } from 'src/specs/repository/spec.repository';
 import { LikeRepository } from 'src/like/repository/like.repository';
 import { ScheduleModule } from '@nestjs/schedule';
+import { TermsModule } from 'src/terms/terms.module';
+import {
+  TermsReporitory,
+  TermsUserReporitory,
+} from 'src/terms/repository/terms.repository';
 
 const jwtConfig = config.get('jwt');
 
@@ -35,6 +39,8 @@ const jwtConfig = config.get('jwt');
       },
     }),
     TypeOrmModule.forFeature([
+      TermsReporitory,
+      TermsUserReporitory,
       UserRepository,
       SchoolRepository,
       MajorRepository,
@@ -45,6 +51,7 @@ const jwtConfig = config.get('jwt');
     SchoolsModule,
     MajorsModule,
     CategoriesModule,
+    TermsModule,
   ],
   controllers: [AuthController],
   providers: [AuthService, JwtStrategy, ErrorConfirm, LoginProcess],
