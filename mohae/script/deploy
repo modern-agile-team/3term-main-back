@@ -1,5 +1,5 @@
 #!/bin/bash
-ssh -t -t ubuntu@54.180.139.13 <<EOF
+ssh -t -t ubuntu@13.125.167.73 <<EOF
     cd ~/mohae-back/mohae
     git pull origin develop
     curl -o-   https://raw.githubusercontent.com/creationix/nvm/v0.33.8/install.sh | bash

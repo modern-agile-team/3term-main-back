@@ -31,14 +31,18 @@ export class FaqsController {
     description: 'FAQ를 전체 조회하는 API',
   })
   @Get()
-  async readAllFaq(): Promise<Faq[]> {
-    const response: Faq | Faq[] = await this.faqsService.readAllFaq();
+  async readAllFaqs(): Promise<object> {
+    try {
+      const response: Faq | Faq[] = await this.faqsService.readAllFaqs();
 
-    return Object.assign({
-      statusCode: 200,
-      msg: `전체 FAQ가 조회되었습니다.`,
-      response,
-    });
+      return Object.assign({
+        statusCode: 200,
+        msg: `전체 FAQ가 조회되었습니다.`,
+        response,
+      });
+    } catch (err) {
+      throw new Error(err);
+    }
   }
 
   @ApiOperation({
@@ -53,16 +57,20 @@ export class FaqsController {
     @Body() createFaqDto: CreateFaqDto,
     @CurrentUser() manager: User,
   ): Promise<object> {
-    const response: boolean = await this.faqsService.createFaq(
-      createFaqDto,
-      manager,
-    );
+    try {
+      const response: boolean = await this.faqsService.createFaq(
+        createFaqDto,
+        manager,
+      );
 
-    return Object.assign({
-      statusCode: 201,
-      msg: `FAQ 생성 완료`,
-      success: response,
-    });
+      return Object.assign({
+        statusCode: 201,
+        msg: `FAQ 생성 완료`,
+        success: response,
+      });
+    } catch (err) {
+      throw new Error(err);
+    }
   }
 
   @ApiOperation({
@@ -78,17 +86,21 @@ export class FaqsController {
     @Body() updateFaqDto: UpdateFaqDto,
     @CurrentUser() manager: User,
   ): Promise<object> {
-    const response: boolean = await this.faqsService.updateFaq(
-      faqNo,
-      updateFaqDto,
-      manager,
-    );
+    try {
+      const response: boolean = await this.faqsService.updateFaq(
+        faqNo,
+        updateFaqDto,
+        manager,
+      );
 
-    return Object.assign({
-      statusCode: 204,
-      msg: `FAQ 수정 완료`,
-      success: response,
-    });
+      return Object.assign({
+        statusCode: 204,
+        msg: `FAQ 수정 완료`,
+        success: response,
+      });
+    } catch (err) {
+      throw new Error(err);
+    }
   }
 
   @ApiOperation({
@@ -100,12 +112,16 @@ export class FaqsController {
   @UseGuards(RolesGuard)
   @UseGuards(AuthGuard())
   async deleteFaq(@Param('faqNo') faqNo: number): Promise<object> {
-    const response: boolean = await this.faqsService.deleteFaq(faqNo);
+    try {
+      const response: boolean = await this.faqsService.deleteFaq(faqNo);
 
-    return Object.assign({
-      statusCode: 204,
-      msg: `FAQ 삭제 완료`,
-      success: response,
-    });
+      return Object.assign({
+        statusCode: 204,
+        msg: `FAQ 삭제 완료`,
+        success: response,
+      });
+    } catch (err) {
+      throw new Error(err);
+    }
   }
 }
