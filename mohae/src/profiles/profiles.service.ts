@@ -17,28 +17,23 @@ import { SchoolRepository } from 'src/schools/repository/school.repository';
 import { ErrorConfirm } from 'src/common/utils/error';
 import {
   JudgeDuplicateNicknameDto,
+  ProfilePagenationDto,
   UpdateProfileDto,
 } from './dto/update-profile.dto';
 import { create } from 'domain';
+import { SpecRepository } from 'src/specs/repository/spec.repository';
+import { BoardRepository } from 'src/boards/repository/board.repository';
 
 @Injectable()
 export class ProfilesService {
   constructor(
-    @InjectRepository(UserRepository)
     private userRepository: UserRepository,
-
-    @InjectRepository(SchoolRepository)
     private schoolRepository: SchoolRepository,
-
-    @InjectRepository(MajorRepository)
     private majorRepository: MajorRepository,
-
-    @InjectRepository(CategoryRepository)
     private categoriesRepository: CategoryRepository,
-
-    @InjectRepository(LikeRepository)
     private likeRepository: LikeRepository,
-
+    private specRepository: SpecRepository,
+    private boardRepository: BoardRepository,
     private errorConfirm: ErrorConfirm,
   ) {}
 
@@ -47,10 +42,8 @@ export class ProfilesService {
     userNo: number,
   ): Promise<object> {
     try {
-      const profile: User = await this.userRepository.findUserProfile(
-        profileUserNo,
-      );
-
+      const { profile, boardsNum }: any =
+        await this.userRepository.findUserProfile(profileUserNo);
       if (!profile) {
         throw new NotFoundException(
           `No: ${profileUserNo} 일치하는 유저가 없습니다.`,
@@ -62,20 +55,54 @@ export class ProfilesService {
       );
       const islike: boolean = liked ? true : false;
 
-      const { likedUser, createdAt }: User = profile;
+      const { likedUser, createdAt }: any = profile;
       const userCreatedAt = `${createdAt.getFullYear()}.${
         createdAt.getMonth() + 1
       }.${createdAt.getDate()}`;
 
       delete profile.likedUser;
       delete profile.createdAt;
+
       profile['userCreatedAt'] = `${userCreatedAt}`;
       profile['likedNum'] = likedUser.length;
+      profile['boardsNum'] = Number(boardsNum);
       profile['islike'] = islike;
 
       return {
         profile,
       };
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  async findUserSpec(userNo: number, take: number, page: number) {
+    try {
+      const profileSpec = await this.specRepository.findUserSpec(
+        userNo,
+        take,
+        page,
+      );
+      return profileSpec;
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  async findUserBoard(
+    userNo: number,
+    take: number,
+    page: number,
+    target: boolean,
+  ) {
+    try {
+      const profileSpec = await this.boardRepository.findUserBoard(
+        userNo,
+        take,
+        page,
+        target,
+      );
+      return profileSpec;
     } catch (err) {
       throw err;
     }

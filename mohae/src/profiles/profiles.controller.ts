@@ -6,10 +6,12 @@ import {
   ParseIntPipe,
   Patch,
   Post,
+  Query,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import {
   JudgeDuplicateNicknameDto,
+  ProfilePagenationDto,
   UpdateProfileDto,
 } from './dto/update-profile.dto';
 import { ProfilesService } from './profiles.service';
@@ -32,6 +34,48 @@ export class ProfilesController {
       return Object.assign({
         statusCode: 200,
         msg: '프로필 조회에 성공했습니다.',
+        response,
+      });
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  @Get('/spec')
+  async findUserSpec(
+    @Query('user') user: number,
+    @Query('take') take: number,
+    @Query('page') page: number,
+  ) {
+    try {
+      const response = await this.profileService.findUserSpec(user, take, page);
+      return Object.assign({
+        statusCode: 200,
+        msg: '프로필 스펙 조회에 성공했습니다.',
+        response,
+      });
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  @Get('/board')
+  async findUserBoard(
+    @Query('user') user: number,
+    @Query('take') take: number,
+    @Query('page') page: number,
+    @Query('target') target: boolean,
+  ) {
+    try {
+      const response = await this.profileService.findUserBoard(
+        user,
+        take,
+        page,
+        target,
+      );
+      return Object.assign({
+        statusCode: 200,
+        msg: '프로필 스펙 조회에 성공했습니다.',
         response,
       });
     } catch (err) {

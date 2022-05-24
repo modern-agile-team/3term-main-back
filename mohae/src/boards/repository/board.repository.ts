@@ -386,4 +386,36 @@ export class BoardRepository extends Repository<Board> {
       `${err} ### 인기 게시판 조회 : 알 수 없는 서버 에러입니다.`;
     }
   }
+
+  async findUserBoard(
+    userNo: number,
+    take: number,
+    page: number,
+    target: boolean,
+  ) {
+    try {
+      const boards = await this.createQueryBuilder('boards')
+        .leftJoin('boards.user', 'user')
+        .select([
+          'boards.no',
+          'boards.title',
+          'boards.description',
+          'boards.photo_url',
+          'boards.target',
+          'user.no',
+        ])
+        .where('user.no = :userNo', { userNo })
+        .andWhere('boards.no = boardPhotos.board')
+        .andWhere('boards.target = :target', { target })
+        .take(take)
+        .skip(take * (page - 1))
+        .getMany();
+
+      return boards;
+    } catch (err) {
+      throw new InternalServerErrorException(
+        `${err}####스펙 전체 조회 관련 서버 에러입니다`,
+      );
+    }
+  }
 }

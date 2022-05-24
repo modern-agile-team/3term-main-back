@@ -26,7 +26,32 @@ export class SpecRepository extends Repository<Spec> {
         ])
         .where('user.no = :userNo', { userNo })
         .andWhere('spec.no = specPhotos.spec')
-        .take(3)
+        .getMany();
+
+      return specs;
+    } catch (err) {
+      throw new InternalServerErrorException(
+        `${err}####스펙 전체 조회 관련 서버 에러입니다`,
+      );
+    }
+  }
+
+  async findUserSpec(userNo: number, take: number, page: number) {
+    try {
+      const specs = await this.createQueryBuilder('spec')
+        .leftJoin('spec.specPhotos', 'specPhotos')
+        .leftJoin('spec.user', 'user')
+        .select([
+          'spec.no',
+          'spec.title',
+          'spec.description',
+          'specPhotos.photo_url',
+          'user.no',
+        ])
+        .where('user.no = :userNo', { userNo })
+        .andWhere('spec.no = specPhotos.spec')
+        .take(take)
+        .skip(take * (page - 1))
         .getMany();
 
       return specs;

@@ -187,9 +187,9 @@ export class UserRepository extends Repository<User> {
     }
   }
   // 프로필 관련 기능
-  async findUserProfile(userNo: number): Promise<User> {
+  async findUserProfile(userNo: number): Promise<object> {
     try {
-      const user: User = await this.createQueryBuilder('users')
+      const profile: User = await this.createQueryBuilder('users')
         .leftJoin('users.school', 'school')
         .leftJoin('users.major', 'major')
         .leftJoin('users.categories', 'categories')
@@ -211,8 +211,12 @@ export class UserRepository extends Repository<User> {
         ])
         .where('users.no = :userNo', { userNo })
         .getOne();
-
-      return user;
+      const { boardsNum }: any = await this.createQueryBuilder('users')
+        .leftJoin('users.boards', 'boards')
+        .select('COUNT(boards.no) AS boardsNum')
+        .where('users.no = :userNo', { userNo })
+        .getRawOne();
+      return { profile, boardsNum };
     } catch (err) {
       throw new InternalServerErrorException(
         `${err} ### 유저 프로필 선택 조회 : 알 수 없는 서버 에러입니다.`,
