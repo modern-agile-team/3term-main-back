@@ -30,7 +30,8 @@ import { Notice } from 'src/notices/entity/notice.entity';
 import { Board } from 'src/boards/entity/board.entity';
 import { UserLike } from 'src/like/entity/user.like.entity';
 import { BoardLike } from 'src/like/entity/board.like.entity';
-
+import { TermsUser } from 'src/terms/entity/terms.entity';
+import { Terms } from 'src/terms/entity/terms.entity';
 @Entity('users')
 export class User extends BaseEntity {
   @PrimaryGeneratedColumn()
@@ -110,6 +111,11 @@ export class User extends BaseEntity {
     comment: '회원가입 시간',
   })
   createdAt: Date;
+
+  @OneToMany((type) => TermsUser, (termsUser) => termsUser.user, {
+    nullable: true,
+  })
+  userTerms: TermsUser[];
 
   // 나를 좋아요 한 유저 목록
   @OneToMany((type) => UserLike, (userLike) => userLike.likedUser, {

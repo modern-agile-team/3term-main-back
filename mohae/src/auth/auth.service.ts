@@ -5,7 +5,7 @@ import {
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
+import { getCustomRepositoryToken, InjectRepository } from '@nestjs/typeorm';
 import {
   ChangePasswordDto,
   CreateUserDto,
@@ -24,8 +24,13 @@ import { ErrorConfirm } from 'src/common/utils/error';
 import { School } from 'src/schools/entity/school.entity';
 import { Major } from 'src/majors/entity/major.entity';
 import { Category } from 'src/categories/entity/category.entity';
-import { Connection } from 'typeorm';
+import { Connection, getCustomRepository } from 'typeorm';
 import { query } from 'express';
+import {
+  TermsReporitory,
+  TermsUserReporitory,
+} from 'src/terms/repository/terms.repository';
+import { Terms } from 'src/terms/entity/terms.entity';
 
 const jwtConfig: any = config.get('jwt');
 @Injectable()
@@ -42,6 +47,12 @@ export class AuthService {
 
     @InjectRepository(CategoryRepository)
     private categoriesRepository: CategoryRepository,
+
+    @InjectRepository(TermsReporitory)
+    private termsRepository: TermsReporitory,
+
+    @InjectRepository(TermsUserReporitory)
+    private termsUserRepository: TermsUserReporitory,
 
     private connection: Connection,
     private errorConfirm: ErrorConfirm,
@@ -61,6 +72,7 @@ export class AuthService {
         nickname,
         categories,
         password,
+        terms,
       }: CreateUserDto = createUserDto;
       const schoolRepo: School = await this.schoolRepository.findOne(school, {
         select: ['no'],
@@ -112,11 +124,30 @@ export class AuthService {
         .getCustomRepository(UserRepository)
         .createUser(createUserDto, schoolRepo, majorRepo);
       this.errorConfirm.badGatewayError(user, 'user 생성 실패');
+      const termsArr: Array<object> = terms.map((boolean, index) => {
+        return {
+          agree: boolean,
+          user: user,
+          terms: index + 1,
+        };
+      });
+      console.log(termsArr);
+      const termsUserNums: Array<object> = await queryRunner.manager
+        .getCustomRepository(TermsUserReporitory)
+        .addTermsUser(termsArr);
+
+      termsUserNums.forEach((termsUserNum, index) => {
+        queryRunner.manager
+          .getCustomRepository(TermsReporitory)
+          .termsAddRelation(index + 1, termsUserNum['no']);
+        queryRunner.manager
+          .getCustomRepository(UserRepository)
+          .userRelation(user, termsUserNum['no'], 'userTerms');
+      });
 
       const filteredCategories: Array<Category> = categoriesRepo.filter(
         (element) => element !== undefined,
       );
-
       for (const categoryNo of filteredCategories) {
         await queryRunner.manager
           .getCustomRepository(CategoryRepository)
