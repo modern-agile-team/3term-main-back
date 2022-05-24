@@ -1,6 +1,9 @@
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
-import { CreateReviewDto } from './dto/review.dto';
+import { User } from '@sentry/node';
+import { CurrentUser } from 'src/common/decorators/current-user.decorator';
+import { CreateReviewDto } from './dto/create-review.dto';
 import { Review } from './entity/review.entity';
 import { ReviewsService } from './reviews.service';
 
@@ -47,6 +50,7 @@ export class ReviewsController {
   async createReview(
     @Body() createReviewDto: CreateReviewDto,
   ): Promise<Review> {
+    console.log(createReviewDto);
     const response = await this.reviewService.createReview(createReviewDto);
 
     return Object.assign({
@@ -54,5 +58,21 @@ export class ReviewsController {
       msg: '리뷰 생성이 완료되었습니다.',
       response,
     });
+  }
+
+  @Get('/check/:boardNo')
+  @UseGuards(AuthGuard())
+  async checkDuplicateReview(
+    @CurrentUser() reviewer: User,
+    @Param('boardNo') boardNo: number,
+  ) {
+    const response = await this.reviewService.checkDuplicateReview(
+      reviewer,
+      boardNo,
+    );
+    console.log(response);
+    return {
+      msg: '중복이다.',
+    };
   }
 }

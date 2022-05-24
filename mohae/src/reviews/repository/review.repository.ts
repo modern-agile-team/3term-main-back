@@ -2,7 +2,7 @@ import { InternalServerErrorException } from '@nestjs/common';
 import { User } from 'src/auth/entity/user.entity';
 import { Board } from 'src/boards/entity/board.entity';
 import { EntityRepository, Repository } from 'typeorm';
-import { CreateReviewDto } from '../dto/review.dto';
+import { CreateReviewDto } from '../dto/create-review.dto';
 import { Review } from '../entity/review.entity';
 
 @EntityRepository(Review)

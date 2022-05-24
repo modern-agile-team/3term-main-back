@@ -1,9 +1,15 @@
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { User } from '@sentry/node';
 import { UserRepository } from 'src/auth/repository/user.repository';
 import { BoardRepository } from 'src/boards/repository/board.repository';
 import { ErrorConfirm } from 'src/common/utils/error';
-import { CreateReviewDto } from './dto/review.dto';
+import { CreateReviewDto } from './dto/create-review.dto';
+
 import { Review } from './entity/review.entity';
 import { ReviewRepository } from './repository/review.repository';
 
@@ -84,5 +90,23 @@ export class ReviewsService {
     } catch (e) {
       throw e;
     }
+  }
+
+  async checkDuplicateReview(reviewer: User, boardNo: number) {
+    const reviewerNo = reviewer.no;
+    const board = await this.boardsRepository.findOne(boardNo, {
+      select: ['no'],
+      relations: ['user', 'reviews'],
+    });
+    console.log(board);
+    if (reviewerNo === board.user.no) {
+      throw new BadRequestException(
+        '자신이 작성한 게시글에는 리뷰를 남길 수 없습니다.',
+      );
+    }
+
+    const response = await this.reviewRepository.find();
+
+    return response;
   }
 }
