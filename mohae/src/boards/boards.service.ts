@@ -6,7 +6,7 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { CategoryRepository } from 'src/categories/repository/category.repository';
 import { AreasRepository } from 'src/areas/repository/area.repository';
-import { Any, DeleteResult, RelationId } from 'typeorm';
+import { Any, Connection, DeleteResult, RelationId } from 'typeorm';
 import {
   CreateBoardDto,
   SearchBoardDto,
@@ -38,6 +38,8 @@ export class BoardsService {
 
     @InjectRepository(UserRepository)
     private userRepository: UserRepository,
+
+    private connection: Connection,
 
     private errorConfirm: ErrorConfirm,
   ) {}
@@ -203,61 +205,87 @@ export class BoardsService {
   }
 
   async createBoard(createBoardDto: CreateBoardDto): Promise<object> {
-    const { categoryNo, areaNo, deadline, userNo, photo_url }: any =
-      createBoardDto;
+    const queryRunner = this.connection.createQueryRunner();
 
-    const category: Category = await this.categoryRepository.findOne(
-      categoryNo,
-      {
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+    try {
+      const { categoryNo, areaNo, deadline, userNo, photo_url }: any =
+        createBoardDto;
+
+      const category: Category = await this.categoryRepository.findOne(
+        categoryNo,
+        {
+          relations: ['boards'],
+        },
+      );
+
+      this.errorConfirm.notFoundError(
+        category,
+        `해당 카테고리를 찾을 수 없습니다.`,
+      );
+
+      const area: Area = await this.areaRepository.findOne(areaNo, {
         relations: ['boards'],
-      },
-    );
+      });
 
-    this.errorConfirm.notFoundError(
-      category,
-      `해당 카테고리를 찾을 수 없습니다.`,
-    );
+      this.errorConfirm.notFoundError(area, `해당 지역을 찾을 수 없습니다.`);
 
-    const area: Area = await this.areaRepository.findOne(areaNo, {
-      relations: ['boards'],
-    });
+      const user: User = await this.userRepository.findOne(userNo, {
+        relations: ['boards'],
+      });
 
-    this.errorConfirm.notFoundError(area, `해당 지역을 찾을 수 없습니다.`);
+      this.errorConfirm.notFoundError(user, `해당 회원을 찾을 수 없습니다.`);
 
-    const user: User = await this.userRepository.findOne(userNo, {
-      relations: ['boards'],
-    });
+      let endTime: Date = new Date();
+      endTime.setHours(endTime.getHours() + 9);
 
-    this.errorConfirm.notFoundError(user, `해당 회원을 찾을 수 없습니다.`);
+      if (!deadline) {
+        endTime = null;
+      } else if (deadline) {
+        endTime.setDate(endTime.getDate() + deadline);
+      }
 
-    let endTime = new Date();
-    endTime.setHours(endTime.getHours() + 9);
+      const board: Board = await this.boardRepository.createBoard(
+        category,
+        area,
+        user,
+        createBoardDto,
+        endTime,
+      );
 
-    if (!deadline) {
-      endTime = null;
-    } else if (deadline) {
-      endTime.setDate(endTime.getDate() + deadline);
+      const photos: Array<object> = photo_url.map((photo, index) => {
+        return {
+          photo_url: photo,
+          board: board.no,
+          order: index + 1,
+        };
+      });
+
+      const boardPhotoNo: Array<object> = await queryRunner.manager
+        .getCustomRepository(BoardPhotoRepository)
+        .createBoardPhoto(photos);
+
+      if (photos.length !== boardPhotoNo.length) {
+        throw new InternalServerErrorException(
+          '게시글 사진 등록 도중 DB관련 오류',
+        );
+      }
+      await queryRunner.manager
+        .getCustomRepository(BoardRepository)
+        .saveCategory(categoryNo, board);
+      await queryRunner.commitTransaction();
+      if (!board) {
+        return { isSuccess: false, msg: '게시글 생성이 되지 않았습니다.' };
+      }
+
+      return { isSuccess: true, msg: '게시글 생성이 완료 되었습니다.' };
+    } catch (err) {
+      await queryRunner.rollbackTransaction();
+      throw err;
+    } finally {
+      await queryRunner.release();
     }
-
-    const board: any = await this.boardRepository.createBoard(
-      category,
-      area,
-      user,
-      createBoardDto,
-      endTime,
-    );
-
-    for (const photo of photo_url) {
-      await this.boardPhotoRepository.createPhoto(photo, board.no);
-    }
-
-    await this.boardRepository.saveCategory(categoryNo, board);
-
-    if (!board) {
-      return { isSuccess: false, msg: '게시글 생성이 되지 않았습니다.' };
-    }
-
-    return { isSuccess: true, msg: '게시글 생성이 완료 되었습니다.' };
   }
 
   async deleteBoard(no: number): Promise<DeleteResult> {
@@ -282,83 +310,120 @@ export class BoardsService {
     no: number,
     updateBoardDto: UpdateBoardDto,
   ): Promise<object> {
-    const { category, area, deadline, photo_url } = updateBoardDto;
+    const queryRunner = this.connection.createQueryRunner();
 
-    const board: Board = await this.boardRepository.findOne(no);
-    this.errorConfirm.notFoundError(
-      board.no,
-      `해당 게시글을 찾을 수 없습니다.`,
-    );
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+    try {
+      const { category, area, deadline, photo_url }: UpdateBoardDto =
+        updateBoardDto;
 
-    let endTime: Date = new Date(board.createdAt);
-
-    if (deadline) {
-      endTime.setDate(endTime.getDate() + deadline);
-      updateBoardDto.deadline = endTime;
-    }
-
-    const currentTime: Date = new Date();
-    currentTime.setHours(currentTime.getHours() + 9);
-
-    if (deadline && endTime <= currentTime) {
-      throw new BadRequestException('다른 기간을 선택해 주십시오');
-    }
-
-    const boardKey: any = Object.keys(updateBoardDto);
-
-    const deletedNullBoardKey = {};
-
-    boardKey.forEach((item: any) => {
-      updateBoardDto[item] !== null
-        ? (deletedNullBoardKey[item] = updateBoardDto[item])
-        : 0;
-    });
-
-    if (deadline !== null) {
-      if (!deadline) {
-        endTime = null;
-        deletedNullBoardKey['deadline'] = endTime;
-      }
-    }
-
-    if (category) {
-      const categoryNo: Category = await this.categoryRepository.findOne(
-        category,
-        {
-          relations: ['boards'],
-        },
-      );
+      const board: Board = await this.boardRepository.findOne(no);
       this.errorConfirm.notFoundError(
-        categoryNo,
-        `해당 카테고리를 찾을 수 없습니다.`,
+        board.no,
+        `해당 게시글을 찾을 수 없습니다.`,
       );
-    }
 
-    if (area) {
-      const getArea: Area = await this.areaRepository.findOne(area, {
-        relations: ['boards'],
+      let endTime: Date = new Date(board.createdAt);
+
+      if (deadline) {
+        endTime.setDate(endTime.getDate() + deadline);
+        updateBoardDto.deadline = endTime;
+      }
+
+      const currentTime: Date = new Date();
+      currentTime.setHours(currentTime.getHours() + 9);
+
+      if (deadline && endTime <= currentTime) {
+        throw new BadRequestException('다른 기간을 선택해 주십시오');
+      }
+
+      const boardKey: any = Object.keys(updateBoardDto);
+
+      const deletedNullBoardKey = {};
+
+      boardKey.forEach((item: any) => {
+        updateBoardDto[item] !== null
+          ? (deletedNullBoardKey[item] = updateBoardDto[item])
+          : 0;
       });
 
-      this.errorConfirm.notFoundError(getArea, `해당 지역을 찾을 수 없습니다.`);
-    }
-
-    if (Object.keys(deletedNullBoardKey).includes('photo_url')) {
-      await this.boardPhotoRepository.deletePhoto(no);
-      for (const photo of photo_url) {
-        this.boardPhotoRepository.createPhoto(photo, no);
+      if (deadline !== null) {
+        if (!deadline) {
+          endTime = null;
+          deletedNullBoardKey['deadline'] = endTime;
+        }
       }
-      delete deletedNullBoardKey['photo_url'];
+
+      if (category) {
+        const categoryNo: Category = await this.categoryRepository.findOne(
+          category,
+          {
+            relations: ['boards'],
+          },
+        );
+        this.errorConfirm.notFoundError(
+          categoryNo,
+          `해당 카테고리를 찾을 수 없습니다.`,
+        );
+      }
+
+      if (area) {
+        const areaNo: Area = await this.areaRepository.findOne(area, {
+          relations: ['boards'],
+        });
+
+        this.errorConfirm.notFoundError(
+          areaNo,
+          `해당 지역을 찾을 수 없습니다.`,
+        );
+      }
+
+      if (Object.keys(deletedNullBoardKey).includes('photo_url')) {
+        const deleteBoardPhoto: number = await queryRunner.manager
+          .getCustomRepository(BoardPhotoRepository)
+          .deleteBoardPhoto(no);
+
+        if (!deleteBoardPhoto) {
+          throw new InternalServerErrorException(
+            '게시글 사진 삭제 도중 DB관련 오류',
+          );
+        }
+
+        const photos: Array<object> = photo_url.map((photo, index) => {
+          return {
+            photo_url: photo,
+            board: board.no,
+            order: index + 1,
+          };
+        });
+        const boardPhotoNo: Array<object> = await queryRunner.manager
+          .getCustomRepository(BoardPhotoRepository)
+          .createBoardPhoto(photos);
+        if (photos.length !== boardPhotoNo.length) {
+          throw new InternalServerErrorException(
+            '게시글 사진 등록 도중 DB관련 오류',
+          );
+        }
+        delete deletedNullBoardKey['photo_url'];
+      }
+
+      const updatedBoard = await queryRunner.manager
+        .getCustomRepository(BoardRepository)
+        .updateBoard(no, deletedNullBoardKey);
+
+      await queryRunner.commitTransaction();
+
+      if (!updatedBoard) {
+        return { isSuccess: false };
+      }
+
+      return { isSuccess: true };
+    } catch (err) {
+      await queryRunner.rollbackTransaction();
+      throw err;
+    } finally {
+      await queryRunner.release();
     }
-
-    const updatedBoard: number = await this.boardRepository.updateBoard(
-      no,
-      deletedNullBoardKey,
-    );
-
-    if (!updatedBoard) {
-      return { isSuccess: false };
-    }
-
-    return { isSuccess: true };
   }
 }

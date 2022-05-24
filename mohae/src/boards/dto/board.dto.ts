@@ -74,18 +74,23 @@ export abstract class BoardContent {
   areaNo: number;
 
   @IsString()
+  @IsOptional()
   @MaxLength(100)
-  note1: string;
+  note1?: string;
 
   @IsString()
+  @IsOptional()
   @MaxLength(100)
-  note2: string;
+  note2?: string;
 
   @IsString()
+  @IsOptional()
   @MaxLength(100)
-  note3: string;
+  note3?: string;
 
   @IsArray()
+  @IsOptional()
+  @ArrayMaxSize(5)
   photo_url?: [];
 }
 

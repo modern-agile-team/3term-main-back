@@ -60,15 +60,15 @@ export class SpecPhotoRepository extends Repository<SpecPhoto> {
 
 @EntityRepository(BoardPhoto)
 export class BoardPhotoRepository extends Repository<BoardPhoto> {
-  async createPhoto(photo_url, board_no): Promise<number> {
+  async createBoardPhoto(boardPhotos: Array<object>): Promise<Array<object>> {
     try {
-      const { raw } = await this.createQueryBuilder('boardPhotos')
+      const result = await this.createQueryBuilder('boardPhotos')
         .insert()
         .into(BoardPhoto)
-        .values([{ photo_url, board: board_no }])
+        .values(boardPhotos)
         .execute();
 
-      return raw.insertId;
+      return result.identifiers;
     } catch (err) {
       throw new InternalServerErrorException(
         `게시글 사진 저장도중 에러가 발생하였습니다. ${err}`,
@@ -76,32 +76,15 @@ export class BoardPhotoRepository extends Repository<BoardPhoto> {
     }
   }
 
-  async updatePhoto(
-    no: number,
-    photo_url: string,
-    sequence_no: number,
-  ): Promise<number> {
+  async deleteBoardPhoto(board_no: number): Promise<number> {
     try {
-      const { affected }: UpdateResult = await this.createQueryBuilder()
-        .update(BoardPhoto)
-        .set({ photo_url })
-        .where('board_no = :no', { no })
-        .andWhere('sequence_no = :no', { no: sequence_no })
+      const { affected } = await this.createQueryBuilder('boardPhotos')
+        .delete()
+        .from(BoardPhoto)
+        .where('board_no = :board_no', { board_no })
         .execute();
 
       return affected;
-    } catch (err) {
-      throw err;
-    }
-  }
-
-  async deletePhoto(no: number) {
-    try {
-      await this.createQueryBuilder('boardPhotos')
-        .delete()
-        .from(BoardPhoto)
-        .where('board_no = :no', { no })
-        .execute();
     } catch (err) {
       throw new InternalServerErrorException(
         `게시글 사진 지우는 로직 에러 발생 ${err}`,
