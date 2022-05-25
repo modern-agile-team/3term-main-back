@@ -1,3 +1,12 @@
+import {
+  IsNotEmpty,
+  IsNumber,
+  IsString,
+  Length,
+  Max,
+  MaxLength,
+  Min,
+} from 'class-validator';
 import { User } from 'src/auth/entity/user.entity';
 import { Board } from 'src/boards/entity/board.entity';
 import {
@@ -8,49 +17,48 @@ import {
   Entity,
   ManyToOne,
   PrimaryGeneratedColumn,
-  RelationId,
   UpdateDateColumn,
 } from 'typeorm';
 
 @Entity('reviews')
 export class Review extends BaseEntity {
   @PrimaryGeneratedColumn()
-  readonly no: number;
+  no: number;
 
+  @IsNotEmpty({ message: '후기를 작성해 주세요.' })
+  @IsString()
+  @MaxLength(100, { message: '후기는 100자 이내로 입력해 주세요.' })
   @Column({
     type: 'mediumtext',
     comment: '리뷰 작성할 때 내용이 들어감',
   })
-  readonly description: string;
+  description: string;
 
+  @IsNotEmpty({ message: '점수를 입력해 주세요.' })
+  @IsNumber()
+  @Min(1, { message: '평점은 최소 1점이어야 합니다.' })
+  @Max(5, { message: '평점은 최대 5점이어야 합니다.' })
   @Column({
     type: 'int',
     comment: '리뷰 작성할 때 평점이 들어감',
   })
-  readonly rating: number;
+  rating: number;
 
   /* 게시글 리뷰 Timestamps */
   @CreateDateColumn({
     comment: '리뷰 작성 시간',
   })
-  readonly createdAt: Date;
+  createdAt: Date;
 
   @UpdateDateColumn({
     comment: '리뷰 수정 시간인데 혹시 몰라 생성해둠',
   })
-  readonly updatedAt: Date;
+  updatedAt: Date;
 
   @DeleteDateColumn({
     comment: '리뷰 삭제 시간',
   })
-  readonly deletedAt: Date;
-
-  /* 리뷰 작성자 번호 및 게시글 번호 */
-  @RelationId((review: Review) => review.reviewer)
-  reviewerNo: number;
-
-  @RelationId((review: Review) => review.board)
-  boardNo: number;
+  deletedAt: Date | null;
 
   /* 게시글 리뷰 Relations */
   @ManyToOne((type) => Board, (board) => board.reviews, {
@@ -58,6 +66,13 @@ export class Review extends BaseEntity {
   })
   board: Board;
 
-  @ManyToOne((type) => User, (user) => user.reviews)
+  @ManyToOne((type) => User, (user) => user.reviews, {
+    onDelete: 'SET NULL',
+  })
   reviewer: User;
+
+  @ManyToOne((type) => User, (user) => user.reviewBasket, {
+    onDelete: 'SET NULL',
+  })
+  targetUser: User;
 }

@@ -1,8 +1,8 @@
 import { InternalServerErrorException } from '@nestjs/common';
 import { User } from 'src/auth/entity/user.entity';
 import { Board } from 'src/boards/entity/board.entity';
-import { EntityRepository, Repository } from 'typeorm';
-import { CreateReviewDto } from '../dto/review.dto';
+import { EntityRepository, InsertResult, Repository } from 'typeorm';
+import { CreateReviewDto } from '../dto/create-review.dto';
 import { Review } from '../entity/review.entity';
 
 @EntityRepository(Review)
@@ -10,20 +10,19 @@ export class ReviewRepository extends Repository<Review> {
   async createReview(
     { description, rating }: CreateReviewDto,
     reviewer: User,
+    targetUser: User,
     board: Board,
-  ) {
+  ): Promise<any> {
     try {
-      const { raw } = await this.createQueryBuilder('reviews')
+      const { raw }: InsertResult = await this.createQueryBuilder('reviews')
         .insert()
         .into(Review)
-        .values({ description, rating, reviewer, board })
+        .values({ description, rating, reviewer, targetUser, board })
         .execute();
 
-      return raw.affectedRows;
-    } catch (e) {
-      throw new InternalServerErrorException(
-        `${e} ### 리뷰 작성 : 알 수 없는 서버 에러입니다.`,
-      );
+      return raw;
+    } catch (err) {
+      throw new InternalServerErrorException(err.message);
     }
   }
 
@@ -53,34 +52,34 @@ export class ReviewRepository extends Repository<Review> {
     }
   }
 
-  async readUserReviews(no: number) {
+  async readUserReviews(targetUserNo: number): Promise<object | undefined> {
     try {
       const qb = this.createQueryBuilder('reviews')
-        .leftJoin('reviews.board', 'board')
         .leftJoin('reviews.reviewer', 'reviewer')
+        .leftJoin('reviews.targetUser', 'targetUser')
+        .leftJoin('reviews.board', 'board')
         .leftJoin('board.user', 'user')
+        .leftJoin('board.photos', 'photo')
         .select([
           'reviews.no',
-          'reviews.reviewer',
+          'reviews.targetUser',
           'reviews.description',
           'reviews.rating',
           'reviews.createdAt',
           'board.no',
           'board.title',
+          'photo.photo_url',
           'reviewer.no',
           'reviewer.nickname',
           'reviewer.photo_url',
         ])
-        .where('user.no = :no', { no });
+        .where('targetUser.no = :targetUserNo', { targetUserNo });
       const reviews = await qb.getMany();
       const count = await qb.getCount();
 
       return { reviews, count };
-    } catch (e) {
-      console.log(e);
-      throw new InternalServerErrorException(
-        `${e} ### 리뷰 선택 조회 : 알 수 없는 서버 에러입니다.`,
-      );
+    } catch (err) {
+      throw new InternalServerErrorException(err.message);
     }
   }
 }

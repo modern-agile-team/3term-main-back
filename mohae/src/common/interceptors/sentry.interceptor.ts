@@ -17,8 +17,12 @@ export class SentryInterceptor implements NestInterceptor {
   intercept(_: ExecutionContext, next: CallHandler) {
     return next.handle().pipe(
       catchError((error) => {
-        Sentry.captureException(error);
+        if (error.status / 100 !== 5) {
+          const { response } = error;
+          return of(response);
+        }
 
+        Sentry.captureException(error);
         const { SENTRY_DSN } = config.get('sentry');
         const webhook = new IncomingWebhook(SENTRY_DSN);
 
