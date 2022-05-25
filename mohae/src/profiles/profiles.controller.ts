@@ -9,6 +9,8 @@ import {
   Query,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
+import { Board } from 'src/boards/entity/board.entity';
+import { Spec } from 'src/specs/entity/spec.entity';
 import {
   JudgeDuplicateNicknameDto,
   ProfilePagenationDto,
@@ -48,7 +50,11 @@ export class ProfilesController {
     @Query('page') page: number,
   ) {
     try {
-      const response = await this.profileService.findUserSpec(user, take, page);
+      const response: Array<Spec> = await this.profileService.findUserSpec(
+        user,
+        take,
+        page,
+      );
       return Object.assign({
         statusCode: 200,
         msg: '프로필 스펙 조회에 성공했습니다.',
@@ -67,7 +73,7 @@ export class ProfilesController {
     @Query('target') target: boolean,
   ) {
     try {
-      const response = await this.profileService.findUserBoard(
+      const response: Array<Board> = await this.profileService.findUserBoard(
         user,
         take,
         page,

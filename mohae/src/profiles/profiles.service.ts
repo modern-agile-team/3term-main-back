@@ -23,6 +23,8 @@ import {
 import { create } from 'domain';
 import { SpecRepository } from 'src/specs/repository/spec.repository';
 import { BoardRepository } from 'src/boards/repository/board.repository';
+import { Spec } from 'src/specs/entity/spec.entity';
+import { Board } from 'src/boards/entity/board.entity';
 
 @Injectable()
 export class ProfilesService {
@@ -76,14 +78,18 @@ export class ProfilesService {
     }
   }
 
-  async findUserSpec(userNo: number, take: number, page: number) {
+  async findUserSpec(
+    userNo: number,
+    take: number,
+    page: number,
+  ): Promise<Array<Spec>> {
     try {
-      const profileSpec = await this.specRepository.findUserSpec(
+      const profileSpecs: Array<Spec> = await this.specRepository.findUserSpec(
         userNo,
         take,
         page,
       );
-      return profileSpec;
+      return profileSpecs;
     } catch (err) {
       throw err;
     }
@@ -94,15 +100,11 @@ export class ProfilesService {
     take: number,
     page: number,
     target: boolean,
-  ) {
+  ): Promise<Array<Board>> {
     try {
-      const profileSpec = await this.boardRepository.findUserBoard(
-        userNo,
-        take,
-        page,
-        target,
-      );
-      return profileSpec;
+      const profileBoards: Array<Board> =
+        await this.boardRepository.findUserBoard(userNo, take, page, target);
+      return profileBoards;
     } catch (err) {
       throw err;
     }

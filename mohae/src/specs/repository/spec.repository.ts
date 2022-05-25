@@ -36,9 +36,13 @@ export class SpecRepository extends Repository<Spec> {
     }
   }
 
-  async findUserSpec(userNo: number, take: number, page: number) {
+  async findUserSpec(
+    userNo: number,
+    take: number,
+    page: number,
+  ): Promise<Array<Spec>> {
     try {
-      const specs = await this.createQueryBuilder('spec')
+      const specs: Array<Spec> = await this.createQueryBuilder('spec')
         .leftJoin('spec.specPhotos', 'specPhotos')
         .leftJoin('spec.user', 'user')
         .select([

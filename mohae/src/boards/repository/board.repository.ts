@@ -392,15 +392,16 @@ export class BoardRepository extends Repository<Board> {
     take: number,
     page: number,
     target: boolean,
-  ) {
+  ): Promise<Array<Board>> {
     try {
-      const boards = await this.createQueryBuilder('boards')
+      const boards: Array<Board> = await this.createQueryBuilder('boards')
         .leftJoin('boards.user', 'user')
+        .leftJoin('boards.photos', 'boardPhotos')
         .select([
           'boards.no',
           'boards.title',
           'boards.description',
-          'boards.photo_url',
+          'boardPhotos.photo_url',
           'boards.target',
           'user.no',
         ])
