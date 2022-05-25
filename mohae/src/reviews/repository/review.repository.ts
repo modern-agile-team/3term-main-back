@@ -11,19 +11,17 @@ export class ReviewRepository extends Repository<Review> {
     { description, rating }: CreateReviewDto,
     reviewer: User,
     board: Board,
-  ) {
+  ): Promise<number> {
     try {
-      const { raw } = await this.createQueryBuilder('reviews')
+      const { raw }: any = await this.createQueryBuilder('reviews')
         .insert()
         .into(Review)
         .values({ description, rating, reviewer, board })
         .execute();
 
       return raw.affectedRows;
-    } catch (e) {
-      throw new InternalServerErrorException(
-        `${e} ### 리뷰 작성 : 알 수 없는 서버 에러입니다.`,
-      );
+    } catch (err) {
+      throw new InternalServerErrorException(err.message);
     }
   }
 

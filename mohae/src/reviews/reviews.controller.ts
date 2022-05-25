@@ -1,13 +1,24 @@
-import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  Param,
+  Post,
+  UseGuards,
+  UseInterceptors,
+} from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
-import { User } from '@sentry/node';
+import { User } from 'src/auth/entity/user.entity';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
+import { SuccesseInterceptor } from 'src/common/interceptors/success.interceptor';
 import { CreateReviewDto } from './dto/create-review.dto';
 import { Review } from './entity/review.entity';
 import { ReviewsService } from './reviews.service';
 
 @Controller('reviews')
+@UseInterceptors(SuccesseInterceptor)
 @ApiTags('Reviews')
 export class ReviewsController {
   constructor(private reviewService: ReviewsService) {}
@@ -31,7 +42,7 @@ export class ReviewsController {
     summary: '마이페이지에 나타나는 유저 리뷰',
     description: '마이페이지에 나타나는 유저 리뷰 조회 API',
   })
-  @Get(':userNo')
+  @Get()
   async readUserReviews(@Param('userNo') userNo: number) {
     const response = await this.reviewService.readUserReviews(userNo);
 
@@ -47,21 +58,17 @@ export class ReviewsController {
     description: '리뷰 작성 API',
   })
   @UseGuards(AuthGuard())
+  @HttpCode(201)
   @Post()
   async createReview(
     @CurrentUser() reviewer: User,
     @Body() createReviewDto: CreateReviewDto,
   ) {
-    const response = await this.reviewService.createReview(
-      reviewer,
-      createReviewDto,
-    );
+    await this.reviewService.createReview(reviewer, createReviewDto);
 
-    return Object.assign({
-      statusCode: 201,
+    return {
       msg: '리뷰 생성이 완료되었습니다.',
-      response,
-    });
+    };
   }
 
   @Get('/check/:boardNo')

@@ -4,8 +4,9 @@ import {
   InternalServerErrorException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { User } from '@sentry/node';
+import { User } from 'src/auth/entity/user.entity';
 import { UserRepository } from 'src/auth/repository/user.repository';
+import { Board } from 'src/boards/entity/board.entity';
 import { BoardRepository } from 'src/boards/repository/board.repository';
 import { ErrorConfirm } from 'src/common/utils/error';
 import { CreateReviewDto } from './dto/create-review.dto';
@@ -57,11 +58,11 @@ export class ReviewsService {
   }
 
   async createReview(reviewer: User, createReviewDto: CreateReviewDto) {
-    const boardNo = createReviewDto.board;
-    // const { boardNo } = createReviewDto;
-    const reviewerNo = reviewer.no;
+    const { boardNo }: any = createReviewDto;
+
     try {
-      const board = await this.boardsRepository.findOne(boardNo, {
+      const board: Board = await this.boardsRepository.findOne(boardNo, {
+        select: ['no'],
         relations: ['reviews'],
       });
 
@@ -70,17 +71,16 @@ export class ReviewsService {
         '리뷰를 작성하려는 게시글이 없습니다.',
       );
 
-      const affectedRows = await this.reviewRepository.createReview(
+      const affectedRows: number = await this.reviewRepository.createReview(
         createReviewDto,
-        reviewerNo,
+        reviewer,
         board,
       );
 
-      if (!affectedRows) {
-        throw new InternalServerErrorException('알 수 없는 리뷰 작성 오류');
-      }
-
-      return { success: true };
+      this.errorConfirm.badGatewayError(
+        affectedRows,
+        '알 수 없는 리뷰 작성 오류',
+      );
     } catch (err) {
       throw err;
     }

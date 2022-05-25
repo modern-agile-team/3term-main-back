@@ -3,7 +3,9 @@ import {
   IsNumber,
   IsString,
   Length,
+  Max,
   MaxLength,
+  Min,
 } from 'class-validator';
 import { User } from 'src/auth/entity/user.entity';
 import { Board } from 'src/boards/entity/board.entity';
@@ -23,18 +25,19 @@ export class Review extends BaseEntity {
   @PrimaryGeneratedColumn()
   no: number;
 
-  // @IsNotEmpty({ message: '내용을 작성해 주세요.' })
-  // @IsString()
-  // @MaxLength(100, { message: '100자 이내로 입력해 주세요.' })
+  @IsNotEmpty({ message: '후기를 작성해 주세요.' })
+  @IsString()
+  @MaxLength(100, { message: '후기는 100자 이내로 입력해 주세요.' })
   @Column({
     type: 'mediumtext',
     comment: '리뷰 작성할 때 내용이 들어감',
   })
   description: string;
 
-  // @IsNotEmpty({ message: '점수를 입력해 주세요.' })
-  // @IsNumber()
-  // @Length(1, 5, { message: '1점 ~ 5점 사이 평점을 남겨주세요.' })
+  @IsNotEmpty({ message: '점수를 입력해 주세요.' })
+  @IsNumber()
+  @Min(1, { message: '평점은 최소 1점이어야 합니다.' })
+  @Max(5, { message: '평점은 최대 5점이어야 합니다.' })
   @Column({
     type: 'int',
     comment: '리뷰 작성할 때 평점이 들어감',
