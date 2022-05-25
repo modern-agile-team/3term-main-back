@@ -160,7 +160,7 @@ export class BoardsController {
     },
   })
   async createBoard(@Body() createBoardDto: CreateBoardDto): Promise<object> {
-    const response: object = await this.boardService.createBoard(
+    const response: boolean = await this.boardService.createBoard(
       createBoardDto,
     );
 
@@ -185,8 +185,8 @@ export class BoardsController {
   async updateBoard(
     @Param('no') no: number,
     @Body() updateBoardDto: UpdateBoardDto,
-  ): Promise<Object> {
-    const response: object = await this.boardService.updateBoard(
+  ): Promise<object> {
+    const response: boolean = await this.boardService.updateBoard(
       no,
       updateBoardDto,
     );

@@ -91,7 +91,7 @@ export abstract class BoardContent {
   @IsArray()
   @IsOptional()
   @ArrayMaxSize(5)
-  photo_url?: [];
+  photoUrl?: [];
 }
 
 export class CreateBoardDto extends BoardContent {
@@ -177,5 +177,5 @@ export abstract class UpdateBoardDto {
   @IsOptional()
   @IsArray()
   @ArrayMaxSize(5)
-  photo_url: [];
+  photoUrl: [];
 }

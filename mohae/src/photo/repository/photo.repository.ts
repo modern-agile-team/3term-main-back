@@ -2,7 +2,12 @@ import { InternalServerErrorException } from '@nestjs/common';
 import { CreateBoardDto } from 'src/boards/dto/board.dto';
 import { Board } from 'src/boards/entity/board.entity';
 import { Spec } from 'src/specs/entity/spec.entity';
-import { EntityRepository, InsertResult, Repository } from 'typeorm';
+import {
+  DeleteResult,
+  EntityRepository,
+  InsertResult,
+  Repository,
+} from 'typeorm';
 import { BoardPhoto } from '../entity/board.photo.entity';
 import { SpecPhoto } from '../entity/photo.entity';
 
@@ -57,7 +62,7 @@ export class SpecPhotoRepository extends Repository<SpecPhoto> {
 export class BoardPhotoRepository extends Repository<BoardPhoto> {
   async createBoardPhoto(boardPhotos: Array<object>): Promise<Array<object>> {
     try {
-      const result = await this.createQueryBuilder('boardPhotos')
+      const result: InsertResult = await this.createQueryBuilder('boardPhotos')
         .insert()
         .into(BoardPhoto)
         .values(boardPhotos)
@@ -73,7 +78,9 @@ export class BoardPhotoRepository extends Repository<BoardPhoto> {
 
   async deleteBoardPhoto(board_no: number): Promise<number> {
     try {
-      const { affected } = await this.createQueryBuilder('boardPhotos')
+      const { affected }: DeleteResult = await this.createQueryBuilder(
+        'boardPhotos',
+      )
         .delete()
         .from(BoardPhoto)
         .where('board_no = :board_no', { board_no })

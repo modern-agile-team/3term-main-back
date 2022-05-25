@@ -214,4 +214,7 @@ export class User extends BaseEntity {
     nullable: true,
   })
   likedBoard: BoardLike[];
+
+  @OneToMany((type) => Review, (review) => review.targetUser)
+  reviewBasket: Review[];
 }

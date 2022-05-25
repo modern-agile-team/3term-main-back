@@ -27,6 +27,6 @@ import { ReviewsService } from './reviews.service';
     AuthModule,
   ],
   controllers: [ReviewsController],
-  providers: [ReviewsService, BoardsService, ErrorConfirm],
+  providers: [ReviewsService, ErrorConfirm],
 })
 export class ReviewsModule {}
