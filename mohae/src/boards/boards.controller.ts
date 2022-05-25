@@ -172,8 +172,8 @@ export class BoardsController {
   }
 
   @Delete('/:no')
-  async deleteBoard(@Param('no') no: number): Promise<object> {
-    const response: boolean = await this.boardService.deleteBoard(no);
+  async deleteBoard(@Param('no') boardNo: number): Promise<object> {
+    const response: boolean = await this.boardService.deleteBoard(boardNo);
 
     return Object.assign({
       statusCode: 204,
@@ -184,11 +184,11 @@ export class BoardsController {
 
   @Patch('/:no')
   async updateBoard(
-    @Param('no') no: number,
+    @Param('no') boardNo: number,
     @Body() updateBoardDto: UpdateBoardDto,
   ): Promise<object> {
     const response: boolean = await this.boardService.updateBoard(
-      no,
+      boardNo,
       updateBoardDto,
     );
 

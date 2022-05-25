@@ -317,10 +317,7 @@ export class BoardsService {
         updateBoardDto;
 
       const board: Board = await this.boardRepository.findOne(boardNo);
-      this.errorConfirm.notFoundError(
-        board.no,
-        `해당 게시글을 찾을 수 없습니다.`,
-      );
+      this.errorConfirm.notFoundError(board, `해당 게시글을 찾을 수 없습니다.`);
 
       let endTime: Date = new Date(board.createdAt);
 
