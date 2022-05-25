@@ -2,15 +2,14 @@ import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/auth/entity/user.entity';
 import { UserRepository } from 'src/auth/repository/user.repository';
-import { Mailbox, MailboxUser } from 'src/mailboxes/entity/mailbox.entity';
-import {
-  MailboxRepository,
-  MailboxUserRepository,
-} from 'src/mailboxes/repository/mailbox.repository';
+import { Mailbox } from 'src/mailboxes/entity/mailbox.entity';
+import { MailboxRepository } from 'src/mailboxes/repository/mailbox.repository';
 import { ErrorConfirm } from 'src/common/utils/error';
 import { Connection } from 'typeorm';
 import { SendLetterDto } from './dto/letter.dto';
 import { LetterRepository } from './repository/letter.repository';
+import { MailboxUser } from 'src/mailbox-user/entity/mailbox-user.entity';
+import { MailboxUserRepository } from 'src/mailbox-user/repository/mailbox.repository';
 
 @Injectable()
 export class LettersService {
@@ -18,26 +17,18 @@ export class LettersService {
     @InjectRepository(LetterRepository)
     private letterRepository: LetterRepository,
 
-    @InjectRepository(UserRepository)
     private userRepository: UserRepository,
-
-    @InjectRepository(MailboxRepository)
     private mailboxRepository: MailboxRepository,
-
-    @InjectRepository(MailboxUserRepository)
     private mailboxUserRepository: MailboxUserRepository,
 
     private connection: Connection,
-
     private errorConfirm: ErrorConfirm,
   ) {}
 
-  async sendLetter({
-    senderNo,
-    receiverNo,
-    mailboxNo,
-    description,
-  }: SendLetterDto) {
+  async sendLetter(
+    sender: User,
+    { receiver, mailboxNo, description }: SendLetterDto,
+  ): Promise<boolean> {
     const queryRunner = this.connection.createQueryRunner();
 
     await queryRunner.connect();
@@ -54,20 +45,10 @@ export class LettersService {
         '쪽지함 번호 유무 판단 에러',
       );
 
-      const sender: User = await this.userRepository.findOne(senderNo, {
-        select: ['no'],
-      });
-
-      this.errorConfirm.notFoundError(
-        sender,
-        '채팅 전송자를 찾을 수 없습니다.',
-      );
-
-      const receiver: User = await this.userRepository.findOne(receiverNo, {
-        select: ['no'],
-      });
-
-      this.errorConfirm.notFoundError(receiver, '상대방을 찾을 수 없습니다.');
+      // const receiver: User = await this.userRepository.findOne(receiverNo.no, {
+      //   select: ['no'],
+      // });
+      // this.errorConfirm.notFoundError(receiver, '상대방을 찾을 수 없습니다.');
 
       const mailbox: Mailbox = await this.mailboxRepository.searchMailbox(
         confirmedMailboxNo,
@@ -112,14 +93,14 @@ export class LettersService {
           .userRelation(receiver, receiverMailboxUserNo, 'mailboxUsers');
         await queryRunner.manager
           .getCustomRepository(MailboxRepository)
-          .mailboxRelation(
+          .mailboxAddRelation(
             confirmedMailboxNo,
             senderMailboxUserNo,
             'mailboxUsers',
           );
         await queryRunner.manager
           .getCustomRepository(MailboxRepository)
-          .mailboxRelation(
+          .mailboxAddRelation(
             confirmedMailboxNo,
             receiverMailboxUserNo,
             'mailboxUsers',
@@ -134,12 +115,10 @@ export class LettersService {
         .userRelation(sender, newLetterNo, 'sendLetters');
       await queryRunner.manager
         .getCustomRepository(MailboxRepository)
-        .mailboxRelation(confirmedMailboxNo, newLetterNo, 'letters');
+        .mailboxAddRelation(confirmedMailboxNo, newLetterNo, 'letters');
 
       await queryRunner.commitTransaction();
-      return {
-        success: true,
-      };
+      return true;
     } catch (err) {
       // 에러가 발생시 롤백
       await queryRunner.rollbackTransaction();

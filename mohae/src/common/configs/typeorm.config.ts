@@ -16,7 +16,7 @@ import { Review } from 'src/reviews/entity/review.entity';
 import { School } from 'src/schools/entity/school.entity';
 import { Note } from 'src/notes/entity/note.entity';
 import { Letter } from 'src/letters/entity/letter.entity';
-import { Mailbox, MailboxUser } from 'src/mailboxes/entity/mailbox.entity';
+import { Mailbox } from 'src/mailboxes/entity/mailbox.entity';
 import { Spec } from 'src/specs/entity/spec.entity';
 import { Notice } from 'src/notices/entity/notice.entity';
 import { SpecPhoto } from 'src/photo/entity/photo.entity';
@@ -27,6 +27,8 @@ import {
 } from 'src/reports/entity/report-checks.entity';
 import { BoardLike } from 'src/like/entity/board.like.entity';
 import { BoardPhoto } from 'src/photo/entity/board.photo.entity';
+import { MailboxUser } from 'src/mailbox-user/entity/mailbox-user.entity';
+import { Terms, TermsUser } from 'src/terms/entity/terms.entity';
 const dbConfig = config.get('db');
 
 const { DB_HOST, DB_PORT, DB_USER, DB_PSWORD, DB_DATABASE } = process.env;
@@ -65,6 +67,8 @@ export const typeORMConfig: TypeOrmModuleOptions = {
     MailboxUser,
     BoardLike,
     BoardPhoto,
+    Terms,
+    TermsUser,
   ],
   // entities: [__dirname + '/../**/*.entity.{ts,js}'],
   synchronize: dbConfig.synchronize,
