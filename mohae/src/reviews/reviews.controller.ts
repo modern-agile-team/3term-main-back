@@ -32,12 +32,12 @@ export class ReviewsController {
     description: '마이페이지에 나타나는 유저 리뷰 조회 API',
   })
   @Get(':userNo')
-  async readUserReviews(@Param('userNo') no: number) {
-    const response = await this.reviewService.readUserReviews(no);
+  async readUserReviews(@Param('userNo') userNo: number) {
+    const response = await this.reviewService.readUserReviews(userNo);
 
     return Object.assign({
       statusCode: 200,
-      msg: `${no} 유저의 리뷰가 조회되었습니다.`,
+      msg: `유저의 리뷰가 조회되었습니다.`,
       response,
     });
   }
@@ -46,12 +46,16 @@ export class ReviewsController {
     summary: '리뷰 작성',
     description: '리뷰 작성 API',
   })
+  @UseGuards(AuthGuard())
   @Post()
   async createReview(
+    @CurrentUser() reviewer: User,
     @Body() createReviewDto: CreateReviewDto,
-  ): Promise<Review> {
-    console.log(createReviewDto);
-    const response = await this.reviewService.createReview(createReviewDto);
+  ) {
+    const response = await this.reviewService.createReview(
+      reviewer,
+      createReviewDto,
+    );
 
     return Object.assign({
       statusCode: 201,
@@ -70,7 +74,7 @@ export class ReviewsController {
       reviewer,
       boardNo,
     );
-    console.log(response);
+
     return {
       msg: '중복이다.',
     };

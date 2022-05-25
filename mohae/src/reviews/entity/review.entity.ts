@@ -15,7 +15,6 @@ import {
   Entity,
   ManyToOne,
   PrimaryGeneratedColumn,
-  RelationId,
   UpdateDateColumn,
 } from 'typeorm';
 
@@ -56,14 +55,7 @@ export class Review extends BaseEntity {
   @DeleteDateColumn({
     comment: '리뷰 삭제 시간',
   })
-  deletedAt: Date;
-
-  /* 리뷰 작성자 번호 및 게시글 번호 */
-  @RelationId((review: Review) => review.reviewer)
-  reviewerNo: number;
-
-  @RelationId((review: Review) => review.board)
-  boardNo: number;
+  deletedAt: Date | null;
 
   /* 게시글 리뷰 Relations */
   @ManyToOne((type) => Board, (board) => board.reviews, {

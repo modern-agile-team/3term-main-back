@@ -51,13 +51,15 @@ export class ReviewsService {
         }, 0) / reviews.length;
 
       return { reviews, rating: rating.toFixed(1), count };
-    } catch (e) {
-      throw e;
+    } catch (err) {
+      throw err;
     }
   }
 
-  async createReview(createReviewDto: CreateReviewDto) {
-    const { boardNo, reviewerNo } = createReviewDto;
+  async createReview(reviewer: User, createReviewDto: CreateReviewDto) {
+    const boardNo = createReviewDto.board;
+    // const { boardNo } = createReviewDto;
+    const reviewerNo = reviewer.no;
     try {
       const board = await this.boardsRepository.findOne(boardNo, {
         relations: ['reviews'],
@@ -68,17 +70,9 @@ export class ReviewsService {
         '리뷰를 작성하려는 게시글이 없습니다.',
       );
 
-      const reviewer = await this.userRepository.findOne(reviewerNo, {
-        relations: ['reviews'],
-      });
-      this.errorConfirm.notFoundError(
-        reviewer,
-        '리뷰 작성자를 찾을 수 없습니다.',
-      );
-
       const affectedRows = await this.reviewRepository.createReview(
         createReviewDto,
-        reviewer,
+        reviewerNo,
         board,
       );
 
@@ -87,26 +81,30 @@ export class ReviewsService {
       }
 
       return { success: true };
-    } catch (e) {
-      throw e;
+    } catch (err) {
+      throw err;
     }
   }
 
   async checkDuplicateReview(reviewer: User, boardNo: number) {
-    const reviewerNo = reviewer.no;
-    const board = await this.boardsRepository.findOne(boardNo, {
-      select: ['no'],
-      relations: ['user', 'reviews'],
-    });
-    console.log(board);
-    if (reviewerNo === board.user.no) {
-      throw new BadRequestException(
-        '자신이 작성한 게시글에는 리뷰를 남길 수 없습니다.',
-      );
+    try {
+      const reviewerNo = reviewer.no;
+      const board = await this.boardsRepository.findOne(boardNo, {
+        select: ['no'],
+        relations: ['user', 'reviews'],
+      });
+      console.log(board);
+      if (reviewerNo === board.user.no) {
+        throw new BadRequestException(
+          '자신이 작성한 게시글에는 리뷰를 남길 수 없습니다.',
+        );
+      }
+
+      const response = await this.reviewRepository.find();
+
+      return response;
+    } catch (err) {
+      throw err;
     }
-
-    const response = await this.reviewRepository.find();
-
-    return response;
   }
 }

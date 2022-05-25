@@ -30,5 +30,5 @@ export class BoardPhoto extends BaseEntity {
     type: 'int',
     comment: '사진 순서',
   })
-  sequence_no: number;
+  order: number;
 }
