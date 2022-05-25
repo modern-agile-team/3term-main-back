@@ -7,13 +7,16 @@ import {
   Patch,
   Post,
   Query,
+  UseGuards,
 } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
 import { ApiTags } from '@nestjs/swagger';
+import { User } from '@sentry/node';
 import { Board } from 'src/boards/entity/board.entity';
+import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 import { Spec } from 'src/specs/entity/spec.entity';
 import {
   JudgeDuplicateNicknameDto,
-  ProfilePagenationDto,
   UpdateProfileDto,
 } from './dto/update-profile.dto';
 import { ProfilesService } from './profiles.service';
@@ -107,14 +110,15 @@ export class ProfilesController {
     }
   }
 
-  @Patch('/:no')
+  @Patch()
+  @UseGuards(AuthGuard())
   async updateProfile(
-    @Param('no', ParseIntPipe) no: number,
     @Body() updateProfileDto: UpdateProfileDto,
+    @CurrentUser() user: User,
   ): Promise<number> {
     try {
       const response: number = await this.profileService.updateProfile(
-        no,
+        user.no,
         updateProfileDto,
       );
       return Object.assign({
