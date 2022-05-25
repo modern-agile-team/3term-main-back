@@ -172,8 +172,8 @@ export class BoardsController {
   }
 
   @Delete('/:no')
-  async deleteBoard(@Param('no') boardNo: number): Promise<object> {
-    const response: boolean = await this.boardService.deleteBoard(boardNo);
+  async deleteBoard(@Param('no') no: number): Promise<object> {
+    const response: boolean = await this.boardService.deleteBoard(no);
 
     return Object.assign({
       statusCode: 204,
