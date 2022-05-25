@@ -1,3 +1,11 @@
+import { Exclude } from 'class-transformer';
+import {
+  IsBoolean,
+  IsNotEmpty,
+  IsNumber,
+  IsString,
+  MaxLength,
+} from 'class-validator';
 import { User } from 'src/auth/entity/user.entity';
 import { Mailbox } from 'src/mailboxes/entity/mailbox.entity';
 import {
@@ -16,13 +24,16 @@ export class Letter extends BaseEntity {
   @PrimaryGeneratedColumn()
   no: number;
 
+  @IsNotEmpty({ message: '쪽지 내용을 입력해 주세요.' })
+  @IsString()
+  @MaxLength(500, { message: '500자 이내로 작성해 주세요.' })
   @Column({
-    type: 'varchar',
-    length: 100,
+    type: 'mediumtext',
     comment: '쪽지 내용',
   })
   description: string;
 
+  @IsBoolean()
   @Column({
     type: 'boolean',
     comment: '읽었는지 안읽었는지 유무 판단',
@@ -36,6 +47,7 @@ export class Letter extends BaseEntity {
   })
   createdAt: Date | null;
 
+  @Exclude()
   @DeleteDateColumn({
     name: 'delete_at',
     comment: '쪽지 삭제 시간',
@@ -47,6 +59,8 @@ export class Letter extends BaseEntity {
   })
   mailbox: Mailbox;
 
+  @IsNotEmpty()
+  @IsNumber()
   @ManyToOne((type) => User, (user) => user.no, {
     onDelete: 'SET NULL',
   })
@@ -55,6 +69,8 @@ export class Letter extends BaseEntity {
   })
   sender: User;
 
+  @IsNotEmpty()
+  @IsNumber()
   @ManyToOne((type) => User, (user) => user.no, {
     onDelete: 'SET NULL',
   })

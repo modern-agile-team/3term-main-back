@@ -25,4 +25,10 @@ export class BoardPhoto extends BaseEntity {
   })
   @JoinColumn({ name: 'board_no' })
   board: Board;
+
+  @Column({
+    type: 'int',
+    comment: '사진 순서',
+  })
+  order: number;
 }

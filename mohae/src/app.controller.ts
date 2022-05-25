@@ -4,14 +4,17 @@ import {
   CacheTTL,
   Controller,
   Get,
-  UseInterceptors,
 } from '@nestjs/common';
 import { AppService } from './app.service';
+import { AwsService } from './aws/aws.service';
 
 // @UseInterceptors(CacheInterceptor)
 @Controller()
 export class AppController {
-  constructor(private readonly appService: AppService) {}
+  constructor(
+    private readonly appService: AppService,
+    private readonly awsService: AwsService,
+  ) {}
 
   // @Get()
   // @CacheKey('')

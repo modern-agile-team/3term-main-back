@@ -23,11 +23,17 @@ import { PhotoModule } from './photo/photo.module';
 import { LikeModule } from './like/like.module';
 import { RedisCacheModule } from './redis-cache/redis-cache.module';
 import { APP_INTERCEPTOR } from '@nestjs/core';
+import { MailboxUserModule } from './mailbox-user/mailbox-user.module';
 import * as redisStore from 'cache-manager-redis-store';
+import { ConfigModule } from '@nestjs/config';
+import { AwsService } from './aws/aws.service';
 import { TermsModule } from './terms/terms.module';
 
 @Module({
   imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+    }),
     ReportsModule,
     FaqsModule,
     CategoriesModule,
@@ -57,6 +63,7 @@ import { TermsModule } from './terms/terms.module';
       //   },
     }),
     RedisCacheModule,
+    MailboxUserModule,
   ],
   controllers: [AppController],
   providers: [
@@ -65,6 +72,7 @@ import { TermsModule } from './terms/terms.module';
       provide: APP_INTERCEPTOR,
       useClass: CacheInterceptor,
     },
+    AwsService,
   ],
 })
 export class AppModule {}

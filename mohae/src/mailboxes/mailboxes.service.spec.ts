@@ -5,10 +5,8 @@ import { LetterRepository } from 'src/letters/repository/letter.repository';
 import { ErrorConfirm } from 'src/common/utils/error';
 import { Repository } from 'typeorm';
 import { MailboxesService } from './mailboxes.service';
-import {
-  MailboxRepository,
-  MailboxUserRepository,
-} from './repository/mailbox.repository';
+import { MailboxRepository } from './repository/mailbox.repository';
+import { MailboxUserRepository } from 'src/mailbox-user/repository/mailbox.repository';
 
 const MockMailboxRepository = () => ({
   readAllMailboxes: jest.fn(),
