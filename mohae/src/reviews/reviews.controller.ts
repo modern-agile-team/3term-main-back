@@ -14,7 +14,6 @@ import { User } from 'src/auth/entity/user.entity';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 import { SuccesseInterceptor } from 'src/common/interceptors/success.interceptor';
 import { CreateReviewDto } from './dto/create-review.dto';
-import { Review } from './entity/review.entity';
 import { ReviewsService } from './reviews.service';
 
 @Controller('reviews')
@@ -23,34 +22,42 @@ import { ReviewsService } from './reviews.service';
 export class ReviewsController {
   constructor(private reviewService: ReviewsService) {}
 
-  @ApiOperation({
-    summary: '리뷰 전체 조회',
-    description: '리뷰 전체 조회 API',
-  })
-  @Get()
-  async readAllReview(): Promise<Review[]> {
-    const response = await this.reviewService.readAllReview();
+  // @ApiOperation({
+  //   summary: '리뷰 전체 조회',
+  //   description: '리뷰 전체 조회 API',
+  // })
+  // @Get()
+  // async readAllReview(): Promise<Review[]> {
+  //   const response = await this.reviewService.readAllReview();
 
-    return Object.assign({
-      statusCode: 200,
-      msg: `전체 리뷰 조회가 완료되었습니다.`,
-      response,
-    });
-  }
+  //   return Object.assign({
+  //     statusCode: 200,
+  //     msg: `전체 리뷰 조회가 완료되었습니다.`,
+  //     response,
+  //   });
+  // }
 
   @ApiOperation({
     summary: '마이페이지에 나타나는 유저 리뷰',
     description: '마이페이지에 나타나는 유저 리뷰 조회 API',
   })
+  @UseGuards(AuthGuard())
+  @HttpCode(200)
   @Get()
-  async readUserReviews(@Param('userNo') userNo: number) {
-    const response = await this.reviewService.readUserReviews(userNo);
+  async readUserReviews(@CurrentUser() user: User) {
+    const response: object | undefined =
+      await this.reviewService.readUserReviews(user);
 
-    return Object.assign({
-      statusCode: 200,
-      msg: `유저의 리뷰가 조회되었습니다.`,
+    if (!response) {
+      return {
+        msg: '유저의 리뷰가 존재하지 않습니다.',
+      };
+    }
+
+    return {
+      msg: '유저의 리뷰가 조회되었습니다.',
       response,
-    });
+    };
   }
 
   @ApiOperation({

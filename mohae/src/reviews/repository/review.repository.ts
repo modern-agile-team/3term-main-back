@@ -51,7 +51,7 @@ export class ReviewRepository extends Repository<Review> {
     }
   }
 
-  async readUserReviews(no: number) {
+  async readUserReviews(userNo: number): Promise<object | undefined> {
     try {
       const qb = this.createQueryBuilder('reviews')
         .leftJoin('reviews.board', 'board')
@@ -69,16 +69,13 @@ export class ReviewRepository extends Repository<Review> {
           'reviewer.nickname',
           'reviewer.photo_url',
         ])
-        .where('user.no = :no', { no });
+        .where('user.no = :userNo', { userNo });
       const reviews = await qb.getMany();
       const count = await qb.getCount();
 
       return { reviews, count };
-    } catch (e) {
-      console.log(e);
-      throw new InternalServerErrorException(
-        `${e} ### 리뷰 선택 조회 : 알 수 없는 서버 에러입니다.`,
-      );
+    } catch (err) {
+      throw new InternalServerErrorException(err.message);
     }
   }
 }

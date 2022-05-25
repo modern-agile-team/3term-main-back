@@ -39,19 +39,27 @@ export class ReviewsService {
     }
   }
 
-  async readUserReviews(no: number) {
+  async readUserReviews(user: User): Promise<object | undefined> {
     try {
-      const { reviews, count } = await this.reviewRepository.readUserReviews(
-        no,
-      );
+      const { reviews, count }: any =
+        await this.reviewRepository.readUserReviews(user.no);
+
       this.errorConfirm.notFoundError(reviews, '해당 리뷰를 찾을 수 없습니다.');
 
-      const rating =
-        reviews.reduce((result, review) => {
+      if (!reviews.length) {
+        return;
+      }
+
+      const rating: number =
+        reviews.reduce((result: number, review: Review) => {
           return result + review.rating;
         }, 0) / reviews.length;
 
-      return { reviews, rating: rating.toFixed(1), count };
+      return {
+        reviews,
+        rating: rating.toFixed(1),
+        count,
+      };
     } catch (err) {
       throw err;
     }
