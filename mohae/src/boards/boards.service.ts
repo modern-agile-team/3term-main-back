@@ -1,4 +1,5 @@
 import {
+  BadGatewayException,
   BadRequestException,
   Injectable,
   InternalServerErrorException,
@@ -204,19 +205,14 @@ export class BoardsService {
     return { foundedBoardNum: boards.length, search: title, boards };
   }
 
-  async createBoard(createBoardDto: CreateBoardDto): Promise<object> {
+  async createBoard(createBoardDto: CreateBoardDto): Promise<boolean> {
     const queryRunner = this.connection.createQueryRunner();
 
     await queryRunner.connect();
     await queryRunner.startTransaction();
     try {
-      const {
-        categoryNo,
-        areaNo,
-        deadline,
-        userNo,
-        photo_url,
-      }: CreateBoardDto = createBoardDto;
+      const { categoryNo, areaNo, deadline, userNo, photoUrl }: CreateBoardDto =
+        createBoardDto;
 
       const category: Category = await this.categoryRepository.findOne(
         categoryNo,
@@ -245,11 +241,9 @@ export class BoardsService {
       let endTime: Date = new Date();
       endTime.setHours(endTime.getHours() + 9);
 
-      if (!deadline) {
-        endTime = null;
-      } else if (deadline) {
-        endTime.setDate(endTime.getDate() + deadline);
-      }
+      !deadline
+        ? (endTime = null)
+        : endTime.setDate(endTime.getDate() + deadline);
 
       const board: Board = await this.boardRepository.createBoard(
         category,
@@ -259,7 +253,11 @@ export class BoardsService {
         endTime,
       );
 
-      const photos: Array<object> = photo_url.map((photo, index) => {
+      if (!board) {
+        throw new InternalServerErrorException('게시글 생성 관련 오류');
+      }
+
+      const photos: Array<object> = photoUrl.map((photo, index) => {
         return {
           photo_url: photo,
           board: board.no,
@@ -280,11 +278,8 @@ export class BoardsService {
         .getCustomRepository(BoardRepository)
         .saveCategory(categoryNo, board);
       await queryRunner.commitTransaction();
-      if (!board) {
-        throw new InternalServerErrorException('게시글 생성 관련 오류');
-      }
 
-      return { isSuccess: true };
+      return true;
     } catch (err) {
       await queryRunner.rollbackTransaction();
       throw err;
@@ -293,7 +288,7 @@ export class BoardsService {
     }
   }
 
-  async deleteBoard(no: number): Promise<DeleteResult> {
+  async deleteBoard(no: number): Promise<object> {
     const board: Board = await this.boardRepository.findOne(no);
     this.errorConfirm.notFoundError(
       board.no,
@@ -308,19 +303,19 @@ export class BoardsService {
       );
     }
 
-    return result;
+    return { success: true };
   }
 
   async updateBoard(
     no: number,
     updateBoardDto: UpdateBoardDto,
-  ): Promise<object> {
+  ): Promise<boolean> {
     const queryRunner = this.connection.createQueryRunner();
 
     await queryRunner.connect();
     await queryRunner.startTransaction();
     try {
-      const { category, area, deadline, photo_url }: UpdateBoardDto =
+      const { category, area, deadline, photoUrl }: UpdateBoardDto =
         updateBoardDto;
 
       const board: Board = await this.boardRepository.findOne(no);
@@ -345,46 +340,37 @@ export class BoardsService {
 
       const boardKey: any = Object.keys(updateBoardDto);
 
-      const deletedNullBoardKey = {};
+      const duplicateCheck = {};
 
       boardKey.forEach((item: any) => {
         updateBoardDto[item] !== null
-          ? (deletedNullBoardKey[item] = updateBoardDto[item])
+          ? (duplicateCheck[item] = updateBoardDto[item])
           : 0;
       });
 
-      if (deadline !== null) {
-        if (!deadline) {
-          endTime = null;
-          deletedNullBoardKey['deadline'] = endTime;
-        }
+      if (!deadline) {
+        endTime = null;
+        duplicateCheck['deadline'] = endTime;
       }
 
-      if (category) {
-        const categoryNo: Category = await this.categoryRepository.findOne(
-          category,
-          {
-            relations: ['boards'],
-          },
-        );
-        this.errorConfirm.notFoundError(
-          categoryNo,
-          `해당 카테고리를 찾을 수 없습니다.`,
-        );
-      }
-
-      if (area) {
-        const areaNo: Area = await this.areaRepository.findOne(area, {
+      const categoryNo: Category = await this.categoryRepository.findOne(
+        category,
+        {
           relations: ['boards'],
-        });
+        },
+      );
+      this.errorConfirm.notFoundError(
+        categoryNo,
+        `해당 카테고리를 찾을 수 없습니다.`,
+      );
 
-        this.errorConfirm.notFoundError(
-          areaNo,
-          `해당 지역을 찾을 수 없습니다.`,
-        );
-      }
+      const areaNo: Area = await this.areaRepository.findOne(area, {
+        relations: ['boards'],
+      });
 
-      if (Object.keys(deletedNullBoardKey).includes('photo_url')) {
+      this.errorConfirm.notFoundError(areaNo, `해당 지역을 찾을 수 없습니다.`);
+
+      if (Object.keys(duplicateCheck).includes('photoUrl')) {
         const deleteBoardPhoto: number = await queryRunner.manager
           .getCustomRepository(BoardPhotoRepository)
           .deleteBoardPhoto(no);
@@ -395,27 +381,27 @@ export class BoardsService {
           );
         }
 
-        const photos: Array<object> = photo_url.map((photo, index) => {
+        const photos: Array<object> = photoUrl.map((photo, index) => {
           return {
             photo_url: photo,
             board: board.no,
             order: index + 1,
           };
         });
+
         const boardPhotoNo: Array<object> = await queryRunner.manager
           .getCustomRepository(BoardPhotoRepository)
           .createBoardPhoto(photos);
+
         if (photos.length !== boardPhotoNo.length) {
-          throw new InternalServerErrorException(
-            '게시글 사진 등록 도중 DB관련 오류',
-          );
+          throw new BadGatewayException('게시글 사진 등록 도중 DB관련 오류');
         }
-        delete deletedNullBoardKey['photo_url'];
+        delete duplicateCheck['photoUrl'];
       }
 
       const updatedBoard = await queryRunner.manager
         .getCustomRepository(BoardRepository)
-        .updateBoard(no, deletedNullBoardKey);
+        .updateBoard(no, duplicateCheck);
 
       await queryRunner.commitTransaction();
 
@@ -423,7 +409,7 @@ export class BoardsService {
         throw new InternalServerErrorException('게시글 업데이트 관련 오류');
       }
 
-      return { isSuccess: true };
+      return true;
     } catch (err) {
       await queryRunner.rollbackTransaction();
       throw err;
