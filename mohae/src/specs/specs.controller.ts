@@ -6,14 +6,28 @@ import {
   Param,
   Patch,
   Post,
+  UploadedFile,
+  UploadedFiles,
+  UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
+import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
+import { User } from '@sentry/node';
+import { AwsService } from 'src/aws/aws.service';
+import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 import { CreateSpecDto, UpdateSpecDto } from './dto/spec.dto';
 import { Spec } from './entity/spec.entity';
 import { SpecsService } from './specs.service';
 
 @Controller('specs')
 export class SpecsController {
-  constructor(private specsService: SpecsService) {}
+  constructor(
+    private specsService: SpecsService,
+
+    // @Inject(AwsService)
+    private awsService: AwsService,
+  ) {}
 
   @Get('/user/:no')
   async getAllSpec(@Param('no') no: number) {
@@ -45,10 +59,17 @@ export class SpecsController {
     }
   }
 
+  @UseInterceptors(FilesInterceptor('image', 10))
   @Post('/regist')
-  async registSpec(@Body() createSpecDto: CreateSpecDto) {
+  @UseGuards(AuthGuard())
+  async registSpec(
+    @UploadedFiles() files: Array<Express.Multer.File>,
+    @Body() createSpecDto: CreateSpecDto,
+    @CurrentUser() user: User,
+  ) {
     try {
-      await this.specsService.registSpec(createSpecDto);
+      const specPhoto = await this.awsService.uploadSpecFileToS3('spec', files);
+      await this.specsService.registSpec(user.no, specPhoto, createSpecDto);
 
       return Object.assign({
         statusCode: 201,

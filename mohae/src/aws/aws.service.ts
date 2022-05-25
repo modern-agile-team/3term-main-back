@@ -3,6 +3,7 @@ import * as AWS from 'aws-sdk';
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PromiseResult } from 'aws-sdk/lib/request';
+import { connect } from 'http2';
 
 // sharp 패키지로 이미지 변환 가능
 
@@ -66,6 +67,32 @@ export class AwsService {
       return { success: true };
     } catch (error) {
       throw new BadRequestException(`Failed to delete file : ${error}`);
+    }
+  }
+
+  async uploadSpecFileToS3(folder: string, files: any): Promise<Array<string>> {
+    try {
+      const specPhotoArr = [];
+      for await (const file of files) {
+        const key: string = `${folder}/${Date.now()}_${path.basename(
+          file.originalname,
+        )}`.replace(/ /g, '');
+
+        this.awsS3
+          .putObject({
+            Bucket: this.S3_BUCKET_NAME,
+            Key: key,
+            Body: file.buffer,
+            ACL: 'public-read',
+            ContentType: file.mimetype,
+          })
+          .promise();
+
+        specPhotoArr.push(this.getAwsS3FileUrl(key));
+      }
+      return specPhotoArr;
+    } catch (error) {
+      throw new BadRequestException(`File upload failed : ${error}`);
     }
   }
 

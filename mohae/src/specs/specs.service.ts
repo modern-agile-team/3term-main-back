@@ -54,14 +54,17 @@ export class SpecsService {
     }
   }
 
-  async registSpec(createSpecDto: CreateSpecDto): Promise<void> {
+  async registSpec(
+    userNo: number,
+    specPhoto: any,
+    createSpecDto: CreateSpecDto,
+  ): Promise<void> {
     const queryRunner = this.connection.createQueryRunner();
 
     await queryRunner.connect();
     await queryRunner.startTransaction();
 
     try {
-      const { userNo, specPhoto }: CreateSpecDto = createSpecDto;
       const user: User = await this.userRepository.findOne(userNo, {
         relations: ['specs'],
       });
@@ -80,13 +83,15 @@ export class SpecsService {
         );
       }
       if (specPhoto) {
-        const specPhotos: Array<object> = specPhoto.map((photo, index) => {
-          return {
-            photo_url: photo,
-            spec: specNo,
-            order: index + 1,
-          };
-        });
+        const specPhotos: Array<object> = specPhoto.map(
+          (photo: string, index: number) => {
+            return {
+              photo_url: photo,
+              spec: specNo,
+              order: index + 1,
+            };
+          },
+        );
         const savedSpecPhotos: Array<object> = await queryRunner.manager
           .getCustomRepository(SpecPhotoRepository)
           .saveSpecPhoto(specPhotos);

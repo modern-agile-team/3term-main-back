@@ -1,3 +1,4 @@
+import { UploadedFile } from '@nestjs/common';
 import { IsArray, IsNumber, IsOptional, IsString } from 'class-validator';
 
 export class CreateSpecDto {
@@ -7,11 +8,11 @@ export class CreateSpecDto {
   @IsString()
   description: string;
 
-  @IsArray()
-  specPhoto: [];
+  // @IsArray()
+  // specPhoto: [];
 
-  @IsNumber()
-  userNo: number;
+  // @IsNumber()
+  // userNo: number;
 }
 
 export class UpdateSpecDto {
