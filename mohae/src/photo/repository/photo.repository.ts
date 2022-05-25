@@ -13,12 +13,12 @@ import { SpecPhoto } from '../entity/photo.entity';
 
 @EntityRepository(SpecPhoto)
 export class SpecPhotoRepository extends Repository<SpecPhoto> {
-  async saveSpecPhoto(specPhotoArr: Array<object>): Promise<Array<object>> {
+  async saveSpecPhoto(specPhotos: Array<object>): Promise<Array<object>> {
     try {
       const result: InsertResult = await this.createQueryBuilder('specPhoto')
         .insert()
         .into(SpecPhoto)
-        .values(specPhotoArr)
+        .values(specPhotos)
         .execute();
 
       return result.identifiers;
