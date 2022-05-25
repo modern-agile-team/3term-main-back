@@ -254,7 +254,7 @@ export class BoardsService {
       );
 
       if (!board) {
-        throw new InternalServerErrorException('게시글 생성 관련 오류');
+        throw new InternalServerErrorException('게시글 생성 관련 오류입니다.');
       }
 
       const photos: Array<object> = photoUrl.map((photo, index) => {
