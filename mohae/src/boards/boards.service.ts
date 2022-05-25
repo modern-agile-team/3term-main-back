@@ -241,9 +241,11 @@ export class BoardsService {
       let endTime: Date = new Date();
       endTime.setHours(endTime.getHours() + 9);
 
-      !deadline
-        ? (endTime = null)
-        : endTime.setDate(endTime.getDate() + deadline);
+      if (!deadline) {
+        endTime = null;
+      } else {
+        endTime.setDate(endTime.getDate() + deadline);
+      }
 
       const board: Board = await this.boardRepository.createBoard(
         category,
@@ -254,7 +256,7 @@ export class BoardsService {
       );
 
       if (!board) {
-        throw new InternalServerErrorException('게시글 생성 관련 오류입니다.');
+        throw new BadGatewayException('게시글 생성 관련 오류입니다.');
       }
 
       const photos: Array<object> = photoUrl.map((photo, index) => {
@@ -270,9 +272,7 @@ export class BoardsService {
         .createBoardPhoto(photos);
 
       if (photos.length !== boardPhotoNo.length) {
-        throw new InternalServerErrorException(
-          '게시글 사진 등록 도중 DB관련 오류',
-        );
+        throw new BadGatewayException('게시글 사진 등록 도중 DB관련 오류');
       }
       await queryRunner.manager
         .getCustomRepository(BoardRepository)
@@ -288,26 +288,24 @@ export class BoardsService {
     }
   }
 
-  async deleteBoard(no: number): Promise<object> {
-    const board: Board = await this.boardRepository.findOne(no);
+  async deleteBoard(boardNo: number): Promise<boolean> {
+    const board: Board = await this.boardRepository.findOne(boardNo);
     this.errorConfirm.notFoundError(
       board.no,
       `해당 게시글을 찾을 수 없습니다.`,
     );
 
-    const result = await this.boardRepository.deleteBoard(no);
+    const result: number = await this.boardRepository.deleteBoard(boardNo);
 
-    if (!result.affected) {
-      throw new InternalServerErrorException(
-        '해당 게시글이 삭제되지 않았습니다.',
-      );
+    if (!result) {
+      throw new BadGatewayException('해당 게시글이 삭제되지 않았습니다.');
     }
 
-    return { success: true };
+    return true;
   }
 
   async updateBoard(
-    no: number,
+    boardNo: number,
     updateBoardDto: UpdateBoardDto,
   ): Promise<boolean> {
     const queryRunner = this.connection.createQueryRunner();
@@ -318,7 +316,7 @@ export class BoardsService {
       const { category, area, deadline, photoUrl }: UpdateBoardDto =
         updateBoardDto;
 
-      const board: Board = await this.boardRepository.findOne(no);
+      const board: Board = await this.boardRepository.findOne(boardNo);
       this.errorConfirm.notFoundError(
         board.no,
         `해당 게시글을 찾을 수 없습니다.`,
@@ -373,12 +371,10 @@ export class BoardsService {
       if (Object.keys(duplicateCheck).includes('photoUrl')) {
         const deleteBoardPhoto: number = await queryRunner.manager
           .getCustomRepository(BoardPhotoRepository)
-          .deleteBoardPhoto(no);
+          .deleteBoardPhoto(boardNo);
 
         if (!deleteBoardPhoto) {
-          throw new InternalServerErrorException(
-            '게시글 사진 삭제 도중 DB관련 오류',
-          );
+          throw new BadGatewayException('게시글 사진 삭제 도중 DB관련 오류');
         }
 
         const photos: Array<object> = photoUrl.map((photo, index) => {
@@ -401,12 +397,12 @@ export class BoardsService {
 
       const updatedBoard = await queryRunner.manager
         .getCustomRepository(BoardRepository)
-        .updateBoard(no, duplicateCheck);
+        .updateBoard(boardNo, duplicateCheck);
 
       await queryRunner.commitTransaction();
 
       if (!updatedBoard) {
-        throw new InternalServerErrorException('게시글 업데이트 관련 오류');
+        throw new BadGatewayException('게시글 업데이트 관련 오류');
       }
 
       return true;

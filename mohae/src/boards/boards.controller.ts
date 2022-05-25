@@ -172,12 +172,13 @@ export class BoardsController {
   }
 
   @Delete('/:no')
-  async deleteBoard(@Param('no') no: number): Promise<DeleteResult> {
-    const response = await this.boardService.deleteBoard(no);
+  async deleteBoard(@Param('no') boardNo: number): Promise<object> {
+    const response: boolean = await this.boardService.deleteBoard(boardNo);
 
     return Object.assign({
       statusCode: 204,
       msg: '게시글 삭제가 완료되었습니다',
+      response,
     });
   }
 
