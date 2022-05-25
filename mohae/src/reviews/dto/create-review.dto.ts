@@ -9,4 +9,8 @@ export class CreateReviewDto extends PickType(Review, [
   @IsNotEmpty()
   @IsNumber()
   boardNo: number;
+
+  @IsNotEmpty()
+  @IsNumber()
+  targetUserNo: number;
 }

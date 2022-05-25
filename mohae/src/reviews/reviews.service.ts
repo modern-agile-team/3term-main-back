@@ -9,6 +9,7 @@ import { UserRepository } from 'src/auth/repository/user.repository';
 import { Board } from 'src/boards/entity/board.entity';
 import { BoardRepository } from 'src/boards/repository/board.repository';
 import { ErrorConfirm } from 'src/common/utils/error';
+import { Connection } from 'typeorm';
 import { CreateReviewDto } from './dto/create-review.dto';
 
 import { Review } from './entity/review.entity';
@@ -20,29 +21,16 @@ export class ReviewsService {
     @InjectRepository(ReviewRepository)
     private reviewRepository: ReviewRepository,
 
-    @InjectRepository(BoardRepository)
     private boardsRepository: BoardRepository,
-
-    @InjectRepository(UserRepository)
     private userRepository: UserRepository,
-
+    private connection: Connection,
     private errorConfirm: ErrorConfirm,
   ) {}
 
-  async readAllReview(): Promise<Review[]> {
-    try {
-      const reviews = await this.reviewRepository.readAllReview();
-
-      return reviews;
-    } catch (e) {
-      throw e;
-    }
-  }
-
-  async readUserReviews(user: User): Promise<object | undefined> {
+  async readUserReviews(targetUserNo: number): Promise<object | undefined> {
     try {
       const { reviews, count }: any =
-        await this.reviewRepository.readUserReviews(user.no);
+        await this.reviewRepository.readUserReviews(targetUserNo);
 
       this.errorConfirm.notFoundError(reviews, '해당 리뷰를 찾을 수 없습니다.');
 
@@ -65,8 +53,15 @@ export class ReviewsService {
     }
   }
 
-  async createReview(reviewer: User, createReviewDto: CreateReviewDto) {
-    const { boardNo }: any = createReviewDto;
+  async createReview(
+    reviewer: User,
+    createReviewDto: CreateReviewDto,
+  ): Promise<void> {
+    const { boardNo, targetUserNo }: any = createReviewDto;
+    const queryRunner = this.connection.createQueryRunner();
+
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
 
     try {
       const board: Board = await this.boardsRepository.findOne(boardNo, {
@@ -79,21 +74,38 @@ export class ReviewsService {
         '리뷰를 작성하려는 게시글이 없습니다.',
       );
 
-      const affectedRows: number = await this.reviewRepository.createReview(
-        createReviewDto,
-        reviewer,
-        board,
+      const targetUser: User = await this.userRepository.findOne(targetUserNo);
+
+      this.errorConfirm.notFoundError(
+        targetUser,
+        '대상 유저를 찾을 수 없습니다.',
       );
 
-      this.errorConfirm.badGatewayError(
-        affectedRows,
-        '알 수 없는 리뷰 작성 오류',
-      );
+      const { affectedRows, insertId } = await queryRunner.manager
+        .getCustomRepository(ReviewRepository)
+        .createReview(createReviewDto, reviewer, targetUser, board);
+
+      this.errorConfirm.badGatewayError(affectedRows, '리뷰 저장 실패');
+
+      await queryRunner.manager
+        .getCustomRepository(UserRepository)
+        .userRelation(reviewer.no, insertId, 'reviews');
+      await queryRunner.manager
+        .getCustomRepository(UserRepository)
+        .userRelation(targetUser.no, insertId, 'reviewBasket');
+
+      await queryRunner.commitTransaction();
     } catch (err) {
+      await queryRunner.rollbackTransaction();
       throw err;
+    } finally {
+      // 직접 생성한 QueryRunner는 해제시켜 주어야 함
+      await queryRunner.release();
     }
   }
 
+  // 재능 나눔러와 재능 받은 사람 쌍방 리뷰 남길 수 있음
+  // 도움받은 게시글은 자기 자신도 리뷰를 남길 수 있음
   async checkDuplicateReview(reviewer: User, boardNo: number) {
     try {
       const reviewerNo = reviewer.no;

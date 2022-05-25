@@ -70,4 +70,9 @@ export class Review extends BaseEntity {
     onDelete: 'SET NULL',
   })
   reviewer: User;
+
+  @ManyToOne((type) => User, (user) => user.reviewBasket, {
+    onDelete: 'SET NULL',
+  })
+  targetUser: User;
 }

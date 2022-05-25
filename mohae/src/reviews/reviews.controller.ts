@@ -22,31 +22,18 @@ import { ReviewsService } from './reviews.service';
 export class ReviewsController {
   constructor(private reviewService: ReviewsService) {}
 
-  // @ApiOperation({
-  //   summary: '리뷰 전체 조회',
-  //   description: '리뷰 전체 조회 API',
-  // })
-  // @Get()
-  // async readAllReview(): Promise<Review[]> {
-  //   const response = await this.reviewService.readAllReview();
-
-  //   return Object.assign({
-  //     statusCode: 200,
-  //     msg: `전체 리뷰 조회가 완료되었습니다.`,
-  //     response,
-  //   });
-  // }
-
   @ApiOperation({
     summary: '마이페이지에 나타나는 유저 리뷰',
     description: '마이페이지에 나타나는 유저 리뷰 조회 API',
   })
   @UseGuards(AuthGuard())
   @HttpCode(200)
-  @Get()
-  async readUserReviews(@CurrentUser() user: User) {
+  @Get('/:targetUserNo')
+  async readUserReviews(
+    @Param('targetUserNo') targetUserNo: number,
+  ): Promise<object> {
     const response: object | undefined =
-      await this.reviewService.readUserReviews(user);
+      await this.reviewService.readUserReviews(targetUserNo);
 
     if (!response) {
       return {
