@@ -159,11 +159,14 @@ export class BoardsController {
       },
     },
   })
-  async createBoard(@Body() createBoardDto: CreateBoardDto): Promise<Board> {
-    const response = await this.boardService.createBoard(createBoardDto);
+  async createBoard(@Body() createBoardDto: CreateBoardDto): Promise<object> {
+    const response: object = await this.boardService.createBoard(
+      createBoardDto,
+    );
 
     return Object.assign({
       statusCode: 201,
+      msg: '게시글 생성이 완료 되었습니다.',
       response,
     });
   }
@@ -183,7 +186,10 @@ export class BoardsController {
     @Param('no') no: number,
     @Body() updateBoardDto: UpdateBoardDto,
   ): Promise<Object> {
-    const response = await this.boardService.updateBoard(no, updateBoardDto);
+    const response: object = await this.boardService.updateBoard(
+      no,
+      updateBoardDto,
+    );
 
     return Object.assign({
       statusCode: 201,

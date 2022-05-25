@@ -210,8 +210,13 @@ export class BoardsService {
     await queryRunner.connect();
     await queryRunner.startTransaction();
     try {
-      const { categoryNo, areaNo, deadline, userNo, photo_url }: any =
-        createBoardDto;
+      const {
+        categoryNo,
+        areaNo,
+        deadline,
+        userNo,
+        photo_url,
+      }: CreateBoardDto = createBoardDto;
 
       const category: Category = await this.categoryRepository.findOne(
         categoryNo,
@@ -276,10 +281,10 @@ export class BoardsService {
         .saveCategory(categoryNo, board);
       await queryRunner.commitTransaction();
       if (!board) {
-        return { isSuccess: false, msg: '게시글 생성이 되지 않았습니다.' };
+        throw new InternalServerErrorException('게시글 생성 관련 오류');
       }
 
-      return { isSuccess: true, msg: '게시글 생성이 완료 되었습니다.' };
+      return { isSuccess: true };
     } catch (err) {
       await queryRunner.rollbackTransaction();
       throw err;
@@ -415,7 +420,7 @@ export class BoardsService {
       await queryRunner.commitTransaction();
 
       if (!updatedBoard) {
-        return { isSuccess: false };
+        throw new InternalServerErrorException('게시글 업데이트 관련 오류');
       }
 
       return { isSuccess: true };
