@@ -15,11 +15,11 @@ export class SuccesseInterceptor implements NestInterceptor {
       .getResponse().statusCode;
 
     return next.handle().pipe(
-      map(({ msg, response }) => ({
+      map((data) => ({
         success: true,
+        msg: data.msg,
+        response: data.response,
         statusCode,
-        msg,
-        response,
       })),
     );
   }
