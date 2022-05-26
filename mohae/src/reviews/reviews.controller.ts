@@ -64,6 +64,10 @@ export class ReviewsController {
     };
   }
 
+  @ApiOperation({
+    summary: '중복된 리뷰 체크',
+    description: '리뷰룰 요청하는 사람과',
+  })
   @Get('/check/:targetUserNo/:boardNo')
   @HttpCode(200)
   async checkDuplicateReview(

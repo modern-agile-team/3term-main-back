@@ -58,7 +58,7 @@ export class ReviewsService {
     createReviewDto: CreateReviewDto,
   ): Promise<void> {
     const { boardNo, targetUserNo }: any = createReviewDto;
-    const queryRunner = this.connection.createQueryRunner();
+    const queryRunner: any = this.connection.createQueryRunner();
 
     await queryRunner.connect();
     await queryRunner.startTransaction();
@@ -103,8 +103,6 @@ export class ReviewsService {
     }
   }
 
-  // 재능 나눔러와 재능 받은 사람 쌍방 리뷰 남길 수 있음
-  // 도움받은 게시글은 자기 자신도 리뷰를 남길 수 있음
   async checkDuplicateReview(
     requester: User,
     targetUserNo: number,
@@ -113,11 +111,12 @@ export class ReviewsService {
     try {
       const requesterNo: number = requester.no;
 
-      const isReview = await this.reviewRepository.checkDuplicateReview(
-        requesterNo,
-        targetUserNo,
-        boardNo,
-      );
+      const isReview: boolean =
+        await this.reviewRepository.checkDuplicateReview(
+          requesterNo,
+          targetUserNo,
+          boardNo,
+        );
 
       if (isReview) {
         throw new BadRequestException('작성한 리뷰가 존재합니다.');

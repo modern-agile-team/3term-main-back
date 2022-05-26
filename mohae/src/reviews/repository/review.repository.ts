@@ -87,7 +87,7 @@ export class ReviewRepository extends Repository<Review> {
     requesterNo: number,
     targetUserNo: number,
     boardNo: number,
-  ): Promise<number> {
+  ): Promise<boolean> {
     try {
       const isReview: number = await this.createQueryBuilder('review')
         .leftJoin('review.reviewer', 'reviewer')
@@ -103,7 +103,7 @@ export class ReviewRepository extends Repository<Review> {
         )
         .getCount();
 
-      return isReview;
+      return !!isReview;
     } catch (err) {
       throw new InternalServerErrorException(err.message);
     }
