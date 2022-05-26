@@ -17,7 +17,6 @@ import { SchoolRepository } from 'src/schools/repository/school.repository';
 import { ErrorConfirm } from 'src/common/utils/error';
 import {
   JudgeDuplicateNicknameDto,
-  ProfilePagenationDto,
   UpdateProfileDto,
 } from './dto/update-profile.dto';
 import { create } from 'domain';

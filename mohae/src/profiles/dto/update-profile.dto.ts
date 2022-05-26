@@ -34,14 +34,3 @@ export class JudgeDuplicateNicknameDto {
   @IsString()
   nickname?: string;
 }
-
-export class ProfilePagenationDto {
-  @IsNumber()
-  userno: number;
-
-  @IsNumber()
-  take: number;
-
-  @IsNumber()
-  page: number;
-}
