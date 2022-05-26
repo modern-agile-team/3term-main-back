@@ -31,7 +31,7 @@ export class ReportsController {
     summary: '신고된 게시글 상세(선택) 조회',
     description: '신고된 게시글 상세(선택) 조회 API',
   })
-  @Get('/board/:no')
+  @Get('board/:no')
   @HttpCode(200)
   async readOneReportedBoard(@Param('no') boardNo: number): Promise<object> {
     const response: ReportedBoard =
@@ -54,7 +54,7 @@ export class ReportsController {
     description: '신고된 유저 상세(선택) 조회 API',
   })
   @HttpCode(200)
-  @Get('/user/:no')
+  @Get('user/:no')
   async readOneReportedUser(@Param('no') userNo: number): Promise<object> {
     const response: ReportedUser =
       await this.reportsService.readOneReportedUser(userNo);
