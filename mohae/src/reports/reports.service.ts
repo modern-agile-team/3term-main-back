@@ -8,14 +8,12 @@ import { ErrorConfirm } from 'src/common/utils/error';
 import { CreateReportDto } from './dto/create-report.dto';
 import { ReportCheckbox } from '../report-checkboxes/entity/report-checkboxes.entity';
 import { ReportCheckboxRepository } from '../report-checkboxes/repository/report-checkbox.repository';
-import {
-  BoardReportChecksRepository,
-  UserReportChecksRepository,
-} from '../report-checks/repository/report-checks.repository';
+import { BoardReportChecksRepository } from '../report-checks/repository/board-report-checks.repository';
 import { ReportedBoardRepository } from './repository/reported-board.repository';
 import { ReportedUserRepository } from './repository/reported-user.repository';
 import { ReportedBoard } from './entity/reported-board.entity';
 import { ReportedUser } from './entity/reported-user.entity';
+import { UserReportChecksRepository } from 'src/report-checks/repository/user-report-checks.repository';
 
 @Injectable()
 export class ReportsService {
@@ -76,15 +74,20 @@ export class ReportsService {
     }
   }
 
-  async createReport(createReportDto: CreateReportDto) {
-    const { head, headNo, reportUserNo, checks, description }: CreateReportDto =
+  async createReport(reporter: User, createReportDto: CreateReportDto) {
+    const reportUserNo: number = reporter.no;
+    const { head, headNo, checks, description }: CreateReportDto =
       createReportDto;
-    const uniqueCheck: Array<number> = checks.filter((el, i) => {
-      return checks.indexOf(el) === i;
-    });
-    const checkInfo: Promise<ReportCheckbox>[] = uniqueCheck.map(async (el) => {
-      return await this.reportCheckboxRepository.selectCheckConfirm(el);
-    });
+    const uniqueChecks: Array<number> = checks.filter(
+      (checkNo: number, index) => {
+        return checks.indexOf(checkNo) === index;
+      },
+    );
+    const infoToChecks: Promise<ReportCheckbox>[] = uniqueChecks.map(
+      (checkNo: number) => {
+        return this.reportCheckboxRepository.selectCheckConfirm(checkNo);
+      },
+    );
 
     try {
       switch (head) {
@@ -94,44 +97,38 @@ export class ReportsService {
             select: ['no'],
             relations: ['reports'],
           });
+
           this.errorConfirm.notFoundError(
             board,
             '신고하려는 게시글이 존재하지 않습니다.',
           );
-          const boardReporter: User = await this.userRepository.findOne(
-            reportUserNo,
-            {
-              select: ['no'],
-              relations: ['boardReport'],
-            },
-          );
-          this.errorConfirm.notFoundError(
-            boardReporter,
-            '신고자를 찾을 수 없습니다.',
-          );
 
           const createBoardReportResult =
             await this.reportedBoardRepository.createBoardReport(description);
-          if (!createBoardReportResult.affectedRows) {
-            throw new InternalServerErrorException('게시글 신고 저장 실패');
-          }
-          const newBoardReport: ReportedBoard =
-            await this.reportedBoardRepository.readOneReportedBoard(
-              createBoardReportResult.insertId,
-            );
 
-          checkInfo.forEach(async (checkNo) => {
-            await this.boardReportChecksRepository.saveBoardReportChecks(
-              newBoardReport,
-              await checkNo,
+          this.errorConfirm.badGatewayError(
+            createBoardReportResult.affectedRows,
+            '게시글 신고 저장 실패',
+          );
+
+          infoToChecks.forEach(async (checkNo: Promise<ReportCheckbox>) => {
+            const saveResult: Promise<boolean> =
+              this.boardReportChecksRepository.saveBoardReportChecks(
+                createBoardReportResult.insertId,
+                await checkNo,
+              );
+
+            this.errorConfirm.badGatewayError(
+              saveResult,
+              '게시글 신고 : 체크된 신고 내용 저장 실패',
             );
           });
 
-          board.reports.push(newBoardReport);
+          board.reports.push(createBoardReportResult.insertId);
           await this.boardRepository.save(board);
           await this.userRepository.userRelation(
-            boardReporter.no,
-            newBoardReport,
+            reportUserNo,
+            createBoardReportResult.insertId,
             'boardReport',
           );
 
@@ -145,50 +142,41 @@ export class ReportsService {
             select: ['no'],
             relations: ['reports'],
           });
+
           this.errorConfirm.notFoundError(
             user,
             '신고하려는 유저가 존재하지 않습니다.',
           );
 
-          const userReporter: User = await this.userRepository.findOne(
-            reportUserNo,
-            {
-              select: ['no'],
-              relations: ['userReport'],
-            },
-          );
-          this.errorConfirm.notFoundError(
-            userReporter,
-            '신고자를 찾을 수 없습니다.',
-          );
-
-          const createUserReportResult =
+          const createUserReportResult: any =
             await this.reportedUserRepository.createUserReport(description);
-          if (!createUserReportResult.affectedRows) {
-            throw new InternalServerErrorException(
-              '유저 신고가 접수되지 않았습니다.',
-            );
-          }
-          const newUserReport: ReportedUser =
-            await this.reportedUserRepository.readOneReportedUser(
-              createUserReportResult.insertId,
-            );
 
-          checkInfo.forEach(async (checkNo) => {
-            await this.userReportChecksRepository.saveUserReportChecks(
-              newUserReport,
-              await checkNo,
+          this.errorConfirm.badGatewayError(
+            createBoardReportResult.affectedRows,
+            '유조 신고 저장 실패',
+          );
+
+          infoToChecks.forEach(async (checkNo) => {
+            const saveResult: Promise<boolean> =
+              await this.userReportChecksRepository.saveUserReportChecks(
+                createUserReportResult.insertId,
+                await checkNo,
+              );
+
+            this.errorConfirm.badGatewayError(
+              saveResult,
+              '유저 신고 : 체크된 신고 내용 저장 실패',
             );
           });
 
           await this.userRepository.userRelation(
             user.no,
-            newUserReport,
+            createUserReportResult.insertId,
             'reports',
           );
           await this.userRepository.userRelation(
-            userReporter.no,
-            newUserReport,
+            reportUserNo,
+            createUserReportResult.insertId,
             'userReport',
           );
 

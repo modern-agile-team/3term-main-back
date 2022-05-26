@@ -12,6 +12,8 @@ import {
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { User } from 'src/auth/entity/user.entity';
+import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 import { CreateReportDto } from './dto/create-report.dto';
 import { ReportedBoard } from './entity/reported-board.entity';
 import { ReportedUser } from './entity/reported-user.entity';
@@ -65,15 +67,20 @@ export class ReportsController {
     summary: '유저 또는 게시글 신고 생성',
     description: '유저 또는 게시글 신고 생성 API',
   })
+  @HttpCode(201)
   @Post()
-  @UsePipes(ValidationPipe)
-  async createReport(@Body() createReportDto: CreateReportDto) {
-    const response = await this.reportsService.createReport(createReportDto);
+  async createReport(
+    @CurrentUser() reporter: User,
+    @Body() createReportDto: CreateReportDto,
+  ): Promise<object> {
+    const response = await this.reportsService.createReport(
+      reporter,
+      createReportDto,
+    );
 
-    return Object.assign({
-      statusCode: 201,
+    return {
       msg: `${createReportDto.head} 신고가 접수되었습니다.`,
       response,
-    });
+    };
   }
 }

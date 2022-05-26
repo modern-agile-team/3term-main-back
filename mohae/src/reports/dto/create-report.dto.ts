@@ -29,15 +29,6 @@ export class CreateReportDto {
   headNo: number;
 
   @ApiProperty({
-    example: 5,
-    description: '신고자 번호입니다.',
-    required: true,
-  })
-  @IsNotEmpty()
-  @IsNumber()
-  reportUserNo: number;
-
-  @ApiProperty({
     example: [1, 3, 6],
     description: '체크된 신고 체크박스 넘버입니다.',
     required: true,

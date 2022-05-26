@@ -1,10 +1,8 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ReportChecksService } from './report-checks.service';
-import {
-  BoardReportChecksRepository,
-  UserReportChecksRepository,
-} from './repository/report-checks.repository';
+import { BoardReportChecksRepository } from './repository/board-report-checks.repository';
+import { UserReportChecksRepository } from './repository/user-report-checks.repository';
 
 @Module({
   imports: [

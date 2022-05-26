@@ -1,5 +1,5 @@
 import { InternalServerErrorException } from '@nestjs/common';
-import { EntityRepository, Repository } from 'typeorm';
+import { EntityRepository, InsertResult, Repository } from 'typeorm';
 import { ReportedBoard } from '../entity/reported-board.entity';
 
 @EntityRepository(ReportedBoard)
@@ -33,9 +33,11 @@ export class ReportedBoardRepository extends Repository<ReportedBoard> {
     }
   }
 
-  async createBoardReport(description: string) {
+  async createBoardReport(description: string): Promise<any> {
     try {
-      const { raw } = await this.createQueryBuilder('reported_boards')
+      const { raw }: InsertResult = await this.createQueryBuilder(
+        'reported_boards',
+      )
         .insert()
         .into(ReportedBoard)
         .values({ description })
