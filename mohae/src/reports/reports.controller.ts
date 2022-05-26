@@ -31,7 +31,8 @@ export class ReportsController {
   @Get('/board/:no')
   @HttpCode(200)
   async readOneReportedBoard(@Param('no') boardNo: number): Promise<object> {
-    const response = await this.reportsService.readOneReportedBoard(boardNo);
+    const response: ReportedBoard =
+      await this.reportsService.readOneReportedBoard(boardNo);
     this.logger.verbose(
       `Reported list(board) has been received. Report Payload: ${JSON.stringify(
         response,
@@ -48,15 +49,16 @@ export class ReportsController {
     summary: '신고된 유저 상세(선택) 조회',
     description: '신고된 유저 상세(선택) 조회 API',
   })
+  @HttpCode(200)
   @Get('/user/:no')
-  async readOneReportedUser(@Param('no') no: number): Promise<ReportedUser> {
-    const response = await this.reportsService.readOneReportedUser(no);
+  async readOneReportedUser(@Param('no') userNo: number): Promise<object> {
+    const response: ReportedUser =
+      await this.reportsService.readOneReportedUser(userNo);
 
-    return Object.assign({
-      statusCode: 200,
-      msg: `No:${no} 신고 내역(유저)이 조회되었습니다.`,
+    return {
+      msg: `No:${userNo} 신고 내역(유저)이 조회되었습니다.`,
       response,
-    });
+    };
   }
 
   @ApiOperation({

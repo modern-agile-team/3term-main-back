@@ -4,7 +4,7 @@ import { ReportedUser } from '../entity/reported-user.entity';
 
 @EntityRepository(ReportedUser)
 export class ReportedUserRepository extends Repository<ReportedUser> {
-  async readOneReportedUser(no: number): Promise<ReportedUser> {
+  async readOneReportedUser(userNo: number): Promise<ReportedUser> {
     try {
       const reportUser = await this.createQueryBuilder('reported_users')
         .leftJoin('reported_users.reportUser', 'reportUser')
@@ -22,14 +22,12 @@ export class ReportedUserRepository extends Repository<ReportedUser> {
           'check.no',
           'check.content',
         ])
-        .where('reported_users.no = :no', { no })
+        .where('reported_users.no = :userNo', { userNo })
         .getOne();
 
       return reportUser;
-    } catch (e) {
-      throw new InternalServerErrorException(
-        `${e} ### 신고 내역(유저) 조회 : 알 수 없는 서버 에러입니다.`,
-      );
+    } catch (err) {
+      throw new InternalServerErrorException(err.message);
     }
   }
 

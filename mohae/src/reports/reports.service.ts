@@ -55,15 +55,15 @@ export class ReportsService {
       );
 
       return reportedBoard;
-    } catch (e) {
-      throw e;
+    } catch (err) {
+      throw err;
     }
   }
 
-  async readOneReportedUser(no: number): Promise<ReportedUser> {
+  async readOneReportedUser(userNo: number): Promise<ReportedUser> {
     try {
       const reportedUser: ReportedUser =
-        await this.reportedUserRepository.readOneReportedUser(no);
+        await this.reportedUserRepository.readOneReportedUser(userNo);
 
       this.errorConfirm.notFoundError(
         reportedUser,
@@ -71,8 +71,8 @@ export class ReportsService {
       );
 
       return reportedUser;
-    } catch (e) {
-      throw e;
+    } catch (err) {
+      throw err;
     }
   }
 
