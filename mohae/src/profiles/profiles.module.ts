@@ -17,6 +17,7 @@ import { SpecRepository } from 'src/specs/repository/spec.repository';
 import { SpecsModule } from 'src/specs/specs.module';
 import { BoardRepository } from 'src/boards/repository/board.repository';
 import { BoardsModule } from 'src/boards/boards.module';
+import { ReviewRepository } from 'src/reviews/repository/review.repository';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { BoardsModule } from 'src/boards/boards.module';
       LikeRepository,
       SpecRepository,
       BoardRepository,
+      ReviewRepository,
     ]),
     AuthModule,
     SchoolsModule,
@@ -36,6 +38,7 @@ import { BoardsModule } from 'src/boards/boards.module';
     SpecsModule,
     LikeModule,
     BoardsModule,
+    ReviewRepository,
   ],
   controllers: [ProfilesController],
   providers: [ProfilesService, ErrorConfirm],

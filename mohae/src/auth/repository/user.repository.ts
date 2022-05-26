@@ -187,7 +187,7 @@ export class UserRepository extends Repository<User> {
     }
   }
   // 프로필 관련 기능
-  async findUserProfile(userNo: number): Promise<object> {
+  async readUserProfile(userNo: number): Promise<object> {
     try {
       const profile: User = await this.createQueryBuilder('users')
         .leftJoin('users.school', 'school')
@@ -211,6 +211,7 @@ export class UserRepository extends Repository<User> {
         ])
         .where('users.no = :userNo', { userNo })
         .getOne();
+
       const { boardsNum }: any = await this.createQueryBuilder('users')
         .leftJoin('users.boards', 'boards')
         .select('COUNT(boards.no) AS boardsNum')

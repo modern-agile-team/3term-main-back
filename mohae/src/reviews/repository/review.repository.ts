@@ -1,7 +1,12 @@
 import { InternalServerErrorException } from '@nestjs/common';
 import { User } from 'src/auth/entity/user.entity';
 import { Board } from 'src/boards/entity/board.entity';
-import { EntityRepository, InsertResult, Repository } from 'typeorm';
+import {
+  EntityRepository,
+  InsertResult,
+  Repository,
+  SelectQueryBuilder,
+} from 'typeorm';
 import { CreateReviewDto } from '../dto/create-review.dto';
 import { Review } from '../entity/review.entity';
 
@@ -52,29 +57,36 @@ export class ReviewRepository extends Repository<Review> {
     }
   }
 
-  async readUserReviews(targetUserNo: number): Promise<object | undefined> {
+  async readUserReviews(
+    userNo: number,
+    take: number,
+    page: number,
+  ): Promise<object | undefined> {
     try {
-      const qb = this.createQueryBuilder('reviews')
+      const qb: SelectQueryBuilder<Review> = this.createQueryBuilder('reviews')
         .leftJoin('reviews.reviewer', 'reviewer')
         .leftJoin('reviews.targetUser', 'targetUser')
         .leftJoin('reviews.board', 'board')
         .leftJoin('board.user', 'user')
         .leftJoin('board.photos', 'photo')
         .select([
-          'reviews.no',
-          'reviews.targetUser',
-          'reviews.description',
-          'reviews.rating',
-          'reviews.createdAt',
-          'board.no',
-          'board.title',
-          'photo.photo_url',
-          'reviewer.no',
-          'reviewer.nickname',
-          'reviewer.photo_url',
+          'reviews.no AS reviewNo ',
+          'reviews.targetUser AS user',
+          'reviews.description AS description',
+          'reviews.rating AS rating',
+          `DATE_FORMAT(reviews.createdAt, '%Y년 %m월 %d일') AS createdAt`,
+          'board.no AS boardNo',
+          'board.title AS boardTitle ',
+          'photo.photo_url AS photoUrl',
+          'reviewer.no AS reviewerNo',
+          'reviewer.nickname AS reviewerNickname',
+          'reviewer.photo_url AS reviewerPhotoUrl',
         ])
-        .where('targetUser.no = :targetUserNo', { targetUserNo });
-      const reviews = await qb.getMany();
+        .where('targetUser.no = :userNo', { userNo })
+        .take(take)
+        .skip(take * (page - 1));
+
+      const reviews = await qb.getRawMany();
       const count = await qb.getCount();
 
       return { reviews, count };

@@ -25,6 +25,8 @@ import { SpecRepository } from 'src/specs/repository/spec.repository';
 import { BoardRepository } from 'src/boards/repository/board.repository';
 import { Spec } from 'src/specs/entity/spec.entity';
 import { Board } from 'src/boards/entity/board.entity';
+import { ReviewRepository } from 'src/reviews/repository/review.repository';
+import { Review } from 'src/reviews/entity/review.entity';
 
 @Injectable()
 export class ProfilesService {
@@ -36,16 +38,17 @@ export class ProfilesService {
     private likeRepository: LikeRepository,
     private specRepository: SpecRepository,
     private boardRepository: BoardRepository,
+    private reviewRepository: ReviewRepository,
     private errorConfirm: ErrorConfirm,
   ) {}
 
-  async findUserProfile(
+  async readUserProfile(
     profileUserNo: number,
     userNo: number,
   ): Promise<object> {
     try {
       const { profile, boardsNum }: any =
-        await this.userRepository.findUserProfile(profileUserNo);
+        await this.userRepository.readUserProfile(profileUserNo);
       if (!profile) {
         throw new NotFoundException(
           `No: ${profileUserNo} 일치하는 유저가 없습니다.`,
@@ -73,38 +76,6 @@ export class ProfilesService {
       return {
         profile,
       };
-    } catch (err) {
-      throw err;
-    }
-  }
-
-  async findUserSpec(
-    userNo: number,
-    take: number,
-    page: number,
-  ): Promise<Array<Spec>> {
-    try {
-      const profileSpecs: Array<Spec> = await this.specRepository.findUserSpec(
-        userNo,
-        take,
-        page,
-      );
-      return profileSpecs;
-    } catch (err) {
-      throw err;
-    }
-  }
-
-  async findUserBoard(
-    userNo: number,
-    take: number,
-    page: number,
-    target: boolean,
-  ): Promise<Array<Board>> {
-    try {
-      const profileBoards: Array<Board> =
-        await this.boardRepository.findUserBoard(userNo, take, page, target);
-      return profileBoards;
     } catch (err) {
       throw err;
     }

@@ -387,7 +387,7 @@ export class BoardRepository extends Repository<Board> {
     }
   }
 
-  async findUserBoard(
+  async readUserBoard(
     userNo: number,
     take: number,
     page: number,

@@ -36,7 +36,7 @@ export class SpecRepository extends Repository<Spec> {
     }
   }
 
-  async findUserSpec(
+  async readUserSpec(
     userNo: number,
     take: number,
     page: number,
