@@ -56,7 +56,7 @@ export class SpecsService {
 
   async registSpec(
     userNo: number,
-    specPhoto: any,
+    specPhotoUrls: any,
     createSpecDto: CreateSpecDto,
   ): Promise<void> {
     const queryRunner = this.connection.createQueryRunner();
@@ -77,16 +77,16 @@ export class SpecsService {
           `${userNo}에 해당하는 유저가 존재하지 않습니다.`,
         );
       }
-      if (!specPhoto.length) {
+      if (!specPhotoUrls.length) {
         throw new BadRequestException(
           '스펙의 사진이 없다면 null 이라도 넣어주셔야 스펙 등록이 가능합니다.',
         );
       }
-      if (specPhoto) {
-        const specPhotos: Array<object> = specPhoto.map(
-          (photo: string, index: number) => {
+      if (specPhotoUrls) {
+        const specPhotos: Array<object> = specPhotoUrls.map(
+          (photoUrl: string, index: number) => {
             return {
-              photo_url: photo,
+              photo_url: photoUrl,
               spec: specNo,
               order: index + 1,
             };

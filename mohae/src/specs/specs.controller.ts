@@ -6,22 +6,22 @@ import {
   Param,
   Patch,
   Post,
-  UploadedFile,
   UploadedFiles,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
-import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
+import { FilesInterceptor } from '@nestjs/platform-express';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { User } from '@sentry/node';
 import { AwsService } from 'src/aws/aws.service';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
-import { SpecPhoto } from 'src/photo/entity/photo.entity';
 import { CreateSpecDto, UpdateSpecDto } from './dto/spec.dto';
 import { Spec } from './entity/spec.entity';
 import { SpecsService } from './specs.service';
 
 @Controller('specs')
+@ApiTags('스펙 API')
 export class SpecsController {
   constructor(
     private specsService: SpecsService,
@@ -30,6 +30,10 @@ export class SpecsController {
   ) {}
 
   @Get('/user/:no')
+  @ApiOperation({
+    summary: '한 명의 유저 스펙 전체 조회 API',
+    description: '한명의 유저 스펙 한번에 불러온다',
+  })
   async getAllSpec(@Param('no') no: number) {
     try {
       const specs: Spec = await this.specsService.getAllSpec(no);
@@ -68,12 +72,12 @@ export class SpecsController {
     @CurrentUser() user: User,
   ) {
     try {
-      const specPhoto =
+      const specPhotoUrls =
         files[0].originalname === 'default.jpg'
           ? ['default.jpg']
           : await this.awsService.uploadSpecFileToS3('spec', files);
 
-      await this.specsService.registSpec(user.no, specPhoto, createSpecDto);
+      await this.specsService.registSpec(user.no, specPhotoUrls, createSpecDto);
 
       return Object.assign({
         statusCode: 201,

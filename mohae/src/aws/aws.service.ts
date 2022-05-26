@@ -72,7 +72,7 @@ export class AwsService {
 
   async uploadSpecFileToS3(folder: string, files: any): Promise<Array<string>> {
     try {
-      const specPhotoArr = [];
+      const specPhotoUrls = [];
       for await (const file of files) {
         const key: string = `${folder}/${Date.now()}_${path.basename(
           file.originalname,
@@ -88,9 +88,9 @@ export class AwsService {
           })
           .promise();
 
-        specPhotoArr.push(this.getAwsS3FileUrl(key));
+        specPhotoUrls.push(this.getAwsS3FileUrl(key));
       }
-      return specPhotoArr;
+      return specPhotoUrls;
     } catch (error) {
       throw new BadRequestException(`File upload failed : ${error}`);
     }
