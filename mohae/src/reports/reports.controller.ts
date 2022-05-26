@@ -36,6 +36,7 @@ export class ReportsController {
   async readOneReportedBoard(@Param('no') boardNo: number): Promise<object> {
     const response: ReportedBoard =
       await this.reportsService.readOneReportedBoard(boardNo);
+
     this.logger.verbose(
       `Reported list(board) has been received. Report Payload: ${JSON.stringify(
         response,
