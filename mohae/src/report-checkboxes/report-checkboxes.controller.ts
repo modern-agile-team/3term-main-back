@@ -13,7 +13,7 @@ export class ReportCheckboxesController {
     summary: '체크박스 조회',
     description: '체크박스 조회시 체크된 신고들도 함께 불러옴 API',
   })
-  @Get('checkboxes')
+  @Get()
   async readAllCheckboxes(): Promise<ReportCheckbox[]> {
     const response = await this.reportCheckboxesService.readAllCheckboxes();
 
