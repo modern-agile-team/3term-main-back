@@ -16,6 +16,7 @@ import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { User } from '@sentry/node';
 import { AwsService } from 'src/aws/aws.service';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
+import { SpecPhoto } from 'src/photo/entity/photo.entity';
 import { CreateSpecDto, UpdateSpecDto } from './dto/spec.dto';
 import { Spec } from './entity/spec.entity';
 import { SpecsService } from './specs.service';
@@ -25,7 +26,6 @@ export class SpecsController {
   constructor(
     private specsService: SpecsService,
 
-    // @Inject(AwsService)
     private awsService: AwsService,
   ) {}
 
@@ -68,7 +68,11 @@ export class SpecsController {
     @CurrentUser() user: User,
   ) {
     try {
-      const specPhoto = await this.awsService.uploadSpecFileToS3('spec', files);
+      const specPhoto =
+        files[0].originalname === 'default.jpg'
+          ? ['default.jpg']
+          : await this.awsService.uploadSpecFileToS3('spec', files);
+
       await this.specsService.registSpec(user.no, specPhoto, createSpecDto);
 
       return Object.assign({
