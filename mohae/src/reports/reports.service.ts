@@ -44,10 +44,10 @@ export class ReportsService {
     private errorConfirm: ErrorConfirm,
   ) {}
 
-  async readOneReportedBoard(no: number): Promise<ReportedBoard> {
+  async readOneReportedBoard(boardNo: number): Promise<ReportedBoard> {
     try {
       const reportedBoard: ReportedBoard =
-        await this.reportedBoardRepository.readOneReportedBoard(no);
+        await this.reportedBoardRepository.readOneReportedBoard(boardNo);
 
       this.errorConfirm.notFoundError(
         reportedBoard,

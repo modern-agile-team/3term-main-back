@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Get,
+  HttpCode,
   Logger,
   Param,
   Post,
@@ -28,19 +29,19 @@ export class ReportsController {
     description: '신고된 게시글 상세(선택) 조회 API',
   })
   @Get('/board/:no')
-  async readOneReportedBoard(@Param('no') no: number): Promise<ReportedBoard> {
-    const response = await this.reportsService.readOneReportedBoard(no);
+  @HttpCode(200)
+  async readOneReportedBoard(@Param('no') boardNo: number): Promise<object> {
+    const response = await this.reportsService.readOneReportedBoard(boardNo);
     this.logger.verbose(
       `Reported list(board) has been received. Report Payload: ${JSON.stringify(
         response,
       )}`,
     );
 
-    return Object.assign({
-      statusCode: 200,
-      msg: `No:${no} 신고 내역(게시글)이 조회되었습니다.`,
+    return {
+      msg: `No:${boardNo} 신고 내역(게시글)이 조회되었습니다.`,
       response,
-    });
+    };
   }
 
   @ApiOperation({

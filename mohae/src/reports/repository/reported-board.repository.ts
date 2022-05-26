@@ -6,7 +6,9 @@ import { ReportedBoard } from '../entity/reported-board.entity';
 export class ReportedBoardRepository extends Repository<ReportedBoard> {
   async readOneReportedBoard(no: number): Promise<ReportedBoard> {
     try {
-      const reportBoard = await this.createQueryBuilder('reported_boards')
+      const reportBoard: ReportedBoard = await this.createQueryBuilder(
+        'reported_boards',
+      )
         .leftJoin('reported_boards.reportUser', 'reportUser')
         .leftJoin('reported_boards.reportedBoard', 'reportedBoard')
         .leftJoin('reported_boards.checks', 'checks')
@@ -26,10 +28,8 @@ export class ReportedBoardRepository extends Repository<ReportedBoard> {
         .getOne();
 
       return reportBoard;
-    } catch (e) {
-      throw new InternalServerErrorException(
-        `${e} ### 신고 내역(게시글) 조회 : 알 수 없는 서버 에러입니다.`,
-      );
+    } catch (err) {
+      throw new InternalServerErrorException(err.message);
     }
   }
 
