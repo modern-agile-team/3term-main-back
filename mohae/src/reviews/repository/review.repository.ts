@@ -82,4 +82,30 @@ export class ReviewRepository extends Repository<Review> {
       throw new InternalServerErrorException(err.message);
     }
   }
+
+  async checkDuplicateReview(
+    requesterNo: number,
+    targetUserNo: number,
+    boardNo: number,
+  ): Promise<number> {
+    try {
+      const isReview: number = await this.createQueryBuilder('review')
+        .leftJoin('review.reviewer', 'reviewer')
+        .leftJoin('review.targetUser', 'targetUser')
+        .leftJoin('review.board', 'board')
+        .where(
+          'reviewer.no = :targetUserNo AND targetUser.no = :requesterNo And board.no = :boardNo',
+          {
+            targetUserNo,
+            requesterNo,
+            boardNo,
+          },
+        )
+        .getCount();
+
+      return isReview;
+    } catch (err) {
+      throw new InternalServerErrorException(err.message);
+    }
+  }
 }
