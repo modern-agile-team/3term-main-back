@@ -28,6 +28,7 @@ import * as redisStore from 'cache-manager-redis-store';
 import { ConfigModule } from '@nestjs/config';
 import { AwsService } from './aws/aws.service';
 import { TermsModule } from './terms/terms.module';
+import { BasketsModule } from './baskets/baskets.module';
 
 @Module({
   imports: [
@@ -64,6 +65,7 @@ import { TermsModule } from './terms/terms.module';
     }),
     RedisCacheModule,
     MailboxUserModule,
+    BasketsModule,
   ],
   controllers: [AppController],
   providers: [

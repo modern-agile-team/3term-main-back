@@ -29,6 +29,7 @@ import { BoardLike } from 'src/like/entity/board.like.entity';
 import { BoardPhoto } from 'src/photo/entity/board.photo.entity';
 import { MailboxUser } from 'src/mailbox-user/entity/mailbox-user.entity';
 import { Terms, TermsUser } from 'src/terms/entity/terms.entity';
+import { Basket } from 'src/baskets/entity/baskets.entity';
 const dbConfig = config.get('db');
 
 const { DB_HOST, DB_PORT, DB_USER, DB_PSWORD, DB_DATABASE } = process.env;
@@ -69,6 +70,7 @@ export const typeORMConfig: TypeOrmModuleOptions = {
     BoardPhoto,
     Terms,
     TermsUser,
+    Basket,
   ],
   // entities: [__dirname + '/../**/*.entity.{ts,js}'],
   synchronize: dbConfig.synchronize,

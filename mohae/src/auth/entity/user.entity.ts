@@ -32,6 +32,7 @@ import { BoardLike } from 'src/like/entity/board.like.entity';
 import { MailboxUser } from 'src/mailbox-user/entity/mailbox-user.entity';
 import { TermsUser } from 'src/terms/entity/terms.entity';
 import { Terms } from 'src/terms/entity/terms.entity';
+import { Basket } from 'src/baskets/entity/baskets.entity';
 
 @Entity('users')
 export class User extends BaseEntity {
@@ -217,4 +218,7 @@ export class User extends BaseEntity {
 
   @OneToMany((type) => Review, (review) => review.targetUser)
   reviewBasket: Review[];
+
+  @OneToMany((type) => Basket, (basket) => basket.boardNo)
+  baskets: Basket[];
 }

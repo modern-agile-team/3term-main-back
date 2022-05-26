@@ -1,5 +1,6 @@
 import { Area } from 'src/areas/entity/areas.entity';
 import { User } from 'src/auth/entity/user.entity';
+import { Basket } from 'src/baskets/entity/baskets.entity';
 import { Category } from 'src/categories/entity/category.entity';
 import { BoardLike } from 'src/like/entity/board.like.entity';
 import { BoardPhoto } from 'src/photo/entity/board.photo.entity';
@@ -126,6 +127,9 @@ export class Board extends BaseEntity {
     nullable: true,
   })
   photos: BoardPhoto[];
+
+  @OneToMany((type) => Basket, (basket) => basket.boardNo)
+  baskets: Basket[];
 
   @ManyToOne((type) => User, (user) => user.boards, {
     onDelete: 'SET NULL',
