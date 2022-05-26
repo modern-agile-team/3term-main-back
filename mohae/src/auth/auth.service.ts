@@ -131,7 +131,6 @@ export class AuthService {
           terms: index + 1,
         };
       });
-      console.log(termsArr);
       const termsUserNums: Array<object> = await queryRunner.manager
         .getCustomRepository(TermsUserReporitory)
         .addTermsUser(termsArr);

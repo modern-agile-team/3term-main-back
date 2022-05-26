@@ -17,7 +17,6 @@ async function bootstrap() {
   // Cors 적용
   // app.enableCors();
 
-  app.useGlobalInterceptors(new SentryInterceptor());
   app.use(
     ['/mohae-api-docs'],
     expressBasicAuth({
@@ -34,6 +33,7 @@ async function bootstrap() {
       transform: true,
     }),
   );
+  app.useGlobalInterceptors(new SentryInterceptor());
 
   //Swagger 환경설정 연결
   setupSwagger(app);

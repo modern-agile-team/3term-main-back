@@ -8,7 +8,7 @@ import { UserRepository } from 'src/auth/repository/user.repository';
 import { BoardRepository } from 'src/boards/repository/board.repository';
 import { ErrorConfirm } from 'src/common/utils/error';
 import { Repository } from 'typeorm';
-import { CreateReviewDto } from './dto/review.dto';
+import { CreateReviewDto } from './dto/create-review.dto';
 import { ReviewRepository } from './repository/review.repository';
 import { ReviewsService } from './reviews.service';
 

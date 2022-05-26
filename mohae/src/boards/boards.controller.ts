@@ -129,6 +129,29 @@ export class BoardsController {
     });
   }
 
+  @Get('profile')
+  async readUserBoard(
+    @Query('user') user: number,
+    @Query('take') take: number,
+    @Query('page') page: number,
+    @Query('target') target: boolean,
+  ) {
+    try {
+      const response: Array<Board> = await this.boardService.readUserBoard(
+        user,
+        take,
+        page,
+        target,
+      );
+      return Object.assign({
+        statusCode: 200,
+        msg: '프로필 게시물 조회에 성공했습니다.',
+        response,
+      });
+    } catch (err) {
+      throw err;
+    }
+  }
   @Get('/:no')
   async getByOneBoard(@Param('no') no: number): Promise<Object> {
     const response = await this.boardService.getByOneBoard(no);
@@ -159,31 +182,38 @@ export class BoardsController {
       },
     },
   })
-  async createBoard(@Body() createBoardDto: CreateBoardDto): Promise<Board> {
-    const response = await this.boardService.createBoard(createBoardDto);
+  async createBoard(@Body() createBoardDto: CreateBoardDto): Promise<object> {
+    const response: boolean = await this.boardService.createBoard(
+      createBoardDto,
+    );
 
     return Object.assign({
       statusCode: 201,
+      msg: '게시글 생성이 완료 되었습니다.',
       response,
     });
   }
 
   @Delete('/:no')
-  async deleteBoard(@Param('no') no: number): Promise<DeleteResult> {
-    const response = await this.boardService.deleteBoard(no);
+  async deleteBoard(@Param('no') boardNo: number): Promise<object> {
+    const response: boolean = await this.boardService.deleteBoard(boardNo);
 
     return Object.assign({
       statusCode: 204,
       msg: '게시글 삭제가 완료되었습니다',
+      response,
     });
   }
 
   @Patch('/:no')
   async updateBoard(
-    @Param('no') no: number,
+    @Param('no') boardNo: number,
     @Body() updateBoardDto: UpdateBoardDto,
-  ): Promise<Object> {
-    const response = await this.boardService.updateBoard(no, updateBoardDto);
+  ): Promise<object> {
+    const response: boolean = await this.boardService.updateBoard(
+      boardNo,
+      updateBoardDto,
+    );
 
     return Object.assign({
       statusCode: 201,

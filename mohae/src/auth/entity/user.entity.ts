@@ -1,10 +1,5 @@
 import { Validate } from 'class-validator';
 import { Major } from 'src/majors/entity/major.entity';
-import {
-  ReportContent,
-  ReportedBoard,
-  ReportedUser,
-} from 'src/reports/entity/report.entity';
 import { Review } from 'src/reviews/entity/review.entity';
 import { School } from 'src/schools/entity/school.entity';
 import { Category } from 'src/categories/entity/category.entity';
@@ -23,15 +18,18 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { Letter } from 'src/letters/entity/letter.entity';
-import { MailboxUser } from 'src/mailboxes/entity/mailbox.entity';
 import { Spec } from 'src/specs/entity/spec.entity';
 import { Faq } from 'src/faqs/entity/faq.entity';
 import { Notice } from 'src/notices/entity/notice.entity';
 import { Board } from 'src/boards/entity/board.entity';
 import { UserLike } from 'src/like/entity/user.like.entity';
 import { BoardLike } from 'src/like/entity/board.like.entity';
+import { MailboxUser } from 'src/mailbox-user/entity/mailbox-user.entity';
 import { TermsUser } from 'src/terms/entity/terms.entity';
 import { Terms } from 'src/terms/entity/terms.entity';
+import { ReportedUser } from 'src/reports/entity/reported-user.entity';
+import { ReportedBoard } from 'src/reports/entity/reported-board.entity';
+
 @Entity('users')
 export class User extends BaseEntity {
   @PrimaryGeneratedColumn()
@@ -213,4 +211,7 @@ export class User extends BaseEntity {
     nullable: true,
   })
   likedBoard: BoardLike[];
+
+  @OneToMany((type) => Review, (review) => review.targetUser)
+  reviewBasket: Review[];
 }
