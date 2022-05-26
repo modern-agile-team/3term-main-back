@@ -58,7 +58,7 @@ export class ReviewsService {
     createReviewDto: CreateReviewDto,
   ): Promise<void> {
     const { boardNo, targetUserNo }: any = createReviewDto;
-    const queryRunner = this.connection.createQueryRunner();
+    const queryRunner: any = this.connection.createQueryRunner();
 
     await queryRunner.connect();
     await queryRunner.startTransaction();
@@ -99,30 +99,28 @@ export class ReviewsService {
       await queryRunner.rollbackTransaction();
       throw err;
     } finally {
-      // 직접 생성한 QueryRunner는 해제시켜 주어야 함
       await queryRunner.release();
     }
   }
 
-  // 재능 나눔러와 재능 받은 사람 쌍방 리뷰 남길 수 있음
-  // 도움받은 게시글은 자기 자신도 리뷰를 남길 수 있음
-  async checkDuplicateReview(reviewer: User, boardNo: number) {
+  async checkDuplicateReview(
+    requester: User,
+    targetUserNo: number,
+    boardNo: number,
+  ): Promise<void> {
     try {
-      const reviewerNo = reviewer.no;
-      const board = await this.boardsRepository.findOne(boardNo, {
-        select: ['no'],
-        relations: ['user', 'reviews'],
-      });
-      console.log(board);
-      if (reviewerNo === board.user.no) {
-        throw new BadRequestException(
-          '자신이 작성한 게시글에는 리뷰를 남길 수 없습니다.',
+      const requesterNo: number = requester.no;
+
+      const isReview: boolean =
+        await this.reviewRepository.checkDuplicateReview(
+          requesterNo,
+          targetUserNo,
+          boardNo,
         );
+
+      if (isReview) {
+        throw new BadRequestException('작성한 리뷰가 존재합니다.');
       }
-
-      const response = await this.reviewRepository.find();
-
-      return response;
     } catch (err) {
       throw err;
     }
