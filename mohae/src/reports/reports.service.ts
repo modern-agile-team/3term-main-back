@@ -5,19 +5,17 @@ import { UserRepository } from 'src/auth/repository/user.repository';
 import { Board } from 'src/boards/entity/board.entity';
 import { BoardRepository } from 'src/boards/repository/board.repository';
 import { ErrorConfirm } from 'src/common/utils/error';
-import { CreateReportDto } from './dto/report.dto';
-import {
-  ReportCheckbox,
-  ReportedBoard,
-  ReportedUser,
-} from './entity/report.entity';
+import { CreateReportDto } from './dto/create-report.dto';
+import { ReportCheckbox } from '../report-checkboxes/entity/report-checkboxes.entity';
+import { ReportCheckboxRepository } from '../report-checkboxes/repository/report-checkbox.repository';
 import {
   BoardReportChecksRepository,
-  ReportCheckboxRepository,
-  ReportedBoardRepository,
-  ReportedUserRepository,
   UserReportChecksRepository,
-} from './repository/report.repository';
+} from '../report-checks/repository/report-checks.repository';
+import { ReportedBoardRepository } from './repository/reported-board.repository';
+import { ReportedUserRepository } from './repository/reported-user.repository';
+import { ReportedBoard } from './entity/reported-board.entity';
+import { ReportedUser } from './entity/reported-user.entity';
 
 @Injectable()
 export class ReportsService {
@@ -45,13 +43,6 @@ export class ReportsService {
 
     private errorConfirm: ErrorConfirm,
   ) {}
-
-  async readAllCheckboxes(): Promise<ReportCheckbox[]> {
-    const checkList: ReportCheckbox[] =
-      await this.reportCheckboxRepository.readAllCheckboxes();
-
-    return checkList;
-  }
 
   async readOneReportedBoard(no: number): Promise<ReportedBoard> {
     try {

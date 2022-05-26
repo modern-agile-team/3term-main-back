@@ -11,12 +11,9 @@ import {
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
-import { CreateReportDto } from './dto/report.dto';
-import {
-  ReportCheckbox,
-  ReportedBoard,
-  ReportedUser,
-} from './entity/report.entity';
+import { CreateReportDto } from './dto/create-report.dto';
+import { ReportedBoard } from './entity/reported-board.entity';
+import { ReportedUser } from './entity/reported-user.entity';
 import { ReportsService } from './reports.service';
 
 @Controller('reports')
@@ -25,21 +22,6 @@ import { ReportsService } from './reports.service';
 export class ReportsController {
   private logger = new Logger('ReportsController');
   constructor(private reportsService: ReportsService) {}
-
-  @ApiOperation({
-    summary: '체크박스 조회',
-    description: '체크박스 조회시 체크된 신고들도 함께 불러옴 API',
-  })
-  @Get('checkboxes')
-  async readAllCheckboxes(): Promise<ReportCheckbox[]> {
-    const response = await this.reportsService.readAllCheckboxes();
-
-    return Object.assign({
-      statusCode: 200,
-      msg: `체크 항목별 조회되었습니다.`,
-      response,
-    });
-  }
 
   @ApiOperation({
     summary: '신고된 게시글 상세(선택) 조회',

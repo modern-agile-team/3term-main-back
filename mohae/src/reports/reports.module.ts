@@ -9,11 +9,13 @@ import { ReportsController } from './reports.controller';
 import { ReportsService } from './reports.service';
 import {
   BoardReportChecksRepository,
-  ReportCheckboxRepository,
-  ReportedBoardRepository,
-  ReportedUserRepository,
   UserReportChecksRepository,
-} from './repository/report.repository';
+} from '../report-checks/repository/report-checks.repository';
+import { ReportedUserRepository } from './repository/reported-user.repository';
+import { ReportedBoardRepository } from './repository/reported-board.repository';
+import { ReportCheckboxRepository } from 'src/report-checkboxes/repository/report-checkbox.repository';
+import { ReportChecksModule } from 'src/report-checks/report-checks.module';
+import { ReportCheckboxesModule } from 'src/report-checkboxes/report-checkboxes.module';
 
 @Module({
   imports: [
@@ -28,6 +30,8 @@ import {
     ]),
     PassportModule.register({ defaultStrategy: 'jwt' }),
     AuthModule,
+    ReportChecksModule,
+    ReportCheckboxesModule,
   ],
   controllers: [ReportsController],
   providers: [ReportsService, ErrorConfirm],

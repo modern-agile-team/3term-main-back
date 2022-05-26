@@ -1,18 +1,15 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, PickType } from '@nestjs/swagger';
 import {
   ArrayMaxSize,
-  ArrayMinSize,
-  ArrayNotEmpty,
   IsArray,
   IsNotEmpty,
   IsNumber,
   IsOptional,
   IsString,
-  Length,
   MaxLength,
 } from 'class-validator';
 
-export abstract class CreateReportDto {
+export class CreateReportDto {
   @ApiProperty({
     example: 'user',
     description: '신고 대상 항목입니다. (user or board)',

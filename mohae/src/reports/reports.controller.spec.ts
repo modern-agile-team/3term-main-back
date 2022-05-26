@@ -6,13 +6,13 @@ import { ErrorConfirm } from 'src/common/utils/error';
 import { CreateReportDto } from './dto/report.dto';
 import { ReportsController } from './reports.controller';
 import { ReportsService } from './reports.service';
+import { ReportCheckboxRepository } from './repository/report-checkbox.repository';
 import {
   BoardReportChecksRepository,
-  ReportCheckboxRepository,
-  ReportedBoardRepository,
-  ReportedUserRepository,
   UserReportChecksRepository,
-} from './repository/report.repository';
+} from './repository/report-checks.repository';
+import { ReportedBoardRepository } from './repository/reported-board.repository';
+import { ReportedUserRepository } from './repository/reported-user.repository';
 
 describe('ReportsController', () => {
   let reportsController: ReportsController;
