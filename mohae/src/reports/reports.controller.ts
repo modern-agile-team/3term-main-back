@@ -7,19 +7,20 @@ import {
   Param,
   Post,
   UseGuards,
-  UsePipes,
-  ValidationPipe,
+  UseInterceptors,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { User } from 'src/auth/entity/user.entity';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
+import { SuccesseInterceptor } from 'src/common/interceptors/success.interceptor';
 import { CreateReportDto } from './dto/create-report.dto';
 import { ReportedBoard } from './entity/reported-board.entity';
 import { ReportedUser } from './entity/reported-user.entity';
 import { ReportsService } from './reports.service';
 
 @Controller('reports')
+@UseInterceptors(SuccesseInterceptor)
 @UseGuards(AuthGuard())
 @ApiTags('Reports')
 export class ReportsController {

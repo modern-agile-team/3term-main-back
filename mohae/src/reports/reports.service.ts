@@ -1,8 +1,4 @@
-import {
-  BadRequestException,
-  Injectable,
-  InternalServerErrorException,
-} from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/auth/entity/user.entity';
 import { UserRepository } from 'src/auth/repository/user.repository';
@@ -25,22 +21,11 @@ export class ReportsService {
     @InjectRepository(ReportedBoardRepository)
     private reportedBoardRepository: ReportedBoardRepository,
 
-    @InjectRepository(ReportedUserRepository)
     private reportedUserRepository: ReportedUserRepository,
-
-    @InjectRepository(ReportCheckboxRepository)
     private reportCheckboxRepository: ReportCheckboxRepository,
-
-    @InjectRepository(BoardRepository)
     private boardRepository: BoardRepository,
-
-    @InjectRepository(UserRepository)
     private userRepository: UserRepository,
-
-    @InjectRepository(BoardReportChecksRepository)
     private boardReportChecksRepository: BoardReportChecksRepository,
-
-    @InjectRepository(UserReportChecksRepository)
     private userReportChecksRepository: UserReportChecksRepository,
 
     private errorConfirm: ErrorConfirm,
