@@ -1,24 +1,51 @@
-# 3term-main-back
-3기 메인 프로젝트 저장소입니다.
+# 3term-mohae-back
+3기 모해 프로젝트 백엔드 저장소입니다.
 
 ## 기술 스택 🛠
 <h3 align="left">  
- BackEnd
+ Runtime
 </h3>
 
 <p align="left">  
+ <img src= "https://img.shields.io/badge/NodeJs-339933?logo=node.js&logoColor=white"/>
+</p>  
+
+<h3 align="left">  
+ Language
+</h3>
+
+<p align="left">
  <img src="https://img.shields.io/badge/JavaScript-F7DF1E?logo=javascript&logoColor=white">
  <img src="https://img.shields.io/badge/TypeScript-3178C6?logo=TypeScript&logoColor=white">
- <img src= "https://img.shields.io/badge/NodeJs-339933?logo=node.js&logoColor=white"/>
- <img src= "https://img.shields.io/badge/NestJs-E0234E?logo=NestJs&logoColor=white"/>
+</p> 
+
+<h3 align="left">  
+ Database
+</h3>
+
+<p align="left">
  <img src="https://img.shields.io/badge/mysql-4479A1?logo=mysql&logoColor=white">
  <img src="https://img.shields.io/badge/MariaDB-003545?logo=MariaDB&logoColor=white">
+</p> 
+
+<h3 align="left">  
+ CI/CD
+</h3>
+
+<p align="left">
  <img src="https://img.shields.io/badge/Jenkins-D24939?logo=jenkins&logoColor=white">
  <img src="https://img.shields.io/badge/Docker-2496ED?logo=docker&logoColor=white">
+</p> 
+
+<h3 align="left">  
+ Library
+</h3>
+
+<p align="left">
+ <img src= "https://img.shields.io/badge/NestJs-E0234E?logo=NestJs&logoColor=white"/>
  <img src="https://img.shields.io/badge/Swagger-85EA2D?logo=swagger&logoColor=white">
  <img src="https://img.shields.io/badge/Jest-C21325?logo=Jest&logoColor=white">
- 
-</p>  
+</p> 
 
 <h3 align="left">  
   Cloud 
