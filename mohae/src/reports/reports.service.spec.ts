@@ -6,19 +6,18 @@ import { ErrorConfirm } from 'src/common/utils/error';
 import { Repository } from 'typeorm';
 import {
   BoardReportChecksRepository,
-  ReportCheckboxRepository,
   UserReportChecksRepository,
-} from './repository/report.repository';
+} from '../report-checks/repository/report-checks.repository';
 import { ReportsService } from './reports.service';
-import {
-  ReportedBoardRepository,
-  ReportedUserRepository,
-} from './repository/report.repository';
-import { CreateReportDto } from './dto/report.dto';
+import {} from '../report-checks/repository/report-checks.repository';
+import { CreateReportDto } from './dto/create-report.dto';
 import {
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
+import { ReportedBoardRepository } from './repository/reported-board.repository';
+import { ReportedUserRepository } from './repository/reported-user.repository';
+import { ReportCheckboxRepository } from '../report-checkboxes/repository/report-checkbox.repository';
 
 const MockReportedBoardRepository = () => ({
   readOneReportedBoard: jest.fn(),
