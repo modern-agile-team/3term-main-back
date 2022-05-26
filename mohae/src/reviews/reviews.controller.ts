@@ -17,6 +17,7 @@ import { CreateReviewDto } from './dto/create-review.dto';
 import { ReviewsService } from './reviews.service';
 
 @Controller('reviews')
+@UseGuards(AuthGuard())
 @UseInterceptors(SuccesseInterceptor)
 @ApiTags('Reviews')
 export class ReviewsController {
@@ -26,7 +27,6 @@ export class ReviewsController {
     summary: '마이페이지에 나타나는 유저 리뷰',
     description: '마이페이지에 나타나는 유저 리뷰 조회 API',
   })
-  @UseGuards(AuthGuard())
   @HttpCode(200)
   @Get('/:targetUserNo')
   async readUserReviews(
@@ -51,7 +51,6 @@ export class ReviewsController {
     summary: '리뷰 작성',
     description: '리뷰 작성 API',
   })
-  @UseGuards(AuthGuard())
   @HttpCode(201)
   @Post()
   async createReview(
@@ -65,19 +64,25 @@ export class ReviewsController {
     };
   }
 
-  @Get('/check/:boardNo')
-  @UseGuards(AuthGuard())
+  @ApiOperation({
+    summary: '중복된 리뷰 체크',
+    description: '리뷰룰 요청하는 사람과',
+  })
+  @Get('/check/:targetUserNo/:boardNo')
+  @HttpCode(200)
   async checkDuplicateReview(
-    @CurrentUser() reviewer: User,
+    @CurrentUser() requester: User,
+    @Param('targetUserNo') targetUserNo: number,
     @Param('boardNo') boardNo: number,
-  ) {
-    const response = await this.reviewService.checkDuplicateReview(
-      reviewer,
+  ): Promise<object> {
+    await this.reviewService.checkDuplicateReview(
+      requester,
+      targetUserNo,
       boardNo,
     );
 
     return {
-      msg: '중복이다.',
+      msg: '중복된 리뷰가 없습니다.',
     };
   }
 }

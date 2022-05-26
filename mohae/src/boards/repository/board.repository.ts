@@ -315,15 +315,15 @@ export class BoardRepository extends Repository<Board> {
     }
   }
 
-  async deleteBoard(no: number): Promise<DeleteResult> {
+  async deleteBoard(boardNo: number): Promise<number> {
     try {
-      const result = await this.createQueryBuilder()
+      const { affected }: DeleteResult = await this.createQueryBuilder()
         .softDelete()
         .from(Board)
-        .where('no = :no', { no })
+        .where('no = :boardNo', { boardNo })
         .execute();
 
-      return result;
+      return affected;
     } catch (err) {
       throw new InternalServerErrorException(
         `${err} ### 게시판 삭제: 알 수 없는 서버 에러입니다.`,
