@@ -1,4 +1,8 @@
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/auth/entity/user.entity';
 import { UserRepository } from 'src/auth/repository/user.repository';
@@ -89,10 +93,10 @@ export class ReportsService {
       },
     );
 
-    try {
-      switch (head) {
-        // 게시글 신고일 때의 로직
-        case 'board':
+    switch (head) {
+      // 게시글 신고일 때의 로직
+      case 'board':
+        try {
           const board: Board = await this.boardRepository.findOne(headNo, {
             select: ['no'],
             relations: ['reports'],
@@ -132,12 +136,13 @@ export class ReportsService {
             'boardReport',
           );
 
-          return {
-            success: true,
-            reportNo: createBoardReportResult.insertId,
-          };
-        // 유저 신고일 때의 로직
-        case 'user':
+          break;
+        } catch (err) {
+          throw err;
+        }
+      // 유저 신고일 때의 로직
+      case 'user':
+        try {
           const user: User = await this.userRepository.findOne(headNo, {
             select: ['no'],
             relations: ['reports'],
@@ -152,8 +157,8 @@ export class ReportsService {
             await this.reportedUserRepository.createUserReport(description);
 
           this.errorConfirm.badGatewayError(
-            createBoardReportResult.affectedRows,
-            '유조 신고 저장 실패',
+            createUserReportResult.affectedRows,
+            '유저 신고 저장 실패',
           );
 
           infoToChecks.forEach(async (checkNo) => {
@@ -180,15 +185,12 @@ export class ReportsService {
             'userReport',
           );
 
-          return {
-            success: true,
-            reportNo: createUserReportResult.insertId,
-          };
-        default:
-          this.errorConfirm.notFoundError('', '해당 경로를 찾을 수 없습니다.');
-      }
-    } catch (e) {
-      throw e;
+          break;
+        } catch (err) {
+          throw err;
+        }
+      default:
+        throw new BadRequestException('해당 경로를 찾을 수 없습니다.');
     }
   }
 }

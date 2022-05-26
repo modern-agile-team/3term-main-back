@@ -73,14 +73,10 @@ export class ReportsController {
     @CurrentUser() reporter: User,
     @Body() createReportDto: CreateReportDto,
   ): Promise<object> {
-    const response = await this.reportsService.createReport(
-      reporter,
-      createReportDto,
-    );
+    await this.reportsService.createReport(reporter, createReportDto);
 
     return {
       msg: `${createReportDto.head} 신고가 접수되었습니다.`,
-      response,
     };
   }
 }
