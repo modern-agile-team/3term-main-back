@@ -4,7 +4,7 @@ import { ReportedBoard } from '../entity/reported-board.entity';
 
 @EntityRepository(ReportedBoard)
 export class ReportedBoardRepository extends Repository<ReportedBoard> {
-  async readOneReportedBoard(no: number): Promise<ReportedBoard> {
+  async readOneReportedBoard(boardNo: number): Promise<ReportedBoard> {
     try {
       const reportBoard: ReportedBoard = await this.createQueryBuilder(
         'reported_boards',
@@ -24,7 +24,7 @@ export class ReportedBoardRepository extends Repository<ReportedBoard> {
           'check.no',
           'check.content',
         ])
-        .where('reported_boards.no = :no', { no })
+        .where('reported_boards.no = :boardNo', { boardNo })
         .getOne();
 
       return reportBoard;
