@@ -410,4 +410,18 @@ export class BoardsService {
       await queryRunner.release();
     }
   }
+  async readUserBoard(
+    userNo: number,
+    take: number,
+    page: number,
+    target: boolean,
+  ): Promise<Array<Board>> {
+    try {
+      const profileBoards: Array<Board> =
+        await this.boardRepository.readUserBoard(userNo, take, page, target);
+      return profileBoards;
+    } catch (err) {
+      throw err;
+    }
+  }
 }

@@ -196,4 +196,21 @@ export class SpecsService {
       throw err;
     }
   }
+
+  async readUserSpec(
+    userNo: number,
+    take: number,
+    page: number,
+  ): Promise<Array<Spec>> {
+    try {
+      const profileSpecs: Array<Spec> = await this.specRepository.readUserSpec(
+        userNo,
+        take,
+        page,
+      );
+      return profileSpecs;
+    } catch (err) {
+      throw err;
+    }
+  }
 }

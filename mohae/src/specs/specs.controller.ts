@@ -9,6 +9,7 @@ import {
   UploadedFiles,
   UseGuards,
   UseInterceptors,
+  Query,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { FilesInterceptor } from '@nestjs/platform-express';
@@ -81,6 +82,28 @@ export class SpecsController {
     }
   }
 
+  @Get('profile')
+  async readUserSpec(
+    @Query('user') user: number,
+    @Query('take') take: number,
+    @Query('page') page: number,
+  ) {
+    try {
+      const response: Array<Spec> = await this.specsService.readUserSpec(
+        user,
+        take,
+        page,
+      );
+      return Object.assign({
+        statusCode: 200,
+        msg: '프로필 스펙 조회에 성공했습니다.',
+        response,
+      });
+    } catch (err) {
+      throw err;
+    }
+  }
+
   @UseInterceptors(FilesInterceptor('image', 10))
   @Post('/regist')
   @UseGuards(AuthGuard())
@@ -106,7 +129,7 @@ export class SpecsController {
     }
   }
 
-  @Patch('/:no')
+  @Patch(':no')
   async updateSpec(
     @Param('no') specNo: number,
     @Body() updateSpec: UpdateSpecDto,
@@ -123,7 +146,7 @@ export class SpecsController {
     }
   }
 
-  @Delete('/:no')
+  @Delete(':no')
   async deleteSpec(@Param('no') specNo: number) {
     try {
       await this.specsService.deleteSpec(specNo);

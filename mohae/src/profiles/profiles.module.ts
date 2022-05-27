@@ -13,6 +13,11 @@ import { SchoolsModule } from 'src/schools/schools.module';
 import { ErrorConfirm } from 'src/common/utils/error';
 import { ProfilesController } from './profiles.controller';
 import { ProfilesService } from './profiles.service';
+import { SpecRepository } from 'src/specs/repository/spec.repository';
+import { SpecsModule } from 'src/specs/specs.module';
+import { BoardRepository } from 'src/boards/repository/board.repository';
+import { BoardsModule } from 'src/boards/boards.module';
+import { ReviewRepository } from 'src/reviews/repository/review.repository';
 
 @Module({
   imports: [
@@ -22,12 +27,18 @@ import { ProfilesService } from './profiles.service';
       MajorRepository,
       CategoryRepository,
       LikeRepository,
+      SpecRepository,
+      BoardRepository,
+      ReviewRepository,
     ]),
     AuthModule,
     SchoolsModule,
     MajorsModule,
     CategoriesModule,
+    SpecsModule,
     LikeModule,
+    BoardsModule,
+    ReviewRepository,
   ],
   controllers: [ProfilesController],
   providers: [ProfilesService, ErrorConfirm],
