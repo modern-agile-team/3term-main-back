@@ -5,6 +5,7 @@ import {
   HttpCode,
   Param,
   Post,
+  Query,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
@@ -28,19 +29,23 @@ export class ReviewsController {
     description: '마이페이지에 나타나는 유저 리뷰 조회 API',
   })
   @HttpCode(200)
-  @Get('/:targetUserNo')
-  async readUserReviews(
-    @Param('targetUserNo') targetUserNo: number,
-  ): Promise<object> {
-    const response: object | undefined =
-      await this.reviewService.readUserReviews(targetUserNo);
+  @Get('/profile')
+  async readUserReview(
+    @Query('user') userNo: number,
+    @Query('take') take: number,
+    @Query('page') page: number,
+  ) {
+    const response: object = await this.reviewService.readUserReviews(
+      userNo,
+      take,
+      page,
+    );
 
     if (!response) {
       return {
         msg: '유저의 리뷰가 존재하지 않습니다.',
       };
     }
-
     return {
       msg: '유저의 리뷰가 조회되었습니다.',
       response,

@@ -19,34 +19,35 @@ import {
   JudgeDuplicateNicknameDto,
   UpdateProfileDto,
 } from './dto/update-profile.dto';
+import { create } from 'domain';
+import { SpecRepository } from 'src/specs/repository/spec.repository';
+import { BoardRepository } from 'src/boards/repository/board.repository';
+import { Spec } from 'src/specs/entity/spec.entity';
+import { Board } from 'src/boards/entity/board.entity';
+import { ReviewRepository } from 'src/reviews/repository/review.repository';
+import { Review } from 'src/reviews/entity/review.entity';
 
 @Injectable()
 export class ProfilesService {
   constructor(
-    @InjectRepository(UserRepository)
     private userRepository: UserRepository,
-
-    @InjectRepository(SchoolRepository)
     private schoolRepository: SchoolRepository,
-
-    @InjectRepository(MajorRepository)
     private majorRepository: MajorRepository,
-
-    @InjectRepository(CategoryRepository)
     private categoriesRepository: CategoryRepository,
-
-    @InjectRepository(LikeRepository)
     private likeRepository: LikeRepository,
-
+    private specRepository: SpecRepository,
+    private boardRepository: BoardRepository,
+    private reviewRepository: ReviewRepository,
     private errorConfirm: ErrorConfirm,
   ) {}
 
-  async findOneProfile(profileUserNo: number, userNo: number): Promise<object> {
+  async readUserProfile(
+    profileUserNo: number,
+    userNo: number,
+  ): Promise<object> {
     try {
-      const profile: User = await this.userRepository.findOneUser(
-        profileUserNo,
-      );
-
+      const { profile, boardsNum }: any =
+        await this.userRepository.readUserProfile(profileUserNo);
       if (!profile) {
         throw new NotFoundException(
           `No: ${profileUserNo} 일치하는 유저가 없습니다.`,
@@ -57,38 +58,22 @@ export class ProfilesService {
         userNo,
       );
       const islike: boolean = liked ? true : false;
-      const {
-        likedUser,
-        name,
-        email,
-        nickname,
-        createdAt,
-        photo_url,
-        school,
-        major,
-        specs,
-        categories,
-        boards,
-      }: User = profile;
-      const likedNum: number = likedUser.length;
+
+      const { likedUser, createdAt }: any = profile;
       const userCreatedAt = `${createdAt.getFullYear()}.${
         createdAt.getMonth() + 1
       }.${createdAt.getDate()}`;
 
+      delete profile.likedUser;
+      delete profile.createdAt;
+
+      profile['userCreatedAt'] = `${userCreatedAt}`;
+      profile['likedNum'] = likedUser.length;
+      profile['boardsNum'] = Number(boardsNum);
+      profile['islike'] = islike;
+
       return {
-        profileUserNo,
-        name,
-        email,
-        nickname,
-        photo_url,
-        userCreatedAt,
-        likedNum,
-        islike,
-        boards,
-        school,
-        major,
-        specs,
-        categories,
+        profile,
       };
     } catch (err) {
       throw err;
