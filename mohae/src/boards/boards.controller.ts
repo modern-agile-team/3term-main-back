@@ -135,9 +135,9 @@ export class BoardsController {
     @Query('take') take: number,
     @Query('page') page: number,
     @Query('target') target: boolean,
-  ) {
+  ): Promise<object> {
     try {
-      const response: Array<Board> = await this.boardService.readUserBoard(
+      const response: Board[] = await this.boardService.readUserBoard(
         user,
         take,
         page,

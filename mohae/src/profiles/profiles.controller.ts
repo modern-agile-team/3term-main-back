@@ -18,20 +18,21 @@ import {
 } from './dto/update-profile.dto';
 import { ProfilesService } from './profiles.service';
 
+@UseGuards(AuthGuard('jwt'))
 @Controller('profile')
 @ApiTags('Profile')
 export class ProfilesController {
   constructor(private profileService: ProfilesService) {}
 
-  @Get('/:profileUserNo/:userNo')
+  @Get('/:profileUserNo')
   async readUserProfile(
-    @Param('profileUserNo', ParseIntPipe) profileUserNo: number,
-    @Param('userNo', ParseIntPipe) userNo: number,
+    @Param('profileUserNo') profileUserNo: number,
+    @CurrentUser() user: User,
   ): Promise<object> {
     try {
       const response: object = await this.profileService.readUserProfile(
         profileUserNo,
-        userNo,
+        user.no,
       );
       return Object.assign({
         statusCode: 200,
