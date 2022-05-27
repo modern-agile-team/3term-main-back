@@ -31,9 +31,11 @@ export class SpecsService {
     private connection: Connection,
     private errorConfirm: ErrorConfirm,
   ) {}
-  async getAllSpec(userNo: number): Promise<any> {
+  async getAllSpec(profileUserNo: number): Promise<any> {
     try {
-      const specs: Array<Spec> = await this.specRepository.getAllSpec(userNo);
+      const specs: Array<Spec> = await this.specRepository.getAllSpec(
+        profileUserNo,
+      );
 
       if (!specs.length) {
         return '현재 등록된 스펙이 없습니다.';
@@ -44,9 +46,9 @@ export class SpecsService {
     }
   }
 
-  async getOneSpec(no: number): Promise<Spec> {
+  async getOneSpec(specNo: number): Promise<Spec> {
     try {
-      const spec: Spec = await this.specRepository.getOneSpec(no);
+      const spec: Spec = await this.specRepository.getOneSpec(specNo);
       this.errorConfirm.notFoundError(spec, '해당 스펙이 존재하지 않습니다.');
       return spec;
     } catch (err) {

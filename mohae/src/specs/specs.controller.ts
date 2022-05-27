@@ -12,7 +12,12 @@ import {
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { FilesInterceptor } from '@nestjs/platform-express';
-import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import {
+  ApiOkResponse,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { User } from '@sentry/node';
 import { AwsService } from 'src/aws/aws.service';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
@@ -29,14 +34,18 @@ export class SpecsController {
     private awsService: AwsService,
   ) {}
 
-  @Get('/user/:no')
+  @Get('/user/:profileUserNo')
   @ApiOperation({
     summary: '한 명의 유저 스펙 전체 조회 API',
-    description: '한명의 유저 스펙 한번에 불러온다',
+    description: '한명의 유저 스펙을 한번에 불러온다',
   })
-  async getAllSpec(@Param('no') no: number) {
+  @ApiResponse({
+    status: 200,
+    description: '성공적으로 유저의 스펙이 불러와진 경우.',
+  })
+  async getAllSpec(@Param('profileUserNo') profileUserNo: number) {
     try {
-      const specs: Spec = await this.specsService.getAllSpec(no);
+      const specs: Spec = await this.specsService.getAllSpec(profileUserNo);
 
       return Object.assign({
         statusCode: 200,
@@ -48,10 +57,19 @@ export class SpecsController {
     }
   }
 
-  @Get('/user/spec/:no')
-  async getOneSpec(@Param('no') no: number) {
+  @Get('/user/spec/:specNo')
+  @ApiOperation({
+    summary: '스펙 상세조회 API',
+    description: '하나의 스펙을 조회 해준다.',
+  })
+  @ApiResponse({
+    status: 200,
+    description: '성공적으로 스펙이 불러와진 경우.',
+  })
+  @ApiResponse({ status: 404, description: '해당 스펙이 존재하지 않은 경우' })
+  async getOneSpec(@Param('specNo') specNo: number) {
     try {
-      const spec: Spec = await this.specsService.getOneSpec(no);
+      const spec: Spec = await this.specsService.getOneSpec(specNo);
 
       return Object.assign({
         statusCode: 200,
@@ -67,7 +85,7 @@ export class SpecsController {
   @Post('/regist')
   @UseGuards(AuthGuard())
   async registSpec(
-    @UploadedFiles() files: Array<Express.Multer.File>,
+    @UploadedFiles() files: Express.Multer.File[],
     @Body() createSpecDto: CreateSpecDto,
     @CurrentUser() user: User,
   ) {

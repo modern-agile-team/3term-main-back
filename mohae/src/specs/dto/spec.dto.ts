@@ -1,5 +1,5 @@
-import { UploadedFile } from '@nestjs/common';
-import { IsArray, IsNumber, IsOptional, IsString } from 'class-validator';
+import { ApiProperty } from '@nestjs/swagger';
+import { IsArray, IsOptional, IsString } from 'class-validator';
 
 export class CreateSpecDto {
   @IsString()
@@ -7,24 +7,21 @@ export class CreateSpecDto {
 
   @IsString()
   description: string;
-
-  // @IsArray()
-  // specPhoto: [];
-
-  // @IsNumber()
-  // userNo: number;
 }
 
 export class UpdateSpecDto {
   @IsOptional()
   @IsString()
+  @ApiProperty({ description: '스펙 제목' })
   title: string;
 
   @IsOptional()
   @IsString()
+  @ApiProperty({ description: '스펙 본문' })
   description: string;
 
   @IsOptional()
   @IsArray()
+  @ApiProperty({ description: '스펙 사진' })
   specPhoto: [];
 }

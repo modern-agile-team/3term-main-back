@@ -1,3 +1,4 @@
+import { ApiProperty } from '@nestjs/swagger';
 import { User } from 'src/auth/entity/user.entity';
 import { SpecPhoto } from 'src/photo/entity/photo.entity';
 import {
@@ -52,7 +53,7 @@ export class Spec extends BaseEntity {
   })
   specPhotos: SpecPhoto[];
 
-  @ManyToOne((type) => User, (user) => user.no, {
+  @ManyToOne((type) => User, (user) => user.specs, {
     onDelete: 'SET NULL',
   })
   @JoinColumn({ name: 'user_no' })

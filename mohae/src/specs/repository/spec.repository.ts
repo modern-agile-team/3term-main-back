@@ -12,7 +12,7 @@ import { Spec } from '../entity/spec.entity';
 
 @EntityRepository(Spec)
 export class SpecRepository extends Repository<Spec> {
-  async getAllSpec(userNo: number) {
+  async getAllSpec(profileUserNo: number) {
     try {
       const specs = await this.createQueryBuilder('spec')
         .leftJoin('spec.specPhotos', 'specPhotos')
@@ -24,7 +24,7 @@ export class SpecRepository extends Repository<Spec> {
           'specPhotos.photo_url',
           'user.no',
         ])
-        .where('user.no = :userNo', { userNo })
+        .where('user.no = :profileUserNo', { profileUserNo })
         .andWhere('spec.no = specPhotos.spec')
         .getMany();
 
