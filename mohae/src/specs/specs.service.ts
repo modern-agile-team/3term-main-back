@@ -126,53 +126,49 @@ export class SpecsService {
   async updateSpec(
     specNo: number,
     updateSpecDto: UpdateSpecDto,
-  ): Promise<void> {
+    specPhotoUrls: false | string[],
+  ): Promise<any> {
     const queryRunner = this.connection.createQueryRunner();
 
     await queryRunner.connect();
     await queryRunner.startTransaction();
 
     try {
-      const { specPhoto } = updateSpecDto;
       const spec: Spec = await this.specRepository.getOneSpec(specNo);
 
       this.errorConfirm.notFoundError(spec, '해당 스펙이 존재하지 않습니다.');
 
-      const specKeys: Array<string> = Object.keys(updateSpecDto);
-      const deletedNullSpec: object = {};
-      specKeys.forEach((item) => {
-        updateSpecDto[item] ? (deletedNullSpec[item] = updateSpecDto[item]) : 0;
-      });
-      if (specPhoto) {
+      await queryRunner.manager
+        .getCustomRepository(SpecRepository)
+        .updateSpec(specNo, updateSpecDto);
+
+      if (specPhotoUrls) {
         const { specPhotos }: Spec = await this.specRepository.findOne(specNo, {
           select: ['no', 'specPhotos'],
           relations: ['specPhotos'],
         });
+
         await queryRunner.manager
           .getCustomRepository(SpecPhotoRepository)
           .deleteBeforePhoto(specPhotos);
-        const newSpecPhotos: Array<object> = specPhoto.map((photo) => {
+        const newSpecPhotos: Array<object> = specPhotoUrls.map((photo) => {
           return {
             photo_url: photo,
             spec: specNo,
-            order: specPhoto.indexOf(photo) + 1,
+            order: specPhotoUrls.indexOf(photo) + 1,
           };
         });
         await queryRunner.manager
           .getCustomRepository(SpecPhotoRepository)
           .saveSpecPhoto(newSpecPhotos);
 
-        delete deletedNullSpec['specPhoto'];
+        const originSpecPhotosUrl = specPhotos.map((specPhoto) => {
+          return specPhoto.photo_url;
+        });
+        await queryRunner.commitTransaction();
+        return originSpecPhotosUrl;
       }
-      const isUpdate: number = await queryRunner.manager
-        .getCustomRepository(SpecRepository)
-        .updateSpec(specNo, deletedNullSpec);
 
-      if (!isUpdate) {
-        throw new InternalServerErrorException(
-          '스팩 업데이트가 제대로 이루어지지 않았습니다.',
-        );
-      }
       await queryRunner.commitTransaction();
     } catch (err) {
       await queryRunner.rollbackTransaction();

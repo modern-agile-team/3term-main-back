@@ -130,11 +130,11 @@ export class SpecRepository extends Repository<Spec> {
     }
   }
 
-  async updateSpec(specNo: number, deletedNullSpec: object): Promise<number> {
+  async updateSpec(specNo: number, updateSpecDto: object): Promise<number> {
     try {
       const { affected }: UpdateResult = await this.createQueryBuilder('spec')
         .update(Spec)
-        .set(deletedNullSpec)
+        .set(updateSpecDto)
         .where('no = :specNo', { specNo })
         .execute();
 

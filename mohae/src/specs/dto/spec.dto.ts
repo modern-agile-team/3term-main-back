@@ -3,9 +3,11 @@ import { IsArray, IsOptional, IsString } from 'class-validator';
 
 export class CreateSpecDto {
   @IsString()
+  @ApiProperty({ description: '스펙 제목' })
   title: string;
 
   @IsString()
+  @ApiProperty({ description: '스펙 제목' })
   description: string;
 }
 
@@ -19,9 +21,4 @@ export class UpdateSpecDto {
   @IsString()
   @ApiProperty({ description: '스펙 본문' })
   description: string;
-
-  @IsOptional()
-  @IsArray()
-  @ApiProperty({ description: '스펙 사진' })
-  specPhoto: [];
 }

@@ -10,6 +10,7 @@ import {
   UseGuards,
   UseInterceptors,
   Query,
+  Put,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { FilesInterceptor } from '@nestjs/platform-express';
@@ -58,7 +59,7 @@ export class SpecsController {
     }
   }
 
-  @Get('/user/spec/:specNo')
+  @Get('/spec/:specNo')
   @ApiOperation({
     summary: '스펙 상세조회 API',
     description: '하나의 스펙을 조회 해준다.',
@@ -129,13 +130,26 @@ export class SpecsController {
     }
   }
 
-  @Patch(':no')
+  @UseInterceptors(FilesInterceptor('image', 10))
+  @Put(':no')
   async updateSpec(
     @Param('no') specNo: number,
-    @Body() updateSpec: UpdateSpecDto,
+    @UploadedFiles() files: Express.Multer.File[],
+    @Body() updateSpecdto: UpdateSpecDto,
   ) {
     try {
-      await this.specsService.updateSpec(specNo, updateSpec);
+      const specPhotoUrls =
+        files.length === 0
+          ? false
+          : await this.awsService.uploadSpecFileToS3('spec', files);
+
+      const originSpecPhotoUrls = await this.specsService.updateSpec(
+        specNo,
+        updateSpecdto,
+        specPhotoUrls,
+      );
+
+      await this.awsService.deleteSpecS3Object(originSpecPhotoUrls);
 
       return Object.assign({
         statusCode: 204,
