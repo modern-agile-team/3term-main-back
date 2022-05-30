@@ -6,12 +6,6 @@ import { Board } from 'src/boards/entity/board.entity';
 import { Category } from 'src/categories/entity/category.entity';
 import { Faq } from 'src/faqs/entity/faq.entity';
 import { Major } from 'src/majors/entity/major.entity';
-import {
-  ReportCheckbox,
-  ReportContent,
-  ReportedBoard,
-  ReportedUser,
-} from 'src/reports/entity/report.entity';
 import { Review } from 'src/reviews/entity/review.entity';
 import { School } from 'src/schools/entity/school.entity';
 import { Note } from 'src/notes/entity/note.entity';
@@ -21,15 +15,17 @@ import { Spec } from 'src/specs/entity/spec.entity';
 import { Notice } from 'src/notices/entity/notice.entity';
 import { SpecPhoto } from 'src/photo/entity/photo.entity';
 import { UserLike } from 'src/like/entity/user.like.entity';
-import {
-  BoardReportChecks,
-  UserReportChecks,
-} from 'src/reports/entity/report-checks.entity';
+import { UserReportChecks } from 'src/report-checks/entity/user-report-checks.entity';
 import { BoardLike } from 'src/like/entity/board.like.entity';
 import { BoardPhoto } from 'src/photo/entity/board.photo.entity';
 import { MailboxUser } from 'src/mailbox-user/entity/mailbox-user.entity';
 import { Terms, TermsUser } from 'src/terms/entity/terms.entity';
 import { Basket } from 'src/baskets/entity/baskets.entity';
+import { ReportCheckbox } from 'src/report-checkboxes/entity/report-checkboxes.entity';
+import { BoardReportChecks } from 'src/report-checks/entity/board-report-checks.entity';
+import { ReportContent } from 'src/reports/entity/report-base.entity';
+import { ReportedUser } from 'src/reports/entity/reported-user.entity';
+import { ReportedBoard } from 'src/reports/entity/reported-board.entity';
 const dbConfig = config.get('db');
 
 const { DB_HOST, DB_PORT, DB_USER, DB_PSWORD, DB_DATABASE } = process.env;

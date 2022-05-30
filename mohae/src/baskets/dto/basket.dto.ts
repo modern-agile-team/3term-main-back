@@ -8,5 +8,5 @@ export class BasketDto {
   boardNo: number;
 
   @IsBoolean()
-  judge: boolean;
+  check: boolean;
 }

@@ -2,7 +2,7 @@ import { InternalServerErrorException } from '@nestjs/common';
 import { User } from 'src/auth/entity/user.entity';
 import { Board } from 'src/boards/entity/board.entity';
 import { EntityRepository, InsertResult, Repository } from 'typeorm';
-import { BasketDto } from '../dto/busket.dto';
+import { BasketDto } from '../dto/basket.dto';
 import { Basket } from '../entity/baskets.entity';
 
 @EntityRepository(Basket)
@@ -21,9 +21,10 @@ export class BasketRepository extends Repository<Basket> {
         `${err} ### 게시글 찜하기: 알 수 없는 서버 에러입니다.`,
       );
     }
+    ``;
   }
 
-  async isCheckBasket(userNo: number, boardNo: number): Promise<number> {
+  async isCheckBasket({ userNo, boardNo }: BasketDto): Promise<number> {
     try {
       const numberOfChecks: Array<object> = await this.createQueryBuilder(
         'baskets',
@@ -40,7 +41,7 @@ export class BasketRepository extends Repository<Basket> {
     }
   }
 
-  async cancelBasket(userNo: number, boardNo: number) {
+  async cancelBasket({ userNo, boardNo }: BasketDto): Promise<number> {
     try {
       const { affected } = await this.createQueryBuilder('baskets')
         .delete()

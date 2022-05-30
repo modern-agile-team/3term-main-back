@@ -3,6 +3,7 @@ import { User } from 'src/auth/entity/user.entity';
 import { Board } from 'src/boards/entity/board.entity';
 import {
   BaseEntity,
+  CreateDateColumn,
   Entity,
   JoinColumn,
   ManyToOne,
@@ -27,4 +28,9 @@ export class Basket extends BaseEntity {
   })
   @JoinColumn({ name: 'board_no' })
   boardNo: Board;
+
+  @CreateDateColumn({
+    comment: '찜한시간 생성일',
+  })
+  createdAt: Date | null;
 }

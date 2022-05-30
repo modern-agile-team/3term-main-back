@@ -29,6 +29,10 @@ import { ConfigModule } from '@nestjs/config';
 import { AwsService } from './aws/aws.service';
 import { TermsModule } from './terms/terms.module';
 import { BasketsModule } from './baskets/baskets.module';
+import { ReportCheckboxesService } from './report-checkboxes/report-checkboxes.service';
+import { ReportChecksService } from './report-checks/report-checks.service';
+import { ReportChecksModule } from './report-checks/report-checks.module';
+import { ReportCheckboxesModule } from './report-checkboxes/report-checkboxes.module';
 
 @Module({
   imports: [
@@ -66,6 +70,8 @@ import { BasketsModule } from './baskets/baskets.module';
     RedisCacheModule,
     MailboxUserModule,
     BasketsModule,
+    ReportChecksModule,
+    ReportCheckboxesModule,
   ],
   controllers: [AppController],
   providers: [
