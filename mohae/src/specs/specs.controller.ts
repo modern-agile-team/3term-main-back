@@ -15,6 +15,7 @@ import {
 import { AuthGuard } from '@nestjs/passport';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import {
+  ApiInternalServerErrorResponse,
   ApiOkResponse,
   ApiOperation,
   ApiResponse,
@@ -36,14 +37,16 @@ export class SpecsController {
     private awsService: AwsService,
   ) {}
 
-  @Get('/user/:profileUserNo')
+  @Get('user/:profileUserNo')
   @ApiOperation({
     summary: '한 명의 유저 스펙 전체 조회 API',
     description: '한명의 유저 스펙을 한번에 불러온다',
   })
-  @ApiResponse({
-    status: 200,
+  @ApiOkResponse({
     description: '성공적으로 유저의 스펙이 불러와진 경우.',
+  })
+  @ApiInternalServerErrorResponse({
+    description: '스펙 전체 조회 관련 서버 에러.',
   })
   async getAllSpec(@Param('profileUserNo') profileUserNo: number) {
     try {
@@ -59,13 +62,12 @@ export class SpecsController {
     }
   }
 
-  @Get('/spec/:specNo')
+  @Get('spec/:specNo')
   @ApiOperation({
     summary: '스펙 상세조회 API',
     description: '하나의 스펙을 조회 해준다.',
   })
-  @ApiResponse({
-    status: 200,
+  @ApiOkResponse({
     description: '성공적으로 스펙이 불러와진 경우.',
   })
   @ApiResponse({ status: 404, description: '해당 스펙이 존재하지 않은 경우' })
@@ -106,7 +108,7 @@ export class SpecsController {
   }
 
   @UseInterceptors(FilesInterceptor('image', 10))
-  @Post('/regist')
+  @Post('regist')
   @UseGuards(AuthGuard())
   async registSpec(
     @UploadedFiles() files: Express.Multer.File[],

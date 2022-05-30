@@ -61,7 +61,7 @@ export class SpecRepository extends Repository<Spec> {
       return specs;
     } catch (err) {
       throw new InternalServerErrorException(
-        `${err}####스펙 전체 조회 관련 서버 에러입니다`,
+        `${err}####프로필 스펙 관련 서버 에러입니다`,
       );
     }
   }
