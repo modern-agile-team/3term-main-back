@@ -96,17 +96,14 @@ export class ProfilesService {
   }
 
   async updateProfile(
-    no: number,
+    profileUserNo: number,
     updateProfileDto: UpdateProfileDto,
+    profilePhoto,
   ): Promise<number> {
     try {
-      const profile: User = await this.userRepository.findOne(no, {
+      const profile: User = await this.userRepository.findOne(profileUserNo, {
         relations: ['categories'],
       });
-
-      if (!profile) {
-        throw new NotFoundException('유저 정보를 찾지 못했습니다.');
-      }
 
       const profileKeys: Array<string> = Object.keys(updateProfileDto);
       const deletedNullprofile: object = {};

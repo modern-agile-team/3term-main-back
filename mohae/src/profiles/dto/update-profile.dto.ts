@@ -20,10 +20,6 @@ export class UpdateProfileDto {
   @IsOptional()
   @IsArray()
   categories: [];
-
-  @IsOptional()
-  @IsString()
-  photo_url?: string;
 }
 
 export class JudgeDuplicateNicknameDto {

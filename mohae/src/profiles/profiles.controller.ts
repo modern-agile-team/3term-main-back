@@ -6,11 +6,16 @@ import {
   ParseIntPipe,
   Patch,
   Post,
+  UploadedFile,
+  UploadedFiles,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiTags } from '@nestjs/swagger';
 import { User } from '@sentry/node';
+import { AwsService } from 'src/aws/aws.service';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 import {
   JudgeDuplicateNicknameDto,
@@ -22,7 +27,10 @@ import { ProfilesService } from './profiles.service';
 @Controller('profile')
 @ApiTags('Profile')
 export class ProfilesController {
-  constructor(private profileService: ProfilesService) {}
+  constructor(
+    private profileService: ProfilesService,
+    private awsService: AwsService,
+  ) {}
 
   @Get('/:profileUserNo')
   async readUserProfile(
@@ -62,16 +70,23 @@ export class ProfilesController {
     }
   }
 
+  @UseInterceptors(FileInterceptor('image'))
   @Patch()
   @UseGuards(AuthGuard())
   async updateProfile(
+    @UploadedFile() file: Express.Multer.File,
     @Body() updateProfileDto: UpdateProfileDto,
     @CurrentUser() user: User,
   ): Promise<number> {
     try {
+      const profilePhoto = file
+        ? false
+        : await this.awsService.uploadFileToS3('profile', file);
+
       const response: number = await this.profileService.updateProfile(
         user.no,
         updateProfileDto,
+        profilePhoto,
       );
       return Object.assign({
         statusCode: 201,
