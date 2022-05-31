@@ -3,6 +3,8 @@ import * as AWS from 'aws-sdk';
 import * as sharp from 'sharp';
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { PromiseResult } from 'aws-sdk/lib/request';
+import { connect } from 'http2';
 
 @Injectable()
 export class AwsService {
@@ -82,6 +84,58 @@ export class AwsService {
           callback,
         )
         .promise();
+      return { success: true };
+    } catch (error) {
+      throw new BadRequestException(`Failed to delete file : ${error}`);
+    }
+  }
+
+  async uploadSpecFileToS3(folder: string, files: any): Promise<Array<string>> {
+    try {
+      if (files[0].originalname === 'default.jpg') {
+        return ['default.jpg'];
+      }
+      const specPhotoUrls = [];
+
+      for await (const file of files) {
+        const key: string = `${folder}/${Date.now()}_${path.basename(
+          file.originalname,
+        )}`.replace(/ /g, '');
+
+        this.awsS3
+          .putObject({
+            Bucket: this.S3_BUCKET_NAME,
+            Key: key,
+            Body: file.buffer,
+            ACL: 'public-read',
+            ContentType: file.mimetype,
+          })
+          .promise();
+
+        specPhotoUrls.push(key);
+      }
+      return specPhotoUrls;
+    } catch (error) {
+      throw new BadRequestException(`File upload failed : ${error}`);
+    }
+  }
+
+  async deleteSpecS3Object(
+    originSpecPhotoUrls: string,
+    callback?: (err: AWS.AWSError, data: AWS.S3.DeleteObjectOutput) => void,
+  ): Promise<{ success: true }> {
+    try {
+      for await (const originSpecPhotoUrl of originSpecPhotoUrls) {
+        await this.awsS3
+          .deleteObject(
+            {
+              Bucket: this.S3_BUCKET_NAME,
+              Key: originSpecPhotoUrl,
+            },
+            callback,
+          )
+          .promise();
+      }
       return { success: true };
     } catch (error) {
       throw new BadRequestException(`Failed to delete file : ${error}`);

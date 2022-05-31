@@ -14,6 +14,8 @@ import { ErrorConfirm } from 'src/common/utils/error';
 import { BoardsController } from './boards.controller';
 import { BoardsService } from './boards.service';
 import { BoardRepository } from './repository/board.repository';
+import { BasketsService } from 'src/baskets/baskets.service';
+import { BasketRepository } from 'src/baskets/repository/baskets.repository';
 
 @Module({
   imports: [
@@ -25,12 +27,13 @@ import { BoardRepository } from './repository/board.repository';
       AreasRepository,
       UserRepository,
       BoardPhotoRepository,
+      BasketRepository,
     ]),
     CategoriesModule,
     AreasModule,
     AuthModule,
   ],
   controllers: [BoardsController],
-  providers: [BoardsService, CategoriesService, ErrorConfirm],
+  providers: [BoardsService, CategoriesService, BasketsService, ErrorConfirm],
 })
 export class BoardsModule {}
