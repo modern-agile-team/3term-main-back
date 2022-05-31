@@ -14,12 +14,10 @@ import {
 import { AuthGuard } from '@nestjs/passport';
 import { Cron } from '@nestjs/schedule';
 import { ApiCreatedResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { DeleteResult } from 'typeorm';
 import { BoardsService } from './boards.service';
 import {
   CreateBoardDto,
   SearchBoardDto,
-  LikeBoardDto,
   UpdateBoardDto,
 } from './dto/board.dto';
 import { Board } from './entity/board.entity';

@@ -29,12 +29,12 @@ export class SpecPhotoRepository extends Repository<SpecPhoto> {
     }
   }
 
-  async deleteBeforePhoto(specPhotos: Array<SpecPhoto>): Promise<void> {
+  async deleteBeforePhoto(originSpecPhotos: Array<SpecPhoto>): Promise<void> {
     try {
       await this.createQueryBuilder('specPhoto')
         .delete()
         .from(SpecPhoto)
-        .where(specPhotos)
+        .where(originSpecPhotos)
         .execute();
     } catch (err) {
       throw err;
