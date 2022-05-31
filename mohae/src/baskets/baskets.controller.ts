@@ -8,7 +8,7 @@ export class BasketsController {
 
   @Post()
   async checkBasket(@Body() basketDto: BasketDto): Promise<object> {
-    const response = await this.basketsService.checkConfirm(basketDto);
+    const response: object = await this.basketsService.checkConfirm(basketDto);
 
     return Object.assign({
       statusCode: 201,
