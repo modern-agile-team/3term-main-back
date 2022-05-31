@@ -239,6 +239,7 @@ export class BoardsService {
       this.errorConfirm.notFoundError(user, `해당 회원을 찾을 수 없습니다.`);
 
       let endTime: Date = new Date();
+
       endTime.setHours(endTime.getHours() + 9);
 
       if (!deadline) {

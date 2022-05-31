@@ -20,6 +20,7 @@ import { BoardLike } from 'src/like/entity/board.like.entity';
 import { BoardPhoto } from 'src/photo/entity/board.photo.entity';
 import { MailboxUser } from 'src/mailbox-user/entity/mailbox-user.entity';
 import { Terms, TermsUser } from 'src/terms/entity/terms.entity';
+import { Basket } from 'src/baskets/entity/baskets.entity';
 import { ReportCheckbox } from 'src/report-checkboxes/entity/report-checkboxes.entity';
 import { BoardReportChecks } from 'src/report-checks/entity/board-report-checks.entity';
 import { ReportContent } from 'src/reports/entity/report-base.entity';
@@ -65,6 +66,7 @@ export const typeORMConfig: TypeOrmModuleOptions = {
     BoardPhoto,
     Terms,
     TermsUser,
+    Basket,
   ],
   // entities: [__dirname + '/../**/*.entity.{ts,js}'],
   synchronize: dbConfig.synchronize,
