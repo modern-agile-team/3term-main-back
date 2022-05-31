@@ -6,12 +6,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { getCustomRepositoryToken, InjectRepository } from '@nestjs/typeorm';
-import {
-  ChangePasswordDto,
-  CreateUserDto,
-  ForgetPasswordDto,
-  SignInDto,
-} from './dto/auth-credential.dto';
+
 import { UserRepository } from './repository/user.repository';
 import * as bcrypt from 'bcryptjs';
 import { JwtService } from '@nestjs/jwt';
@@ -31,6 +26,10 @@ import {
   TermsUserReporitory,
 } from 'src/terms/repository/terms.repository';
 import { Terms } from 'src/terms/entity/terms.entity';
+import { SignUpDto } from './dto/sign-up.dto';
+import { SignInDto } from './dto/sign-in.dto';
+import { ChangePasswordDto } from './dto/change-password.dto';
+import { ForgetPasswordDto } from './dto/forget-password.dto';
 
 const jwtConfig: any = config.get('jwt');
 @Injectable()
@@ -58,7 +57,7 @@ export class AuthService {
     private errorConfirm: ErrorConfirm,
     private jwtService: JwtService,
   ) {}
-  async signUp(createUserDto: CreateUserDto): Promise<object> {
+  async signUp(signUpDto: SignUpDto): Promise<object> {
     const queryRunner = this.connection.createQueryRunner();
 
     await queryRunner.connect();
@@ -73,7 +72,7 @@ export class AuthService {
         categories,
         password,
         terms,
-      }: CreateUserDto = createUserDto;
+      }: SignUpDto = signUpDto;
       const schoolRepo: School = await this.schoolRepository.findOne(school, {
         select: ['no'],
       });
@@ -118,11 +117,11 @@ export class AuthService {
 
       const salt: string = await bcrypt.genSalt();
       const hashedPassword: string = await bcrypt.hash(password, salt);
-      createUserDto.password = hashedPassword;
+      signUpDto.password = hashedPassword;
 
       const user: User = await queryRunner.manager
         .getCustomRepository(UserRepository)
-        .createUser(createUserDto, schoolRepo, majorRepo);
+        .createUser(signUpDto, schoolRepo, majorRepo);
       this.errorConfirm.badGatewayError(user, 'user 생성 실패');
       const termsArr: Array<object> = terms.map((boolean, index) => {
         return {
