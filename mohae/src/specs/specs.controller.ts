@@ -6,6 +6,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
 } from '@nestjs/common';
 import { CreateSpecDto, UpdateSpecDto } from './dto/spec.dto';
 import { Spec } from './entity/spec.entity';
@@ -15,7 +16,7 @@ import { SpecsService } from './specs.service';
 export class SpecsController {
   constructor(private specsService: SpecsService) {}
 
-  @Get('/user/:no')
+  @Get('user/:no')
   async getAllSpec(@Param('no') no: number) {
     try {
       const specs: Spec = await this.specsService.getAllSpec(no);
@@ -30,7 +31,7 @@ export class SpecsController {
     }
   }
 
-  @Get('/user/spec/:no')
+  @Get('user/spec/:no')
   async getOneSpec(@Param('no') no: number) {
     try {
       const spec: Spec = await this.specsService.getOneSpec(no);
@@ -45,7 +46,29 @@ export class SpecsController {
     }
   }
 
-  @Post('/regist')
+  @Get('profile')
+  async readUserSpec(
+    @Query('user') user: number,
+    @Query('take') take: number,
+    @Query('page') page: number,
+  ) {
+    try {
+      const response: Array<Spec> = await this.specsService.readUserSpec(
+        user,
+        take,
+        page,
+      );
+      return Object.assign({
+        statusCode: 200,
+        msg: '프로필 스펙 조회에 성공했습니다.',
+        response,
+      });
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  @Post('regist')
   async registSpec(@Body() createSpecDto: CreateSpecDto) {
     try {
       await this.specsService.registSpec(createSpecDto);
@@ -59,7 +82,7 @@ export class SpecsController {
     }
   }
 
-  @Patch('/:no')
+  @Patch(':no')
   async updateSpec(
     @Param('no') specNo: number,
     @Body() updateSpec: UpdateSpecDto,
@@ -76,7 +99,7 @@ export class SpecsController {
     }
   }
 
-  @Delete('/:no')
+  @Delete(':no')
   async deleteSpec(@Param('no') specNo: number) {
     try {
       await this.specsService.deleteSpec(specNo);

@@ -27,10 +27,14 @@ export class ReviewsService {
     private errorConfirm: ErrorConfirm,
   ) {}
 
-  async readUserReviews(targetUserNo: number): Promise<object | undefined> {
+  async readUserReviews(
+    userNo: number,
+    take: number,
+    page: number,
+  ): Promise<object | undefined> {
     try {
       const { reviews, count }: any =
-        await this.reviewRepository.readUserReviews(targetUserNo);
+        await this.reviewRepository.readUserReviews(userNo, take, page);
 
       this.errorConfirm.notFoundError(reviews, '해당 리뷰를 찾을 수 없습니다.');
 

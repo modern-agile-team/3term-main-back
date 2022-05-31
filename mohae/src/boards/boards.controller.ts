@@ -127,6 +127,29 @@ export class BoardsController {
     });
   }
 
+  @Get('profile')
+  async readUserBoard(
+    @Query('user') user: number,
+    @Query('take') take: number,
+    @Query('page') page: number,
+    @Query('target') target: boolean,
+  ) {
+    try {
+      const response: Array<Board> = await this.boardService.readUserBoard(
+        user,
+        take,
+        page,
+        target,
+      );
+      return Object.assign({
+        statusCode: 200,
+        msg: '프로필 게시물 조회에 성공했습니다.',
+        response,
+      });
+    } catch (err) {
+      throw err;
+    }
+  }
   @Get('/:no')
   async getByOneBoard(@Param('no') no: number): Promise<Object> {
     const response = await this.boardService.getByOneBoard(no);

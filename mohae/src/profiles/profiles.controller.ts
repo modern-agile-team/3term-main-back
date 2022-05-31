@@ -6,8 +6,12 @@ import {
   ParseIntPipe,
   Patch,
   Post,
+  UseGuards,
 } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
 import { ApiTags } from '@nestjs/swagger';
+import { User } from '@sentry/node';
+import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 import {
   JudgeDuplicateNicknameDto,
   UpdateProfileDto,
@@ -20,12 +24,12 @@ export class ProfilesController {
   constructor(private profileService: ProfilesService) {}
 
   @Get('/:profileUserNo/:userNo')
-  async findOneProfile(
+  async readUserProfile(
     @Param('profileUserNo', ParseIntPipe) profileUserNo: number,
     @Param('userNo', ParseIntPipe) userNo: number,
   ): Promise<object> {
     try {
-      const response: object = await this.profileService.findOneProfile(
+      const response: object = await this.profileService.readUserProfile(
         profileUserNo,
         userNo,
       );
@@ -57,14 +61,15 @@ export class ProfilesController {
     }
   }
 
-  @Patch('/:no')
+  @Patch()
+  @UseGuards(AuthGuard())
   async updateProfile(
-    @Param('no', ParseIntPipe) no: number,
     @Body() updateProfileDto: UpdateProfileDto,
+    @CurrentUser() user: User,
   ): Promise<number> {
     try {
       const response: number = await this.profileService.updateProfile(
-        no,
+        user.no,
         updateProfileDto,
       );
       return Object.assign({
