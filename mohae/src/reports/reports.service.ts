@@ -1,21 +1,19 @@
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { User } from 'src/auth/entity/user.entity';
 import { UserRepository } from 'src/auth/repository/user.repository';
+import { Board } from 'src/boards/entity/board.entity';
 import { BoardRepository } from 'src/boards/repository/board.repository';
-import { ErrorConfirm } from 'src/utils/error';
-import { CreateReportDto } from './dto/report.dto';
-import {
-  ReportCheckbox,
-  ReportedBoard,
-  ReportedUser,
-} from './entity/report.entity';
-import {
-  BoardReportChecksRepository,
-  ReportCheckboxRepository,
-  ReportedBoardRepository,
-  ReportedUserRepository,
-  UserReportChecksRepository,
-} from './repository/report.repository';
+import { ErrorConfirm } from 'src/common/utils/error';
+import { CreateReportDto } from './dto/create-report.dto';
+import { ReportCheckbox } from '../report-checkboxes/entity/report-checkboxes.entity';
+import { ReportCheckboxRepository } from '../report-checkboxes/repository/report-checkbox.repository';
+import { BoardReportChecksRepository } from '../report-checks/repository/board-report-checks.repository';
+import { ReportedBoardRepository } from './repository/reported-board.repository';
+import { ReportedUserRepository } from './repository/reported-user.repository';
+import { ReportedBoard } from './entity/reported-board.entity';
+import { ReportedUser } from './entity/reported-user.entity';
+import { UserReportChecksRepository } from 'src/report-checks/repository/user-report-checks.repository';
 
 @Injectable()
 export class ReportsService {
@@ -23,181 +21,161 @@ export class ReportsService {
     @InjectRepository(ReportedBoardRepository)
     private reportedBoardRepository: ReportedBoardRepository,
 
-    @InjectRepository(ReportedUserRepository)
     private reportedUserRepository: ReportedUserRepository,
-
-    @InjectRepository(ReportCheckboxRepository)
     private reportCheckboxRepository: ReportCheckboxRepository,
-
-    @InjectRepository(BoardRepository)
     private boardRepository: BoardRepository,
-
-    @InjectRepository(UserRepository)
     private userRepository: UserRepository,
-
-    @InjectRepository(BoardReportChecksRepository)
     private boardReportChecksRepository: BoardReportChecksRepository,
-
-    @InjectRepository(UserReportChecksRepository)
     private userReportChecksRepository: UserReportChecksRepository,
 
     private errorConfirm: ErrorConfirm,
   ) {}
 
-  async readAllCheckboxes(): Promise<ReportCheckbox[]> {
-    const checkedReport =
-      await this.reportCheckboxRepository.readAllCheckboxes();
-
-    return checkedReport;
-  }
-
-  async readOneReportedBoard(no: number): Promise<ReportedBoard> {
+  async readOneReportedBoard(boardNo: number): Promise<ReportedBoard> {
     try {
-      const report = await this.reportedBoardRepository.readOneReportedBoard(
-        no,
-      );
+      const reportedBoard: ReportedBoard =
+        await this.reportedBoardRepository.readOneReportedBoard(boardNo);
 
       this.errorConfirm.notFoundError(
-        report,
+        reportedBoard,
         '해당 게시글 신고를 찾을 수 없습니다.',
       );
 
-      return report;
-    } catch (e) {
-      throw e;
+      return reportedBoard;
+    } catch (err) {
+      throw err;
     }
   }
 
-  async readOneReportedUser(no: number): Promise<ReportedUser> {
+  async readOneReportedUser(userNo: number): Promise<ReportedUser> {
     try {
-      const report = await this.reportedUserRepository.readOneReportedUser(no);
+      const reportedUser: ReportedUser =
+        await this.reportedUserRepository.readOneReportedUser(userNo);
 
       this.errorConfirm.notFoundError(
-        report,
+        reportedUser,
         '해당 유저 신고를 찾을 수 없습니다.',
       );
 
-      return report;
-    } catch (e) {
-      throw e;
+      return reportedUser;
+    } catch (err) {
+      throw err;
     }
   }
 
-  async createReport(createReportDto: CreateReportDto) {
-    const { head, headNo, reportUserNo, checks, description } = createReportDto;
-    const checkInfo = checks.map(async (el) => {
-      const info = await this.reportCheckboxRepository.selectCheckConfirm(el);
+  async createReport(reporter: User, createReportDto: CreateReportDto) {
+    const reportUserNo: number = reporter.no;
+    const { head, headNo, checks, description }: CreateReportDto =
+      createReportDto;
+    const uniqueChecks: Array<number> = checks.filter(
+      (checkNo: number, index) => {
+        return checks.indexOf(checkNo) === index;
+      },
+    );
+    const infoToChecks: Promise<ReportCheckbox>[] = uniqueChecks.map(
+      (checkNo: number) => {
+        return this.reportCheckboxRepository.selectCheckConfirm(checkNo);
+      },
+    );
 
-      return info;
-    });
+    switch (head) {
+      // 게시글 신고일 때의 로직
+      case 'board':
+        try {
+          const board: Board = await this.boardRepository.findOne(headNo, {
+            select: ['no'],
+            relations: ['reports'],
+          });
 
-    try {
-      switch (head) {
-        // 게시글 신고일 때의 로직
-        case 'board':
-          try {
-            const board = await this.boardRepository.findOne(headNo, {
-              select: ['no'],
-              relations: ['reports'],
-            });
-            this.errorConfirm.notFoundError(
-              board,
-              '신고하려는 게시글이 존재하지 않습니다.',
-            );
-            const boardReporter = await this.userRepository.findOne(
-              reportUserNo,
-              {
-                select: ['no'],
-                relations: ['boardReport'],
-              },
-            );
-            this.errorConfirm.notFoundError(
-              boardReporter,
-              '신고자를 찾을 수 없습니다.',
-            );
+          this.errorConfirm.notFoundError(
+            board,
+            '신고하려는 게시글이 존재하지 않습니다.',
+          );
 
-            const { insertId, affectedRows } =
-              await this.reportedBoardRepository.createBoardReport(description);
-            if (!affectedRows) {
-              throw new InternalServerErrorException('게시글 신고 저장 실패');
-            }
-            const newBoardReport: ReportedBoard =
-              await this.reportedBoardRepository.readOneReportedBoard(insertId);
+          const createBoardReportResult =
+            await this.reportedBoardRepository.createBoardReport(description);
 
-            checkInfo.forEach(async (checkNo) => {
-              await this.boardReportChecksRepository.saveBoardReportChecks(
-                newBoardReport,
+          this.errorConfirm.badGatewayError(
+            createBoardReportResult.affectedRows,
+            '게시글 신고 저장 실패',
+          );
+
+          infoToChecks.forEach(async (checkNo: Promise<ReportCheckbox>) => {
+            const saveResult: Promise<boolean> =
+              this.boardReportChecksRepository.saveBoardReportChecks(
+                createBoardReportResult.insertId,
                 await checkNo,
               );
-            });
 
-            board.reports.push(newBoardReport);
-            boardReporter.boardReport.push(newBoardReport);
-
-            await this.boardRepository.save(board);
-            await this.userRepository.save(boardReporter);
-
-            return { success: true, reportNo: insertId };
-          } catch (e) {
-            throw e;
-          }
-
-        // 유저 신고일 때의 로직
-        case 'user':
-          try {
-            const user = await this.userRepository.findOne(headNo, {
-              select: ['no'],
-              relations: ['reports'],
-            });
-            this.errorConfirm.notFoundError(
-              user,
-              '신고하려는 유저가 존재하지 않습니다.',
+            this.errorConfirm.badGatewayError(
+              saveResult,
+              '게시글 신고 : 체크된 신고 내용 저장 실패',
             );
+          });
 
-            const userReporter = await this.userRepository.findOne(
-              reportUserNo,
-              {
-                select: ['no'],
-                relations: ['userReport'],
-              },
-            );
-            this.errorConfirm.notFoundError(
-              userReporter,
-              '신고자를 찾을 수 없습니다.',
-            );
+          board.reports.push(createBoardReportResult.insertId);
+          await this.boardRepository.save(board);
+          await this.userRepository.userRelation(
+            reportUserNo,
+            createBoardReportResult.insertId,
+            'boardReport',
+          );
 
-            const { insertId, affectedRows } =
-              await this.reportedUserRepository.createUserReport(description);
-            if (!affectedRows) {
-              throw new InternalServerErrorException(
-                '유저 신고가 접수되지 않았습니다.',
-              );
-            }
-            const newUserReport =
-              await this.reportedUserRepository.readOneReportedUser(insertId);
+          break;
+        } catch (err) {
+          throw err;
+        }
+      // 유저 신고일 때의 로직
+      case 'user':
+        try {
+          const user: User = await this.userRepository.findOne(headNo, {
+            select: ['no'],
+            relations: ['reports'],
+          });
 
-            checkInfo.forEach(async (checkNo) => {
+          this.errorConfirm.notFoundError(
+            user,
+            '신고하려는 유저가 존재하지 않습니다.',
+          );
+
+          const createUserReportResult: any =
+            await this.reportedUserRepository.createUserReport(description);
+
+          this.errorConfirm.badGatewayError(
+            createUserReportResult.affectedRows,
+            '유저 신고 저장 실패',
+          );
+
+          infoToChecks.forEach(async (checkNo) => {
+            const saveResult: Promise<boolean> =
               await this.userReportChecksRepository.saveUserReportChecks(
-                newUserReport,
+                createUserReportResult.insertId,
                 await checkNo,
               );
-            });
 
-            user.reports.push(newUserReport);
-            userReporter.userReport.push(newUserReport);
+            this.errorConfirm.badGatewayError(
+              saveResult,
+              '유저 신고 : 체크된 신고 내용 저장 실패',
+            );
+          });
 
-            await this.userRepository.save(user);
-            await this.userRepository.save(userReporter);
+          await this.userRepository.userRelation(
+            user.no,
+            createUserReportResult.insertId,
+            'reports',
+          );
+          await this.userRepository.userRelation(
+            reportUserNo,
+            createUserReportResult.insertId,
+            'userReport',
+          );
 
-            return { success: true, reportNo: insertId };
-          } catch (e) {
-            throw e;
-          }
-        default:
-          this.errorConfirm.notFoundError('', '해당 경로를 찾을 수 없습니다.');
-      }
-    } catch (e) {
-      throw e;
+          break;
+        } catch (err) {
+          throw err;
+        }
+      default:
+        throw new BadRequestException('해당 경로를 찾을 수 없습니다.');
     }
   }
 }

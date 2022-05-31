@@ -1,33 +1,43 @@
 import {
+  BadGatewayException,
   BadRequestException,
   Injectable,
   InternalServerErrorException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { NotFoundError, throwIfEmpty } from 'rxjs';
+import { User } from 'src/auth/entity/user.entity';
 import { UserRepository } from 'src/auth/repository/user.repository';
 import { SpecPhotoRepository } from 'src/photo/repository/photo.repository';
-import { ErrorConfirm } from 'src/utils/error';
-import { UpdateResult } from 'typeorm';
-import { UpdateSpecDto } from './dto/spec.dto';
+import { ErrorConfirm } from 'src/common/utils/error';
+import { CreateSpecDto } from './dto/create-spec.dto';
+import { UpdateSpecDto } from './dto/update-spec.dto';
+import { Spec } from './entity/spec.entity';
 import { SpecRepository } from './repository/spec.repository';
+import { Connection } from 'typeorm';
 
 @Injectable()
 export class SpecsService {
   constructor(
     @InjectRepository(SpecRepository)
-    private specRepository: SpecRepository,
-    private userRepository: UserRepository,
-    private specPhotoRepository: SpecPhotoRepository,
-    private errorConfirm: ErrorConfirm,
+    private readonly specRepository: SpecRepository,
+
+    @InjectRepository(UserRepository)
+    private readonly userRepository: UserRepository,
+
+    @InjectRepository(SpecPhotoRepository)
+    private readonly specPhotoRepository: SpecPhotoRepository,
+
+    private readonly connection: Connection,
+    private readonly errorConfirm: ErrorConfirm,
   ) {}
-  async getAllSpec(no: number) {
+  async getAllSpec(profileUserNo: number): Promise<any> {
     try {
-      const user = await this.userRepository.findOne(no);
-      const specs = await this.specRepository.getAllSpec(no);
-      this.errorConfirm.notFoundError(user, '존재하지 않는 유저 입니다.');
-      if (specs.length === 0) {
+      const specs: Array<Spec> = await this.specRepository.getAllSpec(
+        profileUserNo,
+      );
+
+      if (!specs.length) {
         return '현재 등록된 스펙이 없습니다.';
       }
       return specs;
@@ -36,10 +46,9 @@ export class SpecsService {
     }
   }
 
-  async getOneSpec(no: number) {
+  async getOneSpec(specNo: number): Promise<Spec> {
     try {
-      const spec = await this.specRepository.getOneSpec(no);
-
+      const spec: Spec = await this.specRepository.getOneSpec(specNo);
       this.errorConfirm.notFoundError(spec, '해당 스펙이 존재하지 않습니다.');
       return spec;
     } catch (err) {
@@ -47,100 +56,122 @@ export class SpecsService {
     }
   }
 
-  async registSpec(createSpecDto) {
+  async registSpec(
+    userNo: number,
+    specPhotoUrls: any,
+    createSpecDto: CreateSpecDto,
+  ): Promise<void> {
+    const queryRunner = this.connection.createQueryRunner();
+
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
     try {
-      const { userNo, specPhoto } = createSpecDto;
-      const user = await this.userRepository.findOne(userNo, {
+      const user: User = await this.userRepository.findOne(userNo, {
         relations: ['specs'],
       });
-      const specNo = await this.specRepository.registSpec(createSpecDto, user);
 
-      const spec = await this.specRepository.findOne(specNo, {
-        relations: ['specPhotos'],
-      });
-      if (!userNo) {
-        throw new UnauthorizedException(
-          `${userNo}에 해당하는 유저가 존재하지 않습니다.`,
-        );
-      }
-      if (specPhoto.length === 0) {
-        throw new BadRequestException(
-          '스펙의 사진이 없다면 null 이라도 넣어주셔야 스펙 등록이 가능합니다.',
-        );
-      }
+      const specNo: Spec = await queryRunner.manager
+        .getCustomRepository(SpecRepository)
+        .registSpec(createSpecDto, user);
 
-      for (const photo of specPhoto) {
-        const specPhotoNo = await this.specPhotoRepository.saveSpecPhoto(
-          photo,
-          spec,
+      if (specPhotoUrls) {
+        const specPhotos: object[] = specPhotoUrls.map(
+          (photoUrl: string, index: number) => {
+            return {
+              photo_url: photoUrl,
+              spec: specNo,
+              order: index + 1,
+            };
+          },
         );
-        const specPhotoRepo = await this.specPhotoRepository.findOne(
-          specPhotoNo,
-        );
-        spec.specPhotos.push(specPhotoRepo);
-      }
+        const savedSpecPhotos: object[] = await queryRunner.manager
+          .getCustomRepository(SpecPhotoRepository)
+          .saveSpecPhoto(specPhotos);
 
-      if (spec) {
-        user.specs.push(spec);
+        if (specPhotos.length !== savedSpecPhotos.length) {
+          throw new InternalServerErrorException(
+            '스펙 사진 등록 도중 DB관련 오류',
+          );
+        }
+
+        await queryRunner.manager
+          .getCustomRepository(SpecRepository)
+          .addSpecPhoto(specNo, savedSpecPhotos);
+
+        if (specNo) {
+          await queryRunner.manager
+            .getCustomRepository(UserRepository)
+            .userRelation(userNo, specNo, 'specs');
+        }
       }
+      await queryRunner.commitTransaction();
     } catch (err) {
-      throw new InternalServerErrorException(
-        ` ${err}####스펙등록 중 발생한 서버 에러입니다.`,
-      );
+      await queryRunner.rollbackTransaction();
+      throw err;
+    } finally {
+      await queryRunner.release();
     }
   }
 
-  async updateSpec(specNo, updateSpec) {
+  async updateSpec(
+    specNo: number,
+    updateSpecDto: UpdateSpecDto,
+    specPhotoUrls: false | string[],
+  ): Promise<any> {
+    const queryRunner = this.connection.createQueryRunner();
+
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
     try {
-      const spec = await this.specRepository.getOneSpec(specNo);
+      const spec: Spec = await this.specRepository.getOneSpec(specNo);
 
       this.errorConfirm.notFoundError(spec, '해당 스펙이 존재하지 않습니다.');
 
-      const specKeys = Object.keys(updateSpec);
-      const deletedNullSpec = {};
+      await queryRunner.manager
+        .getCustomRepository(SpecRepository)
+        .updateSpec(specNo, updateSpecDto);
 
-      specKeys.forEach((item) => {
-        updateSpec[item] ? (deletedNullSpec[item] = updateSpec[item]) : 0;
-      });
+      if (specPhotoUrls) {
+        const { specPhotos }: Spec = await this.specRepository.findOne(specNo, {
+          select: ['no', 'specPhotos'],
+          relations: ['specPhotos'],
+        });
 
-      if (deletedNullSpec['photo_url']) {
-        const specPhotoNo = Object.values(deletedNullSpec['photo_url']);
+        await queryRunner.manager
+          .getCustomRepository(SpecPhotoRepository)
+          .deleteBeforePhoto(specPhotos);
+        const newSpecPhotos: Array<object> = specPhotoUrls.map((photo) => {
+          return {
+            photo_url: photo,
+            spec: specNo,
+            order: specPhotoUrls.indexOf(photo) + 1,
+          };
+        });
+        await queryRunner.manager
+          .getCustomRepository(SpecPhotoRepository)
+          .saveSpecPhoto(newSpecPhotos);
 
-        function getKeyByValue(object, value) {
-          return Object.keys(object).find((key) => object[key] === value);
-        }
-
-        for (const photoNo of specPhotoNo) {
-          const judgeNo = await this.specPhotoRepository.getSpecNo(photoNo);
-          if (judgeNo !== specNo)
-            throw new UnauthorizedException(
-              '스펙 번호와 스펙사진의 스펙번호가 맞지 않습니다.',
-            );
-        }
-
-        for (const no of specPhotoNo) {
-          const new_url = getKeyByValue(deletedNullSpec['photo_url'], no);
-          await this.specPhotoRepository.updatePhoto(no, new_url);
-        }
-        delete deletedNullSpec['photo_url'];
+        const originSpecPhotosUrl = specPhotos.map((specPhoto) => {
+          return specPhoto.photo_url;
+        });
+        await queryRunner.commitTransaction();
+        return originSpecPhotosUrl;
       }
-      const isUpdate = await this.specRepository.updateSpec(
-        specNo,
-        deletedNullSpec,
-      );
-      if (!isUpdate) {
-        throw new InternalServerErrorException(
-          '스팩 업데이트가 제대로 이루어지지 않았습니다.',
-        );
-      }
+
+      await queryRunner.commitTransaction();
     } catch (err) {
+      await queryRunner.rollbackTransaction();
       throw err;
+    } finally {
+      await queryRunner.release();
     }
   }
 
-  async deleteSpec(specNo) {
+  async deleteSpec(specNo: number): Promise<number> {
     try {
-      const isDelete = await this.specRepository.deleteSpec(specNo);
+      const isDelete: number = await this.specRepository.deleteSpec(specNo);
 
       if (!isDelete) {
         throw new InternalServerErrorException(
@@ -148,6 +179,23 @@ export class SpecsService {
         );
       }
       return isDelete;
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  async readUserSpec(
+    userNo: number,
+    take: number,
+    page: number,
+  ): Promise<Spec[]> {
+    try {
+      const profileSpecs: Spec[] = await this.specRepository.readUserSpec(
+        userNo,
+        take,
+        page,
+      );
+      return profileSpecs;
     } catch (err) {
       throw err;
     }

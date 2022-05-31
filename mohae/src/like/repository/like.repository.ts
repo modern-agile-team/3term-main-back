@@ -1,12 +1,20 @@
+import { InternalServerErrorException } from '@nestjs/common';
 import { User } from 'src/auth/entity/user.entity';
-import { Entity, EntityRepository, Repository } from 'typeorm';
+import { Board } from 'src/boards/entity/board.entity';
+import { BoardLike } from '../entity/board.like.entity';
+import {
+  DeleteResult,
+  EntityRepository,
+  InsertResult,
+  Repository,
+} from 'typeorm';
 import { UserLike } from '../entity/user.like.entity';
 
 @EntityRepository(UserLike)
 export class LikeRepository extends Repository<UserLike> {
-  async likeUser(likedMe, likedUser) {
+  async likeUser(likedMe: User, likedUser: User): Promise<number> {
     try {
-      const { raw } = await this.createQueryBuilder('user_like')
+      const { raw }: InsertResult = await this.createQueryBuilder('user_like')
         .insert()
         .into(UserLike)
         .values({ likedMe, likedUser })
@@ -18,9 +26,11 @@ export class LikeRepository extends Repository<UserLike> {
     }
   }
 
-  async dislikeUser(user, dislikedUser) {
+  async dislikeUser(user: number, dislikedUser: number): Promise<number> {
     try {
-      const { affected } = await this.createQueryBuilder('user_like')
+      const { affected }: DeleteResult = await this.createQueryBuilder(
+        'user_like',
+      )
         .delete()
         .where('likedMeNo = :user', { user })
         .andWhere('likedUserNo = :dislikedUser', { dislikedUser })
@@ -32,16 +42,68 @@ export class LikeRepository extends Repository<UserLike> {
     }
   }
 
-  async isLike(profileUserNo, userNo) {
+  async isLike(profileUserNo: number, userNo: number): Promise<number> {
     try {
-      const numberOfLikes = await this.createQueryBuilder('user_like')
+      const numberOfLikes: Array<User> = await this.createQueryBuilder(
+        'user_like',
+      )
         .select()
-        .where('likedMeNo = :profileUserNo', { profileUserNo })
-        .andWhere('likedUserNo = :userNo', { userNo })
+        .where('likedUserNo = :profileUserNo', { profileUserNo })
+        .andWhere('likedMeNo = :userNo', { userNo })
         .execute();
       return numberOfLikes.length;
     } catch (err) {
       throw err;
+    }
+  }
+}
+
+@EntityRepository(BoardLike)
+export class BoardLikeRepository extends Repository<BoardLike> {
+  async isBoardLike(boardNo: number, userNo: number) {
+    try {
+      const numberOfLikes = await this.createQueryBuilder('board_like')
+        .where('likedBoardNo = :boardNo', { boardNo })
+        .andWhere('likedUserNo = :userNo', { userNo })
+        .execute();
+
+      return numberOfLikes.length;
+    } catch (err) {
+      throw new InternalServerErrorException(
+        `${err} ### 게시글 좋아요 확인: 알 수 없는 서버 에러입니다.`,
+      );
+    }
+  }
+
+  async likeBoard(likedBoard: Board, likedUser: User) {
+    try {
+      const { raw } = await this.createQueryBuilder('board_like')
+        .insert()
+        .into(BoardLike)
+        .values({ likedBoard, likedUser })
+        .execute();
+
+      return raw.affectedRows;
+    } catch (err) {
+      throw new InternalServerErrorException(
+        `${err} ### 게시글 좋아요: 알 수 없는 서버 에러입니다.`,
+      );
+    }
+  }
+
+  async dislikeBoard(boardNo: number, userNo: number) {
+    try {
+      const { affected } = await this.createQueryBuilder('board_like')
+        .delete()
+        .where('likedBoardNo = :boardNo', { boardNo })
+        .andWhere('likedUserNo = :userNo', { userNo })
+        .execute();
+
+      return affected;
+    } catch (err) {
+      throw new InternalServerErrorException(
+        `${err} ### 게시글 좋아요 취소: 알 수 없는 서버 에러입니다.`,
+      );
     }
   }
 }

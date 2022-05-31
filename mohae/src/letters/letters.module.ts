@@ -1,26 +1,28 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserRepository } from 'src/auth/repository/user.repository';
-import { MailboxesService } from 'src/mailboxes/mailboxes.service';
-import {
-  MailboxRepository,
-  MailboxUserRepository,
-} from 'src/mailboxes/repository/mailbox.repository';
-import { ErrorConfirm } from 'src/utils/error';
+import { ErrorConfirm } from 'src/common/utils/error';
 import { LettersController } from './letters.controller';
 import { LettersService } from './letters.service';
 import { LetterRepository } from './repository/letter.repository';
+import { MailboxUserModule } from 'src/mailbox-user/mailbox-user.module';
+import { MailboxesModule } from 'src/mailboxes/mailboxes.module';
+import { MailboxRepository } from 'src/mailboxes/repository/mailbox.repository';
+import { MailboxUserRepository } from 'src/mailbox-user/repository/mailbox.repository';
 
 @Module({
   imports: [
+    MailboxUserModule,
+    forwardRef(() => MailboxesModule),
     TypeOrmModule.forFeature([
       LetterRepository,
-      UserRepository,
       MailboxRepository,
       MailboxUserRepository,
+      UserRepository,
     ]),
   ],
   controllers: [LettersController],
-  providers: [LettersService, MailboxesService, ErrorConfirm],
+  providers: [LettersService, ErrorConfirm],
+  exports: [LettersService],
 })
 export class LettersModule {}

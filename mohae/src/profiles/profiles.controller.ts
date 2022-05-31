@@ -6,8 +6,12 @@ import {
   ParseIntPipe,
   Patch,
   Post,
+  UseGuards,
 } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
 import { ApiTags } from '@nestjs/swagger';
+import { User } from '@sentry/node';
+import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 import {
   JudgeDuplicateNicknameDto,
   UpdateProfileDto,
@@ -19,19 +23,17 @@ import { ProfilesService } from './profiles.service';
 export class ProfilesController {
   constructor(private profileService: ProfilesService) {}
 
-  @Get(':profileUserNo/:userNo')
-  async findOneProfile(
+  @Get('/:profileUserNo/:userNo')
+  async readUserProfile(
     @Param('profileUserNo', ParseIntPipe) profileUserNo: number,
     @Param('userNo', ParseIntPipe) userNo: number,
   ): Promise<object> {
     try {
-      const response = await this.profileService.findOneProfile(
+      const response: object = await this.profileService.readUserProfile(
         profileUserNo,
         userNo,
       );
-
       return Object.assign({
-        success: true,
         statusCode: 200,
         msg: '프로필 조회에 성공했습니다.',
         response,
@@ -40,8 +42,8 @@ export class ProfilesController {
       throw err;
     }
   }
-  // 중복된 닉네임에 걸맞는 주소 짓기
-  @Post()
+
+  @Post('/check-nickname')
   async judgeDuplicateNickname(
     @Body() judgeDuplicateNicknameDto: JudgeDuplicateNicknameDto,
   ) {
@@ -51,8 +53,7 @@ export class ProfilesController {
       );
 
       return Object.assign({
-        success: true,
-        statusCode: 204,
+        statusCode: 200,
         msg: '사용가능한 닉네임입니다.',
       });
     } catch (err) {
@@ -60,19 +61,18 @@ export class ProfilesController {
     }
   }
 
-  @Patch(':no')
+  @Patch()
+  @UseGuards(AuthGuard())
   async updateProfile(
-    @Param('no', ParseIntPipe) no: number,
     @Body() updateProfileDto: UpdateProfileDto,
+    @CurrentUser() user: User,
   ): Promise<number> {
     try {
-      const response = await this.profileService.updateProfile(
-        no,
+      const response: number = await this.profileService.updateProfile(
+        user.no,
         updateProfileDto,
       );
-
       return Object.assign({
-        success: true,
         statusCode: 201,
         msg: '프로필 정보 수정이 완료되었습니다.',
         userNo: response,

@@ -1,18 +1,27 @@
 import { InternalServerErrorException } from '@nestjs/common';
-import { EntityRepository, Repository } from 'typeorm';
+import { CreateBoardDto } from 'src/boards/dto/board.dto';
+import { Board } from 'src/boards/entity/board.entity';
+import { Spec } from 'src/specs/entity/spec.entity';
+import {
+  DeleteResult,
+  EntityRepository,
+  InsertResult,
+  Repository,
+} from 'typeorm';
+import { BoardPhoto } from '../entity/board.photo.entity';
 import { SpecPhoto } from '../entity/photo.entity';
 
 @EntityRepository(SpecPhoto)
 export class SpecPhotoRepository extends Repository<SpecPhoto> {
-  async saveSpecPhoto(photo_url, spec) {
+  async saveSpecPhoto(specPhotos: Array<object>): Promise<Array<object>> {
     try {
-      const { raw } = await this.createQueryBuilder('specPhoto')
+      const result: InsertResult = await this.createQueryBuilder('specPhoto')
         .insert()
         .into(SpecPhoto)
-        .values([{ photo_url, spec }])
+        .values(specPhotos)
         .execute();
 
-      return raw.insertId;
+      return result.identifiers;
     } catch (err) {
       throw new InternalServerErrorException(
         `스펙 사진 저장도중 에러가 발생 하였습니다.${err}`,
@@ -20,29 +29,21 @@ export class SpecPhotoRepository extends Repository<SpecPhoto> {
     }
   }
 
-  async updatePhoto(no, new_url) {
+  async deleteBeforePhoto(originSpecPhotos: Array<SpecPhoto>): Promise<void> {
     try {
-      const { affected } = await this.createQueryBuilder('specPhoto')
-        .update(SpecPhoto)
-        .set({ photo_url: new_url })
-        .where('no = :no', { no })
+      await this.createQueryBuilder('specPhoto')
+        .delete()
+        .from(SpecPhoto)
+        .where(originSpecPhotos)
         .execute();
-
-      if (!affected) {
-        throw new InternalServerErrorException(
-          '스펙 사진 업데이트 중 오류가 발생 하였습니다.(아마 specPhoto no 문제일 가능성 매우높음)',
-        );
-      }
-
-      return affected;
     } catch (err) {
       throw err;
     }
   }
 
-  async getSpecNo(no) {
+  async getSpecNo(no: number): Promise<number> {
     try {
-      const { spec } = await this.createQueryBuilder('specPhoto')
+      const { spec }: any = await this.createQueryBuilder('specPhoto')
         .leftJoinAndSelect('specPhoto.spec', 'spec')
         .select(['specPhoto.no', 'spec.no'])
         .where('specPhoto.no = :no', { no })
@@ -52,6 +53,43 @@ export class SpecPhotoRepository extends Repository<SpecPhoto> {
     } catch (err) {
       throw new InternalServerErrorException(
         `스펙 번호 가져오기 도중 오류가 발생 하였습니다.${err}`,
+      );
+    }
+  }
+}
+
+@EntityRepository(BoardPhoto)
+export class BoardPhotoRepository extends Repository<BoardPhoto> {
+  async createBoardPhoto(boardPhotos: Array<object>): Promise<Array<object>> {
+    try {
+      const result: InsertResult = await this.createQueryBuilder('boardPhotos')
+        .insert()
+        .into(BoardPhoto)
+        .values(boardPhotos)
+        .execute();
+
+      return result.identifiers;
+    } catch (err) {
+      throw new InternalServerErrorException(
+        `게시글 사진 저장도중 에러가 발생하였습니다. ${err}`,
+      );
+    }
+  }
+
+  async deleteBoardPhoto(board_no: number): Promise<number> {
+    try {
+      const { affected }: DeleteResult = await this.createQueryBuilder(
+        'boardPhotos',
+      )
+        .delete()
+        .from(BoardPhoto)
+        .where('board_no = :board_no', { board_no })
+        .execute();
+
+      return affected;
+    } catch (err) {
+      throw new InternalServerErrorException(
+        `게시글 사진 지우는 로직 에러 발생 ${err}`,
       );
     }
   }

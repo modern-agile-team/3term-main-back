@@ -8,11 +8,14 @@ import { UserRepository } from 'src/auth/repository/user.repository';
 import { CategoriesModule } from 'src/categories/categories.module';
 import { CategoriesService } from 'src/categories/categories.service';
 import { CategoryRepository } from 'src/categories/repository/category.repository';
+import { BoardPhotoRepository } from 'src/photo/repository/photo.repository';
 import { ReviewRepository } from 'src/reviews/repository/review.repository';
-import { ErrorConfirm } from 'src/utils/error';
+import { ErrorConfirm } from 'src/common/utils/error';
 import { BoardsController } from './boards.controller';
 import { BoardsService } from './boards.service';
 import { BoardRepository } from './repository/board.repository';
+import { BasketsService } from 'src/baskets/baskets.service';
+import { BasketRepository } from 'src/baskets/repository/baskets.repository';
 
 @Module({
   imports: [
@@ -23,12 +26,14 @@ import { BoardRepository } from './repository/board.repository';
       CategoryRepository,
       AreasRepository,
       UserRepository,
+      BoardPhotoRepository,
+      BasketRepository,
     ]),
     CategoriesModule,
     AreasModule,
     AuthModule,
   ],
   controllers: [BoardsController],
-  providers: [BoardsService, CategoriesService, ErrorConfirm],
+  providers: [BoardsService, CategoriesService, BasketsService, ErrorConfirm],
 })
 export class BoardsModule {}

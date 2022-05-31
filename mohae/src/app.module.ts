@@ -1,8 +1,8 @@
-import { Module } from '@nestjs/common';
+import { CacheInterceptor, CacheModule, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { typeORMConfig } from './configs/typeorm.config';
+import { typeORMConfig } from './common/configs/typeorm.config';
 import { ReportsModule } from './reports/reports.module';
 import { FaqsModule } from './faqs/faqs.module';
 import { CategoriesModule } from './categories/categories.module';
@@ -21,9 +21,24 @@ import { NoticesModule } from './notices/notices.module';
 import { SpecsModule } from './specs/specs.module';
 import { PhotoModule } from './photo/photo.module';
 import { LikeModule } from './like/like.module';
+import { RedisCacheModule } from './redis-cache/redis-cache.module';
+import { APP_INTERCEPTOR } from '@nestjs/core';
+import { MailboxUserModule } from './mailbox-user/mailbox-user.module';
+import * as redisStore from 'cache-manager-redis-store';
+import { ConfigModule } from '@nestjs/config';
+import { AwsService } from './aws/aws.service';
+import { TermsModule } from './terms/terms.module';
+import { BasketsModule } from './baskets/baskets.module';
+import { ReportCheckboxesService } from './report-checkboxes/report-checkboxes.service';
+import { ReportChecksService } from './report-checks/report-checks.service';
+import { ReportChecksModule } from './report-checks/report-checks.module';
+import { ReportCheckboxesModule } from './report-checkboxes/report-checkboxes.module';
 
 @Module({
   imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+    }),
     ReportsModule,
     FaqsModule,
     CategoriesModule,
@@ -43,8 +58,29 @@ import { LikeModule } from './like/like.module';
     SpecsModule,
     PhotoModule,
     LikeModule,
+    TermsModule,
+    CacheModule.register({
+      //   isGlobal: true,
+      //   store: redisStore,
+      //   socket: {
+      //     host: 'localhost',
+      //     port: 6379,
+      //   },
+    }),
+    RedisCacheModule,
+    MailboxUserModule,
+    BasketsModule,
+    ReportChecksModule,
+    ReportCheckboxesModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: CacheInterceptor,
+    },
+    AwsService,
+  ],
 })
 export class AppModule {}

@@ -1,5 +1,5 @@
 import { UserRepository } from 'src/auth/repository/user.repository';
-import { ErrorConfirm } from 'src/utils/error';
+import { ErrorConfirm } from 'src/common/utils/error';
 import Mail = require('nodemailer/lib/mailer');
 // import Mail = require('nodemailer/lib/mailer');
 import * as nodemailer from 'nodemailer';

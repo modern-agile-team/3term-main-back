@@ -1,10 +1,5 @@
 import { Validate } from 'class-validator';
 import { Major } from 'src/majors/entity/major.entity';
-import {
-  ReportContent,
-  ReportedBoard,
-  ReportedUser,
-} from 'src/reports/entity/report.entity';
 import { Review } from 'src/reviews/entity/review.entity';
 import { School } from 'src/schools/entity/school.entity';
 import { Category } from 'src/categories/entity/category.entity';
@@ -20,18 +15,21 @@ import {
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
-  Timestamp,
-  Unique,
   UpdateDateColumn,
 } from 'typeorm';
 import { Letter } from 'src/letters/entity/letter.entity';
-import { Mailbox, MailboxUser } from 'src/mailboxes/entity/mailbox.entity';
 import { Spec } from 'src/specs/entity/spec.entity';
 import { Faq } from 'src/faqs/entity/faq.entity';
 import { Notice } from 'src/notices/entity/notice.entity';
 import { Board } from 'src/boards/entity/board.entity';
-import { userInfo } from 'os';
 import { UserLike } from 'src/like/entity/user.like.entity';
+import { BoardLike } from 'src/like/entity/board.like.entity';
+import { MailboxUser } from 'src/mailbox-user/entity/mailbox-user.entity';
+import { TermsUser } from 'src/terms/entity/terms.entity';
+import { Terms } from 'src/terms/entity/terms.entity';
+import { Basket } from 'src/baskets/entity/baskets.entity';
+import { ReportedUser } from 'src/reports/entity/reported-user.entity';
+import { ReportedBoard } from 'src/reports/entity/reported-board.entity';
 
 @Entity('users')
 export class User extends BaseEntity {
@@ -113,13 +111,18 @@ export class User extends BaseEntity {
   })
   createdAt: Date;
 
-  // 내가 좋아요 한 유저 목록
+  @OneToMany((type) => TermsUser, (termsUser) => termsUser.user, {
+    nullable: true,
+  })
+  userTerms: TermsUser[];
+
+  // 나를 좋아요 한 유저 목록
   @OneToMany((type) => UserLike, (userLike) => userLike.likedUser, {
     nullable: true,
   })
   likedUser: UserLike[];
 
-  // 나를 좋아요한 유저 목록
+  // 내가 좋아요한 유저 목록
   @OneToMany((type) => UserLike, (userLike) => userLike.likedMe, {
     nullable: true,
   })
@@ -199,14 +202,20 @@ export class User extends BaseEntity {
   @JoinTable({ name: 'user_in_category' })
   categories: Category[];
 
-  @OneToMany(() => MailboxUser, (mailboxUser) => mailboxUser.mailbox, {
+  @OneToMany(() => MailboxUser, (mailboxUser) => mailboxUser.user, {
     nullable: true,
     onDelete: 'SET NULL',
   })
   mailboxUsers: MailboxUser[];
 
-  @ManyToMany((type) => Board, (board) => board.likedUser, {
-    cascade: true,
+  @OneToMany((type) => BoardLike, (boardLike) => boardLike.likedUser, {
+    nullable: true,
   })
-  likedBoard: Board[];
+  likedBoard: BoardLike[];
+
+  @OneToMany((type) => Review, (review) => review.targetUser)
+  reviewBasket: Review[];
+
+  @OneToMany((type) => Basket, (basket) => basket.boardNo)
+  baskets: Basket[];
 }

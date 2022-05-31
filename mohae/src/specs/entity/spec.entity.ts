@@ -1,4 +1,5 @@
-import { publishReplay } from 'rxjs';
+import { ApiProperty } from '@nestjs/swagger';
+import { IsString } from 'class-validator';
 import { User } from 'src/auth/entity/user.entity';
 import { SpecPhoto } from 'src/photo/entity/photo.entity';
 import {
@@ -19,12 +20,16 @@ export class Spec extends BaseEntity {
   @PrimaryGeneratedColumn()
   no: number;
 
+  @IsString()
+  @ApiProperty({ description: '스펙 제목' })
   @Column({
     type: 'varchar',
     comment: '스펙 제목',
   })
   title: string;
 
+  @IsString()
+  @ApiProperty({ description: '스펙 내용' })
   @Column({
     type: 'mediumtext',
     comment: '스펙 내용',
@@ -53,7 +58,7 @@ export class Spec extends BaseEntity {
   })
   specPhotos: SpecPhoto[];
 
-  @ManyToOne((type) => User, (user) => user.no, {
+  @ManyToOne((type) => User, (user) => user.specs, {
     onDelete: 'SET NULL',
   })
   @JoinColumn({ name: 'user_no' })

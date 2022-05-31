@@ -1,13 +1,13 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UserRepository } from 'src/auth/repository/user.repository';
 import { Letter } from 'src/letters/entity/letter.entity';
 import { LetterRepository } from 'src/letters/repository/letter.repository';
-import { ErrorConfirm } from 'src/utils/error';
-import {
-  MailboxRepository,
-  MailboxUserRepository,
-} from './repository/mailbox.repository';
+import { ErrorConfirm } from 'src/common/utils/error';
+import { Mailbox } from './entity/mailbox.entity';
+import { MailboxRepository } from './repository/mailbox.repository';
+import { MailboxUserRepository } from 'src/mailbox-user/repository/mailbox.repository';
+import { User } from 'src/auth/entity/user.entity';
 
 @Injectable()
 export class MailboxesService {
@@ -15,22 +15,16 @@ export class MailboxesService {
     @InjectRepository(MailboxRepository)
     private mailboxRepository: MailboxRepository,
 
-    @InjectRepository(UserRepository)
     private userRepository: UserRepository,
-
-    @InjectRepository(LetterRepository)
     private letterRepository: LetterRepository,
-
-    @InjectRepository(MailboxUserRepository)
     private mailboxUserRepository: MailboxUserRepository,
-
     private errorConfirm: ErrorConfirm,
   ) {}
 
-  async findAllMailboxes(loginUserNo: number) {
+  async readAllMailboxes(user: User): Promise<any> {
     try {
-      const Letters = this.letterRepository
-        .createQueryBuilder()
+      const Letters: string = this.letterRepository
+        .createQueryBuilder('letter')
         .subQuery()
         .select([
           'letter.no AS no',
@@ -44,9 +38,9 @@ export class MailboxesService {
         .orderBy('letter.createdAt', 'DESC')
         .getQuery();
 
-      const mailbox = await this.userRepository
+      const mailboxQb: any = await this.userRepository
         .createQueryBuilder('user')
-        .where('user.no = :loginUserNo', { loginUserNo })
+        .where('user.no = :loginUserNo', { loginUserNo: user.no })
         .leftJoin('user.mailboxUsers', 'mailboxUsers')
         .leftJoin('mailboxUsers.mailbox', 'mailbox')
         .leftJoin(Letters, 'letter', 'letter.mailbox = mailbox.no')
@@ -57,55 +51,64 @@ export class MailboxesService {
           'mailbox.no AS mailboxNo',
           'letter.no AS letterNo',
           'letter.description AS letterDescription',
-          'letter.createdAt AS letterCreatedAt',
         ])
-        .orderBy('letter.createdAt', 'DESC')
-        .getRawMany();
+        .orderBy('letter.createdAt', 'DESC');
 
+      const mailbox = await mailboxQb
+        .where(`TIMESTAMPDIFF(MONTH, letter.createdAt, '2022-12-31') >= 1`)
+        .addSelect(
+          `TIMESTAMPDIFF(MONTH, letter.createdAt, '2022-12-31') AS letterCreatedAt`,
+        )
+        .orWhere(`TIMESTAMPDIFF(MINUTE, letter.createdAt, '2022-12-31') < 60`)
+        .addSelect(
+          `TIMESTAMPDIFF(MINUTE, letter.createdAt, '2022-12-31') AS letterCreatedAt`,
+        )
+        .getRawMany();
+      console.log(mailbox);
       return mailbox;
-    } catch (e) {
-      throw e;
+    } catch (err) {
+      throw new BadRequestException(err.message);
     }
   }
 
-  async searchMailbox(mailboxNo: number, limit: number) {
+  async searchMailbox(mailboxNo: number, limit: number): Promise<Mailbox> {
     try {
-      const mailbox = await this.mailboxRepository.searchMailbox(
+      const mailbox: Mailbox = await this.mailboxRepository.searchMailbox(
         mailboxNo,
         limit,
       );
 
-      const notReadLetter = await this.letterRepository.notReadingLetter(
-        mailboxNo,
-      );
       this.errorConfirm.notFoundError(
-        notReadLetter,
-        '경로를 찾을 수 없습니다.',
+        mailbox,
+        '해당 쪽지함을 찾지 못했습니다.',
       );
 
-      for (const letter of notReadLetter) {
-        await this.letterRepository.updateReading(letter.no);
-      }
+      await this.letterRepository.updateReading(mailboxNo);
+
       return mailbox;
-    } catch (e) {
-      throw e;
+    } catch (err) {
+      throw new BadRequestException(err.message);
     }
   }
 
-  async checkMailbox(oneselfNo: number, opponentNo: number) {
+  async checkMailbox(oneself: User, opponentNo: number): Promise<any> {
     try {
-      const mailbox = await this.userRepository
-        .createQueryBuilder('users')
-        .leftJoinAndSelect('users.mailboxUsers', 'mailboxUser')
-        .leftJoinAndSelect('mailboxUser.user', 'MBUser')
-        .leftJoinAndSelect('mailboxUser.mailbox', 'mailbox')
-        .where('users.no = :oneselfNo', { oneselfNo })
-        .getMany();
+      this.errorConfirm.unauthorizedError(
+        oneself.no !== opponentNo,
+        '자기 자신에게 쪽지를 보낼 수 없습니다.',
+      );
 
-      // 1,2 조회는 되는데 2,1 조회랑 다른 게 안됨;;;;; 사ㅣ 발라비ㅏㅣㅏㅅ
-      return mailbox;
-    } catch (e) {
-      throw e;
+      const mailbox: any = await this.mailboxUserRepository.searchMailboxUser(
+        oneself.no,
+        opponentNo,
+      );
+
+      return {
+        success: !!mailbox,
+        mailboxNo: mailbox?.mailboxNo,
+      };
+    } catch (err) {
+      throw new BadRequestException(err.message);
     }
   }
 }

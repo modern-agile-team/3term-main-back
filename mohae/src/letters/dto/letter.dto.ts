@@ -1,19 +1,17 @@
-import { IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
+import { ApiProperty, PickType } from '@nestjs/swagger';
+import { IsNumber, IsOptional } from 'class-validator';
+import { Letter } from '../entity/letter.entity';
 
-export class SendLetterDto {
-  @IsNotEmpty()
-  @IsNumber()
-  senderNo: number;
-
-  @IsNotEmpty()
-  @IsNumber()
-  receiverNo: number;
-
+export class SendLetterDto extends PickType(Letter, [
+  'receiver',
+  'description',
+] as const) {
+  @ApiProperty({
+    example: null,
+    description: '쪽지함이 존재하지 않을 경우 null, 있으면 mailboxNo',
+    required: true,
+  })
   @IsOptional()
   @IsNumber()
   mailboxNo?: number;
-
-  @IsNotEmpty()
-  @IsString()
-  description: string;
 }

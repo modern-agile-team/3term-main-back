@@ -1,54 +1,92 @@
-import { Controller, Get, Param, Query } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  HttpCode,
+  Param,
+  Query,
+  UseGuards,
+  UseInterceptors,
+} from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { User } from 'src/auth/entity/user.entity';
+import { CurrentUser } from 'src/common/decorators/current-user.decorator';
+import { SuccesseInterceptor } from 'src/common/interceptors/success.interceptor';
+import { Mailbox } from './entity/mailbox.entity';
 import { MailboxesService } from './mailboxes.service';
 
+@ApiTags('Mailboxes')
+@UseGuards(AuthGuard('jwt'))
+@UseInterceptors(SuccesseInterceptor)
 @Controller('mailboxes')
 export class MailboxesController {
   constructor(private mailboxesService: MailboxesService) {}
 
-  // 유저가 알림버튼을 클릭했을 때 API
-  @Get('/:loginUserNo')
-  async findAllMailboxes(@Param('loginUserNo') loginUserNo: number) {
-    const response = await this.mailboxesService.findAllMailboxes(loginUserNo);
+  @ApiOperation({
+    summary: '로그인한 유저의 쪽지함 전체 조회',
+    description: '로그인한 유저의 쪽지함 전체를 조회하는 API',
+  })
+  @Get()
+  @HttpCode(200)
+  async readAllMailboxes(@CurrentUser() user: User): Promise<object> {
+    const response: any = await this.mailboxesService.readAllMailboxes(user);
 
-    return Object.assign({
-      statusCode: 200,
-      msg: '쪽지함 조회 완료',
+    return {
+      msg: '쪽지함 목록 조회 완료',
       response,
-    });
+    };
   }
 
-  // 유저가 알림창에 있는 쪽지함을 클릭했을 때
-  @Get('/letter/:mailboxNo')
+  @ApiOperation({
+    summary: '쪽지함 목록에 있는 한 개의 쪽지함을 클릭',
+    description: '클릭한 쪽지함 내용을 조회하는 API',
+  })
+  @HttpCode(200)
+  @Get('/:mailboxNo')
   async searchMailbox(
     @Param('mailboxNo') mailboxNo: number,
     @Query('limit') limit: number,
-  ) {
-    const response = await this.mailboxesService.searchMailbox(
+  ): Promise<object> {
+    const response: Mailbox = await this.mailboxesService.searchMailbox(
       mailboxNo,
       limit,
     );
 
-    return Object.assign({
-      statusCode: 200,
+    return {
       msg: '쪽지 전송 화면 조회 완료',
       response,
-    });
+    };
   }
 
-  @Get('/confirm/:oneselfNo/:opponentNo')
+  @ApiOperation({
+    summary: '로그인한 유저와 상대방의 유저의 채팅 내역이 있는지 확인',
+    description:
+      '채팅 내역이 존재하면 채팅 내역 리턴, 없으면 아무 내용도 리턴하지 않는 API',
+  })
+  @Get('/confirm/:opponentNo')
   async checkMailbox(
-    @Param('oneselfNo') oneselfNo: number,
+    @CurrentUser() oneself: User,
     @Param('opponentNo') opponentNo: number,
-  ) {
-    const response = await this.mailboxesService.checkMailbox(
-      oneselfNo,
-      opponentNo,
+  ): Promise<object> {
+    const { success, mailboxNo }: any =
+      await this.mailboxesService.checkMailbox(oneself, opponentNo);
+
+    if (!success) {
+      return {
+        statusCode: 202,
+        msg: '해당 유저와의 쪽지함이 존재하지 않습니다.',
+      };
+    }
+
+    const response: Mailbox = await this.mailboxesService.searchMailbox(
+      mailboxNo,
+      0,
     );
 
-    return Object.assign({
+    return {
       statusCode: 200,
       msg: '쪽지함 존재 여부 확인 완료',
       response,
-    });
+    };
   }
 }
