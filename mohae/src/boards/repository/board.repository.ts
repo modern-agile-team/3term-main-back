@@ -315,15 +315,15 @@ export class BoardRepository extends Repository<Board> {
     }
   }
 
-  async deleteBoard(no: number): Promise<DeleteResult> {
+  async deleteBoard(boardNo: number): Promise<number> {
     try {
-      const result = await this.createQueryBuilder()
+      const { affected }: DeleteResult = await this.createQueryBuilder()
         .softDelete()
         .from(Board)
-        .where('no = :no', { no })
+        .where('no = :boardNo', { boardNo })
         .execute();
 
-      return result;
+      return affected;
     } catch (err) {
       throw new InternalServerErrorException(
         `${err} ### 게시판 삭제: 알 수 없는 서버 에러입니다.`,
@@ -384,6 +384,39 @@ export class BoardRepository extends Repository<Board> {
       return filteredHotBoards;
     } catch (err) {
       `${err} ### 인기 게시판 조회 : 알 수 없는 서버 에러입니다.`;
+    }
+  }
+
+  async readUserBoard(
+    userNo: number,
+    take: number,
+    page: number,
+    target: boolean,
+  ): Promise<Array<Board>> {
+    try {
+      const boards: Array<Board> = await this.createQueryBuilder('boards')
+        .leftJoin('boards.user', 'user')
+        .leftJoin('boards.photos', 'boardPhotos')
+        .select([
+          'boards.no',
+          'boards.title',
+          'boards.description',
+          'boardPhotos.photo_url',
+          'boards.target',
+          'user.no',
+        ])
+        .where('user.no = :userNo', { userNo })
+        .andWhere('boards.no = boardPhotos.board')
+        .andWhere('boards.target = :target', { target })
+        .take(take)
+        .skip(take * (page - 1))
+        .getMany();
+
+      return boards;
+    } catch (err) {
+      throw new InternalServerErrorException(
+        `${err}####스펙 전체 조회 관련 서버 에러입니다`,
+      );
     }
   }
 }
