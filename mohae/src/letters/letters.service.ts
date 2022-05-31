@@ -1,4 +1,8 @@
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import {
+  BadGatewayException,
+  Injectable,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/auth/entity/user.entity';
 import { UserRepository } from 'src/auth/repository/user.repository';
@@ -59,7 +63,7 @@ export class LettersService {
         .sendLetter(sender, receiver, mailbox, description);
 
       if (!affectedRows) {
-        throw new Error('쪽지가 정상적으로 저장되지 않았습니다.');
+        throw new BadGatewayException('쪽지가 정상적으로 저장되지 않았습니다.');
       }
 
       const newLetterNo = insertId;
