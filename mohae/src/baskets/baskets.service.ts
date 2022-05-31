@@ -17,15 +17,15 @@ import { BasketRepository } from './repository/baskets.repository';
 export class BasketsService {
   constructor(
     @InjectRepository(BasketRepository)
-    private basketRepository: BasketRepository,
+    private readonly basketRepository: BasketRepository,
 
     @InjectRepository(UserRepository)
-    private userRepository: UserRepository,
+    private readonly userRepository: UserRepository,
 
     @InjectRepository(BoardRepository)
-    private boardRepository: BoardRepository,
+    private readonly boardRepository: BoardRepository,
 
-    private errorConfirm: ErrorConfirm,
+    private readonly errorConfirm: ErrorConfirm,
   ) {}
 
   async checkConfirm(basketDto: BasketDto): Promise<object> {
