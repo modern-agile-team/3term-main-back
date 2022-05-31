@@ -18,10 +18,8 @@ import { AwsService } from 'src/aws/aws.service';
 import { UserPhotoSizes } from 'src/common/configs/photo-size.config';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 import { SuccesseInterceptor } from 'src/common/interceptors/success.interceptor';
-import {
-  JudgeDuplicateNicknameDto,
-  UpdateProfileDto,
-} from './dto/update-profile.dto';
+import { JudgeDuplicateNicknameDto } from './dto/judge-duplicate-nickname.dto';
+import { UpdateProfileDto } from './dto/update-profile.dto';
 import { ProfilesService } from './profiles.service';
 
 @UseGuards(AuthGuard('jwt'))
@@ -30,8 +28,8 @@ import { ProfilesService } from './profiles.service';
 @ApiTags('Profile')
 export class ProfilesController {
   constructor(
-    private profileService: ProfilesService,
-    private awsService: AwsService,
+    private readonly profileService: ProfilesService,
+    private readonly awsService: AwsService,
   ) {}
 
   @Get('/:profileUserNo')

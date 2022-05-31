@@ -13,10 +13,8 @@ import { Major } from 'src/majors/entity/major.entity';
 import { MajorRepository } from 'src/majors/repository/major.repository';
 import { School } from 'src/schools/entity/school.entity';
 import { SchoolRepository } from 'src/schools/repository/school.repository';
-import {
-  JudgeDuplicateNicknameDto,
-  UpdateProfileDto,
-} from './dto/update-profile.dto';
+import { JudgeDuplicateNicknameDto } from './dto/judge-duplicate-nickname.dto';
+import { UpdateProfileDto } from './dto/update-profile.dto';
 
 @Injectable()
 export class ProfilesService {
