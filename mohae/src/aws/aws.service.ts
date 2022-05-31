@@ -92,7 +92,7 @@ export class AwsService {
           })
           .promise();
 
-        specPhotoUrls.push(this.getAwsS3FileUrl(key));
+        specPhotoUrls.push(key);
       }
       return specPhotoUrls;
     } catch (error) {

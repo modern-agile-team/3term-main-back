@@ -12,6 +12,7 @@ import {
   Query,
   Put,
   HttpCode,
+  BadRequestException,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { FilesInterceptor } from '@nestjs/platform-express';
@@ -23,10 +24,12 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { User } from '@sentry/node';
+import { create } from 'domain';
 import { AwsService } from 'src/aws/aws.service';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 import { SuccesseInterceptor } from 'src/common/interceptors/success.interceptor';
-import { CreateSpecDto, UpdateSpecDto } from './dto/spec.dto';
+import { CreateSpecDto } from './dto/create-spec.dto';
+import { UpdateSpecDto } from './dto/update-spec.dto';
 import { Spec } from './entity/spec.entity';
 import { SpecsService } from './specs.service';
 
@@ -35,9 +38,9 @@ import { SpecsService } from './specs.service';
 @ApiTags('스펙 API')
 export class SpecsController {
   constructor(
-    private specsService: SpecsService,
+    private readonly specsService: SpecsService,
 
-    private awsService: AwsService,
+    private readonly awsService: AwsService,
   ) {}
 
   @Get('user/:profileUserNo')
@@ -78,106 +81,122 @@ export class SpecsController {
   })
   @ApiResponse({ status: 404, description: '해당 스펙이 존재하지 않은 경우' })
   async getOneSpec(@Param('specNo') specNo: number): Promise<object> {
-    try {
-      const response: Spec = await this.specsService.getOneSpec(specNo);
+    const response: Spec = await this.specsService.getOneSpec(specNo);
 
-      return {
-        msg: '성공적으로 스펙을 불러왔습니다.',
-        response,
-      };
-    } catch (err) {
-      throw err;
-    }
+    return {
+      msg: '성공적으로 스펙을 불러왔습니다.',
+      response,
+    };
   }
 
   @Get('profile')
   @HttpCode(200)
+  @ApiOkResponse({
+    description: '성공적으로 스펙 조회가 된경우 불러와진 경우.',
+  })
   async readUserSpec(
     @Query('user') user: number,
     @Query('take') take: number,
     @Query('page') page: number,
   ): Promise<object> {
-    try {
-      const response: Spec[] = await this.specsService.readUserSpec(
-        user,
-        take,
-        page,
-      );
-      return {
-        msg: '프로필 스펙 조회에 성공했습니다.',
-        response,
-      };
-    } catch (err) {
-      throw err;
-    }
+    const response: Spec[] = await this.specsService.readUserSpec(
+      user,
+      take,
+      page,
+    );
+    return {
+      msg: '프로필 스펙 조회에 성공했습니다.',
+      response,
+    };
   }
 
-  @UseInterceptors(FilesInterceptor('image', 10))
   @Post('regist')
+  @UseInterceptors(FilesInterceptor('image', 10))
   @HttpCode(201)
+  @ApiOperation({
+    summary: '스펙 등록 API',
+    description: '스펙을 등록한다',
+  })
+  @ApiOkResponse({
+    description: '성공적으로 스펙이 등록된 경우.',
+  })
+  @ApiInternalServerErrorResponse({
+    description: '스펙 사진 등록이 제대로 이루어지지 않은 경우',
+  })
   @UseGuards(AuthGuard())
   async registSpec(
     @UploadedFiles() files: Express.Multer.File[],
     @Body() createSpecDto: CreateSpecDto,
     @CurrentUser() user: User,
   ): Promise<object> {
-    try {
-      const specPhotoUrls =
-        files[0].originalname === 'default.jpg'
-          ? ['default.jpg']
-          : await this.awsService.uploadSpecFileToS3('spec', files);
+    if (!files.length)
+      throw new BadRequestException(
+        '사진을 선택하지 않은 경우 기본사진을 넣어주셔야 스펙 등록이 가능 합니다.',
+      );
 
-      await this.specsService.registSpec(user.no, specPhotoUrls, createSpecDto);
+    const specPhotoUrls = await this.awsService.uploadSpecFileToS3(
+      'spec',
+      files,
+    );
 
-      return {
-        msg: '성공적으로 스팩등록이 되었습니다.',
-      };
-    } catch (err) {
-      throw err;
-    }
+    await this.specsService.registSpec(user.no, specPhotoUrls, createSpecDto);
+
+    return {
+      msg: '성공적으로 스팩등록이 되었습니다.',
+    };
   }
 
-  @UseInterceptors(FilesInterceptor('image', 10))
   @Put(':no')
-  @HttpCode(204)
+  @UseInterceptors(FilesInterceptor('image', 10))
+  @HttpCode(200)
+  @ApiOperation({
+    summary: '스펙 수정 API',
+    description: '스펙을 수정한다',
+  })
+  @ApiOkResponse({
+    description: '성공적으로 스펙이 수정 경우.',
+  })
+  @ApiResponse({
+    status: 404,
+    description: '스펙이 존재하지 않은 경우',
+  })
   async updateSpec(
     @Param('no') specNo: number,
     @UploadedFiles() files: Express.Multer.File[],
     @Body() updateSpecdto: UpdateSpecDto,
   ): Promise<object> {
-    try {
-      const specPhotoUrls =
-        files.length === 0
-          ? false
-          : await this.awsService.uploadSpecFileToS3('spec', files);
+    const specPhotoUrls =
+      files.length === 0
+        ? false
+        : await this.awsService.uploadSpecFileToS3('spec', files);
 
-      const originSpecPhotoUrls = await this.specsService.updateSpec(
-        specNo,
-        updateSpecdto,
-        specPhotoUrls,
-      );
+    const originSpecPhotoUrls = await this.specsService.updateSpec(
+      specNo,
+      updateSpecdto,
+      specPhotoUrls,
+    );
 
-      await this.awsService.deleteSpecS3Object(originSpecPhotoUrls);
+    await this.awsService.deleteSpecS3Object(originSpecPhotoUrls);
 
-      return {
-        msg: '성공적으로 스팩이 수정되었습니다.',
-      };
-    } catch (err) {
-      throw err;
-    }
+    return {
+      msg: '성공적으로 스팩이 수정되었습니다.',
+    };
   }
 
   @Delete(':no')
-  @HttpCode(204)
+  @HttpCode(200)
+  @ApiOperation({
+    summary: '스펙 삭제 API',
+    description: '스펙을 삭제한다',
+  })
+  @ApiOkResponse({
+    description: '성공적으로 스펙이 삭제된 경우.',
+  })
   async deleteSpec(@Param('no') specNo: number): Promise<object> {
-    try {
-      await this.specsService.deleteSpec(specNo);
+    await this.specsService.deleteSpec(specNo);
 
-      return {
-        msg: '성공적으로 스팩을 삭제하였습니다.',
-      };
-    } catch (err) {
-      throw err;
-    }
+    return {
+      msg: '성공적으로 스팩을 삭제하였습니다.',
+    };
   }
 }

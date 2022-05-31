@@ -10,26 +10,26 @@ import { User } from 'src/auth/entity/user.entity';
 import { UserRepository } from 'src/auth/repository/user.repository';
 import { SpecPhotoRepository } from 'src/photo/repository/photo.repository';
 import { ErrorConfirm } from 'src/common/utils/error';
-import { CreateSpecDto, UpdateSpecDto } from './dto/spec.dto';
+import { CreateSpecDto } from './dto/create-spec.dto';
+import { UpdateSpecDto } from './dto/update-spec.dto';
 import { Spec } from './entity/spec.entity';
 import { SpecRepository } from './repository/spec.repository';
 import { Connection } from 'typeorm';
-import { SpecPhoto } from 'src/photo/entity/photo.entity';
 
 @Injectable()
 export class SpecsService {
   constructor(
     @InjectRepository(SpecRepository)
-    private specRepository: SpecRepository,
+    private readonly specRepository: SpecRepository,
 
     @InjectRepository(UserRepository)
-    private userRepository: UserRepository,
+    private readonly userRepository: UserRepository,
 
     @InjectRepository(SpecPhotoRepository)
-    private specPhotoRepository: SpecPhotoRepository,
+    private readonly specPhotoRepository: SpecPhotoRepository,
 
-    private connection: Connection,
-    private errorConfirm: ErrorConfirm,
+    private readonly connection: Connection,
+    private readonly errorConfirm: ErrorConfirm,
   ) {}
   async getAllSpec(profileUserNo: number): Promise<any> {
     try {
@@ -74,18 +74,9 @@ export class SpecsService {
       const specNo: Spec = await queryRunner.manager
         .getCustomRepository(SpecRepository)
         .registSpec(createSpecDto, user);
-      if (!userNo) {
-        throw new UnauthorizedException(
-          `${userNo}에 해당하는 유저가 존재하지 않습니다.`,
-        );
-      }
-      if (!specPhotoUrls.length) {
-        throw new BadRequestException(
-          '스펙의 사진이 없다면 null 이라도 넣어주셔야 스펙 등록이 가능합니다.',
-        );
-      }
+
       if (specPhotoUrls) {
-        const specPhotos: Array<object> = specPhotoUrls.map(
+        const specPhotos: object[] = specPhotoUrls.map(
           (photoUrl: string, index: number) => {
             return {
               photo_url: photoUrl,
@@ -94,7 +85,7 @@ export class SpecsService {
             };
           },
         );
-        const savedSpecPhotos: Array<object> = await queryRunner.manager
+        const savedSpecPhotos: object[] = await queryRunner.manager
           .getCustomRepository(SpecPhotoRepository)
           .saveSpecPhoto(specPhotos);
 
@@ -197,9 +188,9 @@ export class SpecsService {
     userNo: number,
     take: number,
     page: number,
-  ): Promise<Array<Spec>> {
+  ): Promise<Spec[]> {
     try {
-      const profileSpecs: Array<Spec> = await this.specRepository.readUserSpec(
+      const profileSpecs: Spec[] = await this.specRepository.readUserSpec(
         userNo,
         take,
         page,

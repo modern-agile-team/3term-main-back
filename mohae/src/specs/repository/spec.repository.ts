@@ -7,7 +7,7 @@ import {
   Repository,
   UpdateResult,
 } from 'typeorm';
-import { CreateSpecDto } from '../dto/spec.dto';
+import { CreateSpecDto } from '../dto/create-spec.dto';
 import { Spec } from '../entity/spec.entity';
 
 @EntityRepository(Spec)

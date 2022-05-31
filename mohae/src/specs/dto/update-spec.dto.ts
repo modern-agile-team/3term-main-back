@@ -1,15 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsArray, IsOptional, IsString } from 'class-validator';
-
-export class CreateSpecDto {
-  @IsString()
-  @ApiProperty({ description: '스펙 제목' })
-  title: string;
-
-  @IsString()
-  @ApiProperty({ description: '스펙 제목' })
-  description: string;
-}
+import { IsOptional, IsString } from 'class-validator';
 
 export class UpdateSpecDto {
   @IsOptional()
