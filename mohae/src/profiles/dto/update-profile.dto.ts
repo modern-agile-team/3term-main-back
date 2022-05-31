@@ -3,34 +3,21 @@ import { IsArray, IsNumber, IsOptional, IsString } from 'class-validator';
 export class UpdateProfileDto {
   @IsOptional()
   @IsString()
-  phone?: string;
+  phone: string;
 
   @IsOptional()
   @IsString()
-  nickname?: string;
+  nickname: string;
 
   @IsOptional()
   @IsNumber()
-  school?: number;
+  school: number;
 
   @IsOptional()
   @IsNumber()
-  major?: number;
+  major: number;
 
   @IsOptional()
   @IsArray()
   categories: [];
-
-  @IsOptional()
-  @IsString()
-  photo_url?: string;
-}
-
-export class JudgeDuplicateNicknameDto {
-  @IsOptional()
-  @IsNumber()
-  no?: number;
-
-  @IsString()
-  nickname?: string;
 }

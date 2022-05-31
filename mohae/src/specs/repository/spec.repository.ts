@@ -7,12 +7,12 @@ import {
   Repository,
   UpdateResult,
 } from 'typeorm';
-import { CreateSpecDto } from '../dto/spec.dto';
+import { CreateSpecDto } from '../dto/create-spec.dto';
 import { Spec } from '../entity/spec.entity';
 
 @EntityRepository(Spec)
 export class SpecRepository extends Repository<Spec> {
-  async getAllSpec(userNo: number) {
+  async getAllSpec(profileUserNo: number) {
     try {
       const specs = await this.createQueryBuilder('spec')
         .leftJoin('spec.specPhotos', 'specPhotos')
@@ -24,7 +24,7 @@ export class SpecRepository extends Repository<Spec> {
           'specPhotos.photo_url',
           'user.no',
         ])
-        .where('user.no = :userNo', { userNo })
+        .where('user.no = :profileUserNo', { profileUserNo })
         .andWhere('spec.no = specPhotos.spec')
         .getMany();
 
@@ -61,7 +61,7 @@ export class SpecRepository extends Repository<Spec> {
       return specs;
     } catch (err) {
       throw new InternalServerErrorException(
-        `${err}####스펙 전체 조회 관련 서버 에러입니다`,
+        `${err}####프로필 스펙 관련 서버 에러입니다`,
       );
     }
   }
@@ -130,11 +130,11 @@ export class SpecRepository extends Repository<Spec> {
     }
   }
 
-  async updateSpec(specNo: number, deletedNullSpec: object): Promise<number> {
+  async updateSpec(specNo: number, updateSpecDto: object): Promise<number> {
     try {
       const { affected }: UpdateResult = await this.createQueryBuilder('spec')
         .update(Spec)
-        .set(deletedNullSpec)
+        .set(updateSpecDto)
         .where('no = :specNo', { specNo })
         .execute();
 
