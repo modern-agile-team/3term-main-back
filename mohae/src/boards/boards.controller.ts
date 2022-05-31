@@ -14,14 +14,10 @@ import {
 import { AuthGuard } from '@nestjs/passport';
 import { Cron } from '@nestjs/schedule';
 import { ApiCreatedResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { BasketsService } from 'src/baskets/baskets.service';
-import { BasketDto } from 'src/baskets/dto/basket.dto';
-import { DeleteResult } from 'typeorm';
 import { BoardsService } from './boards.service';
 import {
   CreateBoardDto,
   SearchBoardDto,
-  LikeBoardDto,
   UpdateBoardDto,
 } from './dto/board.dto';
 import { Board } from './entity/board.entity';
@@ -30,10 +26,7 @@ import { Board } from './entity/board.entity';
 @ApiTags('Boards')
 export class BoardsController {
   private logger = new Logger('BoardsController');
-  constructor(
-    private boardService: BoardsService,
-    private basketsService: BasketsService,
-  ) {}
+  constructor(private boardService: BoardsService) {}
 
   @Cron('0 1 * * * *')
   async handleCron() {
@@ -172,23 +165,6 @@ export class BoardsController {
     return Object.assign({
       statusCode: 201,
       msg: '게시글 생성이 완료 되었습니다.',
-      response,
-    });
-  }
-
-  @Post('basket')
-  async checkBasket(@Body() basketDto: BasketDto): Promise<object> {
-    const response = await this.basketsService.checkBasket(basketDto);
-
-    if (!response['isSuccess']) {
-      return Object.assign({
-        statusCode: 400,
-        response,
-      });
-    }
-
-    return Object.assign({
-      statusCode: 201,
       response,
     });
   }

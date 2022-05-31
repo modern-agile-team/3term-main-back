@@ -6,7 +6,4 @@ export class BasketDto {
 
   @IsNumber()
   boardNo: number;
-
-  @IsBoolean()
-  check: boolean;
 }

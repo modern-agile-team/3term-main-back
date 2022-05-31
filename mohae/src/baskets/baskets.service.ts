@@ -29,31 +29,8 @@ export class BasketsService {
   ) {}
 
   async checkConfirm(basketDto: BasketDto): Promise<object> {
-    const { check } = basketDto;
-    if (!check) {
-      const countedCheckBasket: number =
-        await this.basketRepository.isCheckBasket(basketDto);
-
-      if (!countedCheckBasket) {
-        return { isSuccess: true };
-      }
-
-      return { isSuccess: false, msg: '찜한 게시글 입니다' };
-    }
-
-    const countedCheckBasket: number =
-      await this.basketRepository.isCheckBasket(basketDto);
-
-    if (countedCheckBasket) {
-      return { isSuccess: true };
-    }
-
-    return { isSuccess: false, msg: '찜하지 않은 게시글 입니다' };
-  }
-
-  async checkBasket(basketDto: BasketDto): Promise<object> {
     try {
-      const { userNo, boardNo, check }: BasketDto = basketDto;
+      const { userNo, boardNo }: BasketDto = basketDto;
 
       const user: User = await this.userRepository.findOne(userNo, {
         relations: ['baskets'],
@@ -65,31 +42,21 @@ export class BasketsService {
       });
       this.errorConfirm.notFoundError(board, `해당 게시글을 찾을 수 없습니다.`);
 
-      if (check) {
-        const confirm: object = await this.checkConfirm(basketDto);
-        if (!confirm['isSuccess']) {
-          return confirm;
-        }
+      const isCheckedConfirm: number =
+        await this.basketRepository.isCheckBasket(basketDto);
 
-        const canceledBasket: number = await this.basketRepository.cancelBasket(
-          basketDto,
-        );
-
-        if (!canceledBasket) {
-          throw new BadRequestException('찜한 게시글 삭제중 에러 발생');
-        }
-
-        return {
-          isSuccess: true,
-          msg: '게시글 찜하기 취소 요청이 성공하였습니다.',
-        };
-      }
-      const confirm: object = await this.checkConfirm(basketDto);
-
-      if (!confirm['isSuccess']) {
-        return confirm;
+      if (!isCheckedConfirm) {
+        return await this.checkBasket(user, board);
       }
 
+      return await this.deleteBasket(basketDto);
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  async checkBasket(user: User, board: Board): Promise<object> {
+    try {
       const checkedBasket: number = await this.basketRepository.checkBasket(
         user,
         board,
@@ -100,6 +67,25 @@ export class BasketsService {
       }
 
       return { isSuccess: true, msg: '게시글 찜하기 요청이 성공하였습니다.' };
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  async deleteBasket(basketDto: BasketDto) {
+    try {
+      const canceledBasket: number = await this.basketRepository.cancelBasket(
+        basketDto,
+      );
+
+      if (!canceledBasket) {
+        throw new BadRequestException('찜한 게시글 삭제중 에러 발생');
+      }
+
+      return {
+        isSuccess: true,
+        msg: '게시글 찜하기 취소 요청이 성공하였습니다.',
+      };
     } catch (err) {
       throw err;
     }
