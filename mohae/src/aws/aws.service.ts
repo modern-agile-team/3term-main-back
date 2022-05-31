@@ -20,22 +20,28 @@ export class AwsService {
 
   async uploadFileToS3(
     folder: string,
+    sizes: string,
     files: Express.Multer.File,
   ): Promise<{
     keys: Array<string>;
-    // s3Object: PromiseResult<AWS.S3.PutObjectOutput, AWS.AWSError>;
     contentType: string;
   }> {
-    try {
-      const keys = [];
+    const keys = [];
 
+    try {
       for (const index in files) {
+        const separatedSizes = sizes.split('X');
+
         const key: string = `${folder}/${Date.now()}_${path.basename(
           files[index].originalname,
         )}`.replace(/ /g, '');
 
         sharp(files[index].buffer)
-          .resize({ width: 100 }) // 비율을 유지하며 가로 크기 줄이기
+          .resize({
+            with: +separatedSizes[0],
+            height: +separatedSizes[1],
+            position: 'left top',
+          })
           .withMetadata() // 이미지의 exif데이터 유지
           .toBuffer((err, buffer) => {
             if (err) {
