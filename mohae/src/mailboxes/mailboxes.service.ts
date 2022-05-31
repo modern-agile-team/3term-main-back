@@ -38,7 +38,7 @@ export class MailboxesService {
         .orderBy('letter.createdAt', 'DESC')
         .getQuery();
 
-      const mailbox: any = await this.userRepository
+      const mailboxQb: any = await this.userRepository
         .createQueryBuilder('user')
         .where('user.no = :loginUserNo', { loginUserNo: user.no })
         .leftJoin('user.mailboxUsers', 'mailboxUsers')
@@ -51,11 +51,20 @@ export class MailboxesService {
           'mailbox.no AS mailboxNo',
           'letter.no AS letterNo',
           'letter.description AS letterDescription',
-          'letter.createdAt AS letterCreatedAt',
         ])
-        .orderBy('letter.createdAt', 'DESC')
-        .getRawMany();
+        .orderBy('letter.createdAt', 'DESC');
 
+      const mailbox = await mailboxQb
+        .where(`TIMESTAMPDIFF(MONTH, letter.createdAt, '2022-12-31') >= 1`)
+        .addSelect(
+          `TIMESTAMPDIFF(MONTH, letter.createdAt, '2022-12-31') AS letterCreatedAt`,
+        )
+        .orWhere(`TIMESTAMPDIFF(MINUTE, letter.createdAt, '2022-12-31') < 60`)
+        .addSelect(
+          `TIMESTAMPDIFF(MINUTE, letter.createdAt, '2022-12-31') AS letterCreatedAt`,
+        )
+        .getRawMany();
+      console.log(mailbox);
       return mailbox;
     } catch (err) {
       throw new BadRequestException(err.message);
