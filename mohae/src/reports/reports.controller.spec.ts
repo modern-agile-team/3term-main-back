@@ -3,16 +3,16 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { UserRepository } from 'src/auth/repository/user.repository';
 import { BoardRepository } from 'src/boards/repository/board.repository';
 import { ErrorConfirm } from 'src/common/utils/error';
-import { CreateReportDto } from './dto/report.dto';
+import { CreateReportDto } from './dto/create-report.dto';
 import { ReportsController } from './reports.controller';
 import { ReportsService } from './reports.service';
+import { ReportCheckboxRepository } from '../report-checkboxes/repository/report-checkbox.repository';
 import {
   BoardReportChecksRepository,
-  ReportCheckboxRepository,
-  ReportedBoardRepository,
-  ReportedUserRepository,
   UserReportChecksRepository,
-} from './repository/report.repository';
+} from '../report-checks/repository/report-checks.repository';
+import { ReportedBoardRepository } from './repository/reported-board.repository';
+import { ReportedUserRepository } from './repository/reported-user.repository';
 
 describe('ReportsController', () => {
   let reportsController: ReportsController;
