@@ -75,7 +75,7 @@ export class SpecsService {
         .getCustomRepository(SpecRepository)
         .registSpec(createSpecDto, user);
 
-      if (specPhotoUrls) {
+      if (specPhotoUrls[0] !== 'default.jpg') {
         const specPhotos: object[] = specPhotoUrls.map(
           (photoUrl: string, index: number) => {
             return {
@@ -138,26 +138,32 @@ export class SpecsService {
           select: ['no', 'specPhotos'],
           relations: ['specPhotos'],
         });
+        if (specPhotos.length) {
+          await queryRunner.manager
+            .getCustomRepository(SpecPhotoRepository)
+            .deleteBeforePhoto(specPhotos);
+        }
+        if (specPhotoUrls[0] !== 'default.jpg') {
+          const newSpecPhotos: Array<object> = specPhotoUrls.map(
+            (photoUrl: string, index: number) => {
+              return {
+                photo_url: photoUrl,
+                spec: specNo,
+                order: index + 1,
+              };
+            },
+          );
+          await queryRunner.manager
+            .getCustomRepository(SpecPhotoRepository)
+            .saveSpecPhoto(newSpecPhotos);
 
-        await queryRunner.manager
-          .getCustomRepository(SpecPhotoRepository)
-          .deleteBeforePhoto(specPhotos);
-        const newSpecPhotos: Array<object> = specPhotoUrls.map((photo) => {
-          return {
-            photo_url: photo,
-            spec: specNo,
-            order: specPhotoUrls.indexOf(photo) + 1,
-          };
-        });
-        await queryRunner.manager
-          .getCustomRepository(SpecPhotoRepository)
-          .saveSpecPhoto(newSpecPhotos);
+          const originSpecPhotosUrl = specPhotos.map((specPhoto) => {
+            return specPhoto.photo_url;
+          });
 
-        const originSpecPhotosUrl = specPhotos.map((specPhoto) => {
-          return specPhoto.photo_url;
-        });
-        await queryRunner.commitTransaction();
-        return originSpecPhotosUrl;
+          await queryRunner.commitTransaction();
+          return originSpecPhotosUrl;
+        }
       }
 
       await queryRunner.commitTransaction();
