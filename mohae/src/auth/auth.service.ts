@@ -24,15 +24,12 @@ import {
   TermsReporitory,
   TermsUserReporitory,
 } from 'src/terms/repository/terms.repository';
-<<<<<<< HEAD
 import { Terms } from 'src/terms/entity/terms.entity';
 import { SignUpDto } from './dto/sign-up.dto';
 import { SignInDto } from './dto/sign-in.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { ForgetPasswordDto } from './dto/forget-password.dto';
 import { SignDownDto } from './dto/auth-credential.dto';
-=======
->>>>>>> 3728c278c6d6aacb5a4b11cb3b60df2bdce68f38
 
 const jwtConfig: any = config.get('jwt');
 @Injectable()
@@ -42,11 +39,8 @@ export class AuthService {
     private schoolRepository: SchoolRepository,
     private majorRepository: MajorRepository,
     private categoriesRepository: CategoryRepository,
-<<<<<<< HEAD
     private termsRepository: TermsReporitory,
     private termsUserRepository: TermsUserReporitory,
-=======
->>>>>>> 3728c278c6d6aacb5a4b11cb3b60df2bdce68f38
     private connection: Connection,
     private errorConfirm: ErrorConfirm,
     private jwtService: JwtService,
