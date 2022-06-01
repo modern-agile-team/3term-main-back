@@ -1,9 +1,16 @@
-import { EntityRepository, Repository, Timestamp, UpdateResult } from 'typeorm';
+import {
+  EntityRepository,
+  Repository,
+  SelectQueryBuilder,
+  Timestamp,
+  UpdateResult,
+} from 'typeorm';
 import { CreateUserDto } from '../dto/auth-credential.dto';
 import { User } from '../entity/user.entity';
 import { InternalServerErrorException } from '@nestjs/common';
 import { School } from 'src/schools/entity/school.entity';
 import { Major } from 'src/majors/entity/major.entity';
+import { QLDB } from 'aws-sdk';
 
 @EntityRepository(User)
 export class UserRepository extends Repository<User> {
@@ -212,30 +219,16 @@ export class UserRepository extends Repository<User> {
         .where('users.no = :userNo', { userNo })
         .getOne();
 
-      const { boardsNum }: any = await this.createQueryBuilder('users')
+      const { boardsCount }: any = await this.createQueryBuilder('users')
         .leftJoin('users.boards', 'boards')
         .select('COUNT(boards.no) AS boardsNum')
         .where('users.no = :userNo', { userNo })
         .getRawOne();
-      return { profile, boardsNum };
+
+      return { profile, boardsCount };
     } catch (err) {
       throw new InternalServerErrorException(
         `${err} ### 유저 프로필 선택 조회 : 알 수 없는 서버 에러입니다.`,
-      );
-    }
-  }
-
-  async findOneUserinfo(userNo: number): Promise<User> {
-    try {
-      const user: User = await this.createQueryBuilder('users')
-        .select(['no', 'email', 'nickname', 'name'])
-        .where('no = :userNo', { userNo })
-        .getOne();
-
-      return user;
-    } catch (err) {
-      throw new InternalServerErrorException(
-        `${err} ##### 프로필 회원 조회 도중 발생한 서버에러`,
       );
     }
   }

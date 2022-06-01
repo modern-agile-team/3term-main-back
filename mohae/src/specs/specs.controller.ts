@@ -58,16 +58,12 @@ export class SpecsController {
   async getAllSpec(
     @Param('profileUserNo') profileUserNo: number,
   ): Promise<object> {
-    try {
-      const response: Spec = await this.specsService.getAllSpec(profileUserNo);
+    const response: Spec = await this.specsService.getAllSpec(profileUserNo);
 
-      return {
-        msg: '성공적으로 스펙을 불러왔습니다.',
-        response,
-      };
-    } catch (err) {
-      throw err;
-    }
+    return {
+      msg: '성공적으로 스펙을 불러왔습니다.',
+      response,
+    };
   }
 
   @Get('spec/:specNo')
@@ -175,8 +171,9 @@ export class SpecsController {
       updateSpecdto,
       specPhotoUrls,
     );
-
-    await this.awsService.deleteSpecS3Object(originSpecPhotoUrls);
+    if (originSpecPhotoUrls) {
+      await this.awsService.deleteSpecS3Object(originSpecPhotoUrls);
+    }
 
     return {
       msg: '성공적으로 스팩이 수정되었습니다.',

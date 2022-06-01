@@ -2,83 +2,110 @@ import {
   Body,
   Controller,
   Get,
+  HttpCode,
   Param,
-  ParseIntPipe,
   Patch,
   Post,
+  UploadedFile,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
-import { ApiTags } from '@nestjs/swagger';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { User } from '@sentry/node';
+import { AwsService } from 'src/aws/aws.service';
+import { UserPhotoSizes } from 'src/common/configs/photo-size.config';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
-import {
-  JudgeDuplicateNicknameDto,
-  UpdateProfileDto,
-} from './dto/update-profile.dto';
+import { SuccesseInterceptor } from 'src/common/interceptors/success.interceptor';
+import { JudgeDuplicateNicknameDto } from './dto/judge-duplicate-nickname.dto';
+import { UpdateProfileDto } from './dto/update-profile.dto';
 import { ProfilesService } from './profiles.service';
 
+@UseGuards(AuthGuard('jwt'))
 @Controller('profile')
+@UseInterceptors(SuccesseInterceptor)
 @ApiTags('Profile')
 export class ProfilesController {
-  constructor(private profileService: ProfilesService) {}
+  constructor(
+    private readonly profileService: ProfilesService,
+    private readonly awsService: AwsService,
+  ) {}
 
-  @Get('/:profileUserNo/:userNo')
+  @Get('/:profileUserNo')
+  @HttpCode(200)
+  @ApiOperation({
+    summary: '한 명의 유저 프로필 전체 조회 API',
+    description: '한명의 유저 프로필을 한번에 불러온다',
+  })
+  @ApiOkResponse({
+    description: '성공적으로 유저의 프로필이 불러와진 경우.',
+  })
   async readUserProfile(
-    @Param('profileUserNo', ParseIntPipe) profileUserNo: number,
-    @Param('userNo', ParseIntPipe) userNo: number,
+    @Param('profileUserNo') profileUserNo: number,
+    @CurrentUser() user: User,
   ): Promise<object> {
-    try {
-      const response: object = await this.profileService.readUserProfile(
-        profileUserNo,
-        userNo,
-      );
-      return Object.assign({
-        statusCode: 200,
-        msg: '프로필 조회에 성공했습니다.',
-        response,
-      });
-    } catch (err) {
-      throw err;
-    }
+    const response: object = await this.profileService.readUserProfile(
+      profileUserNo,
+      user.no,
+    );
+    return {
+      msg: '프로필 조회에 성공했습니다.',
+      response,
+    };
   }
 
   @Post('/check-nickname')
+  @HttpCode(200)
+  @ApiOperation({
+    summary: '프로필 수정에서 닉네임 변경확인 API',
+    description: '변경할 수 있는 닉네임인지 확인한다.',
+  })
+  @ApiOkResponse({
+    description: '사용가능한 닉네임인 경우.',
+  })
   async judgeDuplicateNickname(
     @Body() judgeDuplicateNicknameDto: JudgeDuplicateNicknameDto,
   ) {
-    try {
-      await this.profileService.judgeDuplicateNickname(
-        judgeDuplicateNicknameDto,
-      );
+    await this.profileService.judgeDuplicateNickname(judgeDuplicateNicknameDto);
 
-      return Object.assign({
-        statusCode: 200,
-        msg: '사용가능한 닉네임입니다.',
-      });
-    } catch (err) {
-      throw err;
-    }
+    return {
+      msg: '사용가능한 닉네임입니다.',
+    };
   }
 
+  @UseInterceptors(FileInterceptor('image'))
   @Patch()
+  @HttpCode(201)
+  @ApiOperation({
+    summary: '유저 프로필 정보 수정 API',
+    description: '유저 프로필 정보를 수정한다.',
+  })
+  @ApiOkResponse({
+    description: '성공적으로 유저의 프로필이 수정된 경우.',
+  })
   @UseGuards(AuthGuard())
   async updateProfile(
+    @UploadedFile() file: Express.Multer.File,
     @Body() updateProfileDto: UpdateProfileDto,
     @CurrentUser() user: User,
-  ): Promise<number> {
-    try {
-      const response: number = await this.profileService.updateProfile(
-        user.no,
-        updateProfileDto,
-      );
-      return Object.assign({
-        statusCode: 201,
-        msg: '프로필 정보 수정이 완료되었습니다.',
-        userNo: response,
-      });
-    } catch (err) {
-      throw err;
-    }
+  ): Promise<object> {
+    const profilePhoto = file
+      ? false
+      : await this.awsService.uploadFileToS3(
+          'profile',
+          UserPhotoSizes.small,
+          file,
+        );
+
+    const response: number = await this.profileService.updateProfile(
+      user.no,
+      updateProfileDto,
+      profilePhoto,
+    );
+    return {
+      msg: '프로필 정보 수정이 완료되었습니다.',
+      response,
+    };
   }
 }

@@ -11,16 +11,19 @@ import {
   Query,
   Logger,
   UseGuards,
+  UseInterceptors,
+  HttpCode,
 } from '@nestjs/common';
 import { User } from '@sentry/node';
 import { AuthGuard } from '@nestjs/passport';
 import { Cron } from '@nestjs/schedule';
 import {
   ApiCreatedResponse,
+  ApiOkResponse,
   ApiOperation,
-  ApiQuery,
   ApiTags,
 } from '@nestjs/swagger';
+import { SuccesseInterceptor } from 'src/common/interceptors/success.interceptor';
 import { BoardsService } from './boards.service';
 import {
   CreateBoardDto,
@@ -31,6 +34,7 @@ import { Board } from './entity/board.entity';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 
 @Controller('boards')
+@UseInterceptors(SuccesseInterceptor)
 @ApiTags('Boards')
 export class BoardsController {
   private logger = new Logger('BoardsController');
@@ -147,27 +151,30 @@ export class BoardsController {
   }
 
   @Get('profile')
+  @HttpCode(200)
+  @ApiOperation({
+    summary: '프로필 페이지에서 유저가 작성한 게시글 불러오는 API',
+    description: '프로필 주인이 작성한 게시글을 불러온다.',
+  })
+  @ApiOkResponse({
+    description: '프로필 게시물 조회에 성공한 경우.',
+  })
   async readUserBoard(
     @Query('user') user: number,
     @Query('take') take: number,
     @Query('page') page: number,
     @Query('target') target: boolean,
-  ) {
-    try {
-      const response: Array<Board> = await this.boardService.readUserBoard(
-        user,
-        take,
-        page,
-        target,
-      );
-      return Object.assign({
-        statusCode: 200,
-        msg: '프로필 게시물 조회에 성공했습니다.',
-        response,
-      });
-    } catch (err) {
-      throw err;
-    }
+  ): Promise<object> {
+    const response: Board[] = await this.boardService.readUserBoard(
+      user,
+      take,
+      page,
+      target,
+    );
+    return {
+      msg: '프로필 게시물 조회에 성공했습니다.',
+      response,
+    };
   }
 
   @Get('/:no')
