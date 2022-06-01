@@ -3,6 +3,7 @@ import {
   BadRequestException,
   Injectable,
   InternalServerErrorException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CategoryRepository } from 'src/categories/repository/category.repository';
@@ -149,53 +150,70 @@ export class BoardsService {
     return board;
   }
 
-  async boardClosed(no: number): Promise<object> {
-    const board: Board = await this.boardRepository.findOne(no);
-    this.errorConfirm.notFoundError(board.no, '게시글을 찾을 수 없습니다.');
-    if (board.isDeadline) {
-      throw new InternalServerErrorException('이미 마감된 게시글 입니다.');
+  async boardClosed(no: number, userNo: number): Promise<object> {
+    try {
+      const board: Board = await this.boardRepository.getByOneBoard(no);
+      this.errorConfirm.notFoundError(board.no, '게시글을 찾을 수 없습니다.');
+
+      if (board['userNo'] !== userNo) {
+        throw new UnauthorizedException('게시글을 작성한 유저가 아닙니다.');
+      }
+
+      if (board.isDeadline) {
+        throw new InternalServerErrorException('이미 마감된 게시글 입니다.');
+      }
+
+      const result: number = await this.boardRepository.boardClosed(no);
+
+      if (!result) {
+        throw new InternalServerErrorException('게시글 마감이 되지 않았습니다');
+      }
+
+      return { isSuccess: true };
+    } catch (err) {
+      throw err;
     }
-
-    const result: number = await this.boardRepository.boardClosed(no);
-
-    if (!result) {
-      throw new InternalServerErrorException('게시글 마감이 되지 않았습니다');
-    }
-
-    return { isSuccess: true };
   }
 
-  async cancelClosedBoard(no: number): Promise<object> {
-    const board: Board = await this.boardRepository.findOne(no);
-    this.errorConfirm.notFoundError(
-      board.no,
-      `해당 게시글을 찾을 수 없습니다.`,
-    );
+  async cancelClosedBoard(no: number, userNo: number): Promise<boolean> {
+    try {
+      const board: Board = await this.boardRepository.getByOneBoard(no);
+      this.errorConfirm.notFoundError(
+        board.no,
+        `해당 게시글을 찾을 수 없습니다.`,
+      );
 
-    const currentTime: Date = new Date();
-    currentTime.setHours(currentTime.getHours() + 9);
+      if (board['userNo'] !== userNo) {
+        throw new UnauthorizedException('게시글을 작성한 유저가 아닙니다.');
+      }
 
-    if (board.deadline !== null) {
-      if (board.deadline <= currentTime) {
+      const currentTime: Date = new Date();
+      currentTime.setHours(currentTime.getHours() + 9);
+
+      if (board.deadline !== null) {
+        if (board.deadline <= currentTime) {
+          throw new InternalServerErrorException(
+            '시간이 지나 마감된 게시글 입니다.',
+          );
+        }
+      }
+
+      if (!board.isDeadline) {
+        throw new InternalServerErrorException('활성화된 게시글 입니다.');
+      }
+
+      const result: number = await this.boardRepository.cancelClosedBoard(no);
+
+      if (!result) {
         throw new InternalServerErrorException(
-          '시간이 지나 마감된 게시글 입니다.',
+          '게시글 마감 취소가 되지 않았습니다.',
         );
       }
+
+      return true;
+    } catch (err) {
+      throw err;
     }
-
-    if (!board.isDeadline) {
-      throw new InternalServerErrorException('활성화된 게시글 입니다.');
-    }
-
-    const result: number = await this.boardRepository.cancelClosedBoard(no);
-
-    if (!result) {
-      throw new InternalServerErrorException(
-        '게시글 마감 취소가 되지 않았습니다.',
-      );
-    }
-
-    return { isSuccess: true };
   }
 
   async searchAllBoards(searchBoardDto: SearchBoardDto): Promise<object> {
@@ -296,7 +314,7 @@ export class BoardsService {
       );
 
       if (board['userNo'] !== userNo) {
-        throw new BadRequestException('게시글을 작성한 유저가 아닙니다.');
+        throw new UnauthorizedException('게시글을 작성한 유저가 아닙니다.');
       }
 
       const result: number = await this.boardRepository.deleteBoard(boardNo);
@@ -328,7 +346,7 @@ export class BoardsService {
       this.errorConfirm.notFoundError(board, `해당 게시글을 찾을 수 없습니다.`);
 
       if (board['userNo'] !== userNo) {
-        throw new BadRequestException('게시글을 작성한 유저가 아닙니다.');
+        throw new UnauthorizedException('게시글을 작성한 유저가 아닙니다.');
       }
 
       let endTime: Date = new Date(board.createdAt);

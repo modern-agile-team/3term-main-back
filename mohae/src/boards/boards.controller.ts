@@ -113,9 +113,16 @@ export class BoardsController {
     });
   }
 
+  @UseGuards(AuthGuard())
   @Patch('/cancel/:no')
-  async cancelClosedBoard(@Param('no') no: number): Promise<Object> {
-    const response = await this.boardService.cancelClosedBoard(no);
+  async cancelClosedBoard(
+    @Param('no') no: number,
+    @CurrentUser() user: User,
+  ): Promise<object> {
+    const response: boolean = await this.boardService.cancelClosedBoard(
+      no,
+      user.no,
+    );
 
     return Object.assign({
       statusCode: 200,
@@ -124,9 +131,13 @@ export class BoardsController {
     });
   }
 
+  @UseGuards(AuthGuard())
   @Patch('/close/:no')
-  async boardClosed(@Param('no') no: number): Promise<Object> {
-    const response = await this.boardService.boardClosed(no);
+  async boardClosed(
+    @Param('no') no: number,
+    @CurrentUser() user: User,
+  ): Promise<object> {
+    const response = await this.boardService.boardClosed(no, user.no);
 
     return Object.assign({
       statusCode: 200,
@@ -158,6 +169,7 @@ export class BoardsController {
       throw err;
     }
   }
+
   @Get('/:no')
   async getByOneBoard(@Param('no') no: number): Promise<Object> {
     const response = await this.boardService.getByOneBoard(no);
