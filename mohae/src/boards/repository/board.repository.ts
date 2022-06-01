@@ -1,9 +1,10 @@
 import { InternalServerErrorException } from '@nestjs/common';
-import { User } from 'src/auth/entity/user.entity';
+// import { User } from 'src/auth/entity/user.entity';
 import { Category } from 'src/categories/entity/category.entity';
 import { DeleteResult, EntityRepository, Repository } from 'typeorm';
 import { CreateBoardDto } from '../dto/board.dto';
 import { Board } from '../entity/board.entity';
+import { User } from '@sentry/node';
 
 @EntityRepository(Board)
 export class BoardRepository extends Repository<Board> {
@@ -392,9 +393,9 @@ export class BoardRepository extends Repository<Board> {
     take: number,
     page: number,
     target: boolean,
-  ): Promise<Array<Board>> {
+  ): Promise<Board[]> {
     try {
-      const boards: Array<Board> = await this.createQueryBuilder('boards')
+      const boards: Board[] = await this.createQueryBuilder('boards')
         .leftJoin('boards.user', 'user')
         .leftJoin('boards.photos', 'boardPhotos')
         .select([

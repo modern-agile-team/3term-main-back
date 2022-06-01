@@ -10,7 +10,7 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
-import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { User } from 'src/auth/entity/user.entity';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 import { SuccesseInterceptor } from 'src/common/interceptors/success.interceptor';
@@ -24,12 +24,15 @@ import { ReviewsService } from './reviews.service';
 export class ReviewsController {
   constructor(private reviewService: ReviewsService) {}
 
-  @ApiOperation({
-    summary: '마이페이지에 나타나는 유저 리뷰',
-    description: '마이페이지에 나타나는 유저 리뷰 조회 API',
-  })
-  @HttpCode(200)
   @Get('/profile')
+  @HttpCode(200)
+  @ApiOperation({
+    summary: '프로필 페이지에서 유저에게 달린 리뷰를 불러오는 API',
+    description: '프로필 주인에게 달린 리뷰를 불러온다.',
+  })
+  @ApiOkResponse({
+    description: '프로필 리뷰 조회에 성공한 경우.',
+  })
   async readUserReview(
     @Query('user') userNo: number,
     @Query('take') take: number,

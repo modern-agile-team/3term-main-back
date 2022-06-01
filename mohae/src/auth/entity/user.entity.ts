@@ -27,6 +27,7 @@ import { BoardLike } from 'src/like/entity/board.like.entity';
 import { MailboxUser } from 'src/mailbox-user/entity/mailbox-user.entity';
 import { TermsUser } from 'src/terms/entity/terms.entity';
 import { Terms } from 'src/terms/entity/terms.entity';
+import { Basket } from 'src/baskets/entity/baskets.entity';
 import { ReportedUser } from 'src/reports/entity/reported-user.entity';
 import { ReportedBoard } from 'src/reports/entity/reported-board.entity';
 
@@ -44,8 +45,9 @@ export class User extends BaseEntity {
   @Column({
     type: 'varchar',
     comment: '회원 개인 프로필사진',
+    default: null,
   })
-  photo_url: string;
+  photo_url: string | null;
 
   @Column({
     unique: true,
@@ -214,4 +216,7 @@ export class User extends BaseEntity {
 
   @OneToMany((type) => Review, (review) => review.targetUser)
   reviewBasket: Review[];
+
+  @OneToMany((type) => Basket, (basket) => basket.boardNo)
+  baskets: Basket[];
 }
