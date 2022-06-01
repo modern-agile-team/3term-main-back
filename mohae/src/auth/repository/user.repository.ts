@@ -28,8 +28,8 @@ export class UserRepository extends Repository<User> {
         nickname,
         manager,
         name,
-      }: // photo_url,
-      CreateUserDto = createUserDto;
+        photo_url,
+      }: CreateUserDto = createUserDto;
 
       const { raw } = await this.createQueryBuilder('users')
         .insert()
@@ -43,7 +43,7 @@ export class UserRepository extends Repository<User> {
             phone,
             nickname,
             manager,
-            // photo_url,
+            photo_url,
             salt: password,
           },
         ])
