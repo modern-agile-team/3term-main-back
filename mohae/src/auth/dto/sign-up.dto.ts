@@ -8,14 +8,8 @@ import {
   IsString,
   Matches,
 } from 'class-validator';
-import { User } from '../entity/user.entity';
 
-export class SignUpDto extends PickType(User, [
-  'email',
-  'name',
-  'phone',
-  'nickname',
-] as const) {
+export class SignUpDto {
   @IsString()
   @Matches(/^[A-Za-z0-9_\.\-]+@[A-Za-z0-9\-]+\.[A-Za-z0-9\-]+/)
   @IsNotEmpty()
@@ -46,10 +40,6 @@ export class SignUpDto extends PickType(User, [
 
   @IsBoolean()
   manager: boolean;
-
-  @IsOptional()
-  @IsString()
-  photo_url?: string;
 
   @IsOptional()
   @IsArray()

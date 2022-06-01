@@ -10,7 +10,7 @@ export class CategoriesController {
   private logger = new Logger('CategoriesController');
   constructor(private categoryService: CategoriesService) {}
 
-  @Cron('* * * 1 * *')
+  @Cron('* *  * 1 * *')
   async handleCron() {
     const response = await this.categoryService.resetCategoryHit();
     if (!response.success) {
