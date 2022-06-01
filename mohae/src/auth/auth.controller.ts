@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -6,6 +7,7 @@ import {
   Param,
   Patch,
   Post,
+  UnauthorizedException,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
@@ -19,6 +21,8 @@ import { ForgetPasswordDto } from './dto/forget-password.dto';
 import { SignInDto } from './dto/sign-in.dto';
 
 import { User } from './entity/user.entity';
+import { SignDownDto } from './dto/sign-down.dto';
+import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 
 @Controller('auth')
 @UseInterceptors(SuccesseInterceptor)
@@ -36,12 +40,16 @@ export class AuthController {
     description: '회원가입이 성공적으로 이루어진 경우.',
   })
   async signUp(@Body() signUpDto: SignUpDto): Promise<Object> {
-    const response = await this.authService.signUp(signUpDto);
+    try {
+      const response = await this.authService.signUp(signUpDto);
 
-    return {
-      msg: `성공적으로 회원가입이 되었습니다.`,
-      response,
-    };
+      return {
+        msg: `성공적으로 회원가입이 되었습니다.`,
+        response,
+      };
+    } catch (err) {
+      throw err;
+    }
   }
 
   @Post('/signin')
@@ -54,18 +62,22 @@ export class AuthController {
     description: '로그인이 성공적으로 이루어진 경우.',
   })
   async signIn(@Body() signInDto: SignInDto): Promise<Object> {
-    // id 맞는지 확인 + 패널티 시간 지나지 않았을 때 로그인 시도했을 때 알림
-    const userInfo: User = await this.authService.confirmUser(signInDto);
-    // 성공했을 때 + 비밀번호 틀렸을 때
-    const accessToken: string = await this.authService.passwordConfirm(
-      userInfo,
-      signInDto.password,
-    );
+    try {
+      // id 맞는지 확인 + 패널티 시간 지나지 않았을 때 로그인 시도했을 때 알림
+      const userInfo: User = await this.authService.confirmUser(signInDto);
+      // 성공했을 때 + 비밀번호 틀렸을 때
+      const accessToken: string = await this.authService.passwordConfirm(
+        userInfo,
+        signInDto.password,
+      );
 
-    return {
-      msg: `성공적으로 로그인이 되었습니다.`,
-      response: accessToken,
-    };
+      return {
+        msg: `성공적으로 로그인이 되었습니다.`,
+        response: accessToken,
+      };
+    } catch (err) {
+      throw err;
+    }
   }
 
   @Delete('/:no')
@@ -78,12 +90,26 @@ export class AuthController {
   @ApiOkResponse({
     description: '회원 탈퇴가 성공적으로 이루어진 경우.',
   })
-  async signDown(@Param('no') no: number): Promise<Object> {
-    await this.authService.signDown(no);
+  async signDown(
+    @Param('no') no: number,
+    @Body() signDownDto: SignDownDto,
+    @CurrentUser() user: User,
+  ): Promise<Object> {
+    try {
+      if (no === user.no) {
+        await this.authService.signDown(no, user.email, signDownDto);
 
-    return {
-      msg: `성공적으로 회원탈퇴가 진행되었습니다.`,
-    };
+        return {
+          msg: `성공적으로 회원탈퇴가 진행되었습니다.`,
+        };
+      }
+
+      throw new UnauthorizedException(
+        '토큰 유저와 삭제하려는 유저 번호 불일치!',
+      );
+    } catch (err) {
+      throw err;
+    }
   }
 
   @Patch('/change/password')
@@ -99,13 +125,16 @@ export class AuthController {
   async changePassword(
     @Body() changePasswordDto: ChangePasswordDto,
   ): Promise<Object> {
-    await this.authService.changePassword(changePasswordDto);
+    try {
+      await this.authService.changePassword(changePasswordDto);
 
-    return {
-      msg: '성공적으로 비밀번호가 변경되었습니다.',
-    };
+      return {
+        msg: '성공적으로 비밀번호가 변경되었습니다.',
+      };
+    } catch (err) {
+      throw err;
+    }
   }
-
   @Patch('/forget/password')
   @HttpCode(200)
   @ApiOperation({
@@ -119,10 +148,14 @@ export class AuthController {
   async forgetPassword(
     @Body() forgetPasswordDto: ForgetPasswordDto,
   ): Promise<Object> {
-    await this.authService.forgetPassword(forgetPasswordDto);
+    try {
+      await this.authService.forgetPassword(forgetPasswordDto);
 
-    return {
-      msg: '성공적으로 비밀번호가 변경되었습니다.',
-    };
+      return {
+        msg: '성공적으로 비밀번호가 변경되었습니다.',
+      };
+    } catch (err) {
+      throw err;
+    }
   }
 }

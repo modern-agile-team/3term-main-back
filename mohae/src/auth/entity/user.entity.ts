@@ -45,8 +45,9 @@ export class User extends BaseEntity {
   @Column({
     type: 'varchar',
     comment: '회원 개인 프로필사진',
+    default: null,
   })
-  photo_url: string;
+  photo_url: string | null;
 
   @Column({
     unique: true,

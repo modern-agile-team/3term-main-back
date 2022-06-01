@@ -3,7 +3,6 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/auth/entity/user.entity';
 
 import { UserRepository } from 'src/auth/repository/user.repository';
@@ -14,18 +13,8 @@ import { Major } from 'src/majors/entity/major.entity';
 import { MajorRepository } from 'src/majors/repository/major.repository';
 import { School } from 'src/schools/entity/school.entity';
 import { SchoolRepository } from 'src/schools/repository/school.repository';
-import { ErrorConfirm } from 'src/common/utils/error';
-import {
-  JudgeDuplicateNicknameDto,
-  UpdateProfileDto,
-} from './dto/update-profile.dto';
-import { create } from 'domain';
-import { SpecRepository } from 'src/specs/repository/spec.repository';
-import { BoardRepository } from 'src/boards/repository/board.repository';
-import { Spec } from 'src/specs/entity/spec.entity';
-import { Board } from 'src/boards/entity/board.entity';
-import { ReviewRepository } from 'src/reviews/repository/review.repository';
-import { Review } from 'src/reviews/entity/review.entity';
+import { JudgeDuplicateNicknameDto } from './dto/judge-duplicate-nickname.dto';
+import { UpdateProfileDto } from './dto/update-profile.dto';
 
 @Injectable()
 export class ProfilesService {
@@ -35,10 +24,6 @@ export class ProfilesService {
     private majorRepository: MajorRepository,
     private categoriesRepository: CategoryRepository,
     private likeRepository: LikeRepository,
-    private specRepository: SpecRepository,
-    private boardRepository: BoardRepository,
-    private reviewRepository: ReviewRepository,
-    private errorConfirm: ErrorConfirm,
   ) {}
 
   async readUserProfile(
@@ -46,7 +31,7 @@ export class ProfilesService {
     userNo: number,
   ): Promise<object> {
     try {
-      const { profile, boardsNum }: any =
+      const { profile, boardsCount }: any =
         await this.userRepository.readUserProfile(profileUserNo);
       if (!profile) {
         throw new NotFoundException(
@@ -68,8 +53,8 @@ export class ProfilesService {
       delete profile.createdAt;
 
       profile['userCreatedAt'] = `${userCreatedAt}`;
-      profile['likedNum'] = likedUser.length;
-      profile['boardsNum'] = Number(boardsNum);
+      profile['likedCount'] = likedUser.length;
+      profile['boardsCount'] = Number(boardsCount);
       profile['islike'] = islike;
 
       return {
@@ -109,17 +94,14 @@ export class ProfilesService {
   }
 
   async updateProfile(
-    no: number,
+    profileUserNo: number,
     updateProfileDto: UpdateProfileDto,
+    profilePhoto,
   ): Promise<number> {
     try {
-      const profile: User = await this.userRepository.findOne(no, {
+      const profile: User = await this.userRepository.findOne(profileUserNo, {
         relations: ['categories'],
       });
-
-      if (!profile) {
-        throw new NotFoundException('유저 정보를 찾지 못했습니다.');
-      }
 
       const profileKeys: Array<string> = Object.keys(updateProfileDto);
       const deletedNullprofile: object = {};

@@ -19,8 +19,7 @@ import { ErrorConfirm } from 'src/common/utils/error';
 import { School } from 'src/schools/entity/school.entity';
 import { Major } from 'src/majors/entity/major.entity';
 import { Category } from 'src/categories/entity/category.entity';
-import { Connection, getCustomRepository } from 'typeorm';
-import { query } from 'express';
+import { Connection } from 'typeorm';
 import {
   TermsReporitory,
   TermsUserReporitory,
@@ -30,29 +29,18 @@ import { SignUpDto } from './dto/sign-up.dto';
 import { SignInDto } from './dto/sign-in.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { ForgetPasswordDto } from './dto/forget-password.dto';
+import { SignDownDto } from './dto/auth-credential.dto';
 
 const jwtConfig: any = config.get('jwt');
 @Injectable()
 export class AuthService {
   constructor(
-    @InjectRepository(UserRepository)
     private userRepository: UserRepository,
-
-    @InjectRepository(SchoolRepository)
     private schoolRepository: SchoolRepository,
-
-    @InjectRepository(MajorRepository)
     private majorRepository: MajorRepository,
-
-    @InjectRepository(CategoryRepository)
     private categoriesRepository: CategoryRepository,
-
-    @InjectRepository(TermsReporitory)
     private termsRepository: TermsReporitory,
-
-    @InjectRepository(TermsUserReporitory)
     private termsUserRepository: TermsUserReporitory,
-
     private connection: Connection,
     private errorConfirm: ErrorConfirm,
     private jwtService: JwtService,
@@ -99,6 +87,7 @@ export class AuthService {
         'email',
         email,
       );
+
       const duplicateNickname: User = await this.userRepository.duplicateCheck(
         'nickname',
         nickname,
@@ -225,8 +214,17 @@ export class AuthService {
     }
   }
 
-  async signDown(no: number): Promise<void> {
+  async signDown(
+    no: number,
+    userEmail: string,
+    { email }: SignDownDto,
+  ): Promise<void> {
     try {
+      if (userEmail !== email) {
+        throw new UnauthorizedException(
+          '회원님의 이메일이 일치 하지 않습니다.',
+        );
+      }
       const affected: number = await this.userRepository.signDown(no);
       if (!affected) {
         throw new InternalServerErrorException(
