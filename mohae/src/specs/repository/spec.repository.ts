@@ -66,10 +66,10 @@ export class SpecRepository extends Repository<Spec> {
     }
   }
 
-  async getOneSpec(specNo: number) {
+  async getOneSpec(specNo: number): Promise<Spec> {
     try {
       const spec = await this.createQueryBuilder('spec')
-        .leftJoinAndSelect('spec.specPhotos', 'specPhotos')
+        .leftJoin('spec.specPhotos', 'specPhotos')
         .select([
           'spec.no',
           'spec.title',
@@ -80,7 +80,6 @@ export class SpecRepository extends Repository<Spec> {
           'spec.latestUpdateSpec',
         ])
         .where('spec.no = :specNo', { specNo })
-        .andWhere('spec.no = specPhotos.spec')
         .getOne();
 
       return spec;
