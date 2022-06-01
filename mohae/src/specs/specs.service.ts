@@ -141,7 +141,7 @@ export class SpecsService {
         if (specPhotos.length) {
           await queryRunner.manager
             .getCustomRepository(SpecPhotoRepository)
-            .deleteBeforePhoto(specPhotos);
+            .deleteBeforePhoto(spec.no);
         }
         if (specPhotoUrls[0] !== 'default.jpg') {
           const newSpecPhotos: Array<object> = specPhotoUrls.map(
