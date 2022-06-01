@@ -175,8 +175,9 @@ export class SpecsController {
       updateSpecdto,
       specPhotoUrls,
     );
-
-    await this.awsService.deleteSpecS3Object(originSpecPhotoUrls);
+    if (originSpecPhotoUrls) {
+      await this.awsService.deleteSpecS3Object(originSpecPhotoUrls);
+    }
 
     return {
       msg: '성공적으로 스팩이 수정되었습니다.',
