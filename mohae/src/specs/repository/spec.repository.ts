@@ -66,7 +66,7 @@ export class SpecRepository extends Repository<Spec> {
     }
   }
 
-  async getOneSpec(specNo: number) {
+  async getOneSpec(specNo: number): Promise<Spec> {
     try {
       const spec = await this.createQueryBuilder('spec')
         .leftJoin('spec.specPhotos', 'specPhotos')
