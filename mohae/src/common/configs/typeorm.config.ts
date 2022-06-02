@@ -70,5 +70,6 @@ export const typeORMConfig: TypeOrmModuleOptions = {
   ],
   // entities: [__dirname + '/../**/*.entity.{ts,js}'],
   synchronize: dbConfig.synchronize,
+  logging: true,
   keepConnectionAlive: true,
 };
