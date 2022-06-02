@@ -18,10 +18,14 @@ import { User } from '@sentry/node';
 import { AuthGuard } from '@nestjs/passport';
 import { Cron } from '@nestjs/schedule';
 import {
+  ApiBadRequestResponse,
   ApiCreatedResponse,
+  ApiInternalServerErrorResponse,
+  ApiNoContentResponse,
   ApiOkResponse,
   ApiOperation,
   ApiTags,
+  ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { SuccesseInterceptor } from 'src/common/interceptors/success.interceptor';
 import { BoardsService } from './boards.service';
@@ -104,6 +108,36 @@ export class BoardsController {
     });
   }
 
+  @ApiOperation({
+    summary: '게시글 검색 경로',
+    description: '게시글 검색 API',
+  })
+  @ApiOkResponse({
+    description: '성공여부',
+    schema: {
+      example: {
+        statusCode: 200,
+        msg: '검색결과에 대한 게시글 조회가 완료되었습니다.',
+        response: {
+          foundedBoardNum: 1,
+          search: 'Test',
+          boards: [
+            {
+              no: 1,
+              decimalDay: null,
+              title: '게시글 검색 Test',
+              isDeadline: 0,
+              price: 1000,
+              target: 1,
+              areaNo: 1,
+              areaName: '서울특별시',
+              userNickname: 'hneeddjjde',
+            },
+          ],
+        },
+      },
+    },
+  })
   @Get('search')
   async searchAllBoards(
     @Query() searchBoardDto: SearchBoardDto,
@@ -117,37 +151,100 @@ export class BoardsController {
     });
   }
 
+  @ApiOperation({
+    summary: '게시글 마감 취소 경로',
+    description: '게시글 마감 취소 API',
+  })
+  @ApiOkResponse({
+    description: '성공여부',
+    schema: {
+      example: {
+        success: true,
+        statusCode: 200,
+        msg: '게시글 마감 취소가 완료되었습니다.',
+      },
+    },
+  })
+  @ApiBadRequestResponse({
+    description: '마감이 안된 게시글을 마감취소를 하려고 하였을 때',
+    schema: {
+      example: {
+        statusCode: 400,
+        msg: '활성화된 게시글 입니다.',
+        err: 'Bad Request',
+      },
+    },
+  })
+  @ApiUnauthorizedResponse({
+    description: '게시글을 작성한 회원이 아닐 경우',
+    schema: {
+      example: {
+        statusCode: 401,
+        message: '게시글을 작성한 유저가 아닙니다.',
+        error: 'Unauthorized',
+      },
+    },
+  })
   @UseGuards(AuthGuard())
   @Patch('/cancel/:no')
+  @HttpCode(200)
   async cancelClosedBoard(
     @Param('no') no: number,
     @CurrentUser() user: User,
   ): Promise<object> {
-    const response: boolean = await this.boardService.cancelClosedBoard(
-      no,
-      user.no,
-    );
+    await this.boardService.cancelClosedBoard(no, user.no);
 
     return Object.assign({
-      statusCode: 200,
       msg: '게시글 마감 취소가 완료되었습니다.',
-      response,
     });
   }
 
+  @ApiOperation({
+    summary: '게시글 마감 경로',
+    description: '게시글 마감 API',
+  })
+  @ApiOkResponse({
+    description: '성공여부',
+    schema: {
+      example: {
+        success: true,
+        statusCode: 200,
+        msg: '게시글 마감이 완료되었습니다.',
+      },
+    },
+  })
+  @ApiInternalServerErrorResponse({
+    description: '이미 마감된 게시글을 마감하려고 하였을 때',
+    schema: {
+      example: {
+        statusCode: 400,
+        msg: '이미 마감된 게시글 입니다.',
+        err: 'Bad Request',
+      },
+    },
+  })
+  @ApiUnauthorizedResponse({
+    description: '게시글을 작성한 회원이 아닐 경우',
+    schema: {
+      example: {
+        statusCode: 401,
+        message: '게시글을 작성한 유저가 아닙니다.',
+        error: 'Unauthorized',
+      },
+    },
+  })
   @UseGuards(AuthGuard())
   @Patch('/close/:no')
+  @HttpCode(200)
   async boardClosed(
     @Param('no') no: number,
     @CurrentUser() user: User,
   ): Promise<object> {
-    const response = await this.boardService.boardClosed(no, user.no);
+    await this.boardService.boardClosed(no, user.no);
 
-    return Object.assign({
-      statusCode: 200,
+    return {
       msg: '게시글 마감이 완료되었습니다.',
-      response,
-    });
+    };
   }
 
   @Get('profile')
@@ -204,21 +301,17 @@ export class BoardsController {
       },
     },
   })
+  @HttpCode(201)
   @UseGuards(AuthGuard())
   async createBoard(
     @Body() createBoardDto: CreateBoardDto,
     @CurrentUser() user: User,
   ): Promise<object> {
-    const response: boolean = await this.boardService.createBoard(
-      createBoardDto,
-      user,
-    );
+    await this.boardService.createBoard(createBoardDto, user);
 
-    return Object.assign({
-      statusCode: 201,
+    return {
       msg: '게시글 생성이 완료 되었습니다.',
-      response,
-    });
+    };
   }
 
   @ApiOperation({

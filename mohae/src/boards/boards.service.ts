@@ -20,7 +20,6 @@ import { UserRepository } from 'src/auth/repository/user.repository';
 import { Board } from './entity/board.entity';
 import { Category } from 'src/categories/entity/category.entity';
 import { Area } from 'src/areas/entity/areas.entity';
-// import { UserInfo } from 'src/auth/entity/user.entity';
 import { BoardPhotoRepository } from 'src/photo/repository/photo.repository';
 import { User } from '@sentry/node';
 
@@ -29,9 +28,6 @@ export class BoardsService {
   constructor(
     @InjectRepository(BoardRepository)
     private boardRepository: BoardRepository,
-
-    @InjectRepository(BoardPhotoRepository)
-    private boardPhotoRepository: BoardPhotoRepository,
 
     @InjectRepository(AreasRepository)
     private areaRepository: AreasRepository,
@@ -150,7 +146,7 @@ export class BoardsService {
     return board;
   }
 
-  async boardClosed(no: number, userNo: number): Promise<object> {
+  async boardClosed(no: number, userNo: number): Promise<boolean> {
     try {
       const board: Board = await this.boardRepository.getByOneBoard(no);
       this.errorConfirm.notFoundError(board.no, '게시글을 찾을 수 없습니다.');
@@ -160,7 +156,7 @@ export class BoardsService {
       }
 
       if (board.isDeadline) {
-        throw new InternalServerErrorException('이미 마감된 게시글 입니다.');
+        throw new BadRequestException('이미 마감된 게시글 입니다.');
       }
 
       const result: number = await this.boardRepository.boardClosed(no);
@@ -169,7 +165,7 @@ export class BoardsService {
         throw new InternalServerErrorException('게시글 마감이 되지 않았습니다');
       }
 
-      return { isSuccess: true };
+      return true;
     } catch (err) {
       throw err;
     }
@@ -199,7 +195,7 @@ export class BoardsService {
       }
 
       if (!board.isDeadline) {
-        throw new InternalServerErrorException('활성화된 게시글 입니다.');
+        throw new BadRequestException('활성화된 게시글 입니다.');
       }
 
       const result: number = await this.boardRepository.cancelClosedBoard(no);
@@ -217,11 +213,15 @@ export class BoardsService {
   }
 
   async searchAllBoards(searchBoardDto: SearchBoardDto): Promise<object> {
-    const { title }: any = searchBoardDto;
-    const boards: Board[] = await this.boardRepository.searchAllBoards(title);
-    this.errorConfirm.notFoundError(boards, '게시글을 찾을 수 없습니다.');
+    try {
+      const { title }: SearchBoardDto = searchBoardDto;
+      const boards: Board[] = await this.boardRepository.searchAllBoards(title);
+      this.errorConfirm.notFoundError(boards, '게시글을 찾을 수 없습니다.');
 
-    return { foundedBoardNum: boards.length, search: title, boards };
+      return { foundedBoardNum: boards.length, search: title, boards };
+    } catch (err) {
+      throw err;
+    }
   }
 
   async createBoard(
@@ -343,6 +343,7 @@ export class BoardsService {
         updateBoardDto;
 
       const board: Board = await this.boardRepository.getByOneBoard(boardNo);
+
       this.errorConfirm.notFoundError(board, `해당 게시글을 찾을 수 없습니다.`);
 
       if (board['userNo'] !== userNo) {

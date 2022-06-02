@@ -131,6 +131,11 @@ export class CreateBoardDto extends BoardContent {
 }
 
 export class SearchBoardDto {
+  @ApiProperty({
+    example: 'Test',
+    description: 'Example 검색 입력 입니다.',
+    required: true,
+  })
   @IsString()
   @MaxLength(15)
   title: string;
