@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsString } from 'class-validator';
 import { User } from 'src/auth/entity/user.entity';
-import { SpecPhoto } from 'src/photo/entity/photo.entity';
+import { SpecPhoto } from 'src/photo/entity/spec.photo.entity';
 import {
   BaseEntity,
   Column,

@@ -13,7 +13,7 @@ import { Letter } from 'src/letters/entity/letter.entity';
 import { Mailbox } from 'src/mailboxes/entity/mailbox.entity';
 import { Spec } from 'src/specs/entity/spec.entity';
 import { Notice } from 'src/notices/entity/notice.entity';
-import { SpecPhoto } from 'src/photo/entity/photo.entity';
+import { SpecPhoto } from 'src/photo/entity/spec.photo.entity';
 import { UserLike } from 'src/like/entity/user.like.entity';
 import { UserReportChecks } from 'src/report-checks/entity/user-report-checks.entity';
 import { BoardLike } from 'src/like/entity/board.like.entity';

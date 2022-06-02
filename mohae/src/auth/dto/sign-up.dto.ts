@@ -36,6 +36,9 @@ export class SignUpDto {
   phone: string;
 
   @IsString()
+  photo_url: string;
+
+  @IsString()
   nickname: string;
 
   @IsBoolean()

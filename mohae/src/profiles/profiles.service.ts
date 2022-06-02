@@ -103,17 +103,17 @@ export class ProfilesService {
         relations: ['categories'],
       });
 
-      const profileKeys: Array<string> = Object.keys(updateProfileDto);
-      const deletedNullprofile: object = {};
+      // const profileKeys: Array<string> = Object.keys(updateProfileDto);
+      // const deletedNullprofile: object = {};
 
-      profileKeys.forEach((item) => {
-        updateProfileDto[item]
-          ? (deletedNullprofile[item] = updateProfileDto[item])
-          : 0;
-      });
+      // profileKeys.forEach((item) => {
+      //   updateProfileDto[item]
+      //     ? (deletedNullprofile[item] = updateProfileDto[item])
+      //     : 0;
+      // });
       const { school, major, categories }: UpdateProfileDto = updateProfileDto;
 
-      for (const key of Object.keys(deletedNullprofile)) {
+      for (const key in updateProfileDto) {
         switch (key) {
           case 'phone':
           case 'photo_url':

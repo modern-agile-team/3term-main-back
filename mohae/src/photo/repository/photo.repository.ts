@@ -9,7 +9,7 @@ import {
   Repository,
 } from 'typeorm';
 import { BoardPhoto } from '../entity/board.photo.entity';
-import { SpecPhoto } from '../entity/photo.entity';
+import { SpecPhoto } from '../entity/spec.photo.entity';
 
 @EntityRepository(SpecPhoto)
 export class SpecPhotoRepository extends Repository<SpecPhoto> {

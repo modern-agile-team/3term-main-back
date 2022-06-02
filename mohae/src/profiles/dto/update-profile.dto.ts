@@ -10,14 +10,20 @@ export class UpdateProfileDto {
   nickname: string;
 
   @IsOptional()
-  @IsNumber()
-  school: number;
+  // @IsNumber()
+  @IsString()
+  // school: number;
+  school: string | number;
 
   @IsOptional()
-  @IsNumber()
-  major: number;
+  @IsString()
+  // @IsNumber()
+  // major: number;
+  major: string | number;
 
   @IsOptional()
-  @IsArray()
-  categories: [];
+  // @IsArray()
+  @IsString()
+  // categories: [];
+  categories: any;
 }

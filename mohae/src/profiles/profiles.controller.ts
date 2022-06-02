@@ -90,14 +90,28 @@ export class ProfilesController {
     @Body() updateProfileDto: UpdateProfileDto,
     @CurrentUser() user: User,
   ): Promise<object> {
-    const profilePhoto = file
-      ? false
-      : await this.awsService.uploadFileToS3(
-          'profile',
-          UserPhotoSizes.small,
-          file,
-        );
+    console.log(updateProfileDto);
 
+    // 이건 school = null 이런식으로 들어오면 ㅈ됨 school 변경 사항 없으면 걍 school이라는 key,value를 받으면 안됨!
+    for (const key in updateProfileDto) {
+      if (key === 'school' || key === 'major') {
+        updateProfileDto[`${key}`] = Number(updateProfileDto[`${key}`]);
+      }
+      if (key === 'categories') {
+        updateProfileDto[`${key}`] = updateProfileDto[`${key}`]
+          .split(',')
+          .map(Number);
+      }
+    }
+
+    // const profilePhoto = file
+    //   ? false
+    //   : await this.awsService.uploadFileToS3(
+    //       'profile',
+    //       UserPhotoSizes.small,
+    //       file,
+    //     );
+    const profilePhoto = 1;
     const response: number = await this.profileService.updateProfile(
       user.no,
       updateProfileDto,

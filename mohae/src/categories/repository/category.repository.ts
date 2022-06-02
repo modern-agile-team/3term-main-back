@@ -41,7 +41,7 @@ export class CategoryRepository extends Repository<Category> {
       throw new InternalServerErrorException(e);
     }
   }
-  async selectCategory(categories: Array<number>) {
+  async selectCategory(categories: any) {
     try {
       return [
         await this.createQueryBuilder('categories')
