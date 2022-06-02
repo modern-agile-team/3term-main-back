@@ -137,12 +137,12 @@ export class ProfilesService {
         `${majorNo}에 해당 전공을 찾을 수 없습니다.`,
       );
 
-      const beforeProfile: ProfilePhoto =
-        await this.profilePhotoRepository.readProfilePhoto(userNo);
-
       await queryRunner.manager
         .getCustomRepository(UserRepository)
         .updateProfile(userNo, deletedNullprofile);
+
+      const beforeProfile: ProfilePhoto =
+        await this.profilePhotoRepository.readProfilePhoto(userNo);
 
       // 새로 들어온 profilePhoto가 존재하고, beforeProfile이 존재하면! > 기존 삭제 삭제하고, 새로운 사진 집어넣기
       if (profilePhotoUrl) {

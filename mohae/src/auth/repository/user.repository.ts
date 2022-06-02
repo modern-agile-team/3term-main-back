@@ -201,13 +201,14 @@ export class UserRepository extends Repository<User> {
         .leftJoin('users.major', 'major')
         .leftJoin('users.categories', 'categories')
         .leftJoin('users.likedUser', 'likedUser')
+        .leftJoin('users.profilePhoto', 'profilePhoto')
         .select([
           'users.no',
           'users.email',
           'users.nickname',
           `users.createdAt`,
           'users.name',
-          'users.photo_url',
+          'profilePhoto.photo_url',
           'likedUser',
           'school.no',
           'school.name',
