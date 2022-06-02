@@ -42,7 +42,7 @@ export class CategoryRepository extends Repository<Category> {
       throw new InternalServerErrorException(e);
     }
   }
-  async selectCategory(categories: any) {
+  async selectCategory(categories: Category[]): Promise<Category[]> {
     try {
       return [
         await this.createQueryBuilder('categories')
@@ -65,7 +65,7 @@ export class CategoryRepository extends Repository<Category> {
     }
   }
 
-  async addUser(categoryNo: number, user: User) {
+  async addUser(categoryNo: number, user: User): Promise<void> {
     try {
       await this.createQueryBuilder()
         .relation(Category, 'users')
@@ -76,7 +76,7 @@ export class CategoryRepository extends Repository<Category> {
         ${err} ### 유저 회원 가입도중 카테고리정보 저장 관련 알 수없는 서버에러입니다. `);
     }
   }
-  async deleteUser(categoryNo, user) {
+  async deleteUser(categoryNo: Category, user: User): Promise<void> {
     try {
       await this.createQueryBuilder()
         .relation(Category, 'users')
@@ -85,19 +85,6 @@ export class CategoryRepository extends Repository<Category> {
     } catch (err) {
       throw new InternalServerErrorException(
         `${err} 카테고리에 포함된 유저 삭제중 발생한 서버에러`,
-      );
-    }
-  }
-
-  async setUser(categoryNo: number, user: User) {
-    try {
-      await this.createQueryBuilder()
-        .relation(Category, 'users')
-        .of(categoryNo)
-        .set(user);
-    } catch (err) {
-      throw new InternalServerErrorException(
-        `${err} 프로필 변경 중 카테고리 정보 관계 형성 발생한 서버에러 입니다.`,
       );
     }
   }

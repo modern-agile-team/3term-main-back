@@ -8,6 +8,8 @@ import {
 import { BoardPhoto } from '../entity/board.photo.entity';
 import { SpecPhoto } from '../entity/spec.photo.entity';
 import { ProfilePhoto } from '../entity/profile.photo.entity';
+import { User } from 'src/auth/entity/user.entity';
+import { Profile } from 'aws-sdk/clients/mediapackage';
 
 @EntityRepository(SpecPhoto)
 export class SpecPhotoRepository extends Repository<SpecPhoto> {
@@ -95,7 +97,7 @@ export class BoardPhotoRepository extends Repository<BoardPhoto> {
 
 @EntityRepository(ProfilePhoto)
 export class ProfilePhotoRepository extends Repository<ProfilePhoto> {
-  async saveProfilePhoto(photo_url, user) {
+  async saveProfilePhoto(photo_url: string, user: User): Promise<any> {
     try {
       const result: InsertResult = await this.createQueryBuilder(
         'profile_photos',
@@ -112,14 +114,12 @@ export class ProfilePhotoRepository extends Repository<ProfilePhoto> {
     }
   }
 
-  async deleteProfilePhoto(photoNo) {
+  async deleteProfilePhoto(photoNo: number): Promise<void> {
     try {
-      const result = await this.createQueryBuilder('profile_photos')
+      await this.createQueryBuilder('profile_photos')
         .delete()
         .where('no = :photoNo', { photoNo })
         .execute();
-
-      console.log(result);
     } catch (err) {
       throw new InternalServerErrorException(
         `${err} 기존 프로필 사진 삭제 중 발생한 서버에러 입니다. `,
@@ -127,14 +127,16 @@ export class ProfilePhotoRepository extends Repository<ProfilePhoto> {
     }
   }
 
-  async readProfilePhoto(userNo) {
+  async readProfilePhoto(userNo: User): Promise<ProfilePhoto> {
     try {
-      const result = await this.createQueryBuilder('profile_photos')
+      const profilePhoto: ProfilePhoto = await this.createQueryBuilder(
+        'profile_photos',
+      )
         .select(['profile_photos.no', 'profile_photos.photo_url'])
         .where('profile_photos.user_no = :userNo', { userNo })
         .getOne();
 
-      return result;
+      return profilePhoto;
     } catch (err) {
       throw new InternalServerErrorException(
         `${err} 프로필 사진을 가져오는 도중 발생한 서버 에러입니다.`,

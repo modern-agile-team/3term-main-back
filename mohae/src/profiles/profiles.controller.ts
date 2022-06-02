@@ -93,22 +93,24 @@ export class ProfilesController {
     for (const key in updateProfileDto) {
       updateProfileDto[`${key}`] = JSON.parse(updateProfileDto[`${key}`]);
     }
-    // const profilePhoto = file
+
+    // const profilePhotoUrl: any = file
     //   ? false
     //   : await this.awsService.uploadFileToS3(
     //       'profile',
     //       UserPhotoSizes.small,
     //       file,
     //     );
-    const profilePhoto = 'asdfsdf';
-    const response: number = await this.profileService.updateProfile(
+    const profilePhotoUrl = 'hihi.jpg';
+    const beforeProfileUrl: string = await this.profileService.updateProfile(
       user.no,
       updateProfileDto,
-      profilePhoto,
+      profilePhotoUrl,
     );
+    // 이제 beforeProfileUrl이 존재할때는 > S3에서 기존 사진 삭제하는 로직
     return {
       msg: '프로필 정보 수정이 완료되었습니다.',
-      response,
+      beforeProfileUrl,
     };
   }
 }

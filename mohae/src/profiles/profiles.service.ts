@@ -18,6 +18,7 @@ import { SchoolRepository } from 'src/schools/repository/school.repository';
 import { JudgeDuplicateNicknameDto } from './dto/judge-duplicate-nickname.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { Connection } from 'typeorm';
+import { ProfilePhoto } from 'src/photo/entity/profile.photo.entity';
 
 @Injectable()
 export class ProfilesService {
@@ -102,8 +103,8 @@ export class ProfilesService {
   async updateProfile(
     userNo: User,
     updateProfileDto: UpdateProfileDto,
-    profilePhoto,
-  ): Promise<number> {
+    profilePhotoUrl: any,
+  ): Promise<string> {
     const queryRunner = this.connection.createQueryRunner();
 
     await queryRunner.connect();
@@ -113,7 +114,7 @@ export class ProfilesService {
         relations: ['categories'],
       });
 
-      const profileKeys: Array<string> = Object.keys(updateProfileDto);
+      const profileKeys: string[] = Object.keys(updateProfileDto);
       const deletedNullprofile: object = {};
 
       profileKeys.forEach((item) => {
@@ -130,44 +131,43 @@ export class ProfilesService {
         schoolNo,
         `${schoolNo}에 해당 학교를 찾을 수 없습니다.`,
       );
-
       const majorNo = await this.majorRepository.findOne(major);
       this.errorConfirm.notFoundError(
-        major,
+        majorNo,
         `${majorNo}에 해당 전공을 찾을 수 없습니다.`,
       );
 
-      const beforeProfile = await this.profilePhotoRepository.readProfilePhoto(
-        userNo,
-      );
-      console.log(beforeProfile);
+      const beforeProfile: ProfilePhoto =
+        await this.profilePhotoRepository.readProfilePhoto(userNo);
 
       await queryRunner.manager
         .getCustomRepository(UserRepository)
         .updateProfile(userNo, deletedNullprofile);
 
-      console.log(beforeProfile);
-      if (beforeProfile) {
+      // 새로 들어온 profilePhoto가 존재하고, beforeProfile이 존재하면! > 기존 삭제 삭제하고, 새로운 사진 집어넣기
+      if (profilePhotoUrl) {
+        if (beforeProfile) {
+          await queryRunner.manager
+            .getCustomRepository(ProfilePhotoRepository)
+            .deleteProfilePhoto(beforeProfile.no);
+        }
+
         await queryRunner.manager
           .getCustomRepository(ProfilePhotoRepository)
-          .deleteProfilePhoto(beforeProfile.no);
+          .saveProfilePhoto(profilePhotoUrl, userNo);
       }
-
-      await queryRunner.manager
-        .getCustomRepository(ProfilePhotoRepository)
-        .saveProfilePhoto(profilePhoto, userNo);
-
       // null 인 경우에 categories.length 가 안먹혀서 이쉑끼가 어리버리 깜
       if (categories && categories.length) {
-        const categoriesNo = await this.categoriesRepository.selectCategory(
-          categories,
-        );
-        const filteredCategories = categoriesNo.filter(
+        const categoriesNo: Category[] =
+          await this.categoriesRepository.selectCategory(categories);
+        const filteredCategories: Category[] = categoriesNo.filter(
           (element) => element !== undefined,
         );
-        console.log(profile.categories);
+
         for (const categoryNo of profile.categories) {
-          await this.categoriesRepository.deleteUser(categoryNo, userNo);
+          await queryRunner.manager
+            .getCustomRepository(CategoryRepository)
+            .deleteUser(categoryNo, userNo);
         }
         for (const categoryNo of filteredCategories)
           await queryRunner.manager
@@ -175,7 +175,9 @@ export class ProfilesService {
             .addUser(categoryNo.no, userNo);
       }
       await queryRunner.commitTransaction();
-      return profile.no;
+      return beforeProfile && profilePhotoUrl
+        ? beforeProfile.photo_url
+        : undefined;
     } catch (err) {
       await queryRunner.rollbackTransaction();
       throw err;
