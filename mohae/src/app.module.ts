@@ -1,4 +1,10 @@
-import { CacheInterceptor, CacheModule, Module } from '@nestjs/common';
+import {
+  CacheInterceptor,
+  CacheModule,
+  MiddlewareConsumer,
+  Module,
+  NestModule,
+} from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -33,6 +39,7 @@ import { ReportCheckboxesService } from './report-checkboxes/report-checkboxes.s
 import { ReportChecksService } from './report-checks/report-checks.service';
 import { ReportChecksModule } from './report-checks/report-checks.module';
 import { ReportCheckboxesModule } from './report-checkboxes/report-checkboxes.module';
+import { LoggerMiddleware } from './common/middleware/logger.middleware';
 
 @Module({
   imports: [
@@ -83,4 +90,8 @@ import { ReportCheckboxesModule } from './report-checkboxes/report-checkboxes.mo
     AwsService,
   ],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer): any {
+    consumer.apply(LoggerMiddleware).forRoutes('*');
+  }
+}
