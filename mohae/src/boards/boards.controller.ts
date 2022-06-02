@@ -10,9 +10,11 @@ import {
   Patch,
   Query,
   Logger,
+  UseGuards,
   UseInterceptors,
   HttpCode,
 } from '@nestjs/common';
+import { User } from '@sentry/node';
 import { AuthGuard } from '@nestjs/passport';
 import { Cron } from '@nestjs/schedule';
 import {
@@ -29,6 +31,7 @@ import {
   UpdateBoardDto,
 } from './dto/board.dto';
 import { Board } from './entity/board.entity';
+import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 
 @Controller('boards')
 @UseInterceptors(SuccesseInterceptor)
@@ -114,9 +117,16 @@ export class BoardsController {
     });
   }
 
+  @UseGuards(AuthGuard())
   @Patch('/cancel/:no')
-  async cancelClosedBoard(@Param('no') no: number): Promise<Object> {
-    const response = await this.boardService.cancelClosedBoard(no);
+  async cancelClosedBoard(
+    @Param('no') no: number,
+    @CurrentUser() user: User,
+  ): Promise<object> {
+    const response: boolean = await this.boardService.cancelClosedBoard(
+      no,
+      user.no,
+    );
 
     return Object.assign({
       statusCode: 200,
@@ -125,9 +135,13 @@ export class BoardsController {
     });
   }
 
+  @UseGuards(AuthGuard())
   @Patch('/close/:no')
-  async boardClosed(@Param('no') no: number): Promise<Object> {
-    const response = await this.boardService.boardClosed(no);
+  async boardClosed(
+    @Param('no') no: number,
+    @CurrentUser() user: User,
+  ): Promise<object> {
+    const response = await this.boardService.boardClosed(no, user.no);
 
     return Object.assign({
       statusCode: 200,
@@ -162,6 +176,7 @@ export class BoardsController {
       response,
     };
   }
+
   @Get('/:no')
   async getByOneBoard(@Param('no') no: number): Promise<Object> {
     const response = await this.boardService.getByOneBoard(no);
@@ -185,16 +200,18 @@ export class BoardsController {
       example: {
         statusCode: 201,
         msg: '게시글 생성이 완료되었습니다.',
-        response: {
-          success: true,
-          createBoardNo: 26,
-        },
+        response: true,
       },
     },
   })
-  async createBoard(@Body() createBoardDto: CreateBoardDto): Promise<object> {
+  @UseGuards(AuthGuard())
+  async createBoard(
+    @Body() createBoardDto: CreateBoardDto,
+    @CurrentUser() user: User,
+  ): Promise<object> {
     const response: boolean = await this.boardService.createBoard(
       createBoardDto,
+      user,
     );
 
     return Object.assign({
@@ -204,9 +221,30 @@ export class BoardsController {
     });
   }
 
+  @ApiOperation({
+    summary: '게시글 삭제 경로',
+    description: '게시글 삭제 API',
+  })
+  @ApiCreatedResponse({
+    description: '성공여부',
+    schema: {
+      example: {
+        statusCode: 204,
+        msg: '게시글 삭제가 완료되었습니다.',
+        response: true,
+      },
+    },
+  })
+  @UseGuards(AuthGuard())
   @Delete('/:no')
-  async deleteBoard(@Param('no') boardNo: number): Promise<object> {
-    const response: boolean = await this.boardService.deleteBoard(boardNo);
+  async deleteBoard(
+    @Param('no') boardNo: number,
+    @CurrentUser() user: User,
+  ): Promise<object> {
+    const response: boolean = await this.boardService.deleteBoard(
+      boardNo,
+      user.no,
+    );
 
     return Object.assign({
       statusCode: 204,
@@ -215,14 +253,17 @@ export class BoardsController {
     });
   }
 
+  @UseGuards(AuthGuard())
   @Patch('/:no')
   async updateBoard(
     @Param('no') boardNo: number,
     @Body() updateBoardDto: UpdateBoardDto,
+    @CurrentUser() user: User,
   ): Promise<object> {
     const response: boolean = await this.boardService.updateBoard(
       boardNo,
       updateBoardDto,
+      user.no,
     );
 
     return Object.assign({
