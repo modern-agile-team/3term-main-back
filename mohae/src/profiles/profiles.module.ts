@@ -18,6 +18,7 @@ import { SpecsModule } from 'src/specs/specs.module';
 import { BoardRepository } from 'src/boards/repository/board.repository';
 import { BoardsModule } from 'src/boards/boards.module';
 import { ReviewRepository } from 'src/reviews/repository/review.repository';
+import { AwsService } from 'src/aws/aws.service';
 
 @Module({
   imports: [
@@ -41,6 +42,6 @@ import { ReviewRepository } from 'src/reviews/repository/review.repository';
     ReviewRepository,
   ],
   controllers: [ProfilesController],
-  providers: [ProfilesService, ErrorConfirm],
+  providers: [ProfilesService, AwsService, ErrorConfirm],
 })
 export class ProfilesModule {}
