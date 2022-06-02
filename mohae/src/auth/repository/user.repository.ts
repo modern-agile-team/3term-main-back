@@ -28,8 +28,8 @@ export class UserRepository extends Repository<User> {
         nickname,
         manager,
         name,
-        photo_url,
-      }: CreateUserDto = createUserDto;
+      }: // photo_url,
+      CreateUserDto = createUserDto;
 
       const { raw } = await this.createQueryBuilder('users')
         .insert()
@@ -43,7 +43,7 @@ export class UserRepository extends Repository<User> {
             phone,
             nickname,
             manager,
-            photo_url,
+            // photo_url,
             salt: password,
           },
         ])
@@ -242,6 +242,20 @@ export class UserRepository extends Repository<User> {
     } catch (err) {
       throw new InternalServerErrorException(
         `${err} 유저 관계형성 도중 생긴 오류`,
+      );
+    }
+  }
+
+  async updateProfile(userNo: User, deletedNullprofile: object) {
+    try {
+      await this.createQueryBuilder('users')
+        .update(User)
+        .set(deletedNullprofile)
+        .where('no = :userNo', { userNo })
+        .execute();
+    } catch (err) {
+      throw new InternalServerErrorException(
+        `${err} 프로필 업데이트 중 알 수 없는 서버 에러입니다.`,
       );
     }
   }

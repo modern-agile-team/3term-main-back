@@ -8,22 +8,28 @@ import { User } from 'src/auth/entity/user.entity';
 import { UserRepository } from 'src/auth/repository/user.repository';
 import { Category } from 'src/categories/entity/category.entity';
 import { CategoryRepository } from 'src/categories/repository/category.repository';
+import { ErrorConfirm } from 'src/common/utils/error';
 import { LikeRepository } from 'src/like/repository/like.repository';
 import { Major } from 'src/majors/entity/major.entity';
 import { MajorRepository } from 'src/majors/repository/major.repository';
+import { ProfilePhotoRepository } from 'src/photo/repository/photo.repository';
 import { School } from 'src/schools/entity/school.entity';
 import { SchoolRepository } from 'src/schools/repository/school.repository';
 import { JudgeDuplicateNicknameDto } from './dto/judge-duplicate-nickname.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
+import { Connection } from 'typeorm';
 
 @Injectable()
 export class ProfilesService {
   constructor(
-    private userRepository: UserRepository,
-    private schoolRepository: SchoolRepository,
-    private majorRepository: MajorRepository,
-    private categoriesRepository: CategoryRepository,
-    private likeRepository: LikeRepository,
+    private readonly userRepository: UserRepository,
+    private readonly schoolRepository: SchoolRepository,
+    private readonly majorRepository: MajorRepository,
+    private readonly categoriesRepository: CategoryRepository,
+    private readonly likeRepository: LikeRepository,
+    private readonly errorConfirm: ErrorConfirm,
+    private readonly profilePhotoRepository: ProfilePhotoRepository,
+    private readonly connection: Connection,
   ) {}
 
   async readUserProfile(
@@ -94,61 +100,87 @@ export class ProfilesService {
   }
 
   async updateProfile(
-    profileUserNo: number,
+    userNo: User,
     updateProfileDto: UpdateProfileDto,
     profilePhoto,
   ): Promise<number> {
+    const queryRunner = this.connection.createQueryRunner();
+
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
     try {
-      const profile: User = await this.userRepository.findOne(profileUserNo, {
+      const profile: User = await this.userRepository.findOne(userNo, {
         relations: ['categories'],
       });
 
-      // const profileKeys: Array<string> = Object.keys(updateProfileDto);
-      // const deletedNullprofile: object = {};
+      const profileKeys: Array<string> = Object.keys(updateProfileDto);
+      const deletedNullprofile: object = {};
 
-      // profileKeys.forEach((item) => {
-      //   updateProfileDto[item]
-      //     ? (deletedNullprofile[item] = updateProfileDto[item])
-      //     : 0;
-      // });
+      profileKeys.forEach((item) => {
+        updateProfileDto[item]
+          ? (deletedNullprofile[item] = updateProfileDto[item])
+          : 0;
+      });
+      delete deletedNullprofile['categories'];
+
       const { school, major, categories }: UpdateProfileDto = updateProfileDto;
 
-      for (const key in updateProfileDto) {
-        switch (key) {
-          case 'phone':
-          case 'photo_url':
-          case 'nickname':
-            profile[key] = updateProfileDto[key];
-            break;
-          case 'school':
-            const schoolRepo: School = await this.schoolRepository.findOne(
-              school,
-            );
+      const schoolNo = await this.schoolRepository.findOne(school);
+      this.errorConfirm.notFoundError(
+        schoolNo,
+        `${schoolNo}에 해당 학교를 찾을 수 없습니다.`,
+      );
 
-            profile.school = schoolRepo;
-            break;
-          case 'major':
-            const majorRepo: Major = await this.majorRepository.findOne(major);
+      const majorNo = await this.majorRepository.findOne(major);
+      this.errorConfirm.notFoundError(
+        major,
+        `${majorNo}에 해당 전공을 찾을 수 없습니다.`,
+      );
 
-            profile.major = majorRepo;
-            break;
-          case 'categories':
-            const categoriesRepo: Array<Category> =
-              await this.categoriesRepository.selectCategory(categories);
-            const filteredCategories = categoriesRepo.filter(
-              (element) => element !== undefined,
-            );
+      const beforeProfile = await this.profilePhotoRepository.readProfilePhoto(
+        userNo,
+      );
+      console.log(beforeProfile);
 
-            profile.categories.splice(0);
-            profile.categories = filteredCategories;
-            break;
-        }
+      await queryRunner.manager
+        .getCustomRepository(UserRepository)
+        .updateProfile(userNo, deletedNullprofile);
+
+      console.log(beforeProfile);
+      if (beforeProfile) {
+        await queryRunner.manager
+          .getCustomRepository(ProfilePhotoRepository)
+          .deleteProfilePhoto(beforeProfile.no);
       }
-      // 유령데이터 다시한번 생기면 save 의심해보기
-      await this.userRepository.save(profile);
+
+      await queryRunner.manager
+        .getCustomRepository(ProfilePhotoRepository)
+        .saveProfilePhoto(profilePhoto, userNo);
+
+      // null 인 경우에 categories.length 가 안먹혀서 이쉑끼가 어리버리 깜
+      if (categories && categories.length) {
+        const categoriesNo = await this.categoriesRepository.selectCategory(
+          categories,
+        );
+        const filteredCategories = categoriesNo.filter(
+          (element) => element !== undefined,
+        );
+        console.log(profile.categories);
+        for (const categoryNo of profile.categories) {
+          await this.categoriesRepository.deleteUser(categoryNo, userNo);
+        }
+        for (const categoryNo of filteredCategories)
+          await queryRunner.manager
+            .getCustomRepository(CategoryRepository)
+            .addUser(categoryNo.no, userNo);
+      }
+      await queryRunner.commitTransaction();
       return profile.no;
     } catch (err) {
+      await queryRunner.rollbackTransaction();
       throw err;
+    } finally {
+      await queryRunner.release();
     }
   }
 }

@@ -14,6 +14,7 @@ import {
   ManyToMany,
   ManyToOne,
   OneToMany,
+  OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -30,6 +31,7 @@ import { Terms } from 'src/terms/entity/terms.entity';
 import { Basket } from 'src/baskets/entity/baskets.entity';
 import { ReportedUser } from 'src/reports/entity/reported-user.entity';
 import { ReportedBoard } from 'src/reports/entity/reported-board.entity';
+import { ProfilePhoto } from 'src/photo/entity/profile.photo.entity';
 
 @Entity('users')
 export class User extends BaseEntity {
@@ -41,13 +43,6 @@ export class User extends BaseEntity {
     comment: '회원 이름',
   })
   name: string;
-
-  @Column({
-    type: 'varchar',
-    comment: '회원 개인 프로필사진',
-    default: null,
-  })
-  photo_url: string | null;
 
   @Column({
     unique: true,
@@ -111,6 +106,15 @@ export class User extends BaseEntity {
     comment: '회원가입 시간',
   })
   createdAt: Date;
+
+  // @Column({
+  //   type: 'varchar',
+  //   comment: '회원 개인 프로필사진',
+  //   default: null,
+  // })
+  // photo_url: string | null;
+  @OneToOne(() => ProfilePhoto, (profilePhoto) => profilePhoto.user)
+  profilePhoto: ProfilePhoto;
 
   @OneToMany((type) => TermsUser, (termsUser) => termsUser.user, {
     nullable: true,
@@ -187,13 +191,13 @@ export class User extends BaseEntity {
   @OneToMany((type) => Spec, (spec) => spec.user)
   specs: Spec[];
 
-  @ManyToOne((type) => School, (school) => school.no, {
+  @ManyToOne((type) => School, (school) => school.users, {
     onDelete: 'SET NULL',
   })
   @JoinColumn({ name: 'school_no' })
   school: School;
 
-  @ManyToOne((type) => Major, (major) => major.no, {
+  @ManyToOne((type) => Major, (major) => major.users, {
     onDelete: 'SET NULL',
   })
   @JoinColumn({ name: 'major_no' })

@@ -14,7 +14,7 @@ import { Spec } from '../entity/spec.entity';
 export class SpecRepository extends Repository<Spec> {
   async getAllSpec(profileUserNo: number) {
     try {
-      const specs = await this.createQueryBuilder('spec')
+      const specs = await this.createQueryBuilder('specs')
         .leftJoin('spec.specPhotos', 'specPhotos')
         .leftJoin('spec.user', 'user')
         .select([
@@ -42,7 +42,7 @@ export class SpecRepository extends Repository<Spec> {
     page: number,
   ): Promise<Array<Spec>> {
     try {
-      const specs: Array<Spec> = await this.createQueryBuilder('spec')
+      const specs: Array<Spec> = await this.createQueryBuilder('specs')
         .leftJoin('spec.specPhotos', 'specPhotos')
         .leftJoin('spec.user', 'user')
         .select([
@@ -68,7 +68,7 @@ export class SpecRepository extends Repository<Spec> {
 
   async getOneSpec(specNo: number): Promise<Spec> {
     try {
-      const spec = await this.createQueryBuilder('spec')
+      const spec = await this.createQueryBuilder('specs')
         .leftJoin('spec.specPhotos', 'specPhotos')
         .select([
           'spec.no',
@@ -109,7 +109,7 @@ export class SpecRepository extends Repository<Spec> {
     user: User,
   ): Promise<Spec> {
     try {
-      const { raw }: InsertResult = await this.createQueryBuilder('spec')
+      const { raw }: InsertResult = await this.createQueryBuilder('specs')
         .insert()
         .into(Spec)
         .values([
@@ -131,7 +131,7 @@ export class SpecRepository extends Repository<Spec> {
 
   async updateSpec(specNo: number, updateSpecDto: object): Promise<number> {
     try {
-      const { affected }: UpdateResult = await this.createQueryBuilder('spec')
+      const { affected }: UpdateResult = await this.createQueryBuilder('specs')
         .update(Spec)
         .set(updateSpecDto)
         .where('no = :specNo', { specNo })
@@ -147,7 +147,7 @@ export class SpecRepository extends Repository<Spec> {
 
   async deleteSpec(specNo: number): Promise<number> {
     try {
-      const { affected }: DeleteResult = await this.createQueryBuilder('spec')
+      const { affected }: DeleteResult = await this.createQueryBuilder('specs')
         .softDelete()
         .from(Spec)
         .where('no = :specNo', { specNo })

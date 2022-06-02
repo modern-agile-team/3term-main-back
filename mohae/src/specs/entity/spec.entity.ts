@@ -15,7 +15,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 
-@Entity('spec')
+@Entity('specs')
 export class Spec extends BaseEntity {
   @PrimaryGeneratedColumn()
   no: number;

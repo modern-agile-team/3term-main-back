@@ -1,4 +1,5 @@
 import { InternalServerErrorException } from '@nestjs/common';
+import { error } from 'console';
 import { User } from 'src/auth/entity/user.entity';
 import { EntityRepository, Repository } from 'typeorm';
 import { Category } from '../entity/category.entity';
@@ -70,9 +71,34 @@ export class CategoryRepository extends Repository<Category> {
         .relation(Category, 'users')
         .of(categoryNo)
         .add(user);
-    } catch (e) {
+    } catch (err) {
       throw new InternalServerErrorException(`
-        ${e} ### 유저 회원 가입도중 카테고리정보 저장 관련 알 수없는 서버에러입니다. `);
+        ${err} ### 유저 회원 가입도중 카테고리정보 저장 관련 알 수없는 서버에러입니다. `);
+    }
+  }
+  async deleteUser(categoryNo, user) {
+    try {
+      await this.createQueryBuilder()
+        .relation(Category, 'users')
+        .of(categoryNo)
+        .remove(user);
+    } catch (err) {
+      throw new InternalServerErrorException(
+        `${err} 카테고리에 포함된 유저 삭제중 발생한 서버에러`,
+      );
+    }
+  }
+
+  async setUser(categoryNo: number, user: User) {
+    try {
+      await this.createQueryBuilder()
+        .relation(Category, 'users')
+        .of(categoryNo)
+        .set(user);
+    } catch (err) {
+      throw new InternalServerErrorException(
+        `${err} 프로필 변경 중 카테고리 정보 관계 형성 발생한 서버에러 입니다.`,
+      );
     }
   }
 

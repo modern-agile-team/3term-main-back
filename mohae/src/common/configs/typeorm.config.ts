@@ -26,6 +26,7 @@ import { BoardReportChecks } from 'src/report-checks/entity/board-report-checks.
 import { ReportContent } from 'src/reports/entity/report-base.entity';
 import { ReportedUser } from 'src/reports/entity/reported-user.entity';
 import { ReportedBoard } from 'src/reports/entity/reported-board.entity';
+import { ProfilePhoto } from 'src/photo/entity/profile.photo.entity';
 const dbConfig = config.get('db');
 
 const { DB_HOST, DB_PORT, DB_USER, DB_PSWORD, DB_DATABASE } = process.env;
@@ -67,6 +68,7 @@ export const typeORMConfig: TypeOrmModuleOptions = {
     Terms,
     TermsUser,
     Basket,
+    ProfilePhoto,
   ],
   // entities: [__dirname + '/../**/*.entity.{ts,js}'],
   synchronize: dbConfig.synchronize,
