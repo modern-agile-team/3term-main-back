@@ -19,10 +19,10 @@ import { ReportedBoard } from './entity/reported-board.entity';
 import { ReportedUser } from './entity/reported-user.entity';
 import { ReportsService } from './reports.service';
 
-@Controller('reports')
 @UseInterceptors(SuccesseInterceptor)
 @UseGuards(AuthGuard())
 @ApiTags('Reports')
+@Controller('reports')
 export class ReportsController {
   constructor(private reportsService: ReportsService) {}
 
