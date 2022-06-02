@@ -40,6 +40,11 @@ import { ReportChecksService } from './report-checks/report-checks.service';
 import { ReportChecksModule } from './report-checks/report-checks.module';
 import { ReportCheckboxesModule } from './report-checkboxes/report-checkboxes.module';
 import { LoggerMiddleware } from './common/middleware/logger.middleware';
+import {
+  utilities as nestWinstonModuleUtilities,
+  WinstonModule,
+} from 'nest-winston';
+import * as winston from 'winston';
 
 @Module({
   imports: [
@@ -79,6 +84,19 @@ import { LoggerMiddleware } from './common/middleware/logger.middleware';
     BasketsModule,
     ReportChecksModule,
     ReportCheckboxesModule,
+    WinstonModule.forRoot({
+      transports: [
+        new winston.transports.Console({
+          level: process.env.NODE_ENV === 'production' ? 'info' : 'silly',
+          format: winston.format.combine(
+            winston.format.timestamp(),
+            nestWinstonModuleUtilities.format.nestLike('MyApp', {
+              prettyPrint: true,
+            }),
+          ),
+        }),
+      ],
+    }),
   ],
   controllers: [AppController],
   providers: [
