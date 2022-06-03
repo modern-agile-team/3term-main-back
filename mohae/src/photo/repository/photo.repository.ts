@@ -9,7 +9,6 @@ import { BoardPhoto } from '../entity/board.photo.entity';
 import { SpecPhoto } from '../entity/spec.photo.entity';
 import { ProfilePhoto } from '../entity/profile.photo.entity';
 import { User } from 'src/auth/entity/user.entity';
-import { Profile } from 'aws-sdk/clients/mediapackage';
 
 @EntityRepository(SpecPhoto)
 export class SpecPhotoRepository extends Repository<SpecPhoto> {
@@ -37,7 +36,9 @@ export class SpecPhotoRepository extends Repository<SpecPhoto> {
         .where('spec_no = :specNo', { specNo })
         .execute();
     } catch (err) {
-      throw err;
+      throw new InternalServerErrorException(
+        `${err} 스펙의 이전 사진 삭제 도중 발생한 서버 에러입니다.`,
+      );
     }
   }
 
@@ -52,7 +53,7 @@ export class SpecPhotoRepository extends Repository<SpecPhoto> {
       return spec.no;
     } catch (err) {
       throw new InternalServerErrorException(
-        `스펙 번호 가져오기 도중 오류가 발생 하였습니다.${err}`,
+        `${err}스펙 번호 가져오기 도중 오류가 발생 하였습니다.`,
       );
     }
   }

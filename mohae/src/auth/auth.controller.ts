@@ -14,6 +14,7 @@ import {
 import { AuthGuard } from '@nestjs/passport';
 import {
   ApiBadGatewayResponse,
+  ApiBadRequestResponse,
   ApiConflictResponse,
   ApiInternalServerErrorResponse,
   ApiNotFoundResponse,
@@ -245,6 +246,16 @@ export class AuthController {
       },
     },
   })
+  @ApiBadRequestResponse({
+    description: '새비밀번호와 새비밀번호 확인이 일치하지 않는 경우',
+    schema: {
+      example: {
+        statusCode: 400,
+        msg: '새비밀번호와 새비밀번호 확인이 일치하지 않습니다',
+        err: 'Bad Request',
+      },
+    },
+  })
   @ApiUnauthorizedResponse({
     description: '이메일에 해당하는 비밀번호가 맞지 않을 때 ',
     schema: {
@@ -272,16 +283,6 @@ export class AuthController {
         statusCode: 500,
         msg: 'DB관련한 에러 메시지 + ~에서 일어난 에러입니다.',
         err: 'InternalServerErrorException',
-      },
-    },
-  })
-  @ApiBadGatewayResponse({
-    description: '새비밀번호와 새비밀번호 확인이 일치하지 않는 경우',
-    schema: {
-      example: {
-        statusCode: 502,
-        msg: '새비밀번호와 새비밀번호 확인이 일치하지 않습니다',
-        err: 'Bad Gateway',
       },
     },
   })
@@ -316,6 +317,16 @@ export class AuthController {
       },
     },
   })
+  @ApiBadRequestResponse({
+    description: '새비밀번호와 새비밀번호 확인이 일치하지 않는 경우',
+    schema: {
+      example: {
+        statusCode: 400,
+        msg: '새비밀번호와 새비밀번호 확인이 일치하지 않습니다',
+        err: 'Bad Request',
+      },
+    },
+  })
   @ApiUnauthorizedResponse({
     description: '존재하지 않는 이메일을 입력한 경우',
     schema: {
@@ -343,16 +354,6 @@ export class AuthController {
         statusCode: 500,
         msg: 'DB관련한 에러 메시지 + ~에서 일어난 에러입니다.',
         err: 'InternalServerErrorException',
-      },
-    },
-  })
-  @ApiBadGatewayResponse({
-    description: '새비밀번호와 새비밀번호 확인이 일치하지 않는 경우',
-    schema: {
-      example: {
-        statusCode: 502,
-        msg: '새비밀번호와 새비밀번호 확인이 일치하지 않습니다',
-        err: 'Bad Gateway',
       },
     },
   })

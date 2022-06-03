@@ -1,5 +1,6 @@
 import {
   BadGatewayException,
+  BadRequestException,
   ConflictException,
   Injectable,
   InternalServerErrorException,
@@ -247,7 +248,7 @@ export class AuthService {
       }: ChangePasswordDto = changePasswordDto;
 
       if (changePassword !== confirmChangePassword) {
-        throw new BadGatewayException(
+        throw new BadRequestException(
           '새비밀번호와 새비밀번호 확인이 일치하지 않습니다',
         );
       }
@@ -287,7 +288,7 @@ export class AuthService {
       }: ForgetPasswordDto = forgetPasswordDto;
 
       if (changePassword !== confirmChangePassword) {
-        throw new BadGatewayException(
+        throw new BadRequestException(
           '새비밀번호와 새비밀번호 확인이 일치하지 않습니다',
         );
       }
