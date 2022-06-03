@@ -65,7 +65,6 @@ export class AuthController {
     try {
       // id 맞는지 확인 + 패널티 시간 지나지 않았을 때 로그인 시도했을 때 알림
       const userInfo: User = await this.authService.confirmUser(signInDto);
-      // 성공했을 때 + 비밀번호 틀렸을 때
       const accessToken: string = await this.authService.passwordConfirm(
         userInfo,
         signInDto.password,

@@ -1,5 +1,7 @@
-import { TypeOrmModuleOptions } from '@nestjs/typeorm';
-import * as config from 'config';
+import {
+  TypeOrmModuleAsyncOptions,
+  TypeOrmModuleOptions,
+} from '@nestjs/typeorm';
 import { Area } from 'src/areas/entity/areas.entity';
 import { User } from 'src/auth/entity/user.entity';
 import { Board } from 'src/boards/entity/board.entity';
@@ -26,50 +28,48 @@ import { BoardReportChecks } from 'src/report-checks/entity/board-report-checks.
 import { ReportContent } from 'src/reports/entity/report-base.entity';
 import { ReportedUser } from 'src/reports/entity/reported-user.entity';
 import { ReportedBoard } from 'src/reports/entity/reported-board.entity';
-const dbConfig = config.get('db');
+import { ConfigModule, ConfigService } from '@nestjs/config';
 
-const { DB_HOST, DB_PORT, DB_USER, DB_PSWORD, DB_DATABASE } = process.env;
-
-export const typeORMConfig: TypeOrmModuleOptions = {
-  timezone: 'Z',
-  dateStrings: true,
-  type: dbConfig.type,
-  host: DB_HOST || dbConfig.host,
-  port: DB_PORT || dbConfig.port,
-  username: DB_USER || dbConfig.username,
-  password: DB_PSWORD || dbConfig.password,
-  database: DB_DATABASE || dbConfig.database,
-  entities: [
-    Area,
-    User,
-    Board,
-    Category,
-    Faq,
-    Major,
-    ReportContent,
-    ReportedUser,
-    ReportedBoard,
-    ReportCheckbox,
-    Review,
-    School,
-    Note,
-    Letter,
-    Mailbox,
-    Spec,
-    Notice,
-    SpecPhoto,
-    UserLike,
-    BoardReportChecks,
-    UserReportChecks,
-    MailboxUser,
-    BoardLike,
-    BoardPhoto,
-    Terms,
-    TermsUser,
-    Basket,
-  ],
-  // entities: [__dirname + '/../**/*.entity.{ts,js}'],
-  synchronize: dbConfig.synchronize,
-  logging: true,
-  keepConnectionAlive: true,
+export const typeOrmConfig: TypeOrmModuleAsyncOptions = {
+  imports: [ConfigModule],
+  inject: [ConfigService],
+  useFactory: (configService: ConfigService) => ({
+    type: configService.get<any>('DB_TYPE'),
+    host: configService.get<string>('DB_HOST'),
+    port: configService.get<number>('DB_PORT'),
+    username: configService.get<string>('DB_USERNAME'),
+    password: configService.get<string>('DB_PASSWORD'),
+    database: configService.get<string>('DB_DATABASE'),
+    synchronize: configService.get<boolean>('DB_SYNCHRONIZE'),
+    logging: configService.get<boolean>('DB_LOGGING'),
+    entities: [
+      Area,
+      User,
+      Board,
+      Category,
+      Faq,
+      Major,
+      ReportContent,
+      ReportedUser,
+      ReportedBoard,
+      ReportCheckbox,
+      Review,
+      School,
+      Note,
+      Letter,
+      Mailbox,
+      Spec,
+      Notice,
+      SpecPhoto,
+      UserLike,
+      BoardReportChecks,
+      UserReportChecks,
+      MailboxUser,
+      BoardLike,
+      BoardPhoto,
+      Terms,
+      TermsUser,
+      Basket,
+    ],
+  }),
 };

@@ -1,17 +1,20 @@
-import { NestFactory } from '@nestjs/core';
+import { NestApplication, NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import * as config from 'config';
 import { Logger, ValidationPipe } from '@nestjs/common';
 import { setupSwagger } from './common/utils/swagger';
 import * as expressBasicAuth from 'express-basic-auth';
 import { SentryInterceptor } from './common/interceptors/sentry.interceptor';
+import { ConfigService } from '@nestjs/config';
 
 declare const module: any;
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
-  const { port } = config.get('server');
-  const { SWAGGER_USER, SWAGGER_PASSWORD } = config.get('swagger');
+  const app = await NestFactory.create<NestApplication>(AppModule);
+  const configService = app.get(ConfigService);
+  const serverPort = configService.get('SERVER_PORT');
+  const swaggerUser = configService.get('SWAGGER_USER');
+  const swaggerPassword = configService.get('SWAGGER_PASSWORD');
+
   // Cors 적용
   // app.enableCors();
 
@@ -20,7 +23,7 @@ async function bootstrap() {
     expressBasicAuth({
       challenge: true,
       users: {
-        [SWAGGER_USER]: SWAGGER_PASSWORD,
+        [swaggerUser]: swaggerPassword,
       },
     }),
   );
@@ -36,9 +39,9 @@ async function bootstrap() {
   //Swagger 환경설정 연결
   setupSwagger(app);
 
-  await app.listen(port);
+  await app.listen(serverPort);
 
-  Logger.log(`Start Run: ${port}`);
+  Logger.log(`Start Run: ${serverPort}`);
 
   if (module.hot) {
     module.hot.accept();
