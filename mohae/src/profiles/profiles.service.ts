@@ -42,7 +42,7 @@ export class ProfilesService {
         await this.userRepository.readUserProfile(profileUserNo);
       if (!profile) {
         throw new NotFoundException(
-          `No: ${profileUserNo} 일치하는 유저가 없습니다.`,
+          `No: ${profileUserNo}에 해당하는 회원을 찾을 수 없습니다.`,
         );
       }
       const liked: number = await this.likeRepository.isLike(
@@ -126,15 +126,15 @@ export class ProfilesService {
 
       const { school, major, categories }: UpdateProfileDto = updateProfileDto;
 
-      const schoolNo = await this.schoolRepository.findOne(school);
+      const schoolNo: School = await this.schoolRepository.findOne(school);
       this.errorConfirm.notFoundError(
         schoolNo,
-        `${schoolNo}에 해당 학교를 찾을 수 없습니다.`,
+        `${school}에 해당하는 학교를 찾을 수 없습니다.`,
       );
-      const majorNo = await this.majorRepository.findOne(major);
+      const majorNo: Major = await this.majorRepository.findOne(major);
       this.errorConfirm.notFoundError(
         majorNo,
-        `${majorNo}에 해당 전공을 찾을 수 없습니다.`,
+        `${major}에 해당하는 전공을 찾을 수 없습니다.`,
       );
 
       await queryRunner.manager
@@ -161,7 +161,7 @@ export class ProfilesService {
         const categoriesNo: Category[] =
           await this.categoriesRepository.selectCategory(categories);
         const filteredCategories: Category[] = categoriesNo.filter(
-          (element) => element !== undefined,
+          (category: Category) => category !== undefined,
         );
 
         for (const categoryNo of profile.categories) {

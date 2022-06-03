@@ -107,12 +107,6 @@ export class User extends BaseEntity {
   })
   createdAt: Date;
 
-  // @Column({
-  //   type: 'varchar',
-  //   comment: '회원 개인 프로필사진',
-  //   default: null,
-  // })
-  // photo_url: string | null;
   @OneToOne(() => ProfilePhoto, (profilePhoto) => profilePhoto.user)
   profilePhoto: ProfilePhoto;
 
