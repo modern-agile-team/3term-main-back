@@ -43,13 +43,6 @@ export class BoardsService {
     private errorConfirm: ErrorConfirm,
   ) {}
 
-  async getAllBoards(): Promise<object> {
-    const boards: Board[] = await this.boardRepository.getAllBoards();
-    this.errorConfirm.notFoundError(boards, '게시글을 찾을 수 없습니다.');
-
-    return { allBoardNum: boards.length, boards };
-  }
-
   async closingBoard(): Promise<number> {
     const currentTime: Date = new Date();
     currentTime.setHours(currentTime.getHours() + 9);

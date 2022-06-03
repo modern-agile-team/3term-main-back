@@ -221,22 +221,25 @@ export class BoardRepository extends Repository<Board> {
   async getAllBoards(): Promise<Board[]> {
     try {
       return await this.createQueryBuilder('boards')
-        .leftJoin('boards.area', 'areas')
-        .leftJoin('boards.category', 'categories')
-        .leftJoin('boards.user', 'users')
+        .leftJoin('boards.area', 'area')
+        .leftJoin('boards.category', 'category')
+        .leftJoin('boards.user', 'user')
+        .leftJoin('boards.photos', 'photo')
         .select([
           'DATEDIFF(boards.deadline, now()) AS decimalDay',
+          'photo.photo_url AS photoUrl',
           'boards.no AS no',
           'boards.title AS title',
           'boards.isDeadline AS isDeadline',
           'boards.price AS price',
           'boards.target AS target',
-          'areas.no AS areaNo',
-          'areas.name AS areaName',
-          'users.nickname AS userNickname',
+          'area.no AS areaNo',
+          'area.name AS areaName',
+          'user.nickname AS userNickname',
         ])
-        .where('boards.area = areas.no')
-        .andWhere('boards.category = categories.no')
+        .where('boards.area = area.no')
+        .andWhere('boards.category = category.no')
+        .groupBy('boards.no')
         .orderBy('boards.no', 'DESC')
         .getRawMany();
     } catch (err) {

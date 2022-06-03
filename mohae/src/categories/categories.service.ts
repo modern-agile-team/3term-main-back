@@ -4,6 +4,8 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { Board } from 'src/boards/entity/board.entity';
+import { BoardRepository } from 'src/boards/repository/board.repository';
 import { Category } from './entity/category.entity';
 import { CategoryRepository } from './repository/category.repository';
 
@@ -12,6 +14,8 @@ export class CategoriesService {
   constructor(
     @InjectRepository(CategoryRepository)
     private categoryRepository: CategoryRepository,
+
+    private boardRepository: BoardRepository,
   ) {}
 
   async findAllCategories(): Promise<Category[]> {
@@ -20,24 +24,31 @@ export class CategoriesService {
     return categories;
   }
 
-  async findOneCategory(no: number): Promise<Category> {
-    const category = await this.categoryRepository.findOneCategory(no);
+  async findOneCategory(no: number): Promise<object> {
+    try {
+      if (no === 1) {
+        const boards: Board[] = await this.boardRepository.getAllBoards();
 
-    if (!category) {
-      throw new NotFoundException(
-        `${no}에 해당하는 카테고리를 찾을 수 없습니다.`,
+        return { boardNum: boards.length, categoryName: '전체 게시판', boards };
+      }
+      const category: object = await this.categoryRepository.findOneCategory(
+        no,
       );
+
+      if (!category) {
+        throw new NotFoundException(
+          `${no}에 해당하는 카테고리를 찾을 수 없습니다.`,
+        );
+      }
+
+      return {
+        boardNum: category['boards'].length,
+        categoryName: `${category['categoryName']} 게시판`,
+        category,
+      };
+    } catch (err) {
+      throw err;
     }
-
-    const affected = await this.categoryRepository.addCategoryHit(no, category);
-
-    if (!affected) {
-      throw new InternalServerErrorException(
-        '카테고리 조회 수 증가가 되지 않았습니다',
-      );
-    }
-
-    return category;
   }
 
   async readHotCategories(): Promise<Object> {
@@ -50,17 +61,5 @@ export class CategoriesService {
     }
 
     return categories;
-  }
-
-  async resetCategoryHit() {
-    const result = await this.categoryRepository.resetCategoryHit();
-
-    if (!result.success) {
-      throw new InternalServerErrorException(
-        '카테고리 조회 수 초기화가 되지 않았습니다',
-      );
-    }
-
-    return result;
   }
 }

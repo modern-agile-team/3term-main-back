@@ -36,30 +36,23 @@ import {
 } from './dto/board.dto';
 import { Board } from './entity/board.entity';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
+import { CategoriesService } from 'src/categories/categories.service';
 
 @Controller('boards')
 @UseInterceptors(SuccesseInterceptor)
 @ApiTags('Boards')
 export class BoardsController {
   private logger = new Logger('BoardsController');
-  constructor(private boardService: BoardsService) {}
+  constructor(
+    private boardService: BoardsService,
+    private categoriesService: CategoriesService,
+  ) {}
 
   @Cron('0 1 * * * *')
   async handleCron() {
     const isClosed: Number = await this.boardService.closingBoard();
 
     this.logger.verbose(`게시글 ${isClosed}개 마감처리`);
-  }
-
-  @Get()
-  async getAllBoards(): Promise<Object> {
-    const response: Object = await this.boardService.getAllBoards();
-
-    return Object.assign({
-      statusCode: 200,
-      msg: '게시글 전체 조회가 완료되었습니다.',
-      response,
-    });
   }
 
   @Get('/filter')
@@ -281,6 +274,18 @@ export class BoardsController {
     return Object.assign({
       statusCode: 200,
       msg: '게시글 상세 조회가 완료되었습니다.',
+      response,
+    });
+  }
+
+  @Get('category/:no')
+  async getByCategory(@Param('no') no: number) {
+    this.logger.verbose(`카테고리 선택 조회 시도. 카테고리 번호 : ${no}`);
+    const response = await this.categoriesService.findOneCategory(no);
+
+    return Object.assign({
+      statusCode: 200,
+      msg: '카테고리 선택 조회가 완료되었습니다.',
       response,
     });
   }
