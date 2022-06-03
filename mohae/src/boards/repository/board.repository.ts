@@ -352,7 +352,11 @@ export class BoardRepository extends Repository<Board> {
       const hotBoards = this.createQueryBuilder('boards')
         .leftJoin('boards.area', 'areas')
         .leftJoin('boards.user', 'users')
-        .leftJoin('boards.likedUser', 'likedUsers')
+        .leftJoin(
+          'boards.likedUser',
+          'likedUsers',
+          'likedUsers.likedBoardNo != boards.no OR likedUsers.likedBoardNo = boards.no',
+        )
         .select([
           'boards.no AS no',
           'DATEDIFF(boards.deadline, now()) AS decimalDay',
