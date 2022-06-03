@@ -279,9 +279,9 @@ export class BoardsController {
   }
 
   @Get('category/:no')
-  async getByCategory(@Param('no') no: number) {
+  async getByCategory(@Param('no') no: number): Promise<object> {
     this.logger.verbose(`카테고리 선택 조회 시도. 카테고리 번호 : ${no}`);
-    const response = await this.categoriesService.findOneCategory(no);
+    const response: object = await this.categoriesService.findOneCategory(no);
 
     return Object.assign({
       statusCode: 200,
