@@ -120,7 +120,6 @@ export abstract class BoardContent {
 }
 
 export class CreateBoardDto extends BoardContent {
-  @ApiProperty({ description: '0 = 상시, 7 = 일주일, 30 = 1개월, 60 = 3개월' })
   @ApiProperty({
     example: 0,
     description: 'Example 마감일 0 = 상시, 7 = 일주일, 30 = 1개월, 60 = 3개월',
@@ -131,6 +130,11 @@ export class CreateBoardDto extends BoardContent {
 }
 
 export class SearchBoardDto {
+  @ApiProperty({
+    example: 'Test',
+    description: 'Example 검색 입력 입니다.',
+    required: true,
+  })
   @IsString()
   @MaxLength(15)
   title: string;

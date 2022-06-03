@@ -48,4 +48,8 @@ export class SignUpDto {
   @IsArray()
   @IsNotEmpty()
   terms: [];
+
+  @IsString()
+  @IsOptional()
+  photo_url: string;
 }
