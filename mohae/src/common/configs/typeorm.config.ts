@@ -29,6 +29,7 @@ import { ReportContent } from 'src/reports/entity/report-base.entity';
 import { ReportedUser } from 'src/reports/entity/reported-user.entity';
 import { ReportedBoard } from 'src/reports/entity/reported-board.entity';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ProfilePhoto } from 'src/photo/entity/profile.photo.entity';
 
 export const typeOrmConfig: TypeOrmModuleAsyncOptions = {
   imports: [ConfigModule],
@@ -70,6 +71,7 @@ export const typeOrmConfig: TypeOrmModuleAsyncOptions = {
       Terms,
       TermsUser,
       Basket,
+      ProfilePhoto,
     ],
   }),
 };

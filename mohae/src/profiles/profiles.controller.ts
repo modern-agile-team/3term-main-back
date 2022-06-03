@@ -30,6 +30,7 @@ import { JudgeDuplicateNicknameDto } from './dto/judge-duplicate-nickname.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { ProfilesService } from './profiles.service';
 
+@UseGuards(AuthGuard('jwt'))
 @Controller('profile')
 @UseInterceptors(SuccesseInterceptor)
 @ApiTags('Profile')
@@ -39,7 +40,6 @@ export class ProfilesController {
     private readonly awsService: AwsService,
   ) {}
 
-  @UseGuards(AuthGuard())
   @Get('/:profileUserNo')
   @HttpCode(200)
   @ApiOperation({
@@ -147,7 +147,6 @@ export class ProfilesController {
     };
   }
 
-  @UseGuards(AuthGuard())
   @UseInterceptors(FileInterceptor('image'))
   @Patch()
   @HttpCode(201)
