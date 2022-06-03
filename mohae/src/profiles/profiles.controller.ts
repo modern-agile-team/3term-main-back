@@ -39,7 +39,7 @@ export class ProfilesController {
     private readonly awsService: AwsService,
   ) {}
 
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(AuthGuard())
   @Get('/:profileUserNo')
   @HttpCode(200)
   @ApiOperation({
@@ -147,7 +147,7 @@ export class ProfilesController {
     };
   }
 
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(AuthGuard())
   @UseInterceptors(FileInterceptor('image'))
   @Patch()
   @HttpCode(201)
@@ -205,19 +205,23 @@ export class ProfilesController {
       updateProfileDto[`${key}`] = JSON.parse(updateProfileDto[`${key}`]);
     }
 
-    // const profilePhotoUrl: any = file
-    //   ? false
-    //   : await this.awsService.uploadFileToS3(
-    //       'profile',
-    //       UserPhotoSizes.small,
-    //       file,
-    //     );
-    const profilePhotoUrl = 'hihi.jpg';
+    const profilePhotoUrl: any = file
+      ? false
+      : await this.awsService.uploadFileToS3(
+          'profile',
+          UserPhotoSizes.small,
+          file,
+        );
+    // const profilePhotoUrl = 'subro.jpg';
+    // 사진 추가 안하거나 변동 없으면 false, 사진 변경 했다면 > 변경한 url, 기본 사진으로 변경 > default.jpg로 넘겨 주면됨
     const beforeProfileUrl: string = await this.profileService.updateProfile(
       user.no,
       updateProfileDto,
       profilePhotoUrl,
     );
+    if (beforeProfileUrl) {
+      await this.awsService.deleteProfileS3Object(beforeProfileUrl);
+    }
     // 이제 beforeProfileUrl이 존재할때는 > S3에서 기존 사진 삭제하는 로직
 
     return {

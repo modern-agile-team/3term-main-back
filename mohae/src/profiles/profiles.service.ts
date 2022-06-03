@@ -152,9 +152,10 @@ export class ProfilesService {
             .deleteProfilePhoto(beforeProfile.no);
         }
 
-        await queryRunner.manager
-          .getCustomRepository(ProfilePhotoRepository)
-          .saveProfilePhoto(profilePhotoUrl, userNo);
+        if (profilePhotoUrl !== 'default.jpg')
+          await queryRunner.manager
+            .getCustomRepository(ProfilePhotoRepository)
+            .saveProfilePhoto(profilePhotoUrl, userNo);
       }
       // null 인 경우에 categories.length 가 안먹혀서 이쉑끼가 어리버리 깜
       if (categories && categories.length) {
