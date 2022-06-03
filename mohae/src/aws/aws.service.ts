@@ -142,6 +142,52 @@ export class AwsService {
     }
   }
 
+  async uploadProfileFileToS3(folder: string, file: any): Promise<string> {
+    try {
+      if (file.originalname === 'default.jpg') {
+        return 'default.jpg';
+      }
+      const profilePhotoUrl: string = `${folder}/${Date.now()}_${path.basename(
+        file.originalname,
+      )}`.replace(/ /g, '');
+
+      this.awsS3
+        .putObject({
+          Bucket: this.S3_BUCKET_NAME,
+          Key: profilePhotoUrl,
+          Body: file.buffer,
+          ACL: 'public-read',
+          ContentType: file.mimetype,
+        })
+        .promise();
+
+      return profilePhotoUrl;
+    } catch (error) {
+      throw new BadRequestException(`File upload failed : ${error}`);
+    }
+  }
+
+  async deleteProfileS3Object(
+    originProfilePhotoUrl: string,
+    callback?: (err: AWS.AWSError, data: AWS.S3.DeleteObjectOutput) => void,
+  ): Promise<{ success: true }> {
+    try {
+      await this.awsS3
+        .deleteObject(
+          {
+            Bucket: this.S3_BUCKET_NAME,
+            Key: originProfilePhotoUrl,
+          },
+          callback,
+        )
+        .promise();
+
+      return { success: true };
+    } catch (error) {
+      throw new BadRequestException(`Failed to delete file : ${error}`);
+    }
+  }
+
   public getAwsS3FileUrl(objectKey: string) {
     return `https://${this.S3_BUCKET_NAME}.s3.amazonaws.com/${objectKey}`;
   }

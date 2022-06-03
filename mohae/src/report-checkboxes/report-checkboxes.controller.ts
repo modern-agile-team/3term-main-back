@@ -12,7 +12,7 @@ import { ReportCheckbox } from './entity/report-checkboxes.entity';
 import { ReportCheckboxesService } from './report-checkboxes.service';
 
 @UseInterceptors(SuccesseInterceptor)
-@UseGuards(AuthGuard())
+@UseGuards(AuthGuard('jwt'))
 @ApiTags('Report-Checkboxes')
 @Controller('report-checkboxes')
 export class ReportCheckboxesController {

@@ -21,15 +21,8 @@ export class UserRepository extends Repository<User> {
     major: Major,
   ): Promise<User> {
     try {
-      const {
-        email,
-        password,
-        phone,
-        nickname,
-        manager,
-        name,
-        photo_url,
-      }: CreateUserDto = createUserDto;
+      const { email, password, phone, nickname, manager, name }: CreateUserDto =
+        createUserDto;
 
       const { raw } = await this.createQueryBuilder('users')
         .insert()
@@ -43,7 +36,6 @@ export class UserRepository extends Repository<User> {
             phone,
             nickname,
             manager,
-            photo_url,
             salt: password,
           },
         ])
@@ -201,13 +193,14 @@ export class UserRepository extends Repository<User> {
         .leftJoin('users.major', 'major')
         .leftJoin('users.categories', 'categories')
         .leftJoin('users.likedUser', 'likedUser')
+        .leftJoin('users.profilePhoto', 'profilePhoto')
         .select([
           'users.no',
           'users.email',
           'users.nickname',
           `users.createdAt`,
           'users.name',
-          'users.photo_url',
+          'profilePhoto.photo_url',
           'likedUser',
           'school.no',
           'school.name',
@@ -242,6 +235,20 @@ export class UserRepository extends Repository<User> {
     } catch (err) {
       throw new InternalServerErrorException(
         `${err} 유저 관계형성 도중 생긴 오류`,
+      );
+    }
+  }
+
+  async updateProfile(userNo: User, deletedNullprofile: object) {
+    try {
+      await this.createQueryBuilder('users')
+        .update(User)
+        .set(deletedNullprofile)
+        .where('no = :userNo', { userNo })
+        .execute();
+    } catch (err) {
+      throw new InternalServerErrorException(
+        `${err} 프로필 업데이트 중 알 수 없는 서버 에러입니다.`,
       );
     }
   }
