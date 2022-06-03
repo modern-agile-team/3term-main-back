@@ -5,9 +5,14 @@ import Mail = require('nodemailer/lib/mailer');
 import * as nodemailer from 'nodemailer';
 // import * as nodemailer from 'nodemailer'
 import { Injectable, UnauthorizedException } from '@nestjs/common';
-import * as config from 'config';
-
-const emailConfig = config.get('email');
+import { ConfigService } from '@nestjs/config';
+const {
+  EMAIL_AUTH_EMAIL,
+  EMAIL_AUTH_PASSWORD,
+  EMAIL_FROM_USER_NAME,
+  EMAIL_HOST,
+  EMAIL_PORT,
+} = process.env;
 
 interface EmailOptions {
   to: string;
@@ -21,19 +26,29 @@ export class EmailService {
   constructor(
     private errorConfirm: ErrorConfirm,
     private userRepository: UserRepository,
+    private configService: ConfigService,
   ) {
+    const emailHost = this.configService.get<string>('EMAIL_HOST');
+    const emailPort = this.configService.get<string>('EMAIL_PORT');
+    const emailAuthEmail = this.configService.get<string>('EMAIL_AUTH_EMAIL');
+    const emailAuthPassword = this.configService.get<string>(
+      'EMAIL_AUTH_PASSWORD',
+    );
     this.transpoter = nodemailer.createTransport({
-      host: emailConfig.EMAIL_HOST,
-      port: emailConfig.EMAIL_PORT,
+      host: emailHost,
+      port: emailPort,
       secure: false,
       auth: {
-        user: emailConfig.EMAIL_AUTH_EMAIL,
-        pass: emailConfig.EMAIL_AUTH_PASSWORD,
+        user: emailAuthEmail,
+        pass: emailAuthPassword,
       },
     });
   }
   async sendEmail(sendEmailDto) {
     try {
+      const emailFromUserName = this.configService.get<string>(
+        'EMAIL_AUTH_PASSWORD',
+      );
       const { name, email } = sendEmailDto;
       const user = await this.userRepository.signIn(email);
       const url = '비밀번호 변경 url 적어주면 됨 ㅋ';
@@ -45,7 +60,7 @@ export class EmailService {
       if (user.name === name) {
         const mailOptions: EmailOptions = {
           to: email,
-          from: emailConfig.EMAIL_FROM_USER_NAME,
+          from: emailFromUserName,
           subject: `모해로부터 온 ${name}님의 비밀번호 변경 관련 메일입니다.`,
           html: `
           아래 버튼을 누르시면 비밀번호 변경 화면으로 넘어갑니다.<br/>
