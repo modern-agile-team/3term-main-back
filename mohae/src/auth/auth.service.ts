@@ -6,19 +6,12 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { getCustomRepositoryToken, InjectRepository } from '@nestjs/typeorm';
-import {
-  ChangePasswordDto,
-  CreateUserDto,
-  ForgetPasswordDto,
-  SignInDto,
-} from './dto/auth-credential.dto';
 import { UserRepository } from './repository/user.repository';
 import * as bcrypt from 'bcryptjs';
 import { JwtService } from '@nestjs/jwt';
 import { User } from './entity/user.entity';
 import { SchoolRepository } from 'src/schools/repository/school.repository';
 import { MajorRepository } from 'src/majors/repository/major.repository';
-import * as config from 'config';
 import { CategoryRepository } from 'src/categories/repository/category.repository';
 import { ErrorConfirm } from 'src/common/utils/error';
 import { School } from 'src/schools/entity/school.entity';
@@ -29,8 +22,14 @@ import {
   TermsReporitory,
   TermsUserReporitory,
 } from 'src/terms/repository/terms.repository';
+import { Terms } from 'src/terms/entity/terms.entity';
+import { SignUpDto } from './dto/sign-up.dto';
+import { SignInDto } from './dto/sign-in.dto';
+import { ChangePasswordDto } from './dto/change-password.dto';
+import { ForgetPasswordDto } from './dto/forget-password.dto';
+import { SignDownDto } from './dto/auth-credential.dto';
+import { ConfigService } from '@nestjs/config';
 
-const jwtConfig: any = config.get('jwt');
 @Injectable()
 export class AuthService {
   constructor(
@@ -38,11 +37,15 @@ export class AuthService {
     private schoolRepository: SchoolRepository,
     private majorRepository: MajorRepository,
     private categoriesRepository: CategoryRepository,
+    private termsRepository: TermsReporitory,
+    private termsUserRepository: TermsUserReporitory,
     private connection: Connection,
     private errorConfirm: ErrorConfirm,
     private jwtService: JwtService,
+
+    private configService: ConfigService,
   ) {}
-  async signUp(createUserDto: CreateUserDto): Promise<object> {
+  async signUp(signUpDto: SignUpDto): Promise<object> {
     const queryRunner = this.connection.createQueryRunner();
 
     await queryRunner.connect();
@@ -57,7 +60,7 @@ export class AuthService {
         categories,
         password,
         terms,
-      }: CreateUserDto = createUserDto;
+      }: SignUpDto = signUpDto;
       const schoolRepo: School = await this.schoolRepository.findOne(school, {
         select: ['no'],
       });
@@ -84,6 +87,7 @@ export class AuthService {
         'email',
         email,
       );
+
       const duplicateNickname: User = await this.userRepository.duplicateCheck(
         'nickname',
         nickname,
@@ -102,11 +106,11 @@ export class AuthService {
 
       const salt: string = await bcrypt.genSalt();
       const hashedPassword: string = await bcrypt.hash(password, salt);
-      createUserDto.password = hashedPassword;
+      signUpDto.password = hashedPassword;
 
       const user: User = await queryRunner.manager
         .getCustomRepository(UserRepository)
-        .createUser(createUserDto, schoolRepo, majorRepo);
+        .createUser(signUpDto, schoolRepo, majorRepo);
       this.errorConfirm.badGatewayError(user, 'user 생성 실패');
       const termsArr: Array<object> = terms.map((boolean, index) => {
         return {
@@ -162,7 +166,7 @@ export class AuthService {
           email: user.email,
           userNo: user.no,
           issuer: 'modern-agile',
-          expiration: jwtConfig.expiresIn,
+          expiration: this.configService.get<number>('EXPIRES_IN'),
         };
         await this.userRepository.clearLoginCount(user.no);
 
@@ -210,8 +214,17 @@ export class AuthService {
     }
   }
 
-  async signDown(no: number): Promise<void> {
+  async signDown(
+    no: number,
+    userEmail: string,
+    { email }: SignDownDto,
+  ): Promise<void> {
     try {
+      if (userEmail !== email) {
+        throw new UnauthorizedException(
+          '회원님의 이메일이 일치 하지 않습니다.',
+        );
+      }
       const affected: number = await this.userRepository.signDown(no);
       if (!affected) {
         throw new InternalServerErrorException(

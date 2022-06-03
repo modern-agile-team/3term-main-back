@@ -142,6 +142,28 @@ export class AwsService {
     }
   }
 
+  async deleteProfileS3Object(
+    beforeProfileUrls: string,
+    callback?: (err: AWS.AWSError, data: AWS.S3.DeleteObjectOutput) => void,
+  ) {
+    try {
+      for await (const beforeProfileUrl of beforeProfileUrls) {
+        await this.awsS3
+          .deleteObject(
+            {
+              Bucket: this.S3_BUCKET_NAME,
+              Key: beforeProfileUrl,
+            },
+            callback,
+          )
+          .promise();
+      }
+      return { success: true };
+    } catch (err) {
+      throw new BadRequestException(`Failed to delete file : ${err}`);
+    }
+  }
+
   public getAwsS3FileUrl(objectKey: string) {
     return `https://${this.S3_BUCKET_NAME}.s3.amazonaws.com/${objectKey}`;
   }

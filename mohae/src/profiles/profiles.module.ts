@@ -19,6 +19,8 @@ import { BoardRepository } from 'src/boards/repository/board.repository';
 import { BoardsModule } from 'src/boards/boards.module';
 import { ReviewRepository } from 'src/reviews/repository/review.repository';
 import { AwsService } from 'src/aws/aws.service';
+import { ProfilePhotoRepository } from 'src/photo/repository/photo.repository';
+import { PhotoModule } from 'src/photo/photo.module';
 
 @Module({
   imports: [
@@ -31,6 +33,7 @@ import { AwsService } from 'src/aws/aws.service';
       SpecRepository,
       BoardRepository,
       ReviewRepository,
+      ProfilePhotoRepository,
     ]),
     AuthModule,
     SchoolsModule,
@@ -40,6 +43,7 @@ import { AwsService } from 'src/aws/aws.service';
     LikeModule,
     BoardsModule,
     ReviewRepository,
+    PhotoModule,
   ],
   controllers: [ProfilesController],
   providers: [ProfilesService, AwsService, ErrorConfirm],

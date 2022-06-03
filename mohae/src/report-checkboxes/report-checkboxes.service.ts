@@ -10,9 +10,8 @@ export class ReportCheckboxesService {
     private readonly reportCheckboxRepository: ReportCheckboxRepository,
   ) {}
 
-  async readAllCheckboxes(): Promise<ReportCheckbox[]> {
-    const checkList: ReportCheckbox[] =
-      await this.reportCheckboxRepository.readAllCheckboxes();
+  readAllCheckboxes(): ReportCheckbox[] {
+    const checkList: any = this.reportCheckboxRepository.readAllCheckboxes();
 
     return checkList;
   }
