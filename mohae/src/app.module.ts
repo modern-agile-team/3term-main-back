@@ -45,7 +45,7 @@ import { winstonConfig } from './common/configs/winston.config';
   imports: [
     ConfigModule.forRoot(envConfig),
     TypeOrmModule.forRootAsync(typeOrmConfig),
-    WinstonModule.forRoot(winstonConfig),
+    WinstonModule.forRootAsync(winstonConfig),
     ReportsModule,
     FaqsModule,
     CategoriesModule,
