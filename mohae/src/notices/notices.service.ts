@@ -8,6 +8,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/auth/entity/user.entity';
 import { UserRepository } from 'src/auth/repository/user.repository';
 import { ErrorConfirm } from 'src/common/utils/error';
+import { Connection } from 'typeorm';
 import { CreateNoticeDto } from './dto/create-notice.dto';
 import { UpdateNoticeDto } from './dto/update-notice.dtd';
 import { Notice } from './entity/notice.entity';
@@ -20,6 +21,8 @@ export class NoticesService {
     private noticeRepository: NoticeRepository,
 
     private userRepository: UserRepository,
+
+    private readonly connection: Connection,
     private readonly errorConfirm: ErrorConfirm,
   ) {}
 
@@ -32,7 +35,7 @@ export class NoticesService {
 
       return notices;
     } catch (err) {
-      throw new BadRequestException(err.message);
+      throw err;
     }
   }
 
@@ -40,19 +43,31 @@ export class NoticesService {
     createNoticeDto: CreateNoticeDto,
     manager: User,
   ): Promise<boolean> {
+    const queryRunner: any = this.connection.createQueryRunner();
+
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
     try {
-      const { affectedRows, insertId }: any =
-        await this.noticeRepository.createNotice(createNoticeDto, manager);
+      const { affectedRows, insertId }: any = await queryRunner.manager
+        .getCustomRepository(NoticeRepository)
+        .createNotice(createNoticeDto, manager);
 
       if (!affectedRows) {
         throw new BadGatewayException('공지사항 생성 실패');
       }
 
-      await this.userRepository.userRelation(manager.no, insertId, 'notices');
+      await queryRunner.manager
+        .getCustomRepository(UserRepository)
+        .userRelation(manager.no, insertId, 'notices');
 
+      await queryRunner.commitTransaction();
       return true;
     } catch (err) {
-      throw new BadRequestException(err.message);
+      await queryRunner.rollbackTransaction();
+      throw err;
+    } finally {
+      await queryRunner.release();
     }
   }
 
@@ -61,26 +76,31 @@ export class NoticesService {
     updateNoticeDto: UpdateNoticeDto,
     manager: User,
   ): Promise<boolean> {
+    const queryRunner: any = this.connection.createQueryRunner();
+
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
     try {
-      const updateResult = await this.noticeRepository.updateNotice(
-        noticeNo,
-        updateNoticeDto,
-        manager,
-      );
+      const updateResult = await queryRunner.manager
+        .getCustomRepository(NoticeRepository)
+        .updateNotice(noticeNo, updateNoticeDto, manager);
 
       if (!updateResult) {
         throw new BadGatewayException('공지사항 수정 실패');
       }
 
-      await this.userRepository.userRelation(
-        manager.no,
-        noticeNo,
-        'modifiedNotices',
-      );
+      await queryRunner.manager
+        .getCustomRepository(UserRepository)
+        .userRelation(manager.no, noticeNo, 'modifiedNotices');
 
+      await queryRunner.commitTransaction();
       return true;
     } catch (err) {
-      throw new BadRequestException(err.message);
+      await queryRunner.rollbackTransaction();
+      throw err;
+    } finally {
+      await queryRunner.release();
     }
   }
 
@@ -96,7 +116,7 @@ export class NoticesService {
 
       return true;
     } catch (err) {
-      throw new BadRequestException(err.message);
+      throw err;
     }
   }
 }
