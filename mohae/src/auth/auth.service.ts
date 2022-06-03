@@ -1,4 +1,5 @@
 import {
+  BadGatewayException,
   ConflictException,
   Injectable,
   InternalServerErrorException,
@@ -215,7 +216,7 @@ export class AuthService {
   }
 
   async signDown(
-    no: number,
+    userNo: number,
     userEmail: string,
     { email }: SignDownDto,
   ): Promise<void> {
@@ -225,10 +226,10 @@ export class AuthService {
           '회원님의 이메일이 일치 하지 않습니다.',
         );
       }
-      const affected: number = await this.userRepository.signDown(no);
+      const affected: number = await this.userRepository.signDown(userNo);
       if (!affected) {
         throw new InternalServerErrorException(
-          `${no} 회원님의 회원탈퇴가 정상적으로 이루어 지지 않았습니다.`,
+          `${userNo} 회원님의 회원탈퇴가 정상적으로 이루어 지지 않았습니다.`,
         );
       }
     } catch (err) {
@@ -246,7 +247,7 @@ export class AuthService {
       }: ChangePasswordDto = changePasswordDto;
 
       if (changePassword !== confirmChangePassword) {
-        throw new UnauthorizedException(
+        throw new BadGatewayException(
           '새비밀번호와 새비밀번호 확인이 일치하지 않습니다',
         );
       }
@@ -254,7 +255,7 @@ export class AuthService {
       const isPassword: boolean = await bcrypt.compare(nowPassword, user.salt);
       if (user && isPassword) {
         if (nowPassword === changePassword) {
-          throw new UnauthorizedException(
+          throw new ConflictException(
             '이전의 비밀번호로는 변경하실 수 없습니다.',
           );
         }
@@ -286,7 +287,7 @@ export class AuthService {
       }: ForgetPasswordDto = forgetPasswordDto;
 
       if (changePassword !== confirmChangePassword) {
-        throw new UnauthorizedException(
+        throw new BadGatewayException(
           '새비밀번호와 새비밀번호 확인이 일치하지 않습니다',
         );
       }
@@ -299,7 +300,7 @@ export class AuthService {
         );
 
         if (isPassword) {
-          throw new UnauthorizedException(
+          throw new ConflictException(
             '이전 비밀번호로는 변경하실 수 없습니다.',
           );
         }
