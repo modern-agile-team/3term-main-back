@@ -1,4 +1,9 @@
+# Environment variable
 **.env
+**.env.development
+**.env.production
+**.env.local
+**.env.test
 
 # compiled output
 /dist
