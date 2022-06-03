@@ -23,14 +23,12 @@ import {
 } from '@nestjs/swagger';
 import { User } from '@sentry/node';
 import { AwsService } from 'src/aws/aws.service';
-import { UserPhotoSizes } from 'src/common/configs/photo-size.config';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 import { SuccesseInterceptor } from 'src/common/interceptors/success.interceptor';
 import { JudgeDuplicateNicknameDto } from './dto/judge-duplicate-nickname.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { ProfilesService } from './profiles.service';
 
-@UseGuards(AuthGuard('jwt'))
 @Controller('profile')
 @UseInterceptors(SuccesseInterceptor)
 @ApiTags('Profile')
@@ -40,8 +38,6 @@ export class ProfilesController {
     private readonly awsService: AwsService,
   ) {}
 
-  @Get('/:profileUserNo')
-  @HttpCode(200)
   @ApiOperation({
     summary: '한 명의 유저 프로필 전체 조회 API',
     description: '한명의 유저 프로필을 한번에 불러온다',
@@ -85,6 +81,9 @@ export class ProfilesController {
       },
     },
   })
+  @UseGuards(AuthGuard('jwt'))
+  @HttpCode(200)
+  @Get('/:profileUserNo')
   async readUserProfile(
     @Param('profileUserNo') profileUserNo: number,
     @CurrentUser() user: User,
@@ -93,15 +92,13 @@ export class ProfilesController {
       profileUserNo,
       user.no,
     );
+
     return {
       msg: '프로필 조회에 성공했습니다.',
       response,
     };
   }
 
-  // 여기는 AuthGuard 걸어주면 안됨 회원가입할때 닉네임 중복 확인 로직 이걸로 사용됨
-  @Post('/check-nickname')
-  @HttpCode(200)
   @ApiOperation({
     summary: '프로필 수정에서 닉네임 변경확인 API',
     description: '변경할 수 있는 닉네임인지 확인한다.',
@@ -137,6 +134,8 @@ export class ProfilesController {
       },
     },
   })
+  @HttpCode(200)
+  @Post('/check-nickname')
   async judgeDuplicateNickname(
     @Body() judgeDuplicateNicknameDto: JudgeDuplicateNicknameDto,
   ) {
@@ -147,9 +146,6 @@ export class ProfilesController {
     };
   }
 
-  @UseInterceptors(FileInterceptor('image'))
-  @Patch()
-  @HttpCode(201)
   @ApiOperation({
     summary: '유저 프로필 정보 수정 API',
     description: '유저 프로필 정보를 수정한다.',
@@ -194,7 +190,10 @@ export class ProfilesController {
       },
     },
   })
-  @UseGuards(AuthGuard())
+  @HttpCode(201)
+  @UseGuards(AuthGuard('jwt'))
+  @UseInterceptors(FileInterceptor('image'))
+  @Patch()
   async updateProfile(
     @UploadedFile() file: Express.Multer.File,
     @Body() updateProfileDto: UpdateProfileDto,
@@ -204,24 +203,19 @@ export class ProfilesController {
       updateProfileDto[`${key}`] = JSON.parse(updateProfileDto[`${key}`]);
     }
 
-    const profilePhotoUrl: any = file
+    const profilePhotoUrl: boolean | string = !file
       ? false
-      : await this.awsService.uploadFileToS3(
-          'profile',
-          UserPhotoSizes.small,
-          file,
-        );
-    // const profilePhotoUrl = 'subro.jpg';
-    // 사진 추가 안하거나 변동 없으면 false, 사진 변경 했다면 > 변경한 url, 기본 사진으로 변경 > default.jpg로 넘겨 주면됨
-    const beforeProfileUrl: string = await this.profileService.updateProfile(
-      user.no,
-      updateProfileDto,
-      profilePhotoUrl,
-    );
+      : await this.awsService.uploadProfileFileToS3('profile', file);
+    const beforeProfileUrl: string | undefined =
+      await this.profileService.updateProfile(
+        user.no,
+        updateProfileDto,
+        profilePhotoUrl,
+      );
+
     if (beforeProfileUrl) {
       await this.awsService.deleteProfileS3Object(beforeProfileUrl);
     }
-    // 이제 beforeProfileUrl이 존재할때는 > S3에서 기존 사진 삭제하는 로직
 
     return {
       msg: '프로필 정보 수정이 완료되었습니다.',
