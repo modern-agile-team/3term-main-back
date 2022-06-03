@@ -19,12 +19,11 @@ import { ReportedBoard } from './entity/reported-board.entity';
 import { ReportedUser } from './entity/reported-user.entity';
 import { ReportsService } from './reports.service';
 
-@Controller('reports')
 @UseInterceptors(SuccesseInterceptor)
 @UseGuards(AuthGuard())
 @ApiTags('Reports')
+@Controller('reports')
 export class ReportsController {
-  private logger = new Logger('ReportsController');
   constructor(private reportsService: ReportsService) {}
 
   @ApiOperation({
@@ -36,12 +35,6 @@ export class ReportsController {
   async readOneReportedBoard(@Param('no') boardNo: number): Promise<object> {
     const response: ReportedBoard =
       await this.reportsService.readOneReportedBoard(boardNo);
-
-    this.logger.verbose(
-      `Reported list(board) has been received. Report Payload: ${JSON.stringify(
-        response,
-      )}`,
-    );
 
     return {
       msg: `No:${boardNo} 신고 내역(게시글)이 조회되었습니다.`,

@@ -4,9 +4,11 @@ import { ReportCheckbox } from '../entity/report-checkboxes.entity';
 
 @EntityRepository(ReportCheckbox)
 export class ReportCheckboxRepository extends Repository<ReportCheckbox> {
-  async readAllCheckboxes(): Promise<ReportCheckbox[]> {
+  async readAllCheckboxes(): Promise<any> {
     try {
-      const checkedReport = this.createQueryBuilder('report_checkboxes')
+      const checkedReport: ReportCheckbox[] = await this.createQueryBuilder(
+        'report_checkboxes',
+      )
         .leftJoin('report_checkboxes.reportedBoards', 'boardReportChecks')
         .leftJoin('boardReportChecks.reportedBoard', 'reportedBoard')
         .leftJoin('report_checkboxes.reportedUsers', 'userReportChecks')
@@ -24,23 +26,23 @@ export class ReportCheckboxRepository extends Repository<ReportCheckbox> {
         .getMany();
 
       return checkedReport;
-    } catch (e) {
-      throw new InternalServerErrorException(
-        `${e} ### 체크박스 전체 조회 : 알 수 없는 서버 에러입니다.`,
-      );
+    } catch (err) {
+      throw new InternalServerErrorException(err.message);
     }
   }
 
-  async selectCheckConfirm(no: number) {
+  async selectCheckConfirm(checkNo: number): Promise<ReportCheckbox> {
     try {
-      const checkInfo = await this.createQueryBuilder('report_checkboxes')
+      const checkInfo: ReportCheckbox = await this.createQueryBuilder(
+        'report_checkboxes',
+      )
         .select()
-        .where('report_checkboxes.no = :no', { no })
+        .where('report_checkboxes.no = :checkNo', { checkNo })
         .getOne();
 
       return checkInfo;
-    } catch (e) {
-      throw new InternalServerErrorException(e);
+    } catch (err) {
+      throw new InternalServerErrorException(err.message);
     }
   }
 }

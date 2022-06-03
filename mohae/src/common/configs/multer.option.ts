@@ -1,6 +1,5 @@
 import * as path from 'path';
 import { HttpException, HttpStatus } from '@nestjs/common';
-import * as config from 'config';
 
 // Multer configuration
 export const multerOptions = {

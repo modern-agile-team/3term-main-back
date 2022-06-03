@@ -6,14 +6,12 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { getCustomRepositoryToken, InjectRepository } from '@nestjs/typeorm';
-
 import { UserRepository } from './repository/user.repository';
 import * as bcrypt from 'bcryptjs';
 import { JwtService } from '@nestjs/jwt';
 import { User } from './entity/user.entity';
 import { SchoolRepository } from 'src/schools/repository/school.repository';
 import { MajorRepository } from 'src/majors/repository/major.repository';
-import * as config from 'config';
 import { CategoryRepository } from 'src/categories/repository/category.repository';
 import { ErrorConfirm } from 'src/common/utils/error';
 import { School } from 'src/schools/entity/school.entity';
@@ -30,8 +28,8 @@ import { SignInDto } from './dto/sign-in.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { ForgetPasswordDto } from './dto/forget-password.dto';
 import { SignDownDto } from './dto/auth-credential.dto';
+import { ConfigService } from '@nestjs/config';
 
-const jwtConfig: any = config.get('jwt');
 @Injectable()
 export class AuthService {
   constructor(
@@ -44,6 +42,8 @@ export class AuthService {
     private connection: Connection,
     private errorConfirm: ErrorConfirm,
     private jwtService: JwtService,
+
+    private configService: ConfigService,
   ) {}
   async signUp(signUpDto: SignUpDto): Promise<object> {
     const queryRunner = this.connection.createQueryRunner();
@@ -166,7 +166,7 @@ export class AuthService {
           email: user.email,
           userNo: user.no,
           issuer: 'modern-agile',
-          expiration: jwtConfig.expiresIn,
+          expiration: this.configService.get<number>('EXPIRES_IN'),
         };
         await this.userRepository.clearLoginCount(user.no);
 

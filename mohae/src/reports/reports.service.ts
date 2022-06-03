@@ -14,6 +14,7 @@ import { ReportedUserRepository } from './repository/reported-user.repository';
 import { ReportedBoard } from './entity/reported-board.entity';
 import { ReportedUser } from './entity/reported-user.entity';
 import { UserReportChecksRepository } from 'src/report-checks/repository/user-report-checks.repository';
+import { Connection } from 'typeorm';
 
 @Injectable()
 export class ReportsService {
@@ -28,6 +29,7 @@ export class ReportsService {
     private boardReportChecksRepository: BoardReportChecksRepository,
     private userReportChecksRepository: UserReportChecksRepository,
 
+    private connection: Connection,
     private errorConfirm: ErrorConfirm,
   ) {}
 
@@ -63,10 +65,12 @@ export class ReportsService {
     }
   }
 
-  async createReport(reporter: User, createReportDto: CreateReportDto) {
+  async createReport(
+    reporter: User,
+    createReportDto: CreateReportDto,
+  ): Promise<void> {
     const reportUserNo: number = reporter.no;
-    const { head, headNo, checks, description }: CreateReportDto =
-      createReportDto;
+    const { head, checks }: CreateReportDto = createReportDto;
     const uniqueChecks: Array<number> = checks.filter(
       (checkNo: number, index) => {
         return checks.indexOf(checkNo) === index;
@@ -78,104 +82,137 @@ export class ReportsService {
       },
     );
 
-    switch (head) {
-      // 게시글 신고일 때의 로직
-      case 'board':
-        try {
-          const board: Board = await this.boardRepository.findOne(headNo, {
-            select: ['no'],
-            relations: ['reports'],
-          });
+    if (head === 'board') {
+      this.createBoardReport(createReportDto, infoToChecks, reportUserNo);
+    } else if (head === 'user') {
+      this.createUserReport(createReportDto, infoToChecks, reportUserNo);
+    }
 
-          this.errorConfirm.notFoundError(
-            board,
-            '신고하려는 게시글이 존재하지 않습니다.',
-          );
+    throw new BadRequestException('Head를 확인해 주세요.');
+  }
 
-          const createBoardReportResult =
-            await this.reportedBoardRepository.createBoardReport(description);
+  async createBoardReport(
+    { headNo, description }: CreateReportDto,
+    infoToChecks: Promise<ReportCheckbox>[],
+    reportUserNo: number,
+  ): Promise<void> {
+    const queryRunner: any = this.connection.createQueryRunner();
 
-          this.errorConfirm.badGatewayError(
-            createBoardReportResult.affectedRows,
-            '게시글 신고 저장 실패',
-          );
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
 
-          infoToChecks.forEach(async (checkNo: Promise<ReportCheckbox>) => {
-            const saveResult: Promise<boolean> =
-              this.boardReportChecksRepository.saveBoardReportChecks(
-                createBoardReportResult.insertId,
-                await checkNo,
-              );
+    try {
+      const board: Board = await this.boardRepository.findOne(headNo, {
+        select: ['no'],
+        relations: ['reports'],
+      });
 
-            this.errorConfirm.badGatewayError(
-              saveResult,
-              '게시글 신고 : 체크된 신고 내용 저장 실패',
-            );
-          });
+      this.errorConfirm.notFoundError(
+        board,
+        '신고하려는 게시글이 존재하지 않습니다.',
+      );
 
-          board.reports.push(createBoardReportResult.insertId);
-          await this.boardRepository.save(board);
-          await this.userRepository.userRelation(
-            reportUserNo,
+      const createBoardReportResult = await queryRunner.manager
+        .getCustomRepository(ReportedBoardRepository)
+        .createBoardReport(description);
+
+      this.errorConfirm.badGatewayError(
+        createBoardReportResult.affectedRows,
+        '게시글 신고 저장 실패',
+      );
+
+      infoToChecks.forEach(async (checkNo: Promise<ReportCheckbox>) => {
+        const saveResult: Promise<boolean> = queryRunner.manager
+          .getCustomRepository(BoardReportChecksRepository)
+          .saveBoardReportChecks(
             createBoardReportResult.insertId,
-            'boardReport',
+            await checkNo,
           );
 
-          break;
-        } catch (err) {
-          throw err;
-        }
-      // 유저 신고일 때의 로직
-      case 'user':
-        try {
-          const user: User = await this.userRepository.findOne(headNo, {
-            select: ['no'],
-            relations: ['reports'],
-          });
+        this.errorConfirm.badGatewayError(
+          saveResult,
+          '게시글 신고 : 체크된 신고 내용 저장 실패',
+        );
+      });
 
-          this.errorConfirm.notFoundError(
-            user,
-            '신고하려는 유저가 존재하지 않습니다.',
-          );
+      board.reports.push(createBoardReportResult.insertId);
 
-          const createUserReportResult: any =
-            await this.reportedUserRepository.createUserReport(description);
+      await queryRunner.manager
+        .getCustomRepository(BoardRepository)
+        .save(board);
+      await queryRunner.manager
+        .getCustomRepository(UserRepository)
+        .userRelation(
+          reportUserNo,
+          createBoardReportResult.insertId,
+          'boardReport',
+        );
+      await queryRunner.commitTransaction();
+    } catch (err) {
+      await queryRunner.rollbackTransaction();
+      throw err;
+    } finally {
+      await queryRunner.release();
+    }
+  }
 
-          this.errorConfirm.badGatewayError(
-            createUserReportResult.affectedRows,
-            '유저 신고 저장 실패',
-          );
+  async createUserReport(
+    { headNo, description }: CreateReportDto,
+    infoToChecks: Promise<ReportCheckbox>[],
+    reportUserNo: number,
+  ): Promise<void> {
+    const queryRunner: any = this.connection.createQueryRunner();
 
-          infoToChecks.forEach(async (checkNo) => {
-            const saveResult: Promise<boolean> =
-              await this.userReportChecksRepository.saveUserReportChecks(
-                createUserReportResult.insertId,
-                await checkNo,
-              );
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
 
-            this.errorConfirm.badGatewayError(
-              saveResult,
-              '유저 신고 : 체크된 신고 내용 저장 실패',
-            );
-          });
+    try {
+      const user: User = await this.userRepository.findOne(headNo, {
+        select: ['no'],
+        relations: ['reports'],
+      });
 
-          await this.userRepository.userRelation(
-            user.no,
-            createUserReportResult.insertId,
-            'reports',
-          );
-          await this.userRepository.userRelation(
-            reportUserNo,
-            createUserReportResult.insertId,
-            'userReport',
-          );
+      this.errorConfirm.notFoundError(
+        user,
+        '신고하려는 유저가 존재하지 않습니다.',
+      );
 
-          break;
-        } catch (err) {
-          throw err;
-        }
-      default:
-        throw new BadRequestException('해당 경로를 찾을 수 없습니다.');
+      const createUserReportResult: any = await queryRunner.manager
+        .getCustomRepository(ReportedUserRepository)
+        .createUserReport(description);
+
+      this.errorConfirm.badGatewayError(
+        createUserReportResult.affectedRows,
+        '유저 신고 저장 실패',
+      );
+
+      infoToChecks.forEach(async (checkNo) => {
+        const saveResult: Promise<boolean> = await queryRunner.manager
+          .getCustomRepository(UserReportChecksRepository)
+          .saveUserReportChecks(createUserReportResult.insertId, await checkNo);
+
+        this.errorConfirm.badGatewayError(
+          saveResult,
+          '유저 신고 : 체크된 신고 내용 저장 실패',
+        );
+      });
+
+      await queryRunner.manager
+        .getCustomRepository(UserRepository)
+        .userRelation(user.no, createUserReportResult.insertId, 'reports');
+      await queryRunner.manager
+        .getCustomRepository(UserRepository)
+        .userRelation(
+          reportUserNo,
+          createUserReportResult.insertId,
+          'userReport',
+        );
+      await queryRunner.commitTransaction();
+    } catch (err) {
+      await queryRunner.rollbackTransaction();
+      throw err;
+    } finally {
+      await queryRunner.release();
     }
   }
 }
