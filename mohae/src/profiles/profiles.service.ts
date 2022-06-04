@@ -19,6 +19,7 @@ import { JudgeDuplicateNicknameDto } from './dto/judge-duplicate-nickname.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { Connection } from 'typeorm';
 import { ProfilePhoto } from 'src/photo/entity/profile.photo.entity';
+import { array, boolean } from 'joi';
 
 @Injectable()
 export class ProfilesService {
@@ -43,13 +44,15 @@ export class ProfilesService {
         userNo,
       );
 
-      profile.categories = profile.categoryNo.split('|').map((el) => {
-        const temp = el.split(',');
-        return {
-          no: temp[0],
-          name: temp[1],
-        };
-      });
+      profile.categories = profile.categoryNo
+        .split('|')
+        .map((categoriesInfo: string) => {
+          const categoryInfo: string[] = categoriesInfo.split(',');
+          return {
+            no: categoryInfo[0],
+            name: categoryInfo[1],
+          };
+        });
 
       profile.isLike = !!Number(profile.isLike);
       delete profile.categoryNo;
