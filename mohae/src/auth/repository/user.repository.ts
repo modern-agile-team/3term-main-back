@@ -185,8 +185,8 @@ export class UserRepository extends Repository<User> {
       );
     }
   }
-  // 프로필 관련 기능
-  async readUserProfile(userNo: number): Promise<object> {
+
+  async readUserProfile(profileUserNo: number, userNo: number): Promise<User> {
     try {
       const profile: User = await this.createQueryBuilder('users')
         .leftJoin('users.school', 'school')
@@ -194,31 +194,28 @@ export class UserRepository extends Repository<User> {
         .leftJoin('users.categories', 'categories')
         .leftJoin('users.likedUser', 'likedUser')
         .leftJoin('users.profilePhoto', 'profilePhoto')
-        .select([
-          'users.no',
-          'users.email',
-          'users.nickname',
-          `users.createdAt`,
-          'users.name',
-          'profilePhoto.photo_url',
-          'likedUser',
-          'school.no',
-          'school.name',
-          'major.no',
-          'major.name',
-          'categories.no',
-          'categories.name',
-        ])
-        .where('users.no = :userNo', { userNo })
-        .getOne();
-
-      const { boardsCount }: any = await this.createQueryBuilder('users')
         .leftJoin('users.boards', 'boards')
-        .select('COUNT(boards.no) AS boardsNum')
-        .where('users.no = :userNo', { userNo })
+        .select([
+          'users.no AS userNo',
+          'users.email AS email',
+          'users.nickname AS nickname',
+          `DATE_FORMAT(users.createdAt, '%Y.%m.%d') AS createdAt`,
+          'users.name AS name',
+          'profilePhoto.photo_url AS photo_url',
+          'COUNT(DISTINCT boards.no) AS boardNum',
+          `EXISTS(SELECT no FROM user_like WHERE user_like.likedMeNo = ${userNo} AND user_like.likedUserNo = ${profileUserNo}) AS isLike`,
+          'COUNT(DISTINCT likedUser.no) AS likedUserNum',
+          'school.no AS schoolNo',
+          'school.name AS schoolName',
+          'major.no AS majorNo',
+          'major.name AS majorName',
+          'GROUP_CONCAT(DISTINCT CONCAT_WS(",", categories.no ,categories.name) SEPARATOR "|") AS categoryNo',
+          'categories.name AS categoryName',
+        ])
+        .where('users.no = :profileUserNo', { profileUserNo })
         .getRawOne();
 
-      return { profile, boardsCount };
+      return profile;
     } catch (err) {
       throw new InternalServerErrorException(
         `${err} ### 유저 프로필 선택 조회 : 알 수 없는 서버 에러입니다.`,

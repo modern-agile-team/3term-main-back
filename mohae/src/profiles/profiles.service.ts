@@ -38,32 +38,27 @@ export class ProfilesService {
     userNo: number,
   ): Promise<object> {
     try {
-      const { profile, boardsCount }: any =
-        await this.userRepository.readUserProfile(profileUserNo);
+      const profile: any = await this.userRepository.readUserProfile(
+        profileUserNo,
+        userNo,
+      );
+
+      profile.categories = profile.categoryNo.split('|').map((el) => {
+        const temp = el.split(',');
+        return {
+          no: temp[0],
+          name: temp[1],
+        };
+      });
+
+      profile.isLike = !!Number(profile.isLike);
+      delete profile.categoryNo;
 
       if (!profile) {
         throw new NotFoundException(
           `No: ${profileUserNo}에 해당하는 회원을 찾을 수 없습니다.`,
         );
       }
-
-      const liked: number = await this.likeRepository.isLike(
-        profileUserNo,
-        userNo,
-      );
-      const islike: boolean = liked ? true : false;
-      const { likedUser, createdAt }: any = profile;
-      const userCreatedAt = `${createdAt.getFullYear()}.${
-        createdAt.getMonth() + 1
-      }.${createdAt.getDate()}`;
-
-      delete profile.likedUser;
-      delete profile.createdAt;
-
-      profile['userCreatedAt'] = `${userCreatedAt}`;
-      profile['likedCount'] = likedUser.length;
-      profile['boardsCount'] = Number(boardsCount);
-      profile['islike'] = islike;
 
       return {
         profile,
