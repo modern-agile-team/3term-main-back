@@ -40,17 +40,18 @@ export class ProfilesService {
     try {
       const { profile, boardsCount }: any =
         await this.userRepository.readUserProfile(profileUserNo);
+
       if (!profile) {
         throw new NotFoundException(
           `No: ${profileUserNo}에 해당하는 회원을 찾을 수 없습니다.`,
         );
       }
+
       const liked: number = await this.likeRepository.isLike(
         profileUserNo,
         userNo,
       );
       const islike: boolean = liked ? true : false;
-
       const { likedUser, createdAt }: any = profile;
       const userCreatedAt = `${createdAt.getFullYear()}.${
         createdAt.getMonth() + 1
@@ -78,6 +79,7 @@ export class ProfilesService {
     try {
       const { no, nickname }: JudgeDuplicateNicknameDto =
         judgeDuplicateNicknameDto;
+
       if (no) {
         const user: User = await this.userRepository.findOne(no, {
           select: ['no', 'nickname'],
@@ -87,6 +89,7 @@ export class ProfilesService {
           throw new ConflictException('현재 닉네임입니다.');
         }
       }
+
       const duplicateNickname: User = await this.userRepository.duplicateCheck(
         'nickname',
         nickname,
@@ -109,11 +112,11 @@ export class ProfilesService {
 
     await queryRunner.connect();
     await queryRunner.startTransaction();
+
     try {
       const profile: User = await this.userRepository.findOne(userNo, {
         relations: ['categories'],
       });
-
       const profileKeys: string[] = Object.keys(updateProfileDto);
       const deletedNullprofile: object = {};
 
@@ -125,13 +128,15 @@ export class ProfilesService {
       delete deletedNullprofile['categories'];
 
       const { school, major, categories }: UpdateProfileDto = updateProfileDto;
-
       const schoolNo: School = await this.schoolRepository.findOne(school);
+
       this.errorConfirm.notFoundError(
         schoolNo,
         `${school}에 해당하는 학교를 찾을 수 없습니다.`,
       );
+
       const majorNo: Major = await this.majorRepository.findOne(major);
+
       this.errorConfirm.notFoundError(
         majorNo,
         `${major}에 해당하는 전공을 찾을 수 없습니다.`,
@@ -144,20 +149,17 @@ export class ProfilesService {
       const beforeProfile: ProfilePhoto =
         await this.profilePhotoRepository.readProfilePhoto(userNo);
 
-      // 새로 들어온 profilePhoto가 존재하고, beforeProfile이 존재하면! > 기존 삭제 삭제하고, 새로운 사진 집어넣기
       if (profilePhotoUrl) {
         if (beforeProfile) {
           await queryRunner.manager
             .getCustomRepository(ProfilePhotoRepository)
             .deleteProfilePhoto(beforeProfile.no);
         }
-
         if (profilePhotoUrl !== 'default.jpg')
           await queryRunner.manager
             .getCustomRepository(ProfilePhotoRepository)
             .saveProfilePhoto(profilePhotoUrl, userNo);
       }
-      // null 인 경우에 categories.length 가 안먹혀서 이쉑끼가 어리버리 깜
       if (categories && categories.length) {
         const categoriesNo: Category[] =
           await this.categoriesRepository.selectCategory(categories);
@@ -176,6 +178,7 @@ export class ProfilesService {
             .addUser(categoryNo.no, userNo);
       }
       await queryRunner.commitTransaction();
+
       return beforeProfile && profilePhotoUrl
         ? beforeProfile.photo_url
         : undefined;

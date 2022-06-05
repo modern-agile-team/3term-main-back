@@ -21,15 +21,8 @@ export class UserRepository extends Repository<User> {
     major: Major,
   ): Promise<User> {
     try {
-      const {
-        email,
-        password,
-        phone,
-        nickname,
-        manager,
-        name,
-      }: // photo_url,
-      CreateUserDto = createUserDto;
+      const { email, password, phone, nickname, manager, name }: CreateUserDto =
+        createUserDto;
 
       const { raw } = await this.createQueryBuilder('users')
         .insert()
@@ -43,7 +36,6 @@ export class UserRepository extends Repository<User> {
             phone,
             nickname,
             manager,
-            // photo_url,
             salt: password,
           },
         ])
