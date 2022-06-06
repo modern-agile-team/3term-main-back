@@ -1,8 +1,4 @@
-import {
-  BadGatewayException,
-  BadRequestException,
-  Injectable,
-} from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/auth/entity/user.entity';
 import { UserRepository } from 'src/auth/repository/user.repository';
@@ -21,7 +17,7 @@ export class FaqsService {
 
     private userRepository: UserRepository,
 
-    private readonly connection: Connection,
+    private connection: Connection,
     private errorConfirm: ErrorConfirm,
   ) {}
 
@@ -32,7 +28,7 @@ export class FaqsService {
 
       return faqs;
     } catch (err) {
-      throw new BadRequestException(err.message);
+      throw err;
     }
   }
 
