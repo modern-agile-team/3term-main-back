@@ -43,15 +43,11 @@ export class LettersController {
     @Body() sendLetterDto: SendLetterDto,
   ): Promise<object> {
     if (sendImage) {
-      const image: { imageUrl: string; imageKey: string } =
+      const { imageUrl, imageKey }: { imageUrl: string; imageKey: string } =
         this.awsService.makeImageKey('letters', sendImage);
 
-      await this.lettersService.sendLetter(
-        sender,
-        sendLetterDto,
-        image.imageUrl,
-      );
-      await this.awsService.uploadLetterPhotoToS3(image.imageKey, sendImage);
+      await this.lettersService.sendLetter(sender, sendLetterDto, imageUrl);
+      await this.awsService.uploadLetterPhotoToS3(imageKey, sendImage);
     } else {
       await this.lettersService.sendLetter(sender, sendLetterDto);
     }
