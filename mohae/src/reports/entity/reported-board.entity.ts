@@ -14,9 +14,13 @@ export class ReportedBoard extends ReportContent {
   @JoinColumn({ name: 'reported_board_no' })
   reportedBoard: Board;
 
-  @OneToMany(() => BoardReportChecks, (checks) => checks.reportedBoard, {
-    nullable: true,
-  })
+  @OneToMany(
+    () => BoardReportChecks,
+    (boardReportCheck) => boardReportCheck.reportedBoard,
+    {
+      nullable: true,
+    },
+  )
   checks: BoardReportChecks[];
 
   @ManyToOne(() => User, (user) => user.boardReport, {

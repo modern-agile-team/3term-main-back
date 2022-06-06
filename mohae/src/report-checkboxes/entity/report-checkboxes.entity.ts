@@ -21,12 +21,12 @@ export class ReportCheckbox extends BaseEntity {
   content: string;
 
   /* 신고 체크박스 Relations */
-  @OneToMany((type) => BoardReportChecks, (boardReport) => boardReport.check, {
+  @OneToMany(() => BoardReportChecks, (boardReport) => boardReport.check, {
     nullable: true,
   })
   reportedBoards: BoardReportChecks[];
 
-  @OneToMany((type) => UserReportChecks, (userReport) => userReport.check, {
+  @OneToMany(() => UserReportChecks, (userReport) => userReport.check, {
     nullable: true,
   })
   reportedUsers: UserReportChecks[];
