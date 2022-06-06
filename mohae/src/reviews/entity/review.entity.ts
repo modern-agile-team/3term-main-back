@@ -2,7 +2,6 @@ import {
   IsNotEmpty,
   IsNumber,
   IsString,
-  Length,
   Max,
   MaxLength,
   Min,
@@ -15,6 +14,7 @@ import {
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
+  JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
@@ -61,18 +61,30 @@ export class Review extends BaseEntity {
   deletedAt: Date | null;
 
   /* 게시글 리뷰 Relations */
-  @ManyToOne((type) => Board, (board) => board.reviews, {
-    onDelete: 'SET NULL',
+  @ManyToOne(() => Board, (board) => board.reviews, {
+    onUpdate: 'CASCADE',
+    onDelete: 'CASCADE',
+  })
+  @JoinColumn({
+    name: 'board_no',
   })
   board: Board;
 
-  @ManyToOne((type) => User, (user) => user.reviews, {
-    onDelete: 'SET NULL',
+  @ManyToOne(() => User, (user) => user.reviews, {
+    onUpdate: 'CASCADE',
+    onDelete: 'CASCADE',
+  })
+  @JoinColumn({
+    name: 'reviewer_no',
   })
   reviewer: User;
 
-  @ManyToOne((type) => User, (user) => user.reviewBasket, {
-    onDelete: 'SET NULL',
+  @ManyToOne(() => User, (user) => user.reviewBasket, {
+    onUpdate: 'CASCADE',
+    onDelete: 'CASCADE',
+  })
+  @JoinColumn({
+    name: 'target_user_no',
   })
   targetUser: User;
 }
