@@ -20,7 +20,7 @@ import { ReportedUser } from './entity/reported-user.entity';
 import { ReportsService } from './reports.service';
 
 @UseInterceptors(SuccesseInterceptor)
-@UseGuards(AuthGuard())
+@UseGuards(AuthGuard('jwt'))
 @ApiTags('Reports')
 @Controller('reports')
 export class ReportsController {
@@ -30,8 +30,8 @@ export class ReportsController {
     summary: '신고된 게시글 상세(선택) 조회',
     description: '신고된 게시글 상세(선택) 조회 API',
   })
-  @Get('board/:no')
   @HttpCode(200)
+  @Get('board/:no')
   async readOneReportedBoard(@Param('no') boardNo: number): Promise<object> {
     const response: ReportedBoard =
       await this.reportsService.readOneReportedBoard(boardNo);

@@ -14,7 +14,7 @@ import { ReportedUserRepository } from './repository/reported-user.repository';
 import { ReportedBoard } from './entity/reported-board.entity';
 import { ReportedUser } from './entity/reported-user.entity';
 import { UserReportChecksRepository } from 'src/report-checks/repository/user-report-checks.repository';
-import { Connection } from 'typeorm';
+import { Connection, QueryRunner } from 'typeorm';
 
 @Injectable()
 export class ReportsService {
@@ -72,7 +72,7 @@ export class ReportsService {
     const reportUserNo: number = reporter.no;
     const { head, checks }: CreateReportDto = createReportDto;
     const uniqueChecks: Array<number> = checks.filter(
-      (checkNo: number, index) => {
+      (checkNo: number, index: number) => {
         return checks.indexOf(checkNo) === index;
       },
     );
@@ -96,7 +96,7 @@ export class ReportsService {
     infoToChecks: Promise<ReportCheckbox>[],
     reportUserNo: number,
   ): Promise<void> {
-    const queryRunner: any = this.connection.createQueryRunner();
+    const queryRunner: QueryRunner = this.connection.createQueryRunner();
 
     await queryRunner.connect();
     await queryRunner.startTransaction();
@@ -112,7 +112,7 @@ export class ReportsService {
         '신고하려는 게시글이 존재하지 않습니다.',
       );
 
-      const createBoardReportResult = await queryRunner.manager
+      const createBoardReportResult: any = await queryRunner.manager
         .getCustomRepository(ReportedBoardRepository)
         .createBoardReport(description);
 
@@ -122,7 +122,7 @@ export class ReportsService {
       );
 
       infoToChecks.forEach(async (checkNo: Promise<ReportCheckbox>) => {
-        const saveResult: Promise<boolean> = queryRunner.manager
+        const saveResult: boolean = await queryRunner.manager
           .getCustomRepository(BoardReportChecksRepository)
           .saveBoardReportChecks(
             createBoardReportResult.insertId,
