@@ -10,9 +10,22 @@ export class ReportedBoard extends ReportContent {
   @ManyToOne(() => Board, (board) => board.reports, {
     onUpdate: 'CASCADE',
     onDelete: 'NO ACTION',
+    nullable: false,
   })
-  @JoinColumn({ name: 'reported_board_no' })
+  @JoinColumn({
+    name: 'reported_board_no',
+  })
   reportedBoard: Board;
+
+  @ManyToOne(() => User, (user) => user.boardReport, {
+    onUpdate: 'CASCADE',
+    onDelete: 'NO ACTION',
+    nullable: false,
+  })
+  @JoinColumn({
+    name: 'report_user_no',
+  })
+  reportUser: User;
 
   @OneToMany(
     () => BoardReportChecks,
@@ -22,11 +35,4 @@ export class ReportedBoard extends ReportContent {
     },
   )
   checks: BoardReportChecks[];
-
-  @ManyToOne(() => User, (user) => user.boardReport, {
-    onUpdate: 'CASCADE',
-    onDelete: 'NO ACTION',
-  })
-  @JoinColumn({ name: 'report_user_no' })
-  reportUser: User;
 }

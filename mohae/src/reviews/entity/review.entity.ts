@@ -1,3 +1,4 @@
+import { Exclude } from 'class-transformer';
 import {
   IsNotEmpty,
   IsNumber,
@@ -54,26 +55,26 @@ export class Review extends BaseEntity {
   })
   rating: number;
 
-  /* 게시글 리뷰 Timestamps */
   @CreateDateColumn({
-    comment: '리뷰 작성 시간',
+    name: 'created_at',
   })
   createdAt: Date;
 
   @UpdateDateColumn({
-    comment: '리뷰 수정 시간인데 혹시 몰라 생성해둠',
+    name: 'updated_at',
   })
   updatedAt: Date;
 
+  @Exclude()
   @DeleteDateColumn({
-    comment: '리뷰 삭제 시간',
+    name: 'deleted_at',
   })
   deletedAt: Date | null;
 
-  /* 게시글 리뷰 Relations */
   @ManyToOne(() => Board, (board) => board.reviews, {
     onUpdate: 'CASCADE',
     onDelete: 'CASCADE',
+    nullable: false,
   })
   @JoinColumn({
     name: 'board_no',
@@ -83,6 +84,7 @@ export class Review extends BaseEntity {
   @ManyToOne(() => User, (user) => user.reviews, {
     onUpdate: 'CASCADE',
     onDelete: 'CASCADE',
+    nullable: false,
   })
   @JoinColumn({
     name: 'reviewer_no',
@@ -92,6 +94,7 @@ export class Review extends BaseEntity {
   @ManyToOne(() => User, (user) => user.reviewBasket, {
     onUpdate: 'CASCADE',
     onDelete: 'CASCADE',
+    nullable: false,
   })
   @JoinColumn({
     name: 'target_user_no',

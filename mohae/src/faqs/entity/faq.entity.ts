@@ -47,17 +47,20 @@ export class Faq extends BaseEntity {
 
   @CreateDateColumn({
     comment: 'FAQ 작성일',
+    name: 'created_at',
   })
   createdAt: Date;
 
   @UpdateDateColumn({
     comment: 'FAQ 수정일',
+    name: 'updated_at',
   })
   updatedAt: Date;
 
   @Exclude()
   @DeleteDateColumn({
     comment: 'FAQ 삭제일',
+    name: 'deleted_at',
   })
   deletedAt: Date | null;
 

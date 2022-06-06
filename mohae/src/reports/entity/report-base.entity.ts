@@ -1,10 +1,10 @@
+import { Exclude } from 'class-transformer';
 import {
   BaseEntity,
   Column,
   CreateDateColumn,
   DeleteDateColumn,
   PrimaryGeneratedColumn,
-  Timestamp,
   UpdateDateColumn,
 } from 'typeorm';
 
@@ -18,19 +18,19 @@ export abstract class ReportContent extends BaseEntity {
   })
   description: string;
 
-  /* Timestamps */
   @CreateDateColumn({
-    comment: '게시글 또는 유저 신고 생성 일시',
+    name: 'created_at',
   })
-  createdAt: Timestamp;
+  createdAt: Date;
 
   @UpdateDateColumn({
-    comment: '신고 수정 일자',
+    name: 'updated_at',
   })
-  updatedAt: Timestamp;
+  updatedAt: Date;
 
+  @Exclude()
   @DeleteDateColumn({
-    comment: '신고 삭제 일자',
+    name: 'deleted_at',
   })
-  deletedAt: Timestamp | null;
+  deletedAt: Date | null;
 }

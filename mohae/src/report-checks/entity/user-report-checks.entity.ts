@@ -1,10 +1,14 @@
+import { Exclude } from 'class-transformer';
 import { ReportedUser } from 'src/reports/entity/reported-user.entity';
 import {
   BaseEntity,
+  CreateDateColumn,
+  DeleteDateColumn,
   Entity,
   JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
+  UpdateDateColumn,
 } from 'typeorm';
 import { ReportCheckbox } from '../../report-checkboxes/entity/report-checkboxes.entity';
 
@@ -12,6 +16,22 @@ import { ReportCheckbox } from '../../report-checkboxes/entity/report-checkboxes
 export class UserReportChecks extends BaseEntity {
   @PrimaryGeneratedColumn()
   no: number;
+
+  @CreateDateColumn({
+    name: 'created_at',
+  })
+  createdAt: Date;
+
+  @UpdateDateColumn({
+    name: 'updated_at',
+  })
+  updatedAt: Date;
+
+  @Exclude()
+  @DeleteDateColumn({
+    name: 'deleted_at',
+  })
+  deletedAt: Date | null;
 
   @ManyToOne(() => ReportCheckbox, (checks) => checks.reportedUsers, {
     onUpdate: 'CASCADE',

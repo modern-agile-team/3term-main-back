@@ -8,17 +8,29 @@ export class ReportedUser extends ReportContent {
   @ManyToOne(() => User, (user) => user.reports, {
     onUpdate: 'CASCADE',
     onDelete: 'NO ACTION',
+    nullable: false,
   })
-  @JoinColumn({ name: 'reported_user_no' })
+  @JoinColumn({
+    name: 'reported_user_no',
+  })
   reportedUser: User;
-
-  @OneToMany(() => UserReportChecks, (checks) => checks.reportedUser)
-  checks: UserReportChecks[];
 
   @ManyToOne(() => User, (user) => user.userReport, {
     onUpdate: 'CASCADE',
     onDelete: 'NO ACTION',
+    nullable: false,
   })
-  @JoinColumn({ name: 'report_user_no' })
+  @JoinColumn({
+    name: 'report_user_no',
+  })
   reportUser: User;
+
+  @OneToMany(
+    () => UserReportChecks,
+    (userReportCheck) => userReportCheck.reportedUser,
+    {
+      nullable: true,
+    },
+  )
+  checks: UserReportChecks[];
 }
