@@ -16,7 +16,7 @@ export class Mailbox extends BaseEntity {
   no: number;
 
   @CreateDateColumn()
-  createAt: Date | null;
+  createAt: Date;
 
   @Exclude()
   @DeleteDateColumn({
@@ -24,9 +24,13 @@ export class Mailbox extends BaseEntity {
   })
   deleteAt: Date | null;
 
-  @OneToMany((type) => Letter, (letters) => letters.mailbox)
+  @OneToMany(() => Letter, (letters) => letters.mailbox, {
+    nullable: true,
+  })
   letters: Letter[];
 
-  @OneToMany(() => MailboxUser, (mailboxUser) => mailboxUser.mailbox)
+  @OneToMany(() => MailboxUser, (mailboxUser) => mailboxUser.mailbox, {
+    nullable: true,
+  })
   mailboxUsers: MailboxUser[];
 }
