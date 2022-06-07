@@ -1,6 +1,12 @@
 import { InternalServerErrorException } from '@nestjs/common';
 import { User } from 'src/auth/entity/user.entity';
-import { EntityRepository, Repository } from 'typeorm';
+import {
+  DeleteResult,
+  EntityRepository,
+  InsertResult,
+  Repository,
+  UpdateResult,
+} from 'typeorm';
 import { CreateFaqDto } from '../dto/create-faq.dto';
 import { UpdateFaqDto } from '../dto/update-faq.dto';
 import { Faq } from '../entity/faq.entity';
@@ -25,7 +31,7 @@ export class FaqRepository extends Repository<Faq> {
     manager: User,
   ): Promise<any> {
     try {
-      const { raw }: any = await this.createQueryBuilder()
+      const { raw }: InsertResult = await this.createQueryBuilder()
         .insert()
         .into(Faq)
         .values([
@@ -50,7 +56,7 @@ export class FaqRepository extends Repository<Faq> {
     manager: User,
   ): Promise<number> {
     try {
-      const { affected }: any = await this.createQueryBuilder()
+      const { affected }: UpdateResult = await this.createQueryBuilder()
         .update(Faq)
         .set({
           title,
@@ -68,7 +74,7 @@ export class FaqRepository extends Repository<Faq> {
 
   async deleteFaq(no: number): Promise<number> {
     try {
-      const { affected }: any = await this.createQueryBuilder()
+      const { affected }: DeleteResult = await this.createQueryBuilder()
         .softDelete()
         .from(Faq)
         .where('no = :no', { no })

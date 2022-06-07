@@ -26,7 +26,6 @@ import { UserReportChecksRepository } from 'src/report-checks/repository/user-re
       BoardReportChecksRepository,
       UserReportChecksRepository,
     ]),
-    PassportModule.register({ defaultStrategy: 'jwt' }),
     AuthModule,
     ReportChecksModule,
     ReportCheckboxesModule,

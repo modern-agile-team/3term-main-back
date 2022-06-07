@@ -2,19 +2,14 @@ import { InternalServerErrorException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/auth/entity/user.entity';
 import { Mailbox } from 'src/mailboxes/entity/mailbox.entity';
-import { EntityRepository, Repository } from 'typeorm';
+import { EntityRepository, InsertResult, Repository } from 'typeorm';
 import { MailboxUser } from '../entity/mailbox-user.entity';
 
 @EntityRepository(MailboxUser)
 export class MailboxUserRepository extends Repository<MailboxUser> {
-  // constructor(
-  //   @InjectRepository(MailboxUserRepository)
-  //   private mailboxUserRepository: MailboxUserRepository,
-  // ) {}
-
-  async saveMailboxUser(mailbox: Mailbox, user: User) {
+  async saveMailboxUser(mailbox: Mailbox, user: User): Promise<MailboxUser> {
     try {
-      const { raw } = await this.createQueryBuilder()
+      const { raw }: InsertResult = await this.createQueryBuilder()
         .insert()
         .into(MailboxUser)
         .values({
@@ -24,27 +19,14 @@ export class MailboxUserRepository extends Repository<MailboxUser> {
         .execute();
 
       return raw.insertId;
-    } catch (e) {
-      throw new InternalServerErrorException('MailboxUserRepository 에러');
-    }
-  }
-
-  async mailboxUserRelation(no: number, value: any, relation: string) {
-    try {
-      await this.createQueryBuilder()
-        .relation(MailboxUser, relation)
-        .of(no)
-        .add(value);
-    } catch (e) {
-      throw new InternalServerErrorException(
-        'MailboxUserRelation 값 추가 에러',
-      );
+    } catch (err) {
+      throw new InternalServerErrorException(err.message);
     }
   }
 
   async searchMailboxUser(oneselfNo: number, opponentNo: number): Promise<any> {
     try {
-      const mailboxNo: any = await this.createQueryBuilder('firstMU')
+      const mailboxNo: MailboxUser = await this.createQueryBuilder('firstMU')
         .innerJoin('firstMU.mailbox', 'innerMailbox')
         .innerJoin(
           'innerMailbox.mailboxUsers',
