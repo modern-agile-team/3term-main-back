@@ -206,4 +206,41 @@ export class AwsService {
   //     },
   //   }),
   // }).array('upload', 1);
+  async uploadLetterPhotoToS3(
+    imageUrl: string,
+    image: Express.Multer.File,
+  ): Promise<void> {
+    try {
+      await this.awsS3
+        .putObject({
+          Bucket: this.S3_BUCKET_NAME,
+          Key: imageUrl,
+          Body: image.buffer,
+          ACL: 'public-read',
+          ContentType: image.mimetype,
+        })
+        .promise();
+    } catch (error) {
+      throw new BadRequestException(`File upload failed : ${error}`);
+    }
+  }
+
+  makeImageKey(folder: string, image: Express.Multer.File): Image {
+    try {
+      const key: string = `${folder}/${Date.now()}_${path.basename(
+        image.originalname,
+      )}`.replace(/ /g, '');
+
+      return {
+        imageUrl: `https://${this.S3_BUCKET_NAME}.s3.amazonaws.com/${key}`,
+        imageKey: key,
+      };
+    } catch (error) {
+      throw new BadRequestException(`File upload failed : ${error}`);
+    }
+  }
+}
+interface Image {
+  imageUrl: string;
+  imageKey: string;
 }

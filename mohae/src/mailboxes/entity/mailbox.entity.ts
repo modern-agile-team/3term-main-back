@@ -8,6 +8,7 @@ import {
   Entity,
   OneToMany,
   PrimaryGeneratedColumn,
+  UpdateDateColumn,
 } from 'typeorm';
 
 @Entity('mailboxes')
@@ -15,18 +16,29 @@ export class Mailbox extends BaseEntity {
   @PrimaryGeneratedColumn()
   no: number;
 
-  @CreateDateColumn()
-  createAt: Date | null;
+  @CreateDateColumn({
+    name: 'created_at',
+  })
+  createdAt: Date;
+
+  @UpdateDateColumn({
+    name: 'updated_at',
+  })
+  updatedAt: Date;
 
   @Exclude()
   @DeleteDateColumn({
-    select: false,
+    name: 'deleted_at',
   })
-  deleteAt: Date | null;
+  deletedAt: Date | null;
 
-  @OneToMany((type) => Letter, (letters) => letters.mailbox)
+  @OneToMany(() => Letter, (letters) => letters.mailbox, {
+    nullable: true,
+  })
   letters: Letter[];
 
-  @OneToMany(() => MailboxUser, (mailboxUser) => mailboxUser.mailbox)
+  @OneToMany(() => MailboxUser, (mailboxUser) => mailboxUser.mailbox, {
+    nullable: true,
+  })
   mailboxUsers: MailboxUser[];
 }
