@@ -6,8 +6,8 @@ import { ReportCheckboxesController } from './report-checkboxes.controller';
 
 @Module({
   imports: [TypeOrmModule.forFeature([ReportCheckboxRepository])],
+  controllers: [ReportCheckboxesController],
   providers: [ReportCheckboxesService],
   exports: [ReportCheckboxesService],
-  controllers: [ReportCheckboxesController],
 })
 export class ReportCheckboxesModule {}

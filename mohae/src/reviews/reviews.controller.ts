@@ -17,15 +17,13 @@ import { SuccesseInterceptor } from 'src/common/interceptors/success.interceptor
 import { CreateReviewDto } from './dto/create-review.dto';
 import { ReviewsService } from './reviews.service';
 
-@Controller('reviews')
-@UseGuards(AuthGuard())
+@UseGuards(AuthGuard('jwt'))
 @UseInterceptors(SuccesseInterceptor)
 @ApiTags('Reviews')
+@Controller('reviews')
 export class ReviewsController {
   constructor(private reviewService: ReviewsService) {}
 
-  @Get('/profile')
-  @HttpCode(200)
   @ApiOperation({
     summary: '프로필 페이지에서 유저에게 달린 리뷰를 불러오는 API',
     description: '프로필 주인에게 달린 리뷰를 불러온다.',
@@ -33,6 +31,8 @@ export class ReviewsController {
   @ApiOkResponse({
     description: '프로필 리뷰 조회에 성공한 경우.',
   })
+  @HttpCode(200)
+  @Get('profile')
   async readUserReview(
     @Query('user') userNo: number,
     @Query('take') take: number,
@@ -74,7 +74,7 @@ export class ReviewsController {
 
   @ApiOperation({
     summary: '중복된 리뷰 체크',
-    description: '리뷰룰 요청하는 사람과',
+    description: '리뷰룰 요청하는 유저와 대상 유저의 리뷰 여부를 판단',
   })
   @Get('/check/:targetUserNo/:boardNo')
   @HttpCode(200)

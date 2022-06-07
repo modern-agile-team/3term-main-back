@@ -64,10 +64,10 @@ export class MailboxesService {
           `TIMESTAMPDIFF(MINUTE, letter.createdAt, '2022-12-31') AS letterCreatedAt`,
         )
         .getRawMany();
-      console.log(mailbox);
+
       return mailbox;
     } catch (err) {
-      throw new BadRequestException(err.message);
+      throw err;
     }
   }
 
@@ -87,7 +87,7 @@ export class MailboxesService {
 
       return mailbox;
     } catch (err) {
-      throw new BadRequestException(err.message);
+      throw err;
     }
   }
 
@@ -108,7 +108,7 @@ export class MailboxesService {
         mailboxNo: mailbox?.mailboxNo,
       };
     } catch (err) {
-      throw new BadRequestException(err.message);
+      throw err;
     }
   }
 }
