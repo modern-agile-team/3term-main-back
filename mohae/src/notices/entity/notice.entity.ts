@@ -13,6 +13,7 @@ import {
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
+  JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
   RelationId,
@@ -43,40 +44,39 @@ export class Notice extends BaseEntity {
   })
   description: string;
 
-  /* 생성, 수정, 삭제 시간 */
   @CreateDateColumn({
-    comment: '공지사항 작성일',
+    name: 'created_at',
   })
-  createdAt: Date | null;
+  createdAt: Date;
 
   @UpdateDateColumn({
-    comment: '공지사항 수정일',
+    name: 'updated_at',
   })
-  updatedAt: Date | null;
+  updatedAt: Date;
 
   @Exclude()
   @DeleteDateColumn({
-    comment: 'FAQ 삭제일',
+    name: 'deleted_at',
   })
   deletedAt: Date | null;
 
-  /* 관리자 번호 */
-  @IsNotEmpty()
-  @IsNumber()
-  @RelationId((notice: Notice) => notice.manager)
-  managerNo: number;
-
-  @IsNotEmpty()
-  @IsNumber()
-  @RelationId((notice: Notice) => notice.lastEditor)
-  lastEditorNo: number;
-
-  /* 공지사항 외래키 */
-  @ManyToOne((type) => User, (user) => user.notices, { onUpdate: 'CASCADE' })
+  @ManyToOne(() => User, (user) => user.notices, {
+    onUpdate: 'CASCADE',
+    onDelete: 'CASCADE',
+    nullable: false,
+  })
+  @JoinColumn({
+    name: 'manager_no',
+  })
   manager: User;
 
-  @ManyToOne((type) => User, (user) => user.modifiedNotices, {
+  @ManyToOne(() => User, (user) => user.modifiedNotices, {
     onUpdate: 'CASCADE',
+    onDelete: 'CASCADE',
+    nullable: false,
+  })
+  @JoinColumn({
+    name: 'last_edit_manager_no',
   })
   lastEditor: User;
 }
