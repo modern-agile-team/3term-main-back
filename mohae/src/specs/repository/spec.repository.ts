@@ -15,17 +15,16 @@ export class SpecRepository extends Repository<Spec> {
   async getAllSpec(profileUserNo: number) {
     try {
       const specs = await this.createQueryBuilder('specs')
-        .leftJoin('spec.specPhotos', 'specPhotos')
-        .leftJoin('spec.user', 'user')
+        .leftJoin('specs.specPhotos', 'specPhotos')
+        .leftJoin('specs.user', 'user')
         .select([
-          'spec.no',
-          'spec.title',
-          'spec.description',
+          'specs.no',
+          'specs.title',
+          'specs.description',
           'specPhotos.photo_url',
           'user.no',
         ])
         .where('user.no = :profileUserNo', { profileUserNo })
-        .andWhere('spec.no = specPhotos.spec')
         .getMany();
 
       return specs;
@@ -43,17 +42,17 @@ export class SpecRepository extends Repository<Spec> {
   ): Promise<Array<Spec>> {
     try {
       const specs: Array<Spec> = await this.createQueryBuilder('specs')
-        .leftJoin('spec.specPhotos', 'specPhotos')
-        .leftJoin('spec.user', 'user')
+        .leftJoin('specs.specPhotos', 'specPhotos')
+        .leftJoin('specs.user', 'user')
         .select([
-          'spec.no',
-          'spec.title',
-          'spec.description',
+          'specs.no',
+          'specs.title',
+          'specs.description',
           'specPhotos.photo_url',
           'user.no',
         ])
         .where('user.no = :userNo', { userNo })
-        .andWhere('spec.no = specPhotos.spec')
+        .andWhere('specs.no = specPhotos.spec')
         .take(take)
         .skip(take * (page - 1))
         .getMany();
@@ -69,24 +68,23 @@ export class SpecRepository extends Repository<Spec> {
   async getOneSpec(specNo: number): Promise<Spec> {
     try {
       const spec = await this.createQueryBuilder('specs')
-        .leftJoin('spec.specPhotos', 'specPhotos')
+        .leftJoin('specs.specPhotos', 'specPhotos')
         .select([
-          'spec.no',
-          'spec.title',
-          'spec.description',
+          'specs.no',
+          'specs.title',
+          'specs.description',
           'specPhotos.photo_url',
           'specPhotos.no',
-          'spec.createdAt',
-          'spec.latestUpdateSpec',
+          'specs.createdAt',
+          'specs.latestUpdateSpec',
         ])
-        .where('spec.no = :specNo', { specNo })
+        .where('specs.no = :specNo', { specNo })
         .getOne();
 
       return spec;
     } catch (err) {
       throw new InternalServerErrorException(
-        '스펙 상세 조회 관련 서버 에러입니다',
-        err,
+        `${err}스펙 상세 조회 관련 서버 에러입니다`,
       );
     }
   }
