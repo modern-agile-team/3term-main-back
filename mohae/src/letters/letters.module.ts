@@ -9,6 +9,7 @@ import { MailboxUserModule } from 'src/mailbox-user/mailbox-user.module';
 import { MailboxesModule } from 'src/mailboxes/mailboxes.module';
 import { MailboxRepository } from 'src/mailboxes/repository/mailbox.repository';
 import { MailboxUserRepository } from 'src/mailbox-user/repository/mailbox.repository';
+import { AwsService } from 'src/aws/aws.service';
 
 @Module({
   imports: [
@@ -22,7 +23,7 @@ import { MailboxUserRepository } from 'src/mailbox-user/repository/mailbox.repos
     ]),
   ],
   controllers: [LettersController],
-  providers: [LettersService, ErrorConfirm],
+  providers: [LettersService, ErrorConfirm, AwsService],
   exports: [LettersService],
 })
 export class LettersModule {}

@@ -8,7 +8,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/auth/entity/user.entity';
 import { UserRepository } from 'src/auth/repository/user.repository';
 import { ErrorConfirm } from 'src/common/utils/error';
-import { Connection } from 'typeorm';
+import { Connection, QueryRunner } from 'typeorm';
 import { CreateNoticeDto } from './dto/create-notice.dto';
 import { UpdateNoticeDto } from './dto/update-notice.dtd';
 import { Notice } from './entity/notice.entity';
@@ -42,8 +42,8 @@ export class NoticesService {
   async createNotice(
     createNoticeDto: CreateNoticeDto,
     manager: User,
-  ): Promise<boolean> {
-    const queryRunner: any = this.connection.createQueryRunner();
+  ): Promise<void> {
+    const queryRunner: QueryRunner = this.connection.createQueryRunner();
 
     await queryRunner.connect();
     await queryRunner.startTransaction();
@@ -53,16 +53,13 @@ export class NoticesService {
         .getCustomRepository(NoticeRepository)
         .createNotice(createNoticeDto, manager);
 
-      if (!affectedRows) {
-        throw new BadGatewayException('공지사항 생성 실패');
-      }
+      this.errorConfirm.badGatewayError(affectedRows, '공지사항 생성 실패');
 
       await queryRunner.manager
         .getCustomRepository(UserRepository)
         .userRelation(manager.no, insertId, 'notices');
 
       await queryRunner.commitTransaction();
-      return true;
     } catch (err) {
       await queryRunner.rollbackTransaction();
       throw err;
@@ -72,30 +69,27 @@ export class NoticesService {
   }
 
   async updateNotice(
+    manager: User,
     noticeNo: number,
     updateNoticeDto: UpdateNoticeDto,
-    manager: User,
-  ): Promise<boolean> {
-    const queryRunner: any = this.connection.createQueryRunner();
+  ): Promise<void> {
+    const queryRunner: QueryRunner = this.connection.createQueryRunner();
 
     await queryRunner.connect();
     await queryRunner.startTransaction();
 
     try {
-      const updateResult = await queryRunner.manager
+      const updatedResult: number = await queryRunner.manager
         .getCustomRepository(NoticeRepository)
         .updateNotice(noticeNo, updateNoticeDto, manager);
 
-      if (!updateResult) {
-        throw new BadGatewayException('공지사항 수정 실패');
-      }
+      this.errorConfirm.badGatewayError(updatedResult, '공지사항 수정 실패');
 
       await queryRunner.manager
         .getCustomRepository(UserRepository)
         .userRelation(manager.no, noticeNo, 'modifiedNotices');
 
       await queryRunner.commitTransaction();
-      return true;
     } catch (err) {
       await queryRunner.rollbackTransaction();
       throw err;
@@ -104,17 +98,13 @@ export class NoticesService {
     }
   }
 
-  async deleteNotice(noticeNo: number): Promise<boolean> {
+  async deleteNotice(noticeNo: number): Promise<void> {
     try {
       const deleteResult: number = await this.noticeRepository.deleteNotice(
         noticeNo,
       );
 
-      if (!deleteResult) {
-        throw new BadGatewayException('공지사항 삭제 실패');
-      }
-
-      return true;
+      this.errorConfirm.badGatewayError(deleteResult, '공지사항 삭제 실패');
     } catch (err) {
       throw err;
     }

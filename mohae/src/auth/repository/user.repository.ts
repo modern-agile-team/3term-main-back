@@ -21,15 +21,8 @@ export class UserRepository extends Repository<User> {
     major: Major,
   ): Promise<User> {
     try {
-      const {
-        email,
-        password,
-        phone,
-        nickname,
-        manager,
-        name,
-        photo_url,
-      }: CreateUserDto = createUserDto;
+      const { email, password, phone, nickname, manager, name }: CreateUserDto =
+        createUserDto;
 
       const { raw } = await this.createQueryBuilder('users')
         .insert()
@@ -43,7 +36,6 @@ export class UserRepository extends Repository<User> {
             phone,
             nickname,
             manager,
-            photo_url,
             salt: password,
           },
         ])
@@ -193,39 +185,37 @@ export class UserRepository extends Repository<User> {
       );
     }
   }
-  // 프로필 관련 기능
-  async readUserProfile(userNo: number): Promise<object> {
+
+  async readUserProfile(profileUserNo: number, userNo: number): Promise<User> {
     try {
       const profile: User = await this.createQueryBuilder('users')
         .leftJoin('users.school', 'school')
         .leftJoin('users.major', 'major')
         .leftJoin('users.categories', 'categories')
         .leftJoin('users.likedUser', 'likedUser')
-        .select([
-          'users.no',
-          'users.email',
-          'users.nickname',
-          `users.createdAt`,
-          'users.name',
-          'users.photo_url',
-          'likedUser',
-          'school.no',
-          'school.name',
-          'major.no',
-          'major.name',
-          'categories.no',
-          'categories.name',
-        ])
-        .where('users.no = :userNo', { userNo })
-        .getOne();
-
-      const { boardsCount }: any = await this.createQueryBuilder('users')
+        .leftJoin('users.profilePhoto', 'profilePhoto')
         .leftJoin('users.boards', 'boards')
-        .select('COUNT(boards.no) AS boardsNum')
-        .where('users.no = :userNo', { userNo })
+        .select([
+          'users.no AS userNo',
+          'users.email AS email',
+          'users.nickname AS nickname',
+          `DATE_FORMAT(users.createdAt, '%Y.%m.%d') AS createdAt`,
+          'users.name AS name',
+          'profilePhoto.photo_url AS photo_url',
+          'COUNT(DISTINCT boards.no) AS boardNum',
+          'COUNT(DISTINCT likedUser.no) AS likedUserNum',
+          `EXISTS(SELECT no FROM user_like WHERE user_like.likedMeNo = ${userNo} AND user_like.likedUserNo = ${profileUserNo}) AS isLike`,
+          'school.no AS schoolNo',
+          'school.name AS schoolName',
+          'major.no AS majorNo',
+          'major.name AS majorName',
+          'GROUP_CONCAT(DISTINCT CONCAT_WS(",", categories.no ,categories.name) SEPARATOR "|") AS categoryNo',
+          'categories.name AS categoryName',
+        ])
+        .where('users.no = :profileUserNo', { profileUserNo })
         .getRawOne();
 
-      return { profile, boardsCount };
+      return profile;
     } catch (err) {
       throw new InternalServerErrorException(
         `${err} ### 유저 프로필 선택 조회 : 알 수 없는 서버 에러입니다.`,
@@ -242,6 +232,20 @@ export class UserRepository extends Repository<User> {
     } catch (err) {
       throw new InternalServerErrorException(
         `${err} 유저 관계형성 도중 생긴 오류`,
+      );
+    }
+  }
+
+  async updateProfile(userNo: User, deletedNullprofile: object) {
+    try {
+      await this.createQueryBuilder('users')
+        .update(User)
+        .set(deletedNullprofile)
+        .where('no = :userNo', { userNo })
+        .execute();
+    } catch (err) {
+      throw new InternalServerErrorException(
+        `${err} 프로필 업데이트 중 알 수 없는 서버 에러입니다.`,
       );
     }
   }

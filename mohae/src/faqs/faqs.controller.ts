@@ -4,7 +4,6 @@ import {
   Delete,
   Get,
   HttpCode,
-  Logger,
   Param,
   Patch,
   Post,
@@ -50,21 +49,17 @@ export class FaqsController {
   })
   @Role(true)
   @UseGuards(RolesGuard)
-  @UseGuards(AuthGuard())
+  @UseGuards(AuthGuard('jwt'))
   @HttpCode(201)
   @Post()
   async createFaq(
-    @Body() createFaqDto: CreateFaqDto,
     @CurrentUser() manager: User,
+    @Body() createFaqDto: CreateFaqDto,
   ): Promise<object> {
-    const response: boolean = await this.faqsService.createFaq(
-      createFaqDto,
-      manager,
-    );
+    await this.faqsService.createFaq(manager, createFaqDto);
 
     return {
       msg: `FAQ 생성 완료`,
-      success: response,
     };
   }
 
@@ -74,23 +69,18 @@ export class FaqsController {
   })
   @Role(true)
   @UseGuards(RolesGuard)
-  @UseGuards(AuthGuard())
+  @UseGuards(AuthGuard('jwt'))
   @HttpCode(201)
-  @Patch('/:faqNo')
+  @Patch(':faqNo')
   async updateFaq(
+    @CurrentUser() manager: User,
     @Param('faqNo') faqNo: number,
     @Body() updateFaqDto: UpdateFaqDto,
-    @CurrentUser() manager: User,
   ): Promise<object> {
-    const response: boolean = await this.faqsService.updateFaq(
-      faqNo,
-      updateFaqDto,
-      manager,
-    );
+    await this.faqsService.updateFaq(manager, faqNo, updateFaqDto);
 
     return {
       msg: `FAQ 수정 완료`,
-      success: response,
     };
   }
 
@@ -100,15 +90,14 @@ export class FaqsController {
   })
   @Role(true)
   @UseGuards(RolesGuard)
-  @UseGuards(AuthGuard())
+  @UseGuards(AuthGuard('jwt'))
   @HttpCode(201)
-  @Delete('/:faqNo')
+  @Delete(':faqNo')
   async deleteFaq(@Param('faqNo') faqNo: number): Promise<object> {
-    const response: boolean = await this.faqsService.deleteFaq(faqNo);
+    await this.faqsService.deleteFaq(faqNo);
 
     return {
       msg: `FAQ 삭제 완료`,
-      success: response,
     };
   }
 }

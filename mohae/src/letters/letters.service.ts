@@ -31,15 +31,25 @@ export class LettersService {
 
   async sendLetter(
     sender: User,
-    { receiver, mailboxNo, description }: SendLetterDto,
-  ): Promise<boolean> {
+    { receiverNo, mailboxNo, description }: SendLetterDto,
+    imageUrl?: string,
+  ): Promise<void> {
+    this.errorConfirm.badRequestError(
+      description || imageUrl,
+      '쪽지 내용이나 이미지 파일을 전송해 주세요.',
+    );
+    this.errorConfirm.badRequestError(
+      !(description && imageUrl),
+      '쪽지 내용과 이미지 중 하나만 전송해 주세요.',
+    );
+
     const queryRunner = this.connection.createQueryRunner();
 
     await queryRunner.connect();
     await queryRunner.startTransaction();
     try {
       const confirmedMailboxNo: number =
-        mailboxNo ||
+        +mailboxNo ||
         (await queryRunner.manager
           .getCustomRepository(MailboxRepository)
           .createMailbox());
@@ -49,10 +59,11 @@ export class LettersService {
         '쪽지함 번호 유무 판단 에러',
       );
 
-      // const receiver: User = await this.userRepository.findOne(receiverNo.no, {
-      //   select: ['no'],
-      // });
-      // this.errorConfirm.notFoundError(receiver, '상대방을 찾을 수 없습니다.');
+      const receiver: User = await this.userRepository.findOne(+receiverNo, {
+        select: ['no'],
+      });
+
+      this.errorConfirm.notFoundError(receiver, '상대방을 찾을 수 없습니다.');
 
       const mailbox: Mailbox = await this.mailboxRepository.searchMailbox(
         confirmedMailboxNo,
@@ -60,15 +71,12 @@ export class LettersService {
       );
       const { insertId, affectedRows } = await queryRunner.manager
         .getCustomRepository(LetterRepository)
-        .sendLetter(sender, receiver, mailbox, description);
+        .sendLetter(sender, receiver, mailbox, description, imageUrl);
 
-      if (!affectedRows) {
-        throw new BadGatewayException('쪽지가 정상적으로 저장되지 않았습니다.');
-      }
-
-      const newLetterNo = insertId;
-
-      this.errorConfirm.badGatewayError(newLetterNo, 'newLetterNo 생성 실패');
+      this.errorConfirm.badGatewayError(
+        affectedRows,
+        '쪽지가 정상적으로 저장되지 않았습니다.',
+      );
 
       if (!mailboxNo) {
         const senderMailboxUserNo: MailboxUser = await queryRunner.manager
@@ -110,27 +118,23 @@ export class LettersService {
             'mailboxUsers',
           );
       }
+      const newLetterNo = insertId;
 
       await queryRunner.manager
         .getCustomRepository(UserRepository)
         .userRelation(sender, newLetterNo, 'sendLetters');
       await queryRunner.manager
         .getCustomRepository(UserRepository)
-        .userRelation(sender, newLetterNo, 'sendLetters');
+        .userRelation(receiver, newLetterNo, 'receivedLetters');
       await queryRunner.manager
         .getCustomRepository(MailboxRepository)
         .mailboxAddRelation(confirmedMailboxNo, newLetterNo, 'letters');
 
       await queryRunner.commitTransaction();
-      return true;
     } catch (err) {
-      // 에러가 발생시 롤백
       await queryRunner.rollbackTransaction();
-      throw new InternalServerErrorException(
-        `${err}, 쪽지 저장 도중 알 수 없는 에러 발생`,
-      );
+      throw err;
     } finally {
-      // 직접 생성한 QueryRunner는 해제시켜 주어야 함
       await queryRunner.release();
     }
   }

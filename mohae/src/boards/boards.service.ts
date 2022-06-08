@@ -264,6 +264,7 @@ export class BoardsService {
         createBoardDto,
         endTime,
       );
+      await this.userRepository.userRelation(user, board.no, 'boards');
 
       if (!board) {
         throw new BadGatewayException('게시글 생성 관련 오류입니다.');
