@@ -30,18 +30,18 @@ export class FaqRepository extends Repository<Faq> {
     { title, description }: CreateFaqDto,
     manager: User,
   ): Promise<any> {
+    const createFaqData: object = {
+      title,
+      description,
+      manager,
+      lastEditor: manager,
+    };
+
     try {
       const { raw }: InsertResult = await this.createQueryBuilder()
         .insert()
         .into(Faq)
-        .values([
-          {
-            title,
-            description,
-            manager,
-            lastEditor: manager,
-          },
-        ])
+        .values(createFaqData)
         .execute();
 
       return raw;
@@ -55,14 +55,16 @@ export class FaqRepository extends Repository<Faq> {
     { title, description }: UpdateFaqDto,
     manager: User,
   ): Promise<number> {
+    const updateFaqData: object = {
+      title,
+      description,
+      manager,
+    };
+
     try {
       const { affected }: UpdateResult = await this.createQueryBuilder()
         .update(Faq)
-        .set({
-          title,
-          description,
-          lastEditor: manager,
-        })
+        .set(updateFaqData)
         .where('no = :faqNo', { faqNo })
         .execute();
 
@@ -72,12 +74,12 @@ export class FaqRepository extends Repository<Faq> {
     }
   }
 
-  async deleteFaq(no: number): Promise<number> {
+  async deleteFaq(faqNo: number): Promise<number> {
     try {
       const { affected }: DeleteResult = await this.createQueryBuilder()
         .softDelete()
         .from(Faq)
-        .where('no = :no', { no })
+        .where('no = :faqNo', { faqNo })
         .execute();
 
       return affected;

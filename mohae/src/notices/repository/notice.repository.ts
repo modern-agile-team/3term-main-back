@@ -36,16 +36,18 @@ export class NoticeRepository extends Repository<Notice> {
     { title, description }: CreateNoticeDto,
     manager: User,
   ): Promise<any> {
+    const createNoticeData: object = {
+      title,
+      description,
+      manager,
+      lastEditor: manager,
+    };
+
     try {
       const { raw }: any = await this.createQueryBuilder('notices')
         .insert()
         .into(Notice)
-        .values({
-          manager,
-          lastEditor: manager,
-          title,
-          description,
-        })
+        .values(createNoticeData)
         .execute();
 
       return raw;
@@ -59,14 +61,16 @@ export class NoticeRepository extends Repository<Notice> {
     { title, description }: UpdateNoticeDto,
     manager: User,
   ): Promise<number> {
+    const updateNoticeData: object = {
+      title,
+      description,
+      lastEditor: manager,
+    };
+
     try {
       const { affected }: UpdateResult = await this.createQueryBuilder()
         .update(Notice)
-        .set({
-          title,
-          description,
-          lastEditor: manager,
-        })
+        .set(updateNoticeData)
         .where('no = :noticeNo', { noticeNo })
         .execute();
 

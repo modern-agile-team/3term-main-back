@@ -21,6 +21,7 @@ import { UpdateFaqDto } from './dto/update-faq.dto';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 import { User } from 'src/auth/entity/user.entity';
 import { SuccesseInterceptor } from 'src/common/interceptors/success.interceptor';
+import { HTTP_STATUS_CODE } from 'src/common/configs/http-status.config';
 
 @UseInterceptors(SuccesseInterceptor)
 @ApiTags('Faqs')
@@ -32,7 +33,7 @@ export class FaqsController {
     summary: 'FAQ 전체 조회 기능',
     description: 'FAQ를 전체 조회하는 API',
   })
-  @HttpCode(200)
+  @HttpCode(HTTP_STATUS_CODE.success.ok)
   @Get()
   async readAllFaqs(): Promise<object> {
     const response: Faq | Faq[] = await this.faqsService.readAllFaqs();
@@ -50,7 +51,7 @@ export class FaqsController {
   @Role(true)
   @UseGuards(RolesGuard)
   @UseGuards(AuthGuard('jwt'))
-  @HttpCode(201)
+  @HttpCode(HTTP_STATUS_CODE.success.created)
   @Post()
   async createFaq(
     @CurrentUser() manager: User,
@@ -70,7 +71,7 @@ export class FaqsController {
   @Role(true)
   @UseGuards(RolesGuard)
   @UseGuards(AuthGuard('jwt'))
-  @HttpCode(201)
+  @HttpCode(HTTP_STATUS_CODE.success.ok)
   @Patch(':faqNo')
   async updateFaq(
     @CurrentUser() manager: User,
@@ -91,7 +92,7 @@ export class FaqsController {
   @Role(true)
   @UseGuards(RolesGuard)
   @UseGuards(AuthGuard('jwt'))
-  @HttpCode(201)
+  @HttpCode(HTTP_STATUS_CODE.success.ok)
   @Delete(':faqNo')
   async deleteFaq(@Param('faqNo') faqNo: number): Promise<object> {
     await this.faqsService.deleteFaq(faqNo);

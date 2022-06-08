@@ -142,6 +142,8 @@ export class AwsService {
     }
   }
 
+  // 리뷰 - ({ }) 이런 형식으로 들어가 있는 코드들 변수로 설정해주기
+
   async uploadProfileFileToS3(folder: string, file: any): Promise<string> {
     try {
       if (file.originalname === 'default.jpg') {

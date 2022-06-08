@@ -61,7 +61,7 @@ export class ReviewsService {
     reviewer: User,
     createReviewDto: CreateReviewDto,
   ): Promise<void> {
-    const { boardNo, targetUserNo }: CreateReviewDto = createReviewDto;
+    const { boardNo, targetUserNo }: any = createReviewDto;
     const queryRunner: any = this.connection.createQueryRunner();
 
     await queryRunner.connect();
@@ -113,14 +113,18 @@ export class ReviewsService {
     boardNo: number,
   ): Promise<void> {
     try {
+      const requesterNo: number = requester.no;
+
       const isReview: boolean =
         await this.reviewRepository.checkDuplicateReview(
-          requester.no,
+          requesterNo,
           targetUserNo,
           boardNo,
         );
 
-      this.errorConfirm.badRequestError(!isReview, '작성된 리뷰가 존재합니다.');
+      if (isReview) {
+        throw new BadRequestException('작성한 리뷰가 존재합니다.');
+      }
     } catch (err) {
       throw err;
     }

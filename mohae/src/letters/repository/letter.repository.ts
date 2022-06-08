@@ -1,7 +1,12 @@
 import { InternalServerErrorException } from '@nestjs/common';
 import { User } from 'src/auth/entity/user.entity';
 import { Mailbox } from 'src/mailboxes/entity/mailbox.entity';
-import { EntityRepository, Repository, UpdateResult } from 'typeorm';
+import {
+  EntityRepository,
+  InsertResult,
+  Repository,
+  UpdateResult,
+} from 'typeorm';
 import { Letter } from '../entity/letter.entity';
 
 @EntityRepository(Letter)
@@ -27,19 +32,19 @@ export class LetterRepository extends Repository<Letter> {
     mailbox: Mailbox,
     description?: string,
     imageUrl?: string,
-  ) {
+  ): Promise<any> {
+    const sendLetterData: object = {
+      sender,
+      receiver,
+      mailbox,
+      description: description || imageUrl,
+    };
+
     try {
-      const { raw } = await this.createQueryBuilder('letters')
+      const { raw }: InsertResult = await this.createQueryBuilder('letters')
         .insert()
         .into(Letter)
-        .values([
-          {
-            sender,
-            receiver,
-            mailbox,
-            description: description || imageUrl,
-          },
-        ])
+        .values(sendLetterData)
         .execute();
 
       return raw;

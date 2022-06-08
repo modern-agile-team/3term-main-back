@@ -1,4 +1,5 @@
 import { InternalServerErrorException } from '@nestjs/common';
+import { User } from '@sentry/node';
 import { EntityRepository, InsertResult, Repository } from 'typeorm';
 import { ReportedUser } from '../entity/reported-user.entity';
 
@@ -33,14 +34,24 @@ export class ReportedUserRepository extends Repository<ReportedUser> {
     }
   }
 
-  async createUserReport(description: string): Promise<any> {
+  async createUserReport(
+    reportUser: User,
+    reportedUser: User,
+    description: string,
+  ): Promise<any> {
     try {
+      const reportedUserData: object = {
+        reportUser,
+        reportedUser,
+        description,
+      };
+
       const { raw }: InsertResult = await this.createQueryBuilder(
         'reported_users',
       )
         .insert()
         .into(ReportedUser)
-        .values({ description })
+        .values(reportedUserData)
         .execute();
 
       return raw;
