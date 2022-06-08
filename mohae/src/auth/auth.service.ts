@@ -1,4 +1,6 @@
 import {
+  BadGatewayException,
+  BadRequestException,
   ConflictException,
   Injectable,
   InternalServerErrorException,
@@ -6,14 +8,12 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { getCustomRepositoryToken, InjectRepository } from '@nestjs/typeorm';
-
 import { UserRepository } from './repository/user.repository';
 import * as bcrypt from 'bcryptjs';
 import { JwtService } from '@nestjs/jwt';
 import { User } from './entity/user.entity';
 import { SchoolRepository } from 'src/schools/repository/school.repository';
 import { MajorRepository } from 'src/majors/repository/major.repository';
-import * as config from 'config';
 import { CategoryRepository } from 'src/categories/repository/category.repository';
 import { ErrorConfirm } from 'src/common/utils/error';
 import { School } from 'src/schools/entity/school.entity';
@@ -30,8 +30,8 @@ import { SignInDto } from './dto/sign-in.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { ForgetPasswordDto } from './dto/forget-password.dto';
 import { SignDownDto } from './dto/auth-credential.dto';
+import { ConfigService } from '@nestjs/config';
 
-const jwtConfig: any = config.get('jwt');
 @Injectable()
 export class AuthService {
   constructor(
@@ -44,6 +44,8 @@ export class AuthService {
     private connection: Connection,
     private errorConfirm: ErrorConfirm,
     private jwtService: JwtService,
+
+    private configService: ConfigService,
   ) {}
   async signUp(signUpDto: SignUpDto): Promise<object> {
     const queryRunner = this.connection.createQueryRunner();
@@ -166,7 +168,7 @@ export class AuthService {
           email: user.email,
           userNo: user.no,
           issuer: 'modern-agile',
-          expiration: jwtConfig.expiresIn,
+          expiration: this.configService.get<number>('EXPIRES_IN'),
         };
         await this.userRepository.clearLoginCount(user.no);
 
@@ -215,7 +217,7 @@ export class AuthService {
   }
 
   async signDown(
-    no: number,
+    userNo: number,
     userEmail: string,
     { email }: SignDownDto,
   ): Promise<void> {
@@ -225,10 +227,10 @@ export class AuthService {
           '회원님의 이메일이 일치 하지 않습니다.',
         );
       }
-      const affected: number = await this.userRepository.signDown(no);
+      const affected: number = await this.userRepository.signDown(userNo);
       if (!affected) {
         throw new InternalServerErrorException(
-          `${no} 회원님의 회원탈퇴가 정상적으로 이루어 지지 않았습니다.`,
+          `${userNo} 회원님의 회원탈퇴가 정상적으로 이루어 지지 않았습니다.`,
         );
       }
     } catch (err) {
@@ -246,7 +248,7 @@ export class AuthService {
       }: ChangePasswordDto = changePasswordDto;
 
       if (changePassword !== confirmChangePassword) {
-        throw new UnauthorizedException(
+        throw new BadRequestException(
           '새비밀번호와 새비밀번호 확인이 일치하지 않습니다',
         );
       }
@@ -254,7 +256,7 @@ export class AuthService {
       const isPassword: boolean = await bcrypt.compare(nowPassword, user.salt);
       if (user && isPassword) {
         if (nowPassword === changePassword) {
-          throw new UnauthorizedException(
+          throw new ConflictException(
             '이전의 비밀번호로는 변경하실 수 없습니다.',
           );
         }
@@ -286,7 +288,7 @@ export class AuthService {
       }: ForgetPasswordDto = forgetPasswordDto;
 
       if (changePassword !== confirmChangePassword) {
-        throw new UnauthorizedException(
+        throw new BadRequestException(
           '새비밀번호와 새비밀번호 확인이 일치하지 않습니다',
         );
       }
@@ -299,7 +301,7 @@ export class AuthService {
         );
 
         if (isPassword) {
-          throw new UnauthorizedException(
+          throw new ConflictException(
             '이전 비밀번호로는 변경하실 수 없습니다.',
           );
         }

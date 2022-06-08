@@ -1,13 +1,9 @@
-import {
-  BadGatewayException,
-  BadRequestException,
-  Injectable,
-} from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/auth/entity/user.entity';
 import { UserRepository } from 'src/auth/repository/user.repository';
 import { ErrorConfirm } from 'src/common/utils/error';
-import { Connection } from 'typeorm';
+import { Connection, QueryRunner } from 'typeorm';
 import { CreateFaqDto } from './dto/create-faq.dto';
 import { UpdateFaqDto } from './dto/update-faq.dto';
 import { Faq } from './entity/faq.entity';
@@ -21,7 +17,7 @@ export class FaqsService {
 
     private userRepository: UserRepository,
 
-    private readonly connection: Connection,
+    private connection: Connection,
     private errorConfirm: ErrorConfirm,
   ) {}
 
@@ -32,12 +28,12 @@ export class FaqsService {
 
       return faqs;
     } catch (err) {
-      throw new BadRequestException(err.message);
+      throw err;
     }
   }
 
-  async createFaq(createFaqDto: CreateFaqDto, manager: User): Promise<boolean> {
-    const queryRunner: any = this.connection.createQueryRunner();
+  async createFaq(manager: User, createFaqDto: CreateFaqDto): Promise<void> {
+    const queryRunner: QueryRunner = this.connection.createQueryRunner();
 
     await queryRunner.connect();
     await queryRunner.startTransaction();
@@ -47,16 +43,12 @@ export class FaqsService {
         .getCustomRepository(FaqRepository)
         .createFaq(createFaqDto, manager);
 
+      this.errorConfirm.badGatewayError(affectedRows, 'FAQ 생성 실패');
+
       await queryRunner.manager
         .getCustomRepository(UserRepository)
         .userRelation(manager.no, insertId, 'faqs');
-
-      if (!affectedRows) {
-        throw new BadGatewayException('FAQ 생성 실패');
-      }
-
       await queryRunner.commitTransaction();
-      return true;
     } catch (err) {
       await queryRunner.rollbackTransaction();
       throw err;
@@ -66,30 +58,26 @@ export class FaqsService {
   }
 
   async updateFaq(
+    manager: User,
     faqNo: number,
     updateFaqDto: UpdateFaqDto,
-    manager: User,
-  ): Promise<boolean> {
+  ): Promise<void> {
     const queryRunner: any = this.connection.createQueryRunner();
 
     await queryRunner.connect();
     await queryRunner.startTransaction();
 
     try {
-      const updateResult: number = await queryRunner.manager
+      const updatedResult: number = await queryRunner.manager
         .getCustomRepository(FaqRepository)
         .updateFaq(faqNo, updateFaqDto, manager);
+
+      this.errorConfirm.badGatewayError(updatedResult, 'FAQ 수정 실패');
 
       await queryRunner.manager
         .getCustomRepository(UserRepository)
         .userRelation(manager.no, faqNo, 'modifiedFaqs');
-
-      if (!updateResult) {
-        throw new BadGatewayException('FAQ 수정 실패');
-      }
-
       await queryRunner.commitTransaction();
-      return true;
     } catch (err) {
       await queryRunner.rollbackTransaction();
       throw err;
@@ -98,15 +86,11 @@ export class FaqsService {
     }
   }
 
-  async deleteFaq(faqNo: number): Promise<boolean> {
+  async deleteFaq(faqNo: number): Promise<void> {
     try {
-      const deleteResult: number = await this.faqRepository.deleteFaq(faqNo);
+      const deletedResult: number = await this.faqRepository.deleteFaq(faqNo);
 
-      if (!deleteResult) {
-        throw new BadGatewayException('FAQ 수정 실패');
-      }
-
-      return true;
+      this.errorConfirm.badGatewayError(deletedResult, 'FAQ 삭제 실패');
     } catch (err) {
       throw err;
     }

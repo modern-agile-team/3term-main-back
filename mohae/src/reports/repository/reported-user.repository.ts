@@ -7,15 +7,15 @@ export class ReportedUserRepository extends Repository<ReportedUser> {
   async readOneReportedUser(userNo: number): Promise<ReportedUser> {
     try {
       const reportUser: ReportedUser = await this.createQueryBuilder(
-        'reported_users',
+        'reportedUsers',
       )
-        .leftJoin('reported_users.reportUser', 'reportUser')
-        .leftJoin('reported_users.reportedUser', 'reportedUser')
-        .leftJoin('reported_users.checks', 'checks')
+        .leftJoin('reportedUsers.reportUser', 'reportUser')
+        .leftJoin('reportedUsers.reportedUser', 'reportedUser')
+        .leftJoin('reportedUsers.checks', 'checks')
         .leftJoin('checks.check', 'check')
         .select([
-          'reported_users.no',
-          'reported_users.description',
+          'reportedUsers.no',
+          'reportedUsers.description',
           'reportUser.no',
           'reportUser.email',
           'reportedUser.no',
@@ -24,23 +24,10 @@ export class ReportedUserRepository extends Repository<ReportedUser> {
           'check.no',
           'check.content',
         ])
-        .where('reported_users.no = :userNo', { userNo })
+        .where('reportedUsers.no = :userNo', { userNo })
         .getOne();
 
       return reportUser;
-    } catch (err) {
-      throw new InternalServerErrorException(err.message);
-    }
-  }
-
-  async readOneUserReportCheckRelation(no: number): Promise<any[]> {
-    try {
-      const relation = await this.createQueryBuilder()
-        .relation(ReportedUser, 'checks')
-        .of(no)
-        .loadMany();
-
-      return relation;
     } catch (err) {
       throw new InternalServerErrorException(err.message);
     }

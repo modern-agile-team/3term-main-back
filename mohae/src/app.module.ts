@@ -1,3 +1,4 @@
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import {
   CacheInterceptor,
   CacheModule,
@@ -8,7 +9,7 @@ import {
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { typeORMConfig } from './common/configs/typeorm.config';
+import { typeOrmConfig } from './common/configs/typeorm.config';
 import { ReportsModule } from './reports/reports.module';
 import { FaqsModule } from './faqs/faqs.module';
 import { CategoriesModule } from './categories/categories.module';
@@ -30,27 +31,21 @@ import { LikeModule } from './like/like.module';
 import { RedisCacheModule } from './redis-cache/redis-cache.module';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { MailboxUserModule } from './mailbox-user/mailbox-user.module';
-import * as redisStore from 'cache-manager-redis-store';
-import { ConfigModule } from '@nestjs/config';
 import { AwsService } from './aws/aws.service';
 import { TermsModule } from './terms/terms.module';
 import { BasketsModule } from './baskets/baskets.module';
-import { ReportCheckboxesService } from './report-checkboxes/report-checkboxes.service';
-import { ReportChecksService } from './report-checks/report-checks.service';
 import { ReportChecksModule } from './report-checks/report-checks.module';
 import { ReportCheckboxesModule } from './report-checkboxes/report-checkboxes.module';
 import { LoggerMiddleware } from './common/middleware/logger.middleware';
-import {
-  utilities as nestWinstonModuleUtilities,
-  WinstonModule,
-} from 'nest-winston';
-import * as winston from 'winston';
+import { WinstonModule } from 'nest-winston';
+import { envConfig } from './common/configs/env.config';
+import { winstonConfig } from './common/configs/winston.config';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({
-      isGlobal: true,
-    }),
+    ConfigModule.forRoot(envConfig),
+    TypeOrmModule.forRootAsync(typeOrmConfig),
+    WinstonModule.forRootAsync(winstonConfig),
     ReportsModule,
     FaqsModule,
     CategoriesModule,
@@ -60,7 +55,6 @@ import * as winston from 'winston';
     SchoolsModule,
     MajorsModule,
     AuthModule,
-    TypeOrmModule.forRoot(typeORMConfig),
     ProfilesModule,
     NotesModule,
     LettersModule,
@@ -84,19 +78,6 @@ import * as winston from 'winston';
     BasketsModule,
     ReportChecksModule,
     ReportCheckboxesModule,
-    WinstonModule.forRoot({
-      transports: [
-        new winston.transports.Console({
-          level: process.env.NODE_ENV === 'production' ? 'info' : 'silly',
-          format: winston.format.combine(
-            winston.format.timestamp(),
-            nestWinstonModuleUtilities.format.nestLike('MyApp', {
-              prettyPrint: true,
-            }),
-          ),
-        }),
-      ],
-    }),
   ],
   controllers: [AppController],
   providers: [
@@ -105,8 +86,10 @@ import * as winston from 'winston';
       provide: APP_INTERCEPTOR,
       useClass: CacheInterceptor,
     },
+    ConfigService,
     AwsService,
   ],
+  exports: [ConfigService],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer): any {
