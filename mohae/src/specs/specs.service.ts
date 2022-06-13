@@ -1,6 +1,7 @@
 import {
   BadGatewayException,
   BadRequestException,
+  ForbiddenException,
   Injectable,
   InternalServerErrorException,
   UnauthorizedException,
@@ -175,13 +176,15 @@ export class SpecsService {
     }
   }
 
-  async deleteSpec(specNo: number): Promise<number> {
+  async deleteSpec(specNo: number, userNo: number): Promise<number> {
     try {
-      const isDelete: number = await this.specRepository.deleteSpec(specNo);
-
+      const isDelete: number = await this.specRepository.deleteSpec(
+        specNo,
+        userNo,
+      );
       if (!isDelete) {
-        throw new InternalServerErrorException(
-          '스팩 삭제가 제대로 이루어지지 않았습니다.',
+        throw new ForbiddenException(
+          '스펙의 작성자 만이 스펙을 삭제할 수 있습니다.',
         );
       }
       return isDelete;

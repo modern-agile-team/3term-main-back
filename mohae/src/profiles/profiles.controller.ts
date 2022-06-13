@@ -23,6 +23,7 @@ import {
 } from '@nestjs/swagger';
 import { User } from '@sentry/node';
 import { AwsService } from 'src/aws/aws.service';
+import { HTTP_STATUS_CODE } from 'src/common/configs/http-status.config';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 import { SuccesseInterceptor } from 'src/common/interceptors/success.interceptor';
 import { JudgeDuplicateNicknameDto } from './dto/judge-duplicate-nickname.dto';
@@ -82,7 +83,7 @@ export class ProfilesController {
     },
   })
   @UseGuards(AuthGuard('jwt'))
-  @HttpCode(200)
+  @HttpCode(HTTP_STATUS_CODE.success.ok)
   @Get('/:profileUserNo')
   async readUserProfile(
     @Param('profileUserNo') profileUserNo: number,
@@ -134,7 +135,8 @@ export class ProfilesController {
       },
     },
   })
-  @HttpCode(200)
+  @HttpCode(HTTP_STATUS_CODE.success.ok)
+  @UseGuards(AuthGuard('jwt'))
   @Post('/check-nickname')
   async judgeDuplicateNickname(
     @Body() judgeDuplicateNicknameDto: JudgeDuplicateNicknameDto,
@@ -190,7 +192,7 @@ export class ProfilesController {
       },
     },
   })
-  @HttpCode(201)
+  @HttpCode(HTTP_STATUS_CODE.success.ok)
   @UseGuards(AuthGuard('jwt'))
   @UseInterceptors(FileInterceptor('image'))
   @Patch()
