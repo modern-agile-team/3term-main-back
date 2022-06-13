@@ -5,8 +5,6 @@ import {
   Param,
   Post,
   Delete,
-  UsePipes,
-  ValidationPipe,
   Patch,
   Query,
   Logger,
@@ -21,7 +19,6 @@ import {
   ApiBadRequestResponse,
   ApiCreatedResponse,
   ApiInternalServerErrorResponse,
-  ApiNoContentResponse,
   ApiOkResponse,
   ApiOperation,
   ApiTags,
@@ -38,9 +35,9 @@ import { Board } from './entity/board.entity';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 import { CategoriesService } from 'src/categories/categories.service';
 
-@Controller('boards')
-@UseInterceptors(SuccesseInterceptor)
 @ApiTags('Boards')
+@UseInterceptors(SuccesseInterceptor)
+@Controller('boards')
 export class BoardsController {
   private logger = new Logger('BoardsController');
   constructor(
@@ -50,13 +47,14 @@ export class BoardsController {
 
   @Cron('0 1 * * * *')
   async handleCron() {
-    const isClosed: Number = await this.boardService.closingBoard();
+    const isClosed: number = await this.boardService.closingBoard();
 
     this.logger.verbose(`게시글 ${isClosed}개 마감처리`);
   }
 
-  @Get('/filter')
-  async filteredBoards(@Query() paginationQuery): Promise<Object> {
+  @HttpCode(200)
+  @Get('filter')
+  async filteredBoards(@Query() paginationQuery): Promise<object> {
     const {
       categoryNo,
       sort,
@@ -70,7 +68,7 @@ export class BoardsController {
       free,
     } = paginationQuery;
 
-    const response = await this.boardService.filteredBoards(
+    const response: object = await this.boardService.filteredBoards(
       categoryNo,
       sort,
       title,
@@ -79,23 +77,22 @@ export class BoardsController {
       max,
       min,
       target,
-      Number(date),
+      +date,
       free,
     );
 
     return Object.assign({
-      statusCode: 200,
       msg: '게시글 필터링이 완료되었습니다.',
       response,
     });
   }
 
-  @Get('/hot')
-  async readHotBoards(@Query('select') select: number): Promise<Object> {
-    const response = await this.boardService.readHotBoards(select);
+  @HttpCode(200)
+  @Get('hot')
+  async readHotBoards(@Query('select') select: number): Promise<object> {
+    const response: Board[] = await this.boardService.readHotBoards(select);
 
     return Object.assign({
-      statusCode: 200,
       msg: '인기 게시글 조회가 완료되었습니다.',
       response,
     });
@@ -131,17 +128,19 @@ export class BoardsController {
       },
     },
   })
+  @HttpCode(200)
   @Get('search')
   async searchAllBoards(
     @Query() searchBoardDto: SearchBoardDto,
-  ): Promise<Object> {
-    const response = await this.boardService.searchAllBoards(searchBoardDto);
+  ): Promise<object> {
+    const response: object = await this.boardService.searchAllBoards(
+      searchBoardDto,
+    );
 
-    return Object.assign({
-      statusCode: 200,
+    return {
       msg: '검색결과에 대한 게시글 조회가 완료되었습니다.',
       response,
-    });
+    };
   }
 
   @ApiOperation({
@@ -178,14 +177,14 @@ export class BoardsController {
       },
     },
   })
-  @UseGuards(AuthGuard())
-  @Patch('/cancel/:no')
+  @UseGuards(AuthGuard('jwt'))
+  @Patch('cancel/:boardNo')
   @HttpCode(200)
   async cancelClosedBoard(
-    @Param('no') no: number,
+    @Param('boardNo') boardNo: number,
     @CurrentUser() user: User,
   ): Promise<object> {
-    await this.boardService.cancelClosedBoard(no, user.no);
+    await this.boardService.cancelClosedBoard(boardNo, user.no);
 
     return Object.assign({
       msg: '게시글 마감 취소가 완료되었습니다.',
@@ -226,14 +225,14 @@ export class BoardsController {
       },
     },
   })
-  @UseGuards(AuthGuard())
-  @Patch('/close/:no')
+  @UseGuards(AuthGuard('jwt'))
+  @Patch('close/:boardNo')
   @HttpCode(200)
   async boardClosed(
-    @Param('no') no: number,
+    @Param('boardNo') boardNo: number,
     @CurrentUser() user: User,
   ): Promise<object> {
-    await this.boardService.boardClosed(no, user.no);
+    await this.boardService.boardClosed(boardNo, user.no);
 
     return {
       msg: '게시글 마감이 완료되었습니다.',
@@ -267,31 +266,36 @@ export class BoardsController {
     };
   }
 
-  @Get('/:no')
-  async getByOneBoard(@Param('no') no: number): Promise<Object> {
-    const response = await this.boardService.getByOneBoard(no);
+  @HttpCode(200)
+  @Get(':boardNo')
+  async readByOneBoard(@Param('boardNo') boardNo: number): Promise<object> {
+    const response = await this.boardService.readByOneBoard(boardNo);
 
     return Object.assign({
-      statusCode: 200,
       msg: '게시글 상세 조회가 완료되었습니다.',
       response,
     });
   }
 
-  @Get('category/:no')
-  async getByCategory(@Param('no') no: number): Promise<object> {
-    this.logger.verbose(`카테고리 선택 조회 시도. 카테고리 번호 : ${no}`);
-    const response: object = await this.categoriesService.findOneCategory(no);
+  @HttpCode(200)
+  @Get('category/:categoryNo')
+  async getByCategory(
+    @Param('categoryNo') categoryNo: number,
+  ): Promise<object> {
+    this.logger.verbose(
+      `카테고리 선택 조회 시도. 카테고리 번호 : ${categoryNo}`,
+    );
+    const response: object = await this.categoriesService.findOneCategory(
+      categoryNo,
+    );
 
     return Object.assign({
-      statusCode: 200,
       msg: '카테고리 선택 조회가 완료되었습니다.',
       response,
     });
   }
 
   @Post()
-  @UsePipes(ValidationPipe)
   @ApiOperation({
     summary: '게시글 생성 경로',
     description: '게시글 생성 API',
@@ -307,7 +311,7 @@ export class BoardsController {
     },
   })
   @HttpCode(201)
-  @UseGuards(AuthGuard())
+  @UseGuards(AuthGuard('jwt'))
   async createBoard(
     @Body() createBoardDto: CreateBoardDto,
     @CurrentUser() user: User,
@@ -333,10 +337,10 @@ export class BoardsController {
       },
     },
   })
-  @UseGuards(AuthGuard())
-  @Delete('/:no')
+  @UseGuards(AuthGuard('jwt'))
+  @Delete(':boardNo')
   async deleteBoard(
-    @Param('no') boardNo: number,
+    @Param('boardNo') boardNo: number,
     @CurrentUser() user: User,
   ): Promise<object> {
     const response: boolean = await this.boardService.deleteBoard(
@@ -351,23 +355,18 @@ export class BoardsController {
     });
   }
 
-  @UseGuards(AuthGuard())
-  @Patch('/:no')
+  @HttpCode(201)
+  @UseGuards(AuthGuard('jwt'))
+  @Patch(':boardNo')
   async updateBoard(
-    @Param('no') boardNo: number,
+    @Param('boardNo') boardNo: number,
     @Body() updateBoardDto: UpdateBoardDto,
     @CurrentUser() user: User,
   ): Promise<object> {
-    const response: boolean = await this.boardService.updateBoard(
-      boardNo,
-      updateBoardDto,
-      user.no,
-    );
+    await this.boardService.updateBoard(boardNo, updateBoardDto, user.no);
 
     return Object.assign({
-      statusCode: 201,
       msg: '게시글 수정이 완료되었습니다.',
-      response,
     });
   }
 }

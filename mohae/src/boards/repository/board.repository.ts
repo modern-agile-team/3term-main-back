@@ -1,14 +1,21 @@
 import { InternalServerErrorException } from '@nestjs/common';
 // import { User } from 'src/auth/entity/user.entity';
 import { Category } from 'src/categories/entity/category.entity';
-import { DeleteResult, EntityRepository, Repository } from 'typeorm';
+import {
+  DeleteResult,
+  EntityRepository,
+  InsertResult,
+  Repository,
+  SelectQueryBuilder,
+  UpdateResult,
+} from 'typeorm';
 import { CreateBoardDto } from '../dto/board.dto';
 import { Board } from '../entity/board.entity';
 import { User } from '@sentry/node';
 
 @EntityRepository(Board)
 export class BoardRepository extends Repository<Board> {
-  async getByOneBoard(no: number) {
+  async readByOneBoard(boardNo: number) {
     try {
       return await this.createQueryBuilder('boards')
         .leftJoin('boards.area', 'areas', 'areas.no = boards.area')
@@ -24,11 +31,11 @@ export class BoardRepository extends Repository<Board> {
           'boards.likedUser',
           'likedUser',
           'likedUser.likedBoardNo = :no',
-          { no },
+          { no: boardNo },
         )
         .select([
           'boards.no AS no',
-          'DATEDIFF(boards.deadline, now()) AS decimalDay',
+          'DATEDIFF(boards.deadline, now()) * -1 AS decimalDay',
           'boards.title AS title',
           'boards.description AS description',
           'boards.isDeadline AS isDeadline',
@@ -51,7 +58,7 @@ export class BoardRepository extends Repository<Board> {
           'school.name AS userSchool',
           'major.name AS userMajor',
         ])
-        .where('boards.no = :no', { no })
+        .where('boards.no = :no', { no: boardNo })
         .getRawOne();
     } catch (e) {
       `${e} ### 게시판 상세 조회 : 알 수 없는 서버 에러입니다.`;
@@ -74,12 +81,12 @@ export class BoardRepository extends Repository<Board> {
     }
   }
 
-  async cancelClosedBoard(no: number) {
+  async cancelClosedBoard(boardNo: number) {
     try {
       const { affected } = await this.createQueryBuilder()
         .update(Board)
         .set({ isDeadline: false })
-        .where('no = :no', { no })
+        .where('no = :no', { no: boardNo })
         .execute();
 
       return affected;
@@ -90,12 +97,12 @@ export class BoardRepository extends Repository<Board> {
     }
   }
 
-  async boardClosed(no: number): Promise<number> {
+  async boardClosed(boardNo: number): Promise<number> {
     try {
       const { affected } = await this.createQueryBuilder()
         .update(Board)
         .set({ isDeadline: true })
-        .where('no = :no', { no })
+        .where('no = :no', { no: boardNo })
         .execute();
 
       return affected;
@@ -131,7 +138,7 @@ export class BoardRepository extends Repository<Board> {
         .leftJoin('boards.user', 'users')
         .select([
           'boards.no AS no',
-          'DATEDIFF(boards.deadline, now()) AS decimalDay',
+          'DATEDIFF(boards.deadline, now()) * -1 AS decimalDay',
           'boards.title AS title',
           'boards.isDeadline AS isDeadline',
           'boards.price AS price',
@@ -173,7 +180,7 @@ export class BoardRepository extends Repository<Board> {
         .leftJoin('boards.user', 'users')
         .select([
           'boards.no AS no',
-          'DATEDIFF(boards.deadline, now()) AS decimalDay',
+          'DATEDIFF(boards.deadline, now()) * -1 AS decimalDay',
           'boards.title AS title',
           'boards.isDeadline AS isDeadline',
           'boards.price AS price',
@@ -226,7 +233,7 @@ export class BoardRepository extends Repository<Board> {
         .leftJoin('boards.user', 'user')
         .leftJoin('boards.photos', 'photo')
         .select([
-          'DATEDIFF(boards.deadline, now()) AS decimalDay',
+          'DATEDIFF(boards.deadline, now()) * -1 AS decimalDay',
           'photo.photo_url AS photoUrl',
           'boards.no AS no',
           'boards.title AS title',
@@ -267,7 +274,7 @@ export class BoardRepository extends Repository<Board> {
         note2,
         note3,
       } = createBoardDto;
-      const board = await this.createQueryBuilder('boards')
+      const board: InsertResult = await this.createQueryBuilder('boards')
         .insert()
         .into(Board)
         .values([
@@ -303,12 +310,15 @@ export class BoardRepository extends Repository<Board> {
     }
   }
 
-  async updateBoard(no: number, deletedNullBoardKey: any): Promise<number> {
+  async updateBoard(
+    boardNo: number,
+    deletedNullBoardKey: any,
+  ): Promise<number> {
     try {
-      const { affected } = await this.createQueryBuilder()
+      const { affected }: UpdateResult = await this.createQueryBuilder()
         .update(Board)
         .set(deletedNullBoardKey)
-        .where('no = :no', { no })
+        .where('no = :no', { no: boardNo })
         .execute();
 
       return affected;
@@ -350,9 +360,11 @@ export class BoardRepository extends Repository<Board> {
     select: number,
     year: number,
     month: number,
-  ): Promise<object> {
+  ): Promise<Board[]> {
     try {
-      const hotBoards = this.createQueryBuilder('boards')
+      const hotBoards: SelectQueryBuilder<Board> = this.createQueryBuilder(
+        'boards',
+      )
         .leftJoin('boards.area', 'areas')
         .leftJoin('boards.user', 'users')
         .leftJoin(
@@ -362,7 +374,7 @@ export class BoardRepository extends Repository<Board> {
         )
         .select([
           'boards.no AS no',
-          'DATEDIFF(boards.deadline, now()) AS decimalDay',
+          'DATEDIFF(boards.deadline, now()) * -1 AS decimalDay',
           'boards.title AS title',
           'boards.isDeadline AS isDeadline',
           'boards.price AS price',
@@ -371,8 +383,8 @@ export class BoardRepository extends Repository<Board> {
           'areas.name AS areaName',
           'users.nickname AS userNickname',
         ])
-        .where('Year(boards.createdAt) <= :year', { year })
-        .andWhere('Month(boards.createdAt) <= :month', { month })
+        // .where('Year(boards.createdAt) <= :year', { year })
+        // .andWhere('Month(boards.createdAt) <= :month', { month })
         .groupBy('likedUsers.likedBoardNo')
         .orderBy(
           '(boards.hit + COUNT(likedUsers.likedBoardNo)) / DATEDIFF(now(), boards.createdAt)',
@@ -387,7 +399,7 @@ export class BoardRepository extends Repository<Board> {
       if (select === 2) {
         hotBoards.andWhere('boards.isDeadline = true');
       }
-      const filteredHotBoards = await hotBoards.getRawMany();
+      const filteredHotBoards: Board[] = await hotBoards.getRawMany();
 
       return filteredHotBoards;
     } catch (err) {

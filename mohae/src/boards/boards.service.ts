@@ -44,12 +44,18 @@ export class BoardsService {
   ) {}
 
   async closingBoard(): Promise<number> {
-    const currentTime: Date = new Date();
-    currentTime.setHours(currentTime.getHours() + 9);
+    try {
+      const currentTime: Date = new Date();
+      currentTime.setHours(currentTime.getHours() + 9);
 
-    const result: number = await this.boardRepository.closingBoard(currentTime);
+      const result: number = await this.boardRepository.closingBoard(
+        currentTime,
+      );
 
-    return result;
+      return result;
+    } catch (err) {
+      throw err;
+    }
   }
 
   async filteredBoards(
@@ -64,84 +70,94 @@ export class BoardsService {
     date: any,
     free: string,
   ): Promise<object> {
-    const currentTime: Date = new Date();
-    currentTime.setHours(currentTime.getHours() + 9);
-
-    let endTime: Date = new Date();
-    endTime.setHours(endTime.getHours() + 9);
-
-    if (!date) {
-      endTime = null;
-    }
-
-    if (date) {
-      endTime.setDate(endTime.getDate() + date);
-    }
-
-    const boards: Board[] = await this.boardRepository.filteredBoards(
-      categoryNo,
-      sort,
-      title,
-      popular,
-      areaNo,
-      max,
-      min,
-      target,
-      Number(date),
-      endTime,
-      currentTime,
-      free,
-    );
-
-    return { filteredBoardNum: boards.length, boards };
-  }
-
-  async readHotBoards(select: number): Promise<object> {
-    const currentTime: Date = new Date();
-    currentTime.setHours(currentTime.getHours() + 9);
-    const year: number = currentTime.getFullYear();
-    const month: number = currentTime.getMonth();
-
-    if (month === 12) {
-      year - 1;
-    }
-
-    const filteredHotBoards: object = await this.boardRepository.readHotBoards(
-      select,
-      year,
-      month,
-    );
-
-    this.errorConfirm.notFoundError(
-      filteredHotBoards,
-      '인기게시글이 존재하지 얺습니다.',
-    );
-
-    return filteredHotBoards;
-  }
-
-  async getByOneBoard(no: number) {
-    const board = await this.boardRepository.getByOneBoard(no);
-    this.errorConfirm.notFoundError(
-      board.no,
-      `해당 게시글을 찾을 수 없습니다.`,
-    );
-
-    const boardHit: number = await this.boardRepository.addBoardHit(board);
-
-    if (!boardHit) {
-      throw new InternalServerErrorException(
-        '게시글 조회 수 증가가 되지 않았습니다',
-      );
-    }
-    board.likeCount = Number(board.likeCount);
-
-    return board;
-  }
-
-  async boardClosed(no: number, userNo: number): Promise<boolean> {
     try {
-      const board: Board = await this.boardRepository.getByOneBoard(no);
+      const currentTime: Date = new Date();
+      currentTime.setHours(currentTime.getHours() + 9);
+
+      let endTime: Date = new Date();
+      endTime.setHours(endTime.getHours() + 9);
+
+      if (!date) {
+        endTime = null;
+      }
+
+      if (date) {
+        endTime.setDate(endTime.getDate() + date);
+      }
+
+      const boards: Board[] = await this.boardRepository.filteredBoards(
+        categoryNo,
+        sort,
+        title,
+        popular,
+        areaNo,
+        max,
+        min,
+        target,
+        Number(date),
+        endTime,
+        currentTime,
+        free,
+      );
+
+      return { filteredBoardNum: boards.length, boards };
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  async readHotBoards(select: number): Promise<Board[]> {
+    try {
+      const currentTime: Date = new Date();
+      currentTime.setHours(currentTime.getHours() + 9);
+      const year: number = currentTime.getFullYear();
+      const month: number = currentTime.getMonth();
+
+      if (month === 12) {
+        year - 1;
+      }
+
+      const filteredHotBoards: Board[] =
+        await this.boardRepository.readHotBoards(select, year, month);
+
+      this.errorConfirm.notFoundError(
+        filteredHotBoards,
+        '인기게시글이 존재하지 얺습니다.',
+      );
+
+      return filteredHotBoards;
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  async readByOneBoard(boardNo: number) {
+    try {
+      const board: any = await this.boardRepository.readByOneBoard(boardNo);
+
+      this.errorConfirm.notFoundError(
+        board.no,
+        `해당 게시글을 찾을 수 없습니다.`,
+      );
+
+      const boardHit: number = await this.boardRepository.addBoardHit(board);
+
+      if (!boardHit) {
+        throw new InternalServerErrorException(
+          '게시글 조회 수 증가가 되지 않았습니다',
+        );
+      }
+      board.likeCount = Number(board.likeCount);
+
+      return board;
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  async boardClosed(boardNo: number, userNo: number): Promise<boolean> {
+    try {
+      const board: Board = await this.boardRepository.readByOneBoard(boardNo);
       this.errorConfirm.notFoundError(board.no, '게시글을 찾을 수 없습니다.');
 
       if (board['userNo'] !== userNo) {
@@ -152,7 +168,7 @@ export class BoardsService {
         throw new BadRequestException('이미 마감된 게시글 입니다.');
       }
 
-      const result: number = await this.boardRepository.boardClosed(no);
+      const result: number = await this.boardRepository.boardClosed(boardNo);
 
       if (!result) {
         throw new InternalServerErrorException('게시글 마감이 되지 않았습니다');
@@ -164,9 +180,9 @@ export class BoardsService {
     }
   }
 
-  async cancelClosedBoard(no: number, userNo: number): Promise<boolean> {
+  async cancelClosedBoard(boardNo: number, userNo: number): Promise<boolean> {
     try {
-      const board: Board = await this.boardRepository.getByOneBoard(no);
+      const board: Board = await this.boardRepository.readByOneBoard(boardNo);
       this.errorConfirm.notFoundError(
         board.no,
         `해당 게시글을 찾을 수 없습니다.`,
@@ -191,7 +207,9 @@ export class BoardsService {
         throw new BadRequestException('활성화된 게시글 입니다.');
       }
 
-      const result: number = await this.boardRepository.cancelClosedBoard(no);
+      const result: number = await this.boardRepository.cancelClosedBoard(
+        boardNo,
+      );
 
       if (!result) {
         throw new InternalServerErrorException(
@@ -301,7 +319,7 @@ export class BoardsService {
 
   async deleteBoard(boardNo: number, userNo: number): Promise<boolean> {
     try {
-      const board: Board = await this.boardRepository.getByOneBoard(boardNo);
+      const board: Board = await this.boardRepository.readByOneBoard(boardNo);
       this.errorConfirm.notFoundError(
         board.no,
         `해당 게시글을 찾을 수 없습니다.`,
@@ -336,7 +354,7 @@ export class BoardsService {
       const { category, area, deadline, photoUrl }: UpdateBoardDto =
         updateBoardDto;
 
-      const board: Board = await this.boardRepository.getByOneBoard(boardNo);
+      const board: Board = await this.boardRepository.readByOneBoard(boardNo);
 
       this.errorConfirm.notFoundError(board, `해당 게시글을 찾을 수 없습니다.`);
 
@@ -435,6 +453,7 @@ export class BoardsService {
       await queryRunner.release();
     }
   }
+
   async readUserBoard(
     userNo: number,
     take: number,
