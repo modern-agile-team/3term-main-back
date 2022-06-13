@@ -15,8 +15,6 @@ export class FaqsService {
     @InjectRepository(FaqRepository)
     private faqRepository: FaqRepository,
 
-    private userRepository: UserRepository,
-
     private connection: Connection,
     private errorConfirm: ErrorConfirm,
   ) {}

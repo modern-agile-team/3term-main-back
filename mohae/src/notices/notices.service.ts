@@ -1,9 +1,4 @@
-import {
-  BadGatewayException,
-  BadRequestException,
-  Injectable,
-  InternalServerErrorException,
-} from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/auth/entity/user.entity';
 import { UserRepository } from 'src/auth/repository/user.repository';
@@ -19,8 +14,6 @@ export class NoticesService {
   constructor(
     @InjectRepository(NoticeRepository)
     private noticeRepository: NoticeRepository,
-
-    private userRepository: UserRepository,
 
     private readonly connection: Connection,
     private readonly errorConfirm: ErrorConfirm,

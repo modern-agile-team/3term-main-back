@@ -13,6 +13,7 @@ import {
 import { AuthGuard } from '@nestjs/passport';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { User } from 'src/auth/entity/user.entity';
+import { HTTP_STATUS_CODE } from 'src/common/configs/http-status.config';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 import { Role } from 'src/common/decorators/roles.decorator';
 import { RolesGuard } from 'src/common/guards/roles.guard';
@@ -32,7 +33,7 @@ export class NoticesController {
     summary: '공지사항 전체 조회 기능',
     description: '공지사항을 전체 조회하는 API',
   })
-  @HttpCode(200)
+  @HttpCode(HTTP_STATUS_CODE.success.ok)
   @Get()
   async readAllNotices(): Promise<object> {
     const response: Notice | Notice[] =
@@ -51,7 +52,7 @@ export class NoticesController {
   @Role(true)
   @UseGuards(RolesGuard)
   @UseGuards(AuthGuard('jwt'))
-  @HttpCode(201)
+  @HttpCode(HTTP_STATUS_CODE.success.created)
   @Post()
   async createNotice(
     @Body() createNoticeDto: CreateNoticeDto,
@@ -71,7 +72,7 @@ export class NoticesController {
   @Role(true)
   @UseGuards(RolesGuard)
   @UseGuards(AuthGuard('jwt'))
-  @HttpCode(201)
+  @HttpCode(HTTP_STATUS_CODE.success.ok)
   @Put('/:noticeNo')
   async updateNotice(
     @CurrentUser() manager: User,
@@ -92,7 +93,7 @@ export class NoticesController {
   @Role(true)
   @UseGuards(RolesGuard)
   @UseGuards(AuthGuard('jwt'))
-  @HttpCode(201)
+  @HttpCode(HTTP_STATUS_CODE.success.ok)
   @Delete('/:noticeNo')
   async deleteNotice(@Param('noticeNo') noticeNo: number): Promise<object> {
     await this.noticesService.deleteNotice(noticeNo);

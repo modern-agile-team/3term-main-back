@@ -10,13 +10,18 @@ export class UserReportChecksRepository extends Repository<UserReportChecks> {
     reportedUser: ReportedUser,
     check: ReportCheckbox,
   ): Promise<any> {
+    const userReportCheckData: object = {
+      reportedUser,
+      check,
+    };
+
     try {
       const { raw }: InsertResult = await this.createQueryBuilder(
         'user_report_checks',
       )
         .insert()
         .into(UserReportChecks)
-        .values({ reportedUser, check })
+        .values(userReportCheckData)
         .execute();
 
       return raw;

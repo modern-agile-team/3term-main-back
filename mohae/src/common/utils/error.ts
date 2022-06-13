@@ -5,7 +5,7 @@ import {
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
-
+// isNotExist 방식으로
 export class ErrorConfirm {
   notFoundError(param: any, msg: string | undefined) {
     if (!param) {
