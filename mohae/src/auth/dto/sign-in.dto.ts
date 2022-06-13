@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsString, Matches } from 'class-validator';
+import { IsEmail, IsNotEmpty, IsString } from 'class-validator';
 
 export class SignInDto {
   @ApiProperty({
@@ -7,7 +7,7 @@ export class SignInDto {
     description: '가입시 입력했던 이메일',
     required: true,
   })
-  @Matches(/^[A-Za-z0-9_\.\-]+@[A-Za-z0-9\-]+\.[A-Za-z0-9\-]+/)
+  @IsEmail()
   @IsNotEmpty()
   @IsString()
   email: string;
