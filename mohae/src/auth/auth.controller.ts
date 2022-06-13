@@ -1,5 +1,4 @@
 import {
-  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -29,10 +28,10 @@ import { ChangePasswordDto } from './dto/change-password.dto';
 import { SignUpDto } from './dto/sign-up.dto';
 import { ForgetPasswordDto } from './dto/forget-password.dto';
 import { SignInDto } from './dto/sign-in.dto';
-
 import { User } from './entity/user.entity';
 import { SignDownDto } from './dto/sign-down.dto';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
+import { HTTP_STATUS_CODE } from 'src/common/configs/http-status.config';
 
 @Controller('auth')
 @UseInterceptors(SuccesseInterceptor)
@@ -93,7 +92,7 @@ export class AuthController {
       },
     },
   })
-  @HttpCode(201)
+  @HttpCode(HTTP_STATUS_CODE.success.created)
   @Post('signup')
   async signUp(@Body() signUpDto: SignUpDto): Promise<Object> {
     try {
@@ -154,7 +153,7 @@ export class AuthController {
       },
     },
   })
-  @HttpCode(200)
+  @HttpCode(HTTP_STATUS_CODE.success.ok)
   @Post('signin')
   async signIn(@Body() signInDto: SignInDto): Promise<Object> {
     try {
@@ -208,8 +207,8 @@ export class AuthController {
       },
     },
   })
-  @HttpCode(200)
-  @UseGuards(AuthGuard())
+  @HttpCode(HTTP_STATUS_CODE.success.ok)
+  @UseGuards(AuthGuard('jwt'))
   @Delete(':userNo')
   async signDown(
     @Param('userNo') userNo: number,
@@ -286,8 +285,8 @@ export class AuthController {
       },
     },
   })
-  @HttpCode(200)
-  @UseGuards(AuthGuard())
+  @HttpCode(HTTP_STATUS_CODE.success.ok)
+  @UseGuards(AuthGuard('jwt'))
   @Patch('change/password')
   async changePassword(
     @Body() changePasswordDto: ChangePasswordDto,
@@ -357,7 +356,7 @@ export class AuthController {
       },
     },
   })
-  @HttpCode(200)
+  @HttpCode(HTTP_STATUS_CODE.success.ok)
   @Patch('forget/password')
   async forgetPassword(
     @Body() forgetPasswordDto: ForgetPasswordDto,

@@ -143,12 +143,13 @@ export class SpecRepository extends Repository<Spec> {
     }
   }
 
-  async deleteSpec(specNo: number): Promise<number> {
+  async deleteSpec(specNo: number, userNo: number): Promise<number> {
     try {
       const { affected }: DeleteResult = await this.createQueryBuilder('specs')
         .softDelete()
         .from(Spec)
         .where('no = :specNo', { specNo })
+        .andWhere('user_no = :userNo', { userNo })
         .execute();
 
       return affected;
