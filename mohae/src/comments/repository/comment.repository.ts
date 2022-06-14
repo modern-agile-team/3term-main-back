@@ -26,4 +26,15 @@ export class CommentRepository extends Repository<Comment> {
 
     return createResult;
   }
+
+  async updateComment({ boardNo, commentNo }, content: string) {
+    const updateResult = await this.createQueryBuilder('comments')
+      .update(Comment)
+      .set({ no: commentNo, content })
+      .where('comments.no = :commentNo', { commentNo })
+      .andWhere('comments.board_no = :boardNo', { boardNo })
+      .execute();
+
+    return updateResult;
+  }
 }

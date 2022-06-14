@@ -1,6 +1,7 @@
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Post } from '@nestjs/common';
 import { CommentsService } from './comments.service';
 import { CreateCommentDto } from './dto/create-comment.dto';
+import { UpdateCommentDto } from './dto/update-comment.dto';
 
 @Controller(':boardNo/comments')
 export class CommentsController {
@@ -17,5 +18,16 @@ export class CommentsController {
     @Body() createCommentDto: CreateCommentDto,
   ) {
     return this.commentsService.createComment(boardNo, createCommentDto);
+  }
+
+  @Patch(':commentNo')
+  updateComment(
+    @Param() boardAndCommentNo: { boardNo: number; commentNo: number },
+    @Body() updateCommentDto: UpdateCommentDto,
+  ) {
+    return this.commentsService.updateComment(
+      boardAndCommentNo,
+      updateCommentDto,
+    );
   }
 }

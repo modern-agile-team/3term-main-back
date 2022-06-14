@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { CreateCommentDto } from './dto/create-comment.dto';
+import { UpdateCommentDto } from './dto/update-comment.dto';
 import { CommentRepository } from './repository/comment.repository';
 
 @Injectable()
@@ -12,5 +13,9 @@ export class CommentsService {
 
   createComment(boardNo: number, createCommentDto: CreateCommentDto) {
     return this.commentRepository.createComment(boardNo, createCommentDto);
+  }
+
+  updateComment(boardAndCommentNo, { content }: UpdateCommentDto) {
+    return this.commentRepository.updateComment(boardAndCommentNo, content);
   }
 }
