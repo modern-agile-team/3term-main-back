@@ -2,6 +2,7 @@ import { Area } from 'src/areas/entity/areas.entity';
 import { User } from 'src/auth/entity/user.entity';
 import { Basket } from 'src/baskets/entity/baskets.entity';
 import { Category } from 'src/categories/entity/category.entity';
+import { Comment } from 'src/comments/entity/comment.entity';
 import { BoardLike } from 'src/like/entity/board.like.entity';
 import { BoardPhoto } from 'src/photo/entity/board.photo.entity';
 import { ReportedBoard } from 'src/reports/entity/reported-board.entity';
@@ -145,4 +146,7 @@ export class Board extends BaseEntity {
     onDelete: 'SET NULL',
   })
   area: Area;
+
+  @OneToMany(() => Comment, (comment) => comment.board, { nullable: true })
+  comments: Comment;
 }

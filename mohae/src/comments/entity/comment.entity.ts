@@ -1,10 +1,13 @@
 import { IsNumber, IsString } from 'class-validator';
+import { Board } from 'src/boards/entity/board.entity';
 import {
   BaseEntity,
   Column,
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
+  JoinColumn,
+  ManyToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -39,8 +42,9 @@ export class Comment extends BaseEntity {
   })
   commentorNo: number;
 
-  @Column({
+  @ManyToOne(() => Board, (board) => board.comments, { nullable: true })
+  @JoinColumn({
     name: 'board_no',
   })
-  boardNo: number;
+  board: Board;
 }
