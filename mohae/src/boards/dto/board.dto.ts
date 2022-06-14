@@ -142,7 +142,8 @@ export class SearchBoardDto {
     required: true,
   })
   @IsString()
-  @MaxLength(15)
+  @MaxLength(16)
+  @MinLength(2)
   title: string;
 }
 

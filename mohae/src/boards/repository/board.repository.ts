@@ -15,7 +15,7 @@ import { User } from '@sentry/node';
 
 @EntityRepository(Board)
 export class BoardRepository extends Repository<Board> {
-  async readByOneBoard(boardNo: number) {
+  async readByOneBoard(boardNo: number): Promise<any> {
     try {
       return await this.createQueryBuilder('boards')
         .leftJoin('boards.area', 'areas', 'areas.no = boards.area')
@@ -33,6 +33,7 @@ export class BoardRepository extends Repository<Board> {
           'likedUser.likedBoardNo = :no',
           { no: boardNo },
         )
+        .leftJoin('users.profilePhoto', 'profilePhoto')
         .select([
           'boards.no AS no',
           'DATEDIFF(boards.deadline, now()) * -1 AS decimalDay',
@@ -44,24 +45,21 @@ export class BoardRepository extends Repository<Board> {
           'boards.price AS price',
           'boards.summary AS summary',
           'boards.target AS target',
-          'boards.note1 AS note1',
-          'boards.note2 AS note2',
-          'boards.note3 AS note3',
           'areas.no AS areaNo',
           'areas.name AS areaName',
           'categories.no AS categoryNo',
           'categories.name AS categoryName',
+          'profilePhoto.photo_url AS userProfilePhoto',
           'users.no AS userNo',
           'users.name AS userName',
           'users.nickname AS userNickname',
-          'users.photo_url AS userPhotoUrl',
           'school.name AS userSchool',
           'major.name AS userMajor',
         ])
         .where('boards.no = :no', { no: boardNo })
         .getRawOne();
-    } catch (e) {
-      `${e} ### 게시판 상세 조회 : 알 수 없는 서버 에러입니다.`;
+    } catch (err) {
+      `${err} ### 게시판 상세 조회 : 알 수 없는 서버 에러입니다.`;
     }
   }
 
@@ -136,19 +134,22 @@ export class BoardRepository extends Repository<Board> {
       const boards = await this.createQueryBuilder('boards')
         .leftJoin('boards.area', 'areas')
         .leftJoin('boards.user', 'users')
+        .leftJoin('boards.photos', 'photo')
         .select([
           'boards.no AS no',
+          'photo.photo_url AS boardPhoto',
           'DATEDIFF(boards.deadline, now()) * -1 AS decimalDay',
           'boards.title AS title',
           'boards.isDeadline AS isDeadline',
           'boards.price AS price',
           'boards.target AS target',
-          'areas.no AS areaNo',
           'areas.name AS areaName',
           'users.nickname AS userNickname',
         ])
         .where('boards.title like :title', { title: `%${title}%` })
         .orderBy('boards.no', 'DESC')
+        .groupBy('boards.no')
+        .addGroupBy('boards.no = photo.no')
         .getRawMany();
 
       return boards;
@@ -178,20 +179,23 @@ export class BoardRepository extends Repository<Board> {
         .leftJoin('boards.area', 'areas')
         .leftJoin('boards.category', 'categories')
         .leftJoin('boards.user', 'users')
+        .leftJoin('boards.photos', 'photo')
         .select([
           'boards.no AS no',
+          'photo.photo_url AS boardPhoto',
           'DATEDIFF(boards.deadline, now()) * -1 AS decimalDay',
           'boards.title AS title',
           'boards.isDeadline AS isDeadline',
           'boards.price AS price',
           'boards.target AS target',
-          'areas.no AS areaNo',
           'areas.name AS areaName',
           'users.nickname AS userNickname',
         ])
-        .orderBy('boards.no', sort);
+        .orderBy('boards.no', sort)
+        .groupBy('boards.no')
+        .addGroupBy('boards.no = photo.no');
 
-      if (categoryNo) {
+      if (categoryNo > 1) {
         boardFiltering.andWhere('boards.category = :categoryNo', {
           categoryNo,
         });
@@ -234,7 +238,7 @@ export class BoardRepository extends Repository<Board> {
         .leftJoin('boards.photos', 'photo')
         .select([
           'DATEDIFF(boards.deadline, now()) * -1 AS decimalDay',
-          'photo.photo_url AS photoUrl',
+          'photo.photo_url AS boardPhoto',
           'boards.no AS no',
           'boards.title AS title',
           'boards.isDeadline AS isDeadline',
@@ -303,9 +307,9 @@ export class BoardRepository extends Repository<Board> {
           .where('boards.no = :no', { no: insertId })
           .getOne();
       }
-    } catch (e) {
+    } catch (err) {
       throw new InternalServerErrorException(
-        `${e} ### 게시판 생성: 알 수 없는 서버 에러입니다.`,
+        `${err} ### 게시판 생성: 알 수 없는 서버 에러입니다.`,
       );
     }
   }
@@ -351,8 +355,10 @@ export class BoardRepository extends Repository<Board> {
         .relation(Category, 'boards')
         .of(categoryNo)
         .add(board);
-    } catch (e) {
-      throw new InternalServerErrorException();
+    } catch (err) {
+      throw new InternalServerErrorException(
+        `${err} ### 카테고리 릴레이션: 릴레이션 관계 지정 서버 에러입니다.`,
+      );
     }
   }
 
@@ -367,21 +373,21 @@ export class BoardRepository extends Repository<Board> {
       )
         .leftJoin('boards.area', 'areas')
         .leftJoin('boards.user', 'users')
-        .leftJoin(
-          'boards.likedUser',
-          'likedUsers',
-          'likedUsers.likedBoardNo != boards.no OR likedUsers.likedBoardNo = boards.no',
-        )
+        .leftJoin('boards.photos', 'photo')
+        .leftJoin('users.profilePhoto', 'profilePhoto')
+        .leftJoin('boards.likedUser', 'likedUsers')
         .select([
           'boards.no AS no',
           'DATEDIFF(boards.deadline, now()) * -1 AS decimalDay',
+          'photo.photo_url AS boardPhotoUrl',
           'boards.title AS title',
           'boards.isDeadline AS isDeadline',
           'boards.price AS price',
           'boards.target AS target',
-          'areas.no AS areaNo',
           'areas.name AS areaName',
+          'users.no AS userNo',
           'users.nickname AS userNickname',
+          'profilePhoto.photo_url AS userProfilePhoto',
         ])
         // .where('Year(boards.createdAt) <= :year', { year })
         // .andWhere('Month(boards.createdAt) <= :month', { month })
@@ -436,6 +442,19 @@ export class BoardRepository extends Repository<Board> {
     } catch (err) {
       throw new InternalServerErrorException(
         `${err}####스펙 전체 조회 관련 서버 에러입니다`,
+      );
+    }
+  }
+
+  async boardRelation(no: any, value: any, relation: string): Promise<void> {
+    try {
+      await this.createQueryBuilder()
+        .relation(Board, relation)
+        .of(no)
+        .add(value);
+    } catch (err) {
+      throw new InternalServerErrorException(
+        `${err} 게시글 관계형성 도중 생긴 오류`,
       );
     }
   }

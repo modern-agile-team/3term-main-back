@@ -75,13 +75,11 @@ export class BoardsService {
       currentTime.setHours(currentTime.getHours() + 9);
 
       let endTime: Date = new Date();
-      endTime.setHours(endTime.getHours() + 9);
 
       if (!date) {
         endTime = null;
-      }
-
-      if (date) {
+      } else {
+        endTime.setHours(endTime.getHours() + 9);
         endTime.setDate(endTime.getDate() + date);
       }
 
@@ -267,11 +265,10 @@ export class BoardsService {
 
       let endTime: Date = new Date();
 
-      endTime.setHours(endTime.getHours() + 9);
-
       if (!deadline) {
         endTime = null;
       } else {
+        endTime.setHours(endTime.getHours() + 9);
         endTime.setDate(endTime.getDate() + deadline);
       }
 

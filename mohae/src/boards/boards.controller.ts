@@ -81,10 +81,10 @@ export class BoardsController {
       free,
     );
 
-    return Object.assign({
+    return {
       msg: '게시글 필터링이 완료되었습니다.',
       response,
-    });
+    };
   }
 
   @HttpCode(200)
@@ -92,10 +92,10 @@ export class BoardsController {
   async readHotBoards(@Query('select') select: number): Promise<object> {
     const response: Board[] = await this.boardService.readHotBoards(select);
 
-    return Object.assign({
+    return {
       msg: '인기 게시글 조회가 완료되었습니다.',
       response,
-    });
+    };
   }
 
   @ApiOperation({
@@ -186,9 +186,9 @@ export class BoardsController {
   ): Promise<object> {
     await this.boardService.cancelClosedBoard(boardNo, user.no);
 
-    return Object.assign({
+    return {
       msg: '게시글 마감 취소가 완료되었습니다.',
-    });
+    };
   }
 
   @ApiOperation({
@@ -260,6 +260,7 @@ export class BoardsController {
       page,
       target,
     );
+
     return {
       msg: '프로필 게시물 조회에 성공했습니다.',
       response,
@@ -267,14 +268,14 @@ export class BoardsController {
   }
 
   @HttpCode(200)
-  @Get(':boardNo')
+  @Get('/:boardNo')
   async readByOneBoard(@Param('boardNo') boardNo: number): Promise<object> {
     const response = await this.boardService.readByOneBoard(boardNo);
 
-    return Object.assign({
+    return {
       msg: '게시글 상세 조회가 완료되었습니다.',
       response,
-    });
+    };
   }
 
   @HttpCode(200)
@@ -289,10 +290,10 @@ export class BoardsController {
       categoryNo,
     );
 
-    return Object.assign({
+    return {
       msg: '카테고리 선택 조회가 완료되었습니다.',
       response,
-    });
+    };
   }
 
   @Post()
@@ -339,6 +340,7 @@ export class BoardsController {
   })
   @UseGuards(AuthGuard('jwt'))
   @Delete(':boardNo')
+  @HttpCode(200)
   async deleteBoard(
     @Param('boardNo') boardNo: number,
     @CurrentUser() user: User,
@@ -348,11 +350,10 @@ export class BoardsController {
       user.no,
     );
 
-    return Object.assign({
-      statusCode: 204,
+    return {
       msg: '게시글 삭제가 완료되었습니다',
       response,
-    });
+    };
   }
 
   @HttpCode(201)
@@ -365,8 +366,8 @@ export class BoardsController {
   ): Promise<object> {
     await this.boardService.updateBoard(boardNo, updateBoardDto, user.no);
 
-    return Object.assign({
+    return {
       msg: '게시글 수정이 완료되었습니다.',
-    });
+    };
   }
 }
