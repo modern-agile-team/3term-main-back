@@ -1,4 +1,6 @@
 import { InternalServerErrorException } from '@nestjs/common';
+import { User } from '@sentry/node';
+import { Board } from 'src/boards/entity/board.entity';
 import { EntityRepository, InsertResult, Repository } from 'typeorm';
 import { ReportedBoard } from '../entity/reported-board.entity';
 
@@ -33,21 +35,29 @@ export class ReportedBoardRepository extends Repository<ReportedBoard> {
     }
   }
 
-  async createBoardReport(description: string): Promise<any> {
+  async createBoardReport(
+    reportUser: User,
+    reportedBoard: Board,
+    description: string,
+  ): Promise<any> {
     try {
+      const reportedBoardData: object = {
+        reportUser,
+        reportedBoard,
+        description,
+      };
+
       const { raw }: InsertResult = await this.createQueryBuilder(
         'reported_boards',
       )
         .insert()
         .into(ReportedBoard)
-        .values({ description })
+        .values(reportedBoardData)
         .execute();
 
       return raw;
-    } catch (e) {
-      throw new InternalServerErrorException(
-        `${e} ### 게시글 신고 : 알 수 없는 서버 에러입니다.`,
-      );
+    } catch (err) {
+      throw new InternalServerErrorException(err.message);
     }
   }
 }

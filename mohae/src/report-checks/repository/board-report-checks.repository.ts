@@ -10,13 +10,18 @@ export class BoardReportChecksRepository extends Repository<BoardReportChecks> {
     reportedBoard: ReportedBoard,
     check: ReportCheckbox,
   ): Promise<boolean> {
+    const boardReportCheckData: object = {
+      reportedBoard,
+      check,
+    };
+
     try {
       const { raw }: InsertResult = await this.createQueryBuilder(
         'board_report_checks',
       )
         .insert()
         .into(BoardReportChecks)
-        .values({ reportedBoard, check })
+        .values(boardReportCheckData)
         .execute();
 
       return !!raw.affectedRows;

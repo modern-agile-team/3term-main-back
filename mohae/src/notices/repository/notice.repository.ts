@@ -1,6 +1,11 @@
 import { InternalServerErrorException } from '@nestjs/common';
 import { User } from 'src/auth/entity/user.entity';
-import { EntityRepository, Repository } from 'typeorm';
+import {
+  DeleteResult,
+  EntityRepository,
+  Repository,
+  UpdateResult,
+} from 'typeorm';
 import { CreateNoticeDto } from '../dto/create-notice.dto';
 import { UpdateNoticeDto } from '../dto/update-notice.dtd';
 import { Notice } from '../entity/notice.entity';
@@ -31,16 +36,18 @@ export class NoticeRepository extends Repository<Notice> {
     { title, description }: CreateNoticeDto,
     manager: User,
   ): Promise<any> {
+    const createNoticeData: object = {
+      title,
+      description,
+      manager,
+      lastEditor: manager,
+    };
+
     try {
       const { raw }: any = await this.createQueryBuilder('notices')
         .insert()
         .into(Notice)
-        .values({
-          manager,
-          lastEditor: manager,
-          title,
-          description,
-        })
+        .values(createNoticeData)
         .execute();
 
       return raw;
@@ -54,14 +61,16 @@ export class NoticeRepository extends Repository<Notice> {
     { title, description }: UpdateNoticeDto,
     manager: User,
   ): Promise<number> {
+    const updateNoticeData: object = {
+      title,
+      description,
+      lastEditor: manager,
+    };
+
     try {
-      const { affected }: any = await this.createQueryBuilder()
+      const { affected }: UpdateResult = await this.createQueryBuilder()
         .update(Notice)
-        .set({
-          title,
-          description,
-          lastEditor: manager,
-        })
+        .set(updateNoticeData)
         .where('no = :noticeNo', { noticeNo })
         .execute();
 
@@ -73,7 +82,7 @@ export class NoticeRepository extends Repository<Notice> {
 
   async deleteNotice(noticeNo: number): Promise<number> {
     try {
-      const { affected }: any = await this.createQueryBuilder()
+      const { affected }: DeleteResult = await this.createQueryBuilder()
         .softDelete()
         .from(Notice)
         .where('no = :noticeNo', { noticeNo })

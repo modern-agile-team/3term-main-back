@@ -5,14 +5,15 @@ import {
   Get,
   HttpCode,
   Param,
-  Patch,
   Post,
+  Put,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { User } from 'src/auth/entity/user.entity';
+import { HTTP_STATUS_CODE } from 'src/common/configs/http-status.config';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 import { Role } from 'src/common/decorators/roles.decorator';
 import { RolesGuard } from 'src/common/guards/roles.guard';
@@ -32,7 +33,7 @@ export class NoticesController {
     summary: '공지사항 전체 조회 기능',
     description: '공지사항을 전체 조회하는 API',
   })
-  @HttpCode(200)
+  @HttpCode(HTTP_STATUS_CODE.success.ok)
   @Get()
   async readAllNotices(): Promise<object> {
     const response: Notice | Notice[] =
@@ -50,21 +51,17 @@ export class NoticesController {
   })
   @Role(true)
   @UseGuards(RolesGuard)
-  @UseGuards(AuthGuard())
-  @HttpCode(201)
+  @UseGuards(AuthGuard('jwt'))
+  @HttpCode(HTTP_STATUS_CODE.success.created)
   @Post()
   async createNotice(
     @Body() createNoticeDto: CreateNoticeDto,
     @CurrentUser() manager: User,
   ): Promise<object> {
-    const response: boolean = await this.noticesService.createNotice(
-      createNoticeDto,
-      manager,
-    );
+    await this.noticesService.createNotice(createNoticeDto, manager);
 
     return {
       msg: `Notice 생성 완료`,
-      success: response,
     };
   }
 
@@ -74,23 +71,18 @@ export class NoticesController {
   })
   @Role(true)
   @UseGuards(RolesGuard)
-  @UseGuards(AuthGuard())
-  @HttpCode(201)
-  @Patch('/:noticeNo')
+  @UseGuards(AuthGuard('jwt'))
+  @HttpCode(HTTP_STATUS_CODE.success.ok)
+  @Put('/:noticeNo')
   async updateNotice(
+    @CurrentUser() manager: User,
     @Param('noticeNo') noticeNo: number,
     @Body() updateNoticeDto: UpdateNoticeDto,
-    @CurrentUser() manager: User,
   ): Promise<object> {
-    const response: boolean = await this.noticesService.updateNotice(
-      noticeNo,
-      updateNoticeDto,
-      manager,
-    );
+    await this.noticesService.updateNotice(manager, noticeNo, updateNoticeDto);
 
     return {
       msg: `Notice 수정 완료`,
-      success: response,
     };
   }
 
@@ -98,17 +90,16 @@ export class NoticesController {
     summary: '공지사항 삭제 기능',
     description: '공지사항을 삭제하는 API',
   })
-  @Delete('/:noticeNo')
   @Role(true)
   @UseGuards(RolesGuard)
-  @UseGuards(AuthGuard())
+  @UseGuards(AuthGuard('jwt'))
+  @HttpCode(HTTP_STATUS_CODE.success.ok)
+  @Delete('/:noticeNo')
   async deleteNotice(@Param('noticeNo') noticeNo: number): Promise<object> {
-    const response: boolean = await this.noticesService.deleteNotice(noticeNo);
+    await this.noticesService.deleteNotice(noticeNo);
 
-    return Object.assign({
-      statusCode: 204,
-      msg: `Notice 삭제 완료`,
-      success: response,
-    });
+    return {
+      msg: '공지사항 삭제 완료',
+    };
   }
 }

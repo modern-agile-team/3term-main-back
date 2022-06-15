@@ -1,19 +1,12 @@
-import { User } from 'src/auth/entity/user.entity';
-import { Board } from 'src/boards/entity/board.entity';
+import { Exclude } from 'class-transformer';
 import {
   BaseEntity,
   Column,
   CreateDateColumn,
   DeleteDateColumn,
-  Entity,
-  ManyToOne,
-  OneToMany,
   PrimaryGeneratedColumn,
-  Timestamp,
   UpdateDateColumn,
 } from 'typeorm';
-import { BoardReportChecks } from '../../report-checks/entity/board-report-checks.entity';
-import { UserReportChecks } from '../../report-checks/entity/user-report-checks.entity';
 
 export abstract class ReportContent extends BaseEntity {
   @PrimaryGeneratedColumn()
@@ -25,19 +18,19 @@ export abstract class ReportContent extends BaseEntity {
   })
   description: string;
 
-  /* Timestamps */
   @CreateDateColumn({
-    comment: '게시글 또는 유저 신고 생성 일시',
+    name: 'created_at',
   })
-  createdAt: Timestamp;
+  createdAt: Date;
 
   @UpdateDateColumn({
-    comment: '신고 수정 일자',
+    name: 'updated_at',
   })
-  updatedAt: Timestamp;
+  updatedAt: Date;
 
+  @Exclude()
   @DeleteDateColumn({
-    comment: '신고 삭제 일자',
+    name: 'deleted_at',
   })
-  deletedAt: Timestamp;
+  deletedAt: Date | null;
 }

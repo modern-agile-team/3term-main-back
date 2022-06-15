@@ -37,30 +37,16 @@ import { BasketsModule } from './baskets/baskets.module';
 import { ReportChecksModule } from './report-checks/report-checks.module';
 import { ReportCheckboxesModule } from './report-checkboxes/report-checkboxes.module';
 import { LoggerMiddleware } from './common/middleware/logger.middleware';
-import {
-  utilities as nestWinstonModuleUtilities,
-  WinstonModule,
-} from 'nest-winston';
-import * as winston from 'winston';
+import { WinstonModule } from 'nest-winston';
 import { envConfig } from './common/configs/env.config';
+import { winstonConfig } from './common/configs/winston.config';
+import { CommentsModule } from './comments/comments.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot(envConfig),
     TypeOrmModule.forRootAsync(typeOrmConfig),
-    WinstonModule.forRoot({
-      transports: [
-        new winston.transports.Console({
-          level: process.env.NODE_ENV === 'production' ? 'info' : 'silly',
-          format: winston.format.combine(
-            winston.format.timestamp(),
-            nestWinstonModuleUtilities.format.nestLike('MOHAE', {
-              prettyPrint: true,
-            }),
-          ),
-        }),
-      ],
-    }),
+    WinstonModule.forRootAsync(winstonConfig),
     ReportsModule,
     FaqsModule,
     CategoriesModule,
@@ -93,6 +79,7 @@ import { envConfig } from './common/configs/env.config';
     BasketsModule,
     ReportChecksModule,
     ReportCheckboxesModule,
+    CommentsModule,
   ],
   controllers: [AppController],
   providers: [

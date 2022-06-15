@@ -8,7 +8,7 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 
-@Entity('specPhoto')
+@Entity('spec_photos')
 export class SpecPhoto extends BaseEntity {
   @PrimaryGeneratedColumn()
   no: number;

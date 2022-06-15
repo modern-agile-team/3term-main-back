@@ -10,6 +10,7 @@ import {
 import { AuthGuard } from '@nestjs/passport';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { User } from 'src/auth/entity/user.entity';
+import { HTTP_STATUS_CODE } from 'src/common/configs/http-status.config';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 import { SuccesseInterceptor } from 'src/common/interceptors/success.interceptor';
 import { Mailbox } from './entity/mailbox.entity';
@@ -26,8 +27,8 @@ export class MailboxesController {
     summary: '로그인한 유저의 쪽지함 전체 조회',
     description: '로그인한 유저의 쪽지함 전체를 조회하는 API',
   })
+  @HttpCode(HTTP_STATUS_CODE.success.ok)
   @Get()
-  @HttpCode(200)
   async readAllMailboxes(@CurrentUser() user: User): Promise<object> {
     const response: any = await this.mailboxesService.readAllMailboxes(user);
 
@@ -41,8 +42,8 @@ export class MailboxesController {
     summary: '쪽지함 목록에 있는 한 개의 쪽지함을 클릭',
     description: '클릭한 쪽지함 내용을 조회하는 API',
   })
-  @HttpCode(200)
-  @Get('/:mailboxNo')
+  @HttpCode(HTTP_STATUS_CODE.success.ok)
+  @Get(':mailboxNo')
   async searchMailbox(
     @Param('mailboxNo') mailboxNo: number,
     @Query('limit') limit: number,
@@ -63,17 +64,17 @@ export class MailboxesController {
     description:
       '채팅 내역이 존재하면 채팅 내역 리턴, 없으면 아무 내용도 리턴하지 않는 API',
   })
-  @Get('/confirm/:opponentNo')
+  @Get('confirm/:opponentNo')
   async checkMailbox(
     @CurrentUser() oneself: User,
     @Param('opponentNo') opponentNo: number,
   ): Promise<object> {
-    const { success, mailboxNo }: any =
+    const { success, mailboxNo }: { success: boolean; mailboxNo: number } =
       await this.mailboxesService.checkMailbox(oneself, opponentNo);
 
     if (!success) {
       return {
-        statusCode: 202,
+        statusCode: HTTP_STATUS_CODE.success.accepted,
         msg: '해당 유저와의 쪽지함이 존재하지 않습니다.',
       };
     }
@@ -84,7 +85,7 @@ export class MailboxesController {
     );
 
     return {
-      statusCode: 200,
+      statusCode: HTTP_STATUS_CODE.success.ok,
       msg: '쪽지함 존재 여부 확인 완료',
       response,
     };

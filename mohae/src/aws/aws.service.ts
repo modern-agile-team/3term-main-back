@@ -142,6 +142,54 @@ export class AwsService {
     }
   }
 
+  // 리뷰 - ({ }) 이런 형식으로 들어가 있는 코드들 변수로 설정해주기
+
+  async uploadProfileFileToS3(folder: string, file: any): Promise<string> {
+    try {
+      if (file.originalname === 'default.jpg') {
+        return 'default.jpg';
+      }
+      const profilePhotoUrl: string = `${folder}/${Date.now()}_${path.basename(
+        file.originalname,
+      )}`.replace(/ /g, '');
+
+      this.awsS3
+        .putObject({
+          Bucket: this.S3_BUCKET_NAME,
+          Key: profilePhotoUrl,
+          Body: file.buffer,
+          ACL: 'public-read',
+          ContentType: file.mimetype,
+        })
+        .promise();
+
+      return profilePhotoUrl;
+    } catch (error) {
+      throw new BadRequestException(`File upload failed : ${error}`);
+    }
+  }
+
+  async deleteProfileS3Object(
+    originProfilePhotoUrl: string,
+    callback?: (err: AWS.AWSError, data: AWS.S3.DeleteObjectOutput) => void,
+  ): Promise<{ success: true }> {
+    try {
+      await this.awsS3
+        .deleteObject(
+          {
+            Bucket: this.S3_BUCKET_NAME,
+            Key: originProfilePhotoUrl,
+          },
+          callback,
+        )
+        .promise();
+
+      return { success: true };
+    } catch (error) {
+      throw new BadRequestException(`Failed to delete file : ${error}`);
+    }
+  }
+
   public getAwsS3FileUrl(objectKey: string) {
     return `https://${this.S3_BUCKET_NAME}.s3.amazonaws.com/${objectKey}`;
   }
@@ -160,4 +208,41 @@ export class AwsService {
   //     },
   //   }),
   // }).array('upload', 1);
+  async uploadLetterPhotoToS3(
+    imageUrl: string,
+    image: Express.Multer.File,
+  ): Promise<void> {
+    try {
+      await this.awsS3
+        .putObject({
+          Bucket: this.S3_BUCKET_NAME,
+          Key: imageUrl,
+          Body: image.buffer,
+          ACL: 'public-read',
+          ContentType: image.mimetype,
+        })
+        .promise();
+    } catch (error) {
+      throw new BadRequestException(`File upload failed : ${error}`);
+    }
+  }
+
+  makeImageKey(folder: string, image: Express.Multer.File): Image {
+    try {
+      const key: string = `${folder}/${Date.now()}_${path.basename(
+        image.originalname,
+      )}`.replace(/ /g, '');
+
+      return {
+        imageUrl: `https://${this.S3_BUCKET_NAME}.s3.amazonaws.com/${key}`,
+        imageKey: key,
+      };
+    } catch (error) {
+      throw new BadRequestException(`File upload failed : ${error}`);
+    }
+  }
+}
+interface Image {
+  imageUrl: string;
+  imageKey: string;
 }

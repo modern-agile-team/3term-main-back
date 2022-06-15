@@ -1,5 +1,5 @@
 import { ConfigModuleOptions } from '@nestjs/config';
-import * as Joi from 'Joi';
+import * as Joi from 'joi';
 
 export const envConfig: ConfigModuleOptions = {
   isGlobal: true,

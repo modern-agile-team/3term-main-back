@@ -1,5 +1,6 @@
 import { InternalServerErrorException } from '@nestjs/common';
 import { Area } from 'src/areas/entity/areas.entity';
+import { error } from 'console';
 import { User } from 'src/auth/entity/user.entity';
 import { Board } from 'src/boards/entity/board.entity';
 import { EntityRepository, Repository, SelectQueryBuilder } from 'typeorm';
@@ -59,8 +60,7 @@ export class CategoryRepository extends Repository<Category> {
       );
     }
   }
-
-  async selectCategory(categories: Array<number>) {
+  async selectCategory(categories: Category[]): Promise<Category[]> {
     try {
       return [
         await this.createQueryBuilder('categories')
@@ -83,15 +83,27 @@ export class CategoryRepository extends Repository<Category> {
     }
   }
 
-  async addUser(categoryNo: number, user: User) {
+  async addUser(categoryNo: number, user: User): Promise<void> {
     try {
       await this.createQueryBuilder()
         .relation(Category, 'users')
         .of(categoryNo)
         .add(user);
-    } catch (e) {
+    } catch (err) {
       throw new InternalServerErrorException(`
-        ${e} ### 유저 회원 가입도중 카테고리정보 저장 관련 알 수없는 서버에러입니다. `);
+        ${err} ### 유저 회원 가입도중 카테고리정보 저장 관련 알 수없는 서버에러입니다. `);
+    }
+  }
+  async deleteUser(categoryNo: Category, user: User): Promise<void> {
+    try {
+      await this.createQueryBuilder()
+        .relation(Category, 'users')
+        .of(categoryNo)
+        .remove(user);
+    } catch (err) {
+      throw new InternalServerErrorException(
+        `${err} 카테고리에 포함된 유저 삭제중 발생한 서버에러`,
+      );
     }
   }
 

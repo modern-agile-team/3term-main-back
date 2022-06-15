@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, PickType } from '@nestjs/swagger';
 import {
   ArrayMaxSize,
   IsArray,
@@ -13,6 +13,12 @@ import {
   MinLength,
   Validate,
 } from 'class-validator';
+import { Board } from '../entity/board.entity';
+
+export class BoardPickType extends PickType(Board, [
+  'title',
+  'description',
+] as const) {}
 
 export abstract class BoardContent {
   @ApiProperty({
@@ -136,7 +142,8 @@ export class SearchBoardDto {
     required: true,
   })
   @IsString()
-  @MaxLength(15)
+  @MaxLength(16)
+  @MinLength(2)
   title: string;
 }
 

@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { HttpException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/auth/entity/user.entity';
 import { UserRepository } from 'src/auth/repository/user.repository';
@@ -10,11 +10,11 @@ import { ReportCheckbox } from '../report-checkboxes/entity/report-checkboxes.en
 import { ReportCheckboxRepository } from '../report-checkboxes/repository/report-checkbox.repository';
 import { BoardReportChecksRepository } from '../report-checks/repository/board-report-checks.repository';
 import { ReportedBoardRepository } from './repository/reported-board.repository';
-import { ReportedUserRepository } from './repository/reported-user.repository';
 import { ReportedBoard } from './entity/reported-board.entity';
 import { ReportedUser } from './entity/reported-user.entity';
 import { UserReportChecksRepository } from 'src/report-checks/repository/user-report-checks.repository';
-import { Connection } from 'typeorm';
+import { Connection, QueryRunner } from 'typeorm';
+import { ReportedUserRepository } from './repository/reported-user.repository';
 
 @Injectable()
 export class ReportsService {
@@ -26,8 +26,6 @@ export class ReportsService {
     private reportCheckboxRepository: ReportCheckboxRepository,
     private boardRepository: BoardRepository,
     private userRepository: UserRepository,
-    private boardReportChecksRepository: BoardReportChecksRepository,
-    private userReportChecksRepository: UserReportChecksRepository,
 
     private connection: Connection,
     private errorConfirm: ErrorConfirm,
@@ -69,34 +67,34 @@ export class ReportsService {
     reporter: User,
     createReportDto: CreateReportDto,
   ): Promise<void> {
-    const reportUserNo: number = reporter.no;
     const { head, checks }: CreateReportDto = createReportDto;
     const uniqueChecks: Array<number> = checks.filter(
-      (checkNo: number, index) => {
-        return checks.indexOf(checkNo) === index;
-      },
+      (checkNo: number, index: number) => checks.indexOf(checkNo) === index,
     );
     const infoToChecks: Promise<ReportCheckbox>[] = uniqueChecks.map(
       (checkNo: number) => {
         return this.reportCheckboxRepository.selectCheckConfirm(checkNo);
       },
     );
+    const saveReport: object = {
+      board: () =>
+        this.createBoardReport(createReportDto, infoToChecks, reporter),
+      user: () =>
+        this.createUserReport(createReportDto, infoToChecks, reporter),
+    };
+    const catchedError: HttpException = await saveReport[head]();
 
-    if (head === 'board') {
-      this.createBoardReport(createReportDto, infoToChecks, reportUserNo);
-    } else if (head === 'user') {
-      this.createUserReport(createReportDto, infoToChecks, reportUserNo);
+    if (catchedError) {
+      throw catchedError;
     }
-
-    throw new BadRequestException('Head를 확인해 주세요.');
   }
 
   async createBoardReport(
     { headNo, description }: CreateReportDto,
     infoToChecks: Promise<ReportCheckbox>[],
-    reportUserNo: number,
+    reporter: User,
   ): Promise<void> {
-    const queryRunner: any = this.connection.createQueryRunner();
+    const queryRunner: QueryRunner = this.connection.createQueryRunner();
 
     await queryRunner.connect();
     await queryRunner.startTransaction();
@@ -112,9 +110,9 @@ export class ReportsService {
         '신고하려는 게시글이 존재하지 않습니다.',
       );
 
-      const createBoardReportResult = await queryRunner.manager
+      const createBoardReportResult: any = await queryRunner.manager
         .getCustomRepository(ReportedBoardRepository)
-        .createBoardReport(description);
+        .createBoardReport(reporter, board, description);
 
       this.errorConfirm.badGatewayError(
         createBoardReportResult.affectedRows,
@@ -122,7 +120,7 @@ export class ReportsService {
       );
 
       infoToChecks.forEach(async (checkNo: Promise<ReportCheckbox>) => {
-        const saveResult: Promise<boolean> = queryRunner.manager
+        const saveResult: boolean = await queryRunner.manager
           .getCustomRepository(BoardReportChecksRepository)
           .saveBoardReportChecks(
             createBoardReportResult.insertId,
@@ -137,20 +135,21 @@ export class ReportsService {
 
       board.reports.push(createBoardReportResult.insertId);
 
-      await queryRunner.manager
-        .getCustomRepository(BoardRepository)
-        .save(board);
+      // 릴레이션 추가로 바꿔야 함
+      // await queryRunner.manager
+      //   .getCustomRepository(BoardRepository)
+      //   .save(board);
       await queryRunner.manager
         .getCustomRepository(UserRepository)
         .userRelation(
-          reportUserNo,
+          reporter,
           createBoardReportResult.insertId,
           'boardReport',
         );
       await queryRunner.commitTransaction();
     } catch (err) {
       await queryRunner.rollbackTransaction();
-      throw err;
+      return err;
     } finally {
       await queryRunner.release();
     }
@@ -159,7 +158,7 @@ export class ReportsService {
   async createUserReport(
     { headNo, description }: CreateReportDto,
     infoToChecks: Promise<ReportCheckbox>[],
-    reportUserNo: number,
+    reporter: User,
   ): Promise<void> {
     const queryRunner: any = this.connection.createQueryRunner();
 
@@ -179,7 +178,7 @@ export class ReportsService {
 
       const createUserReportResult: any = await queryRunner.manager
         .getCustomRepository(ReportedUserRepository)
-        .createUserReport(description);
+        .createUserReport(reporter, user, description);
 
       this.errorConfirm.badGatewayError(
         createUserReportResult.affectedRows,
@@ -202,15 +201,11 @@ export class ReportsService {
         .userRelation(user.no, createUserReportResult.insertId, 'reports');
       await queryRunner.manager
         .getCustomRepository(UserRepository)
-        .userRelation(
-          reportUserNo,
-          createUserReportResult.insertId,
-          'userReport',
-        );
+        .userRelation(reporter, createUserReportResult.insertId, 'userReport');
       await queryRunner.commitTransaction();
     } catch (err) {
       await queryRunner.rollbackTransaction();
-      throw err;
+      return err;
     } finally {
       await queryRunner.release();
     }
