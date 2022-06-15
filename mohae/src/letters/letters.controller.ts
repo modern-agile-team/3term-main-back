@@ -14,6 +14,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { User } from 'src/auth/entity/user.entity';
 import { AwsService } from 'src/aws/aws.service';
+import { HTTP_STATUS_CODE } from 'src/common/configs/http-status.config';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 import { SuccesseInterceptor } from 'src/common/interceptors/success.interceptor';
 import { SendLetterDto } from './dto/letter.dto';
@@ -34,7 +35,7 @@ export class LettersController {
     description:
       '유저 간 쪽지 보내기 기능, 쪽지함이 없을 경우 생성하고 있으면 저장 API',
   })
-  @HttpCode(201)
+  @HttpCode(HTTP_STATUS_CODE.success.created)
   @UseInterceptors(FileInterceptor('image'))
   @Post()
   async sendLetter(

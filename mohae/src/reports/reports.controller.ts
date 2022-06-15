@@ -3,22 +3,27 @@ import {
   Controller,
   Get,
   HttpCode,
+  HttpException,
   Logger,
   Param,
   Post,
+  UseFilters,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { User } from 'src/auth/entity/user.entity';
+import { HTTP_STATUS_CODE } from 'src/common/configs/http-status.config';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
+import { HttpExceptionFilter } from 'src/common/exceptions/http-exception.filter';
 import { SuccesseInterceptor } from 'src/common/interceptors/success.interceptor';
 import { CreateReportDto } from './dto/create-report.dto';
 import { ReportedBoard } from './entity/reported-board.entity';
 import { ReportedUser } from './entity/reported-user.entity';
 import { ReportsService } from './reports.service';
 
+@UseFilters(HttpExceptionFilter)
 @UseInterceptors(SuccesseInterceptor)
 @UseGuards(AuthGuard('jwt'))
 @ApiTags('Reports')
@@ -30,7 +35,7 @@ export class ReportsController {
     summary: '신고된 게시글 상세(선택) 조회',
     description: '신고된 게시글 상세(선택) 조회 API',
   })
-  @HttpCode(200)
+  @HttpCode(HTTP_STATUS_CODE.success.ok)
   @Get('board/:no')
   async readOneReportedBoard(@Param('no') boardNo: number): Promise<object> {
     const response: ReportedBoard =
@@ -46,7 +51,7 @@ export class ReportsController {
     summary: '신고된 유저 상세(선택) 조회',
     description: '신고된 유저 상세(선택) 조회 API',
   })
-  @HttpCode(200)
+  @HttpCode(HTTP_STATUS_CODE.success.ok)
   @Get('user/:no')
   async readOneReportedUser(@Param('no') userNo: number): Promise<object> {
     const response: ReportedUser =
@@ -62,7 +67,7 @@ export class ReportsController {
     summary: '유저 또는 게시글 신고 생성',
     description: '유저 또는 게시글 신고 생성 API',
   })
-  @HttpCode(201)
+  @HttpCode(HTTP_STATUS_CODE.success.created)
   @Post()
   async createReport(
     @CurrentUser() reporter: User,

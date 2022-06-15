@@ -12,6 +12,7 @@ import {
 import { AuthGuard } from '@nestjs/passport';
 import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { User } from 'src/auth/entity/user.entity';
+import { HTTP_STATUS_CODE } from 'src/common/configs/http-status.config';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 import { SuccesseInterceptor } from 'src/common/interceptors/success.interceptor';
 import { CreateReviewDto } from './dto/create-review.dto';
@@ -31,7 +32,7 @@ export class ReviewsController {
   @ApiOkResponse({
     description: '프로필 리뷰 조회에 성공한 경우.',
   })
-  @HttpCode(200)
+  @HttpCode(HTTP_STATUS_CODE.success.created)
   @Get('profile')
   async readUserReview(
     @Query('user') userNo: number,
@@ -59,7 +60,7 @@ export class ReviewsController {
     summary: '리뷰 작성',
     description: '리뷰 작성 API',
   })
-  @HttpCode(201)
+  @HttpCode(HTTP_STATUS_CODE.success.created)
   @Post()
   async createReview(
     @CurrentUser() reviewer: User,
@@ -77,7 +78,7 @@ export class ReviewsController {
     description: '리뷰룰 요청하는 유저와 대상 유저의 리뷰 여부를 판단',
   })
   @Get('/check/:targetUserNo/:boardNo')
-  @HttpCode(200)
+  @HttpCode(HTTP_STATUS_CODE.success.ok)
   async checkDuplicateReview(
     @CurrentUser() requester: User,
     @Param('targetUserNo') targetUserNo: number,
