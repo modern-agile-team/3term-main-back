@@ -129,7 +129,7 @@ export class BoardsService {
     }
   }
 
-  async readByOneBoard(boardNo: number) {
+  async readByOneBoard(boardNo: number): Promise<any> {
     try {
       const board: any = await this.boardRepository.readByOneBoard(boardNo);
 

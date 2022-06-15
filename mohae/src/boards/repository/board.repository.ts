@@ -25,6 +25,7 @@ export class BoardRepository extends Repository<Board> {
           'categories.no = boards.category',
         )
         .leftJoin('boards.user', 'users')
+        .leftJoin('boards.photos', 'photo')
         .leftJoin('users.school', 'school')
         .leftJoin('users.major', 'major')
         .leftJoin(
@@ -36,6 +37,7 @@ export class BoardRepository extends Repository<Board> {
         .leftJoin('users.profilePhoto', 'profilePhoto')
         .select([
           'boards.no AS no',
+          'GROUP_CONCAT(photo.photo_url) AS boardPhoto',
           'DATEDIFF(boards.deadline, now()) * -1 AS decimalDay',
           'boards.title AS title',
           'boards.description AS description',
@@ -378,6 +380,8 @@ export class BoardRepository extends Repository<Board> {
         .leftJoin('boards.likedUser', 'likedUsers')
         .select([
           'boards.no AS no',
+          'COUNT(likedUsers.likedBoardNo) AS count',
+          '(boards.hit + COUNT(likedUsers.likedBoardNo)) / DATEDIFF(now(), boards.createdAt) AS len',
           'DATEDIFF(boards.deadline, now()) * -1 AS decimalDay',
           'photo.photo_url AS boardPhotoUrl',
           'boards.title AS title',
@@ -389,14 +393,13 @@ export class BoardRepository extends Repository<Board> {
           'users.nickname AS userNickname',
           'profilePhoto.photo_url AS userProfilePhoto',
         ])
-        // .where('Year(boards.createdAt) <= :year', { year })
-        // .andWhere('Month(boards.createdAt) <= :month', { month })
+        .where('Year(boards.createdAt) <= :year', { year })
+        .andWhere('Month(boards.createdAt) <= :month', { month })
         .groupBy('likedUsers.likedBoardNo')
         .orderBy(
           '(boards.hit + COUNT(likedUsers.likedBoardNo)) / DATEDIFF(now(), boards.createdAt)',
           'DESC',
-        )
-        .limit(3);
+        );
 
       if (select === 1) {
         hotBoards.andWhere('boards.isDeadline = false');

@@ -34,6 +34,7 @@ import {
 import { Board } from './entity/board.entity';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 import { CategoriesService } from 'src/categories/categories.service';
+import { HTTP_STATUS_CODE } from 'src/common/configs/http-status.config';
 
 @ApiTags('Boards')
 @UseInterceptors(SuccesseInterceptor)
@@ -52,7 +53,7 @@ export class BoardsController {
     this.logger.verbose(`게시글 ${isClosed}개 마감처리`);
   }
 
-  @HttpCode(200)
+  @HttpCode(HTTP_STATUS_CODE.success.ok)
   @Get('filter')
   async filteredBoards(@Query() paginationQuery): Promise<object> {
     const {
@@ -87,7 +88,7 @@ export class BoardsController {
     };
   }
 
-  @HttpCode(200)
+  @HttpCode(HTTP_STATUS_CODE.success.ok)
   @Get('hot')
   async readHotBoards(@Query('select') select: number): Promise<object> {
     const response: Board[] = await this.boardService.readHotBoards(select);
@@ -106,7 +107,7 @@ export class BoardsController {
     description: '성공여부',
     schema: {
       example: {
-        statusCode: 200,
+        statusCode: HTTP_STATUS_CODE.success.ok,
         msg: '검색결과에 대한 게시글 조회가 완료되었습니다.',
         response: {
           foundedBoardNum: 1,
@@ -128,7 +129,7 @@ export class BoardsController {
       },
     },
   })
-  @HttpCode(200)
+  @HttpCode(HTTP_STATUS_CODE.success.ok)
   @Get('search')
   async searchAllBoards(
     @Query() searchBoardDto: SearchBoardDto,
@@ -152,7 +153,7 @@ export class BoardsController {
     schema: {
       example: {
         success: true,
-        statusCode: 200,
+        statusCode: HTTP_STATUS_CODE.success.ok,
         msg: '게시글 마감 취소가 완료되었습니다.',
       },
     },
@@ -179,7 +180,7 @@ export class BoardsController {
   })
   @UseGuards(AuthGuard('jwt'))
   @Patch('cancel/:boardNo')
-  @HttpCode(200)
+  @HttpCode(HTTP_STATUS_CODE.success.ok)
   async cancelClosedBoard(
     @Param('boardNo') boardNo: number,
     @CurrentUser() user: User,
@@ -200,7 +201,7 @@ export class BoardsController {
     schema: {
       example: {
         success: true,
-        statusCode: 200,
+        statusCode: HTTP_STATUS_CODE.success.ok,
         msg: '게시글 마감이 완료되었습니다.',
       },
     },
@@ -227,7 +228,7 @@ export class BoardsController {
   })
   @UseGuards(AuthGuard('jwt'))
   @Patch('close/:boardNo')
-  @HttpCode(200)
+  @HttpCode(HTTP_STATUS_CODE.success.ok)
   async boardClosed(
     @Param('boardNo') boardNo: number,
     @CurrentUser() user: User,
@@ -240,7 +241,7 @@ export class BoardsController {
   }
 
   @Get('profile')
-  @HttpCode(200)
+  @HttpCode(HTTP_STATUS_CODE.success.ok)
   @ApiOperation({
     summary: '프로필 페이지에서 유저가 작성한 게시글 불러오는 API',
     description: '프로필 주인이 작성한 게시글을 불러온다.',
@@ -267,7 +268,7 @@ export class BoardsController {
     };
   }
 
-  @HttpCode(200)
+  @HttpCode(HTTP_STATUS_CODE.success.ok)
   @Get('/:boardNo')
   async readByOneBoard(@Param('boardNo') boardNo: number): Promise<object> {
     const response = await this.boardService.readByOneBoard(boardNo);
@@ -278,7 +279,7 @@ export class BoardsController {
     };
   }
 
-  @HttpCode(200)
+  @HttpCode(HTTP_STATUS_CODE.success.ok)
   @Get('category/:categoryNo')
   async getByCategory(
     @Param('categoryNo') categoryNo: number,
@@ -305,13 +306,13 @@ export class BoardsController {
     description: '성공여부',
     schema: {
       example: {
-        statusCode: 201,
+        statusCode: HTTP_STATUS_CODE.success.created,
         msg: '게시글 생성이 완료되었습니다.',
         response: true,
       },
     },
   })
-  @HttpCode(201)
+  @HttpCode(HTTP_STATUS_CODE.success.created)
   @UseGuards(AuthGuard('jwt'))
   async createBoard(
     @Body() createBoardDto: CreateBoardDto,
@@ -332,7 +333,7 @@ export class BoardsController {
     description: '성공여부',
     schema: {
       example: {
-        statusCode: 204,
+        statusCode: HTTP_STATUS_CODE.success.ok,
         msg: '게시글 삭제가 완료되었습니다.',
         response: true,
       },
@@ -340,7 +341,7 @@ export class BoardsController {
   })
   @UseGuards(AuthGuard('jwt'))
   @Delete(':boardNo')
-  @HttpCode(200)
+  @HttpCode(HTTP_STATUS_CODE.success.ok)
   async deleteBoard(
     @Param('boardNo') boardNo: number,
     @CurrentUser() user: User,
@@ -356,7 +357,7 @@ export class BoardsController {
     };
   }
 
-  @HttpCode(201)
+  @HttpCode(HTTP_STATUS_CODE.success.created)
   @UseGuards(AuthGuard('jwt'))
   @Patch(':boardNo')
   async updateBoard(
