@@ -1,6 +1,7 @@
 import { Body, Controller, HttpCode, Post, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import {
+  ApiBearerAuth,
   ApiConflictResponse,
   ApiInternalServerErrorResponse,
   ApiNotFoundResponse,
@@ -62,6 +63,7 @@ export class LikeController {
       },
     },
   })
+  @ApiBearerAuth('access-token')
   @UseGuards(AuthGuard('jwt'))
   @HttpCode(HTTP_STATUS_CODE.success.created)
   @Post('/user')

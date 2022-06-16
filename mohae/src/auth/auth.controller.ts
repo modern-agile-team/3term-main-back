@@ -14,6 +14,7 @@ import { AuthGuard } from '@nestjs/passport';
 import {
   ApiBadGatewayResponse,
   ApiBadRequestResponse,
+  ApiBearerAuth,
   ApiConflictResponse,
   ApiInternalServerErrorResponse,
   ApiNotFoundResponse,
@@ -208,6 +209,7 @@ export class AuthController {
     },
   })
   @HttpCode(HTTP_STATUS_CODE.success.ok)
+  @ApiBearerAuth('access-token')
   @UseGuards(AuthGuard('jwt'))
   @Delete(':userNo')
   async signDown(
@@ -286,6 +288,7 @@ export class AuthController {
     },
   })
   @HttpCode(HTTP_STATUS_CODE.success.ok)
+  @ApiBearerAuth('access-token')
   @UseGuards(AuthGuard('jwt'))
   @Patch('change/password')
   async changePassword(
