@@ -64,16 +64,19 @@ export class Board extends BaseEntity {
 
   @Column({
     type: 'mediumtext',
+    nullable: true,
   })
   note1: string;
 
   @Column({
     type: 'mediumtext',
+    nullable: true,
   })
   note2: string;
 
   @Column({
     type: 'mediumtext',
+    nullable: true,
   })
   note3: string;
   @Column({

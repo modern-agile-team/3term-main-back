@@ -11,6 +11,7 @@ import { AreasRepository } from 'src/areas/repository/area.repository';
 import { Any, Connection, DeleteResult, RelationId } from 'typeorm';
 import {
   CreateBoardDto,
+  HotBoardDto,
   SearchBoardDto,
   UpdateBoardDto,
 } from './dto/board.dto';
@@ -104,8 +105,9 @@ export class BoardsService {
     }
   }
 
-  async readHotBoards(select: number): Promise<Board[]> {
+  async readHotBoards(hotBoardDto: HotBoardDto): Promise<Board[]> {
     try {
+      const { select }: HotBoardDto = hotBoardDto;
       const currentTime: Date = new Date();
       currentTime.setHours(currentTime.getHours() + 9);
       const year: number = currentTime.getFullYear();
@@ -116,7 +118,7 @@ export class BoardsService {
       }
 
       const filteredHotBoards: Board[] =
-        await this.boardRepository.readHotBoards(select, year, month);
+        await this.boardRepository.readHotBoards(+select, year, month);
 
       this.errorConfirm.notFoundError(
         filteredHotBoards,
