@@ -1,5 +1,4 @@
 import { InternalServerErrorException } from '@nestjs/common';
-// import { User } from 'src/auth/entity/user.entity';
 import { Category } from 'src/categories/entity/category.entity';
 import {
   DeleteResult,
@@ -270,16 +269,7 @@ export class BoardRepository extends Repository<Board> {
     endTime: Date,
   ): Promise<Board> {
     try {
-      const {
-        price,
-        title,
-        description,
-        summary,
-        target,
-        note1,
-        note2,
-        note3,
-      } = createBoardDto;
+      const { price, title, description, summary, target } = createBoardDto;
       const board: InsertResult = await this.createQueryBuilder('boards')
         .insert()
         .into(Board)
@@ -293,9 +283,6 @@ export class BoardRepository extends Repository<Board> {
             category,
             area,
             user,
-            note1,
-            note2,
-            note3,
             deadline: endTime,
           },
         ])
@@ -376,7 +363,6 @@ export class BoardRepository extends Repository<Board> {
         .leftJoin('boards.area', 'areas')
         .leftJoin('boards.user', 'users')
         .leftJoin('boards.photos', 'photo')
-        .leftJoin('users.profilePhoto', 'profilePhoto')
         .leftJoin('boards.likedUser', 'likedUsers')
         .select([
           'boards.no AS no',
@@ -391,7 +377,6 @@ export class BoardRepository extends Repository<Board> {
           'areas.name AS areaName',
           'users.no AS userNo',
           'users.nickname AS userNickname',
-          'profilePhoto.photo_url AS userProfilePhoto',
         ])
         .where('Year(boards.createdAt) <= :year', { year })
         .andWhere('Month(boards.createdAt) <= :month', { month })
