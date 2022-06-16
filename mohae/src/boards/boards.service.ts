@@ -3,6 +3,7 @@ import {
   BadRequestException,
   Injectable,
   InternalServerErrorException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CategoryRepository } from 'src/categories/repository/category.repository';
@@ -19,17 +20,14 @@ import { UserRepository } from 'src/auth/repository/user.repository';
 import { Board } from './entity/board.entity';
 import { Category } from 'src/categories/entity/category.entity';
 import { Area } from 'src/areas/entity/areas.entity';
-import { User } from 'src/auth/entity/user.entity';
 import { BoardPhotoRepository } from 'src/photo/repository/photo.repository';
+import { User } from '@sentry/node';
 
 @Injectable()
 export class BoardsService {
   constructor(
     @InjectRepository(BoardRepository)
     private boardRepository: BoardRepository,
-
-    @InjectRepository(BoardPhotoRepository)
-    private boardPhotoRepository: BoardPhotoRepository,
 
     @InjectRepository(AreasRepository)
     private areaRepository: AreasRepository,
@@ -45,20 +43,19 @@ export class BoardsService {
     private errorConfirm: ErrorConfirm,
   ) {}
 
-  async getAllBoards(): Promise<object> {
-    const boards: Board[] = await this.boardRepository.getAllBoards();
-    this.errorConfirm.notFoundError(boards, '게시글을 찾을 수 없습니다.');
-
-    return { allBoardNum: boards.length, boards };
-  }
-
   async closingBoard(): Promise<number> {
-    const currentTime: Date = new Date();
-    currentTime.setHours(currentTime.getHours() + 9);
+    try {
+      const currentTime: Date = new Date();
+      currentTime.setHours(currentTime.getHours() + 9);
 
-    const result: number = await this.boardRepository.closingBoard(currentTime);
+      const result: number = await this.boardRepository.closingBoard(
+        currentTime,
+      );
 
-    return result;
+      return result;
+    } catch (err) {
+      throw err;
+    }
   }
 
   async filteredBoards(
@@ -73,145 +70,179 @@ export class BoardsService {
     date: any,
     free: string,
   ): Promise<object> {
-    const currentTime: Date = new Date();
-    currentTime.setHours(currentTime.getHours() + 9);
+    try {
+      const currentTime: Date = new Date();
+      currentTime.setHours(currentTime.getHours() + 9);
 
-    let endTime: Date = new Date();
-    endTime.setHours(endTime.getHours() + 9);
+      let endTime: Date = new Date();
 
-    if (!date) {
-      endTime = null;
-    }
+      if (!date) {
+        endTime = null;
+      } else {
+        endTime.setHours(endTime.getHours() + 9);
+        endTime.setDate(endTime.getDate() + date);
+      }
 
-    if (date) {
-      endTime.setDate(endTime.getDate() + date);
-    }
-
-    const boards: Board[] = await this.boardRepository.filteredBoards(
-      categoryNo,
-      sort,
-      title,
-      popular,
-      areaNo,
-      max,
-      min,
-      target,
-      Number(date),
-      endTime,
-      currentTime,
-      free,
-    );
-
-    return { filteredBoardNum: boards.length, boards };
-  }
-
-  async readHotBoards(select: number): Promise<object> {
-    const currentTime: Date = new Date();
-    currentTime.setHours(currentTime.getHours() + 9);
-    const year: number = currentTime.getFullYear();
-    const month: number = currentTime.getMonth();
-
-    if (month === 12) {
-      year - 1;
-    }
-
-    const filteredHotBoards: object = await this.boardRepository.readHotBoards(
-      select,
-      year,
-      month,
-    );
-
-    this.errorConfirm.notFoundError(
-      filteredHotBoards,
-      '인기게시글이 존재하지 얺습니다.',
-    );
-
-    return filteredHotBoards;
-  }
-
-  async getByOneBoard(no: number) {
-    const board = await this.boardRepository.getByOneBoard(no);
-    this.errorConfirm.notFoundError(
-      board.no,
-      `해당 게시글을 찾을 수 없습니다.`,
-    );
-
-    const boardHit: number = await this.boardRepository.addBoardHit(board);
-
-    if (!boardHit) {
-      throw new InternalServerErrorException(
-        '게시글 조회 수 증가가 되지 않았습니다',
+      const boards: Board[] = await this.boardRepository.filteredBoards(
+        categoryNo,
+        sort,
+        title,
+        popular,
+        areaNo,
+        max,
+        min,
+        target,
+        Number(date),
+        endTime,
+        currentTime,
+        free,
       );
-    }
-    board.likeCount = Number(board.likeCount);
 
-    return board;
+      return { filteredBoardNum: boards.length, boards };
+    } catch (err) {
+      throw err;
+    }
   }
 
-  async boardClosed(no: number): Promise<object> {
-    const board: Board = await this.boardRepository.findOne(no);
-    this.errorConfirm.notFoundError(board.no, '게시글을 찾을 수 없습니다.');
-    if (board.isDeadline) {
-      throw new InternalServerErrorException('이미 마감된 게시글 입니다.');
+  async readHotBoards(select: number): Promise<Board[]> {
+    try {
+      const currentTime: Date = new Date();
+      currentTime.setHours(currentTime.getHours() + 9);
+      const year: number = currentTime.getFullYear();
+      const month: number = currentTime.getMonth();
+
+      if (month === 12) {
+        year - 1;
+      }
+
+      const filteredHotBoards: Board[] =
+        await this.boardRepository.readHotBoards(select, year, month);
+
+      this.errorConfirm.notFoundError(
+        filteredHotBoards,
+        '인기게시글이 존재하지 얺습니다.',
+      );
+
+      return filteredHotBoards;
+    } catch (err) {
+      throw err;
     }
-
-    const result: number = await this.boardRepository.boardClosed(no);
-
-    if (!result) {
-      throw new InternalServerErrorException('게시글 마감이 되지 않았습니다');
-    }
-
-    return { isSuccess: true };
   }
 
-  async cancelClosedBoard(no: number): Promise<object> {
-    const board: Board = await this.boardRepository.findOne(no);
-    this.errorConfirm.notFoundError(
-      board.no,
-      `해당 게시글을 찾을 수 없습니다.`,
-    );
+  async readByOneBoard(boardNo: number): Promise<any> {
+    try {
+      const board: any = await this.boardRepository.readByOneBoard(boardNo);
 
-    const currentTime: Date = new Date();
-    currentTime.setHours(currentTime.getHours() + 9);
+      this.errorConfirm.notFoundError(
+        board.no,
+        `해당 게시글을 찾을 수 없습니다.`,
+      );
 
-    if (board.deadline !== null) {
-      if (board.deadline <= currentTime) {
+      const boardHit: number = await this.boardRepository.addBoardHit(board);
+
+      if (!boardHit) {
         throw new InternalServerErrorException(
-          '시간이 지나 마감된 게시글 입니다.',
+          '게시글 조회 수 증가가 되지 않았습니다',
         );
       }
+      board.likeCount = Number(board.likeCount);
+
+      return board;
+    } catch (err) {
+      throw err;
     }
+  }
 
-    if (!board.isDeadline) {
-      throw new InternalServerErrorException('활성화된 게시글 입니다.');
+  async boardClosed(boardNo: number, userNo: number): Promise<boolean> {
+    try {
+      const board: Board = await this.boardRepository.readByOneBoard(boardNo);
+      this.errorConfirm.notFoundError(board.no, '게시글을 찾을 수 없습니다.');
+
+      if (board['userNo'] !== userNo) {
+        throw new UnauthorizedException('게시글을 작성한 유저가 아닙니다.');
+      }
+
+      if (board.isDeadline) {
+        throw new BadRequestException('이미 마감된 게시글 입니다.');
+      }
+
+      const result: number = await this.boardRepository.boardClosed(boardNo);
+
+      if (!result) {
+        throw new InternalServerErrorException('게시글 마감이 되지 않았습니다');
+      }
+
+      return true;
+    } catch (err) {
+      throw err;
     }
+  }
 
-    const result: number = await this.boardRepository.cancelClosedBoard(no);
-
-    if (!result) {
-      throw new InternalServerErrorException(
-        '게시글 마감 취소가 되지 않았습니다.',
+  async cancelClosedBoard(boardNo: number, userNo: number): Promise<boolean> {
+    try {
+      const board: Board = await this.boardRepository.readByOneBoard(boardNo);
+      this.errorConfirm.notFoundError(
+        board.no,
+        `해당 게시글을 찾을 수 없습니다.`,
       );
-    }
 
-    return { isSuccess: true };
+      if (board['userNo'] !== userNo) {
+        throw new UnauthorizedException('게시글을 작성한 유저가 아닙니다.');
+      }
+
+      const currentTime: Date = new Date();
+      currentTime.setHours(currentTime.getHours() + 9);
+
+      if (board.deadline !== null) {
+        if (board.deadline <= currentTime) {
+          throw new InternalServerErrorException(
+            '시간이 지나 마감된 게시글 입니다.',
+          );
+        }
+      }
+
+      if (!board.isDeadline) {
+        throw new BadRequestException('활성화된 게시글 입니다.');
+      }
+
+      const result: number = await this.boardRepository.cancelClosedBoard(
+        boardNo,
+      );
+
+      if (!result) {
+        throw new InternalServerErrorException(
+          '게시글 마감 취소가 되지 않았습니다.',
+        );
+      }
+
+      return true;
+    } catch (err) {
+      throw err;
+    }
   }
 
   async searchAllBoards(searchBoardDto: SearchBoardDto): Promise<object> {
-    const { title }: any = searchBoardDto;
-    const boards: Board[] = await this.boardRepository.searchAllBoards(title);
-    this.errorConfirm.notFoundError(boards, '게시글을 찾을 수 없습니다.');
+    try {
+      const { title }: SearchBoardDto = searchBoardDto;
+      const boards: Board[] = await this.boardRepository.searchAllBoards(title);
+      this.errorConfirm.notFoundError(boards, '게시글을 찾을 수 없습니다.');
 
-    return { foundedBoardNum: boards.length, search: title, boards };
+      return { foundedBoardNum: boards.length, search: title, boards };
+    } catch (err) {
+      throw err;
+    }
   }
 
-  async createBoard(createBoardDto: CreateBoardDto): Promise<boolean> {
+  async createBoard(
+    createBoardDto: CreateBoardDto,
+    user: User,
+  ): Promise<boolean> {
     const queryRunner = this.connection.createQueryRunner();
 
     await queryRunner.connect();
     await queryRunner.startTransaction();
     try {
-      const { categoryNo, areaNo, deadline, userNo, photoUrl }: CreateBoardDto =
+      const { categoryNo, areaNo, deadline, photoUrl }: CreateBoardDto =
         createBoardDto;
 
       const category: Category = await this.categoryRepository.findOne(
@@ -232,19 +263,12 @@ export class BoardsService {
 
       this.errorConfirm.notFoundError(area, `해당 지역을 찾을 수 없습니다.`);
 
-      const user: User = await this.userRepository.findOne(userNo, {
-        relations: ['boards'],
-      });
-
-      this.errorConfirm.notFoundError(user, `해당 회원을 찾을 수 없습니다.`);
-
       let endTime: Date = new Date();
-
-      endTime.setHours(endTime.getHours() + 9);
 
       if (!deadline) {
         endTime = null;
       } else {
+        endTime.setHours(endTime.getHours() + 9);
         endTime.setDate(endTime.getDate() + deadline);
       }
 
@@ -290,25 +314,34 @@ export class BoardsService {
     }
   }
 
-  async deleteBoard(boardNo: number): Promise<boolean> {
-    const board: Board = await this.boardRepository.findOne(boardNo);
-    this.errorConfirm.notFoundError(
-      board.no,
-      `해당 게시글을 찾을 수 없습니다.`,
-    );
+  async deleteBoard(boardNo: number, userNo: number): Promise<boolean> {
+    try {
+      const board: Board = await this.boardRepository.readByOneBoard(boardNo);
+      this.errorConfirm.notFoundError(
+        board.no,
+        `해당 게시글을 찾을 수 없습니다.`,
+      );
 
-    const result: number = await this.boardRepository.deleteBoard(boardNo);
+      if (board['userNo'] !== userNo) {
+        throw new UnauthorizedException('게시글을 작성한 유저가 아닙니다.');
+      }
 
-    if (!result) {
-      throw new BadGatewayException('해당 게시글이 삭제되지 않았습니다.');
+      const result: number = await this.boardRepository.deleteBoard(boardNo);
+
+      if (!result) {
+        throw new BadGatewayException('해당 게시글이 삭제되지 않았습니다.');
+      }
+
+      return true;
+    } catch (err) {
+      throw err;
     }
-
-    return true;
   }
 
   async updateBoard(
     boardNo: number,
     updateBoardDto: UpdateBoardDto,
+    userNo: number,
   ): Promise<boolean> {
     const queryRunner = this.connection.createQueryRunner();
 
@@ -318,8 +351,13 @@ export class BoardsService {
       const { category, area, deadline, photoUrl }: UpdateBoardDto =
         updateBoardDto;
 
-      const board: Board = await this.boardRepository.findOne(boardNo);
+      const board: Board = await this.boardRepository.readByOneBoard(boardNo);
+
       this.errorConfirm.notFoundError(board, `해당 게시글을 찾을 수 없습니다.`);
+
+      if (board['userNo'] !== userNo) {
+        throw new UnauthorizedException('게시글을 작성한 유저가 아닙니다.');
+      }
 
       let endTime: Date = new Date(board.createdAt);
 
@@ -412,6 +450,7 @@ export class BoardsService {
       await queryRunner.release();
     }
   }
+
   async readUserBoard(
     userNo: number,
     take: number,

@@ -2,7 +2,7 @@ import { User } from 'src/auth/entity/user.entity';
 import { Board } from 'src/boards/entity/board.entity';
 import { BaseEntity, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 
-@Entity('board_like')
+@Entity('board_likes')
 export class BoardLike extends BaseEntity {
   @PrimaryGeneratedColumn()
   no: number;
