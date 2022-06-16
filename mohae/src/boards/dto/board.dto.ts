@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, PickType } from '@nestjs/swagger';
 import {
   ArrayMaxSize,
   IsArray,
@@ -13,6 +13,12 @@ import {
   MinLength,
   Validate,
 } from 'class-validator';
+import { Board } from '../entity/board.entity';
+
+export class BoardPickType extends PickType(Board, [
+  'title',
+  'description',
+] as const) {}
 
 export abstract class BoardContent {
   @ApiProperty({
@@ -56,7 +62,7 @@ export abstract class BoardContent {
 
   @ApiProperty({
     example: true,
-    description: 'Example 해주는 사람, 구하는 사람.',
+    description: 'Example false = 해주는 사람, true = 구하는 사람.',
     required: true,
   })
   @IsBoolean()
@@ -70,24 +76,49 @@ export abstract class BoardContent {
   @IsNumber()
   categoryNo: number;
 
+  @ApiProperty({
+    example: 1,
+    description: 'Example 지역.',
+    required: true,
+  })
   @IsNumber()
   areaNo: number;
 
+  @ApiProperty({
+    example: '첫번째 상세조건',
+    description: 'Example 상세조건1 입니다.',
+    required: false,
+  })
   @IsString()
   @IsOptional()
   @MaxLength(100)
   note1?: string;
 
+  @ApiProperty({
+    example: '두번째 상세조건',
+    description: 'Example 상세조건2 입니다.',
+    required: false,
+  })
   @IsString()
   @IsOptional()
   @MaxLength(100)
   note2?: string;
 
+  @ApiProperty({
+    example: '세번째 상세조건',
+    description: 'Example 상세조건3 입니다.',
+    required: false,
+  })
   @IsString()
   @IsOptional()
   @MaxLength(100)
   note3?: string;
 
+  @ApiProperty({
+    example: ['사진url'],
+    description: 'Example 게시글 사진입니다.',
+    required: false,
+  })
   @IsArray()
   @IsOptional()
   @ArrayMaxSize(5)
@@ -95,16 +126,24 @@ export abstract class BoardContent {
 }
 
 export class CreateBoardDto extends BoardContent {
+  @ApiProperty({
+    example: 0,
+    description: 'Example 마감일 0 = 상시, 7 = 일주일, 30 = 1개월, 60 = 3개월',
+    required: true,
+  })
   @IsNumber()
   deadline: number;
-
-  @IsNumber()
-  userNo: number;
 }
 
 export class SearchBoardDto {
+  @ApiProperty({
+    example: 'Test',
+    description: 'Example 검색 입력 입니다.',
+    required: true,
+  })
   @IsString()
-  @MaxLength(15)
+  @MaxLength(16)
+  @MinLength(2)
   title: string;
 }
 
