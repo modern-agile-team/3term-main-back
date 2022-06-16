@@ -226,7 +226,6 @@ export class BoardsService {
   async searchAllBoards(searchBoardDto: SearchBoardDto): Promise<object> {
     try {
       const { title }: SearchBoardDto = searchBoardDto;
-      console.log(title);
       const boards: Board[] = await this.boardRepository.searchAllBoards(title);
       this.errorConfirm.notFoundError(boards, '게시글을 찾을 수 없습니다.');
 
