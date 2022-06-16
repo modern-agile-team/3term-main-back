@@ -18,6 +18,7 @@ import { AuthGuard } from '@nestjs/passport';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import {
   ApiBadRequestResponse,
+  ApiBearerAuth,
   ApiInternalServerErrorResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
@@ -27,6 +28,7 @@ import {
 } from '@nestjs/swagger';
 import { User } from '@sentry/node';
 import { AwsService } from 'src/aws/aws.service';
+import { HTTP_STATUS_CODE } from 'src/common/configs/http-status.config';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 import { SuccesseInterceptor } from 'src/common/interceptors/success.interceptor';
 import { CreateSpecDto } from './dto/create-spec.dto';
@@ -68,7 +70,9 @@ export class SpecsController {
       },
     },
   })
-  @HttpCode(200)
+  @HttpCode(HTTP_STATUS_CODE.success.ok)
+  @ApiBearerAuth('access-token')
+  @UseGuards(AuthGuard('jwt'))
   @Get('user/:profileUserNo')
   async getAllSpec(
     @Param('profileUserNo') profileUserNo: number,
@@ -114,8 +118,9 @@ export class SpecsController {
       },
     },
   })
-  @ApiResponse({ status: 404, description: '해당 스펙이 존재하지 않은 경우' })
-  @HttpCode(200)
+  @HttpCode(HTTP_STATUS_CODE.success.ok)
+  @ApiBearerAuth('access-token')
+  @UseGuards(AuthGuard('jwt'))
   @Get('spec/:specNo')
   async getOneSpec(@Param('specNo') specNo: number): Promise<object> {
     const response: Spec = await this.specsService.getOneSpec(specNo);
@@ -149,7 +154,9 @@ export class SpecsController {
       },
     },
   })
-  @HttpCode(200)
+  @HttpCode(HTTP_STATUS_CODE.success.ok)
+  @ApiBearerAuth('access-token')
+  @UseGuards(AuthGuard('jwt'))
   @Get('profile')
   async readUserSpec(
     @Query('user') user: number,
@@ -201,7 +208,8 @@ export class SpecsController {
       },
     },
   })
-  @HttpCode(201)
+  @HttpCode(HTTP_STATUS_CODE.success.created)
+  @ApiBearerAuth('access-token')
   @UseGuards(AuthGuard('jwt'))
   @UseInterceptors(FilesInterceptor('image', 10))
   @Post('regist')
@@ -261,7 +269,9 @@ export class SpecsController {
       },
     },
   })
-  @HttpCode(200)
+  @HttpCode(HTTP_STATUS_CODE.success.ok)
+  @ApiBearerAuth('access-token')
+  @UseGuards(AuthGuard('jwt'))
   @UseInterceptors(FilesInterceptor('image', 10))
   @Put(':specNo')
   async updateSpec(
@@ -311,10 +321,15 @@ export class SpecsController {
       },
     },
   })
-  @HttpCode(200)
+  @HttpCode(HTTP_STATUS_CODE.success.ok)
+  @ApiBearerAuth('access-token')
+  @UseGuards(AuthGuard('jwt'))
   @Delete(':specNo')
-  async deleteSpec(@Param('specNo') specNo: number): Promise<object> {
-    await this.specsService.deleteSpec(specNo);
+  async deleteSpec(
+    @Param('specNo') specNo: number,
+    @CurrentUser() user: User,
+  ): Promise<object> {
+    await this.specsService.deleteSpec(specNo, user.no);
 
     return {
       msg: '성공적으로 스팩을 삭제하였습니다.',

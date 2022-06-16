@@ -75,7 +75,6 @@ export class AuthService {
         const notFoundKey: Array<string> = Object.keys(notFoundObj).filter(
           (key) => !notFoundObj[key],
         );
-
         if (notFoundKey.length) {
           throw new NotFoundException(
             `해당 번호에 해당하는 ${notFoundKey}이(가) 존재하지 않습니다.`,
@@ -89,7 +88,6 @@ export class AuthService {
         'email',
         email,
       );
-
       const duplicateNickname: User = await this.userRepository.duplicateCheck(
         'nickname',
         nickname,

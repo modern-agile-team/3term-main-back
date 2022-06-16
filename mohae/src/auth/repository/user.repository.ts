@@ -210,7 +210,6 @@ export class UserRepository extends Repository<User> {
           'major.no AS majorNo',
           'major.name AS majorName',
           'GROUP_CONCAT(DISTINCT CONCAT_WS(",", categories.no ,categories.name) SEPARATOR "|") AS categoryNo',
-          'categories.name AS categoryName',
         ])
         .where('users.no = :profileUserNo', { profileUserNo })
         .getRawOne();
