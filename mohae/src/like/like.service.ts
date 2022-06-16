@@ -32,21 +32,15 @@ export class LikeService {
 
     private errorConfirm: ErrorConfirm,
   ) {}
-  async likeUser(likeUserDto: LikeUserDto) {
+  async likeUser(user: User, likeUserDto: LikeUserDto) {
     try {
-      const { userNo, likedUserNo, judge }: LikeUserDto = likeUserDto;
-      const user: User = await this.userRepository.findOne(userNo, {
-        select: ['no'],
-        relations: ['likedUser'],
-      });
+      const { likedUserNo, judge }: LikeUserDto = likeUserDto;
+
       const likedUser: User = await this.userRepository.findOne(likedUserNo, {
         select: ['no'],
         relations: ['likedMe'],
       });
-      this.errorConfirm.notFoundError(
-        user,
-        ` ${userNo}번의 유저는 존재하지 않는 유저 입니다.`,
-      );
+
       this.errorConfirm.notFoundError(
         likedUser,
         `${likedUserNo}번의 유저는 존재하지 않는 유저 입니다.`,

@@ -1,16 +1,16 @@
 import {
   IsArray,
   IsBoolean,
+  IsEmail,
   IsNotEmpty,
   IsNumber,
   IsOptional,
   IsString,
-  Matches,
 } from 'class-validator';
 
 export class CreateUserDto {
   @IsString()
-  @Matches(/^[A-Za-z0-9_\.\-]+@[A-Za-z0-9\-]+\.[A-Za-z0-9\-]+/)
+  @IsEmail()
   @IsNotEmpty()
   email: string;
 
@@ -68,7 +68,7 @@ export class SignDownDto {
 
 export class ChangePasswordDto {
   @IsString()
-  @Matches(/^[A-Za-z0-9_\.\-]+@[A-Za-z0-9\-]+\.[A-Za-z0-9\-]+/)
+  @IsEmail()
   @IsNotEmpty()
   email: string;
 
@@ -87,7 +87,7 @@ export class ChangePasswordDto {
 
 export class ForgetPasswordDto {
   @IsString()
-  @Matches(/^[A-Za-z0-9_\.\-]+@[A-Za-z0-9\-]+\.[A-Za-z0-9\-]+/)
+  @IsEmail()
   @IsNotEmpty()
   email: string;
 

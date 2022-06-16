@@ -84,35 +84,35 @@ export abstract class BoardContent {
   @IsNumber()
   areaNo: number;
 
-  @ApiProperty({
-    example: '첫번째 상세조건',
-    description: 'Example 상세조건1 입니다.',
-    required: false,
-  })
-  @IsString()
-  @IsOptional()
-  @MaxLength(100)
-  note1?: string;
+  // @ApiProperty({
+  //   example: '첫번째 상세조건',
+  //   description: 'Example 상세조건1 입니다.',
+  //   required: false,
+  // })
+  // @IsString()
+  // @IsOptional()
+  // @MaxLength(100)
+  // note1?: string;
 
-  @ApiProperty({
-    example: '두번째 상세조건',
-    description: 'Example 상세조건2 입니다.',
-    required: false,
-  })
-  @IsString()
-  @IsOptional()
-  @MaxLength(100)
-  note2?: string;
+  // @ApiProperty({
+  //   example: '두번째 상세조건',
+  //   description: 'Example 상세조건2 입니다.',
+  //   required: false,
+  // })
+  // @IsString()
+  // @IsOptional()
+  // @MaxLength(100)
+  // note2?: string;
 
-  @ApiProperty({
-    example: '세번째 상세조건',
-    description: 'Example 상세조건3 입니다.',
-    required: false,
-  })
-  @IsString()
-  @IsOptional()
-  @MaxLength(100)
-  note3?: string;
+  // @ApiProperty({
+  //   example: '세번째 상세조건',
+  //   description: 'Example 상세조건3 입니다.',
+  //   required: false,
+  // })
+  // @IsString()
+  // @IsOptional()
+  // @MaxLength(100)
+  // note3?: string;
 
   @ApiProperty({
     example: ['사진url'],
@@ -137,7 +137,7 @@ export class CreateBoardDto extends BoardContent {
 
 export class SearchBoardDto {
   @ApiProperty({
-    example: 'Test',
+    example: '게시글',
     description: 'Example 검색 입력 입니다.',
     required: true,
   })
@@ -145,6 +145,18 @@ export class SearchBoardDto {
   @MaxLength(16)
   @MinLength(2)
   title: string;
+}
+
+export class HotBoardDto {
+  @ApiProperty({
+    example: '1, 2',
+    description:
+      'Example query를 입력안했을경우 전체게시글, 1 = 마감이 안된 게시글, 2 = 마감된 게시글',
+    required: true,
+  })
+  @IsOptional()
+  @IsString()
+  select: string;
 }
 
 export class LikeBoardDto {
@@ -194,20 +206,20 @@ export abstract class UpdateBoardDto {
   @IsNumber()
   area?: number;
 
-  @IsOptional()
-  @IsString()
-  @MaxLength(100)
-  note1?: string;
+  // @IsOptional()
+  // @IsString()
+  // @MaxLength(100)
+  // note1?: string;
 
-  @IsOptional()
-  @IsString()
-  @MaxLength(100)
-  note2?: string;
+  // @IsOptional()
+  // @IsString()
+  // @MaxLength(100)
+  // note2?: string;
 
-  @IsOptional()
-  @IsString()
-  @MaxLength(100)
-  note3?: string;
+  // @IsOptional()
+  // @IsString()
+  // @MaxLength(100)
+  // note3?: string;
 
   @IsOptional()
   @IsNumber()
