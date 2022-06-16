@@ -366,8 +366,6 @@ export class BoardRepository extends Repository<Board> {
         .leftJoin('boards.likedUser', 'likedUsers')
         .select([
           'boards.no AS no',
-          'COUNT(likedUsers.likedBoardNo) AS count',
-          '(boards.hit + COUNT(likedUsers.likedBoardNo)) / DATEDIFF(now(), boards.createdAt) AS len',
           'DATEDIFF(boards.deadline, now()) * -1 AS decimalDay',
           'photo.photo_url AS boardPhotoUrl',
           'boards.title AS title',
@@ -384,7 +382,8 @@ export class BoardRepository extends Repository<Board> {
         .orderBy(
           '(boards.hit + COUNT(likedUsers.likedBoardNo)) / DATEDIFF(now(), boards.createdAt)',
           'DESC',
-        );
+        )
+        .limit(3);
 
       if (select === 1) {
         hotBoards.andWhere('boards.isDeadline = false');
