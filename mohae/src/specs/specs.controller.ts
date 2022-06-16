@@ -18,6 +18,7 @@ import { AuthGuard } from '@nestjs/passport';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import {
   ApiBadRequestResponse,
+  ApiBearerAuth,
   ApiInternalServerErrorResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
@@ -70,6 +71,8 @@ export class SpecsController {
     },
   })
   @HttpCode(HTTP_STATUS_CODE.success.ok)
+  @ApiBearerAuth('access-token')
+  @UseGuards(AuthGuard('jwt'))
   @Get('user/:profileUserNo')
   async getAllSpec(
     @Param('profileUserNo') profileUserNo: number,
@@ -116,6 +119,8 @@ export class SpecsController {
     },
   })
   @HttpCode(HTTP_STATUS_CODE.success.ok)
+  @ApiBearerAuth('access-token')
+  @UseGuards(AuthGuard('jwt'))
   @Get('spec/:specNo')
   async getOneSpec(@Param('specNo') specNo: number): Promise<object> {
     const response: Spec = await this.specsService.getOneSpec(specNo);
@@ -150,6 +155,8 @@ export class SpecsController {
     },
   })
   @HttpCode(HTTP_STATUS_CODE.success.ok)
+  @ApiBearerAuth('access-token')
+  @UseGuards(AuthGuard('jwt'))
   @Get('profile')
   async readUserSpec(
     @Query('user') user: number,
@@ -202,6 +209,7 @@ export class SpecsController {
     },
   })
   @HttpCode(HTTP_STATUS_CODE.success.created)
+  @ApiBearerAuth('access-token')
   @UseGuards(AuthGuard('jwt'))
   @UseInterceptors(FilesInterceptor('image', 10))
   @Post('regist')
@@ -262,6 +270,8 @@ export class SpecsController {
     },
   })
   @HttpCode(HTTP_STATUS_CODE.success.ok)
+  @ApiBearerAuth('access-token')
+  @UseGuards(AuthGuard('jwt'))
   @UseInterceptors(FilesInterceptor('image', 10))
   @Put(':specNo')
   async updateSpec(
@@ -312,6 +322,7 @@ export class SpecsController {
     },
   })
   @HttpCode(HTTP_STATUS_CODE.success.ok)
+  @ApiBearerAuth('access-token')
   @UseGuards(AuthGuard('jwt'))
   @Delete(':specNo')
   async deleteSpec(

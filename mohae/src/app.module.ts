@@ -40,6 +40,7 @@ import { LoggerMiddleware } from './common/middleware/logger.middleware';
 import { WinstonModule } from 'nest-winston';
 import { envConfig } from './common/configs/env.config';
 import { winstonConfig } from './common/configs/winston.config';
+import { CommentsModule } from './comments/comments.module';
 
 @Module({
   imports: [
@@ -78,6 +79,7 @@ import { winstonConfig } from './common/configs/winston.config';
     BasketsModule,
     ReportChecksModule,
     ReportCheckboxesModule,
+    CommentsModule,
   ],
   controllers: [AppController],
   providers: [

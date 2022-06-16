@@ -13,6 +13,7 @@ import {
 import { AuthGuard } from '@nestjs/passport';
 import { FileInterceptor } from '@nestjs/platform-express';
 import {
+  ApiBearerAuth,
   ApiConflictResponse,
   ApiInternalServerErrorResponse,
   ApiNotFoundResponse,
@@ -83,6 +84,7 @@ export class ProfilesController {
     },
   })
   @UseGuards(AuthGuard('jwt'))
+  @ApiBearerAuth('access-token')
   @HttpCode(HTTP_STATUS_CODE.success.ok)
   @Get('/:profileUserNo')
   async readUserProfile(
@@ -136,6 +138,7 @@ export class ProfilesController {
     },
   })
   @HttpCode(HTTP_STATUS_CODE.success.ok)
+  @ApiBearerAuth('access-token')
   @UseGuards(AuthGuard('jwt'))
   @Post('/check-nickname')
   async judgeDuplicateNickname(
@@ -193,6 +196,7 @@ export class ProfilesController {
     },
   })
   @HttpCode(HTTP_STATUS_CODE.success.ok)
+  @ApiBearerAuth('access-token')
   @UseGuards(AuthGuard('jwt'))
   @UseInterceptors(FileInterceptor('image'))
   @Patch()

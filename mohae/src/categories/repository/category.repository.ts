@@ -1,7 +1,9 @@
 import { InternalServerErrorException } from '@nestjs/common';
+import { Area } from 'src/areas/entity/areas.entity';
 import { error } from 'console';
 import { User } from 'src/auth/entity/user.entity';
-import { EntityRepository, Repository } from 'typeorm';
+import { Board } from 'src/boards/entity/board.entity';
+import { EntityRepository, Repository, SelectQueryBuilder } from 'typeorm';
 import { Category } from '../entity/category.entity';
 
 @EntityRepository(Category)
@@ -18,28 +20,44 @@ export class CategoryRepository extends Repository<Category> {
     }
   }
 
-  async findOneCategory(no: number): Promise<Category> {
+  async findOneCategory(no: number): Promise<object> {
     try {
-      const category = await this.createQueryBuilder('categories')
-        .leftJoinAndSelect('categories.boards', 'boards')
-        .leftJoinAndSelect('categories.users', 'users')
-        .select([
-          'categories.no',
-          'categories.hit',
-          'categories.name',
-          'boards.no',
-          'boards.title',
-          'boards.description',
-          'users.no',
-          'users.email',
-          'users.nickname',
-        ])
-        .where('categories.no = :no', { no })
-        .getOne();
+      const category: SelectQueryBuilder<Category> = this.createQueryBuilder(
+        'categories',
+      )
+        .leftJoin('categories.boards', 'board')
+        .leftJoin('board.area', 'area')
+        .leftJoin('board.user', 'user')
+        .leftJoin('board.photos', 'photo')
+        .where('categories.no = :no', { no });
 
-      return category;
-    } catch (e) {
-      throw new InternalServerErrorException(e);
+      const { categoryName }: any = await category
+        .addSelect(['categories.name AS categoryName'])
+        .getRawOne();
+
+      const boards: Board[] = await category
+        .select([
+          'DATEDIFF(board.deadline, now()) AS decimalDay',
+          'photo.photo_Url AS photoUrl',
+          'board.no AS no',
+          'board.title AS title',
+          'board.isDeadline AS isDeadline',
+          'board.price AS price',
+          'board.target AS target',
+          'area.no AS areaNo',
+          'area.name AS areaName',
+          'user.nickname AS userNickname',
+        ])
+        .groupBy('board.no')
+        .having('COUNT(board.no) > 0')
+        .orderBy('board.no', 'DESC')
+        .getRawMany();
+
+      return { boards, categoryName };
+    } catch (err) {
+      throw new InternalServerErrorException(
+        `${err}, ### 카테고리 선택조회 관련 서버에러`,
+      );
     }
   }
   async selectCategory(categories: Category[]): Promise<Category[]> {
@@ -89,26 +107,6 @@ export class CategoryRepository extends Repository<Category> {
     }
   }
 
-  async addCategoryHit(no: number, { hit }) {
-    try {
-      const qb = await this.createQueryBuilder()
-        .update(Category)
-        .set({ hit: hit + 1 })
-        .where('no = :no', { no })
-        .execute();
-
-      if (!qb.affected) {
-        return { success: false };
-      }
-
-      return { success: true };
-    } catch (e) {
-      throw new InternalServerErrorException(
-        `${e} ### 카테고리 조회수 증가 : 알 수 없는 서버 에러입니다.`,
-      );
-    }
-  }
-
   async readHotCategories(): Promise<Category[]> {
     try {
       return await this.createQueryBuilder('categories')
@@ -120,25 +118,6 @@ export class CategoryRepository extends Repository<Category> {
     } catch (e) {
       throw new InternalServerErrorException(
         `${e} ### 인기 카테고리 조회 : 알 수 없는 서버 에러입니다.`,
-      );
-    }
-  }
-
-  async resetCategoryHit() {
-    try {
-      const { affected } = await this.createQueryBuilder()
-        .update(Category)
-        .set({ hit: 0 })
-        .execute();
-
-      if (!affected) {
-        return { success: false };
-      }
-
-      return { success: true };
-    } catch (e) {
-      throw new InternalServerErrorException(
-        `${e} ### 게시판 마감 처리 : 알 수 없는 서버 에러입니다.`,
       );
     }
   }
