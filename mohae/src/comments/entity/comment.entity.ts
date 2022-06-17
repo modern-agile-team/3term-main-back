@@ -1,4 +1,5 @@
 import { IsNumber, IsString } from 'class-validator';
+import { User } from 'src/auth/entity/user.entity';
 import { Board } from 'src/boards/entity/board.entity';
 import {
   BaseEntity,
@@ -7,6 +8,8 @@ import {
   DeleteDateColumn,
   Entity,
   JoinColumn,
+  JoinTable,
+  ManyToMany,
   ManyToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
@@ -36,15 +39,15 @@ export class Comment extends BaseEntity {
   })
   deletedAt: Date | null;
 
-  @IsNumber()
-  @Column({
-    name: 'commentor_no',
-  })
-  commentorNo: number;
-
   @ManyToOne(() => Board, (board) => board.comments, { nullable: true })
   @JoinColumn({
     name: 'board_no',
   })
   board: Board;
+
+  @ManyToOne(() => User, (user) => user.comments, { nullable: true })
+  @JoinColumn({
+    name: 'commenter_no',
+  })
+  commenter: User;
 }
