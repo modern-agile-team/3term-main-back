@@ -5,13 +5,14 @@ import {
   Get,
   HttpCode,
   Param,
-  Patch,
   Post,
+  Put,
   UseFilters,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
+import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { User } from 'src/auth/entity/user.entity';
 import { HTTP_STATUS_CODE } from 'src/common/configs/http-status.config';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
@@ -19,17 +20,50 @@ import { HttpExceptionFilter } from 'src/common/exceptions/http-exception.filter
 import { SuccesseInterceptor } from 'src/common/interceptors/success.interceptor';
 import { CommentsService } from './comments.service';
 import { CreateCommentDto } from './dto/create-comment.dto';
-import { ParamCommentDto } from './dto/param-comment.dto';
 import { UpdateCommentDto } from './dto/update-comment.dto';
-import { Comment } from './entity/comment.entity';
 
 @UseGuards(AuthGuard('jwt'))
 @UseFilters(HttpExceptionFilter)
 @UseInterceptors(SuccesseInterceptor)
+@ApiTags('Comments')
 @Controller('board/:boardNo/comments')
 export class CommentsController {
   constructor(private readonly commentsService: CommentsService) {}
 
+  @ApiOperation({
+    summary: '게시글 댓글 전체 조회 경로',
+    description: '댓글 전체 조회 API',
+  })
+  @ApiOkResponse({
+    description: '성공여부',
+    schema: {
+      example: {
+        success: true,
+        statusCode: HTTP_STATUS_CODE.success.ok,
+        msg: '댓글 전체 조회 완료',
+        response: [
+          {
+            commentNo: 8,
+            commentContent: '댓글을 수정했습니다.',
+            commentCreatedAt: '2022년 06월 17일',
+            commenterNo: 2,
+            commenterNickname: 'hneeddjsjde',
+            commenterPhotoUrl: 'profile/165518423416.jpg',
+            isCommenter: 0,
+            replies: [
+              {
+                replyNo: 1,
+                replyContent: '가ㄷㅏㅁㅏㅏㅏㅏ',
+                replyWriterNo: 1,
+                replyWriterPhotoUrl: 'example.com',
+                replyCreatedAt: '2022년 06월 17일',
+              },
+            ],
+          },
+        ],
+      },
+    },
+  })
   @HttpCode(HTTP_STATUS_CODE.success.ok)
   @Get()
   async readAllComments(
@@ -42,11 +76,25 @@ export class CommentsController {
     );
 
     return {
-      msg: `No${boardNo} 게시글의 댓글 전체 조회 완료`,
+      msg: `댓글 전체 조회 완료`,
       response,
     };
   }
 
+  @ApiOperation({
+    summary: '댓글 생성',
+    description: '댓글 생성 API',
+  })
+  @ApiOkResponse({
+    description: '댓글 생성 성공 결과',
+    schema: {
+      example: {
+        success: true,
+        statusCode: HTTP_STATUS_CODE.success.created,
+        msg: '댓글 생성 완료',
+      },
+    },
+  })
   @HttpCode(HTTP_STATUS_CODE.success.created)
   @Post()
   async createComment(
@@ -61,10 +109,24 @@ export class CommentsController {
     };
   }
 
+  @ApiOperation({
+    summary: '댓글 수정',
+    description: '댓글 수정 API',
+  })
+  @ApiOkResponse({
+    description: '댓글 수정 성공 결과',
+    schema: {
+      example: {
+        success: true,
+        statusCode: HTTP_STATUS_CODE.success.ok,
+        msg: '댓글 수정 완료',
+      },
+    },
+  })
   @HttpCode(HTTP_STATUS_CODE.success.created)
-  @Patch(':commentNo')
+  @Put(':commentNo')
   async updateComment(
-    @Param() { commentNo }: { commentNo: number },
+    @Param('commentNo') commentNo: number,
     @Body() { content }: UpdateCommentDto,
     @CurrentUser() loginUser: User,
   ): Promise<object> {
@@ -75,10 +137,24 @@ export class CommentsController {
     };
   }
 
+  @ApiOperation({
+    summary: '댓글 삭제',
+    description: '댓글 삭제 API',
+  })
+  @ApiOkResponse({
+    description: '댓글 삭제 성공 결과',
+    schema: {
+      example: {
+        success: true,
+        statusCode: HTTP_STATUS_CODE.success.ok,
+        msg: '댓글 삭제 완료',
+      },
+    },
+  })
   @HttpCode(HTTP_STATUS_CODE.success.created)
   @Delete(':commentNo')
   async deleteComment(
-    @Param() { commentNo }: { commentNo: number },
+    @Param('commentNo') commentNo: number,
     @CurrentUser() loginUser: User,
   ): Promise<object> {
     await this.commentsService.deleteComment(commentNo, loginUser.no);

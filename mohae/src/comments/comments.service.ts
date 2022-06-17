@@ -22,27 +22,26 @@ export class CommentsService {
     private readonly errorConfirm: ErrorConfirm,
   ) {}
 
-  async readAllComments(boardNo: number, loginUserNo: number): Promise<object> {
+  async readAllComments(
+    boardNo: number,
+    loginUserNo: number,
+  ): Promise<Comment[]> {
     try {
       const comments: Comment[] = await this.commentRepository.readAllComments(
         boardNo,
         loginUserNo,
       );
 
-      if (comments) {
-        const newComments = [];
-
+      if (comments.length) {
         for (const comment of comments) {
           const replies: Reply[] = await this.replyRepository.readAllReplies(
             comment['commentNo'],
           );
 
           comment['replies'] = replies;
-
-          newComments.push(comment);
         }
 
-        return newComments;
+        return comments;
       }
 
       return comments;
