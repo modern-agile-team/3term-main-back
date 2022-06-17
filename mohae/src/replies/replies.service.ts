@@ -49,37 +49,45 @@ export class RepliesService {
     content: string,
     loginUserNo: number,
   ): Promise<void> {
-    const isWriter: boolean = await this.replyRepository.findOneReplyOfUser(
-      replyNo,
-      loginUserNo,
-    );
+    try {
+      const isWriter: boolean = await this.replyRepository.findOneReplyOfUser(
+        replyNo,
+        loginUserNo,
+      );
 
-    this.errorConfirm.unauthorizedError(
-      isWriter,
-      '대댓글을 작성한 유저가 아닙니다.',
-    );
+      this.errorConfirm.unauthorizedError(
+        isWriter,
+        '대댓글을 작성한 유저가 아닙니다.',
+      );
 
-    const isUpdate: boolean = await this.replyRepository.updateReply(
-      replyNo,
-      content,
-    );
+      const isUpdate: boolean = await this.replyRepository.updateReply(
+        replyNo,
+        content,
+      );
 
-    this.errorConfirm.badGatewayError(isUpdate, '대댓글 수정 실패');
+      this.errorConfirm.badGatewayError(isUpdate, '대댓글 수정 실패');
+    } catch (err) {
+      throw err;
+    }
   }
 
   async deleteReply(replyNo: number, loginUserNo: number): Promise<void> {
-    const isWriter: boolean = await this.replyRepository.findOneReplyOfUser(
-      replyNo,
-      loginUserNo,
-    );
+    try {
+      const isWriter: boolean = await this.replyRepository.findOneReplyOfUser(
+        replyNo,
+        loginUserNo,
+      );
 
-    this.errorConfirm.unauthorizedError(
-      isWriter,
-      '대댓글을 작성한 유저가 아닙니다.',
-    );
+      this.errorConfirm.unauthorizedError(
+        isWriter,
+        '대댓글을 작성한 유저가 아닙니다.',
+      );
 
-    const isDelete: boolean = await this.replyRepository.deleteReply(replyNo);
+      const isDelete: boolean = await this.replyRepository.deleteReply(replyNo);
 
-    this.errorConfirm.badGatewayError(isDelete, '대댓글 삭제 실패');
+      this.errorConfirm.badGatewayError(isDelete, '대댓글 삭제 실패');
+    } catch (err) {
+      throw err;
+    }
   }
 }
