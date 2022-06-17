@@ -1,6 +1,7 @@
 import { IsNumber, IsString } from 'class-validator';
 import { User } from 'src/auth/entity/user.entity';
 import { Board } from 'src/boards/entity/board.entity';
+import { Reply } from 'src/replies/entity/reply.entity';
 import {
   BaseEntity,
   Column,
@@ -11,6 +12,7 @@ import {
   JoinTable,
   ManyToMany,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -50,4 +52,7 @@ export class Comment extends BaseEntity {
     name: 'commenter_no',
   })
   commenter: User;
+
+  @OneToMany(() => Reply, (reply) => reply.comment)
+  replies: Reply[];
 }

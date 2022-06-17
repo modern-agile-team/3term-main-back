@@ -33,6 +33,7 @@ import { ReportedUser } from 'src/reports/entity/reported-user.entity';
 import { ReportedBoard } from 'src/reports/entity/reported-board.entity';
 import { ProfilePhoto } from 'src/photo/entity/profile.photo.entity';
 import { Comment } from 'src/comments/entity/comment.entity';
+import { Reply } from 'src/replies/entity/reply.entity';
 
 @Entity('users')
 export class User extends BaseEntity {
@@ -223,4 +224,7 @@ export class User extends BaseEntity {
     nullable: true,
   })
   comments: Comment[];
+
+  @OneToMany(() => Reply, (reply) => reply.writer)
+  replies: Reply[];
 }
