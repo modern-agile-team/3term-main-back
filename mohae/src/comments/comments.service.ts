@@ -4,6 +4,9 @@ import { UserRepository } from 'src/auth/repository/user.repository';
 import { Board } from 'src/boards/entity/board.entity';
 import { BoardRepository } from 'src/boards/repository/board.repository';
 import { ErrorConfirm } from 'src/common/utils/error';
+import { Reply } from 'src/replies/entity/reply.entity';
+import { ReplyRepository } from 'src/replies/repository/reply.repository';
+import { Comment } from './entity/comment.entity';
 import { CommentRepository } from './repository/comment.repository';
 
 @Injectable()
@@ -14,16 +17,33 @@ export class CommentsService {
 
     private readonly boardRepository: BoardRepository,
     private readonly userRepository: UserRepository,
+    private readonly replyRepository: ReplyRepository,
 
     private readonly errorConfirm: ErrorConfirm,
   ) {}
 
   async readAllComments(boardNo: number, loginUserNo: number): Promise<object> {
     try {
-      const comments: object = await this.commentRepository.readAllComments(
+      const comments: Comment[] = await this.commentRepository.readAllComments(
         boardNo,
         loginUserNo,
       );
+
+      if (comments) {
+        const newComments = [];
+
+        for (const comment of comments) {
+          const replies: Reply[] = await this.replyRepository.readAllReplies(
+            comment['commentNo'],
+          );
+
+          comment['replies'] = replies;
+
+          newComments.push(comment);
+        }
+
+        return newComments;
+      }
 
       return comments;
     } catch (err) {

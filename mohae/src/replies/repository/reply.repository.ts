@@ -10,6 +10,30 @@ import { Reply } from '../entity/reply.entity';
 
 @EntityRepository(Reply)
 export class ReplyRepository extends Repository<Reply> {
+  async readAllReplies(commentNo: number): Promise<Reply[]> {
+    try {
+      const replies: Reply[] = await this.createQueryBuilder('replies')
+        .leftJoin('replies.writer', 'writer')
+        .leftJoin(
+          'writer.profilePhoto',
+          'writerPhoto',
+          'writerPhoto.user = writer.no',
+        )
+        .select([
+          'replies.no AS replyNo',
+          'replies.content AS replyContent',
+          'writer.no AS replyWriterNo',
+          'writerPhoto.photo_url AS replyWriterPhotoUrl',
+          `DATE_FORMAT(replies.createdAt,'%Y년 %m월 %d일') AS replyCreatedAt`,
+        ])
+        .where('replies.comment = :commentNo', { commentNo })
+        .getRawMany();
+
+      return replies;
+    } catch (err) {
+      throw new InternalServerErrorException(err.message);
+    }
+  }
   async createReply(comment: Comment, content: string): Promise<InsertResult> {
     try {
       const { raw }: InsertResult = await this.createQueryBuilder('replies')

@@ -11,7 +11,10 @@ import { Comment } from '../entity/comment.entity';
 
 @EntityRepository(Comment)
 export class CommentRepository extends Repository<Comment> {
-  async readAllComments(boardNo: number, loginUserNo: number): Promise<object> {
+  async readAllComments(
+    boardNo: number,
+    loginUserNo: number,
+  ): Promise<Comment[]> {
     try {
       const comments: Comment[] = await this.createQueryBuilder('comments')
         .leftJoin(
@@ -36,7 +39,7 @@ export class CommentRepository extends Repository<Comment> {
         ])
         .getRawMany();
 
-      return { comments, commentCount: comments.length };
+      return comments;
     } catch (err) {
       throw new InternalServerErrorException(err.message);
     }
