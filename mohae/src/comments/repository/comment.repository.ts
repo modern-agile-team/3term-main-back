@@ -92,13 +92,17 @@ export class CommentRepository extends Repository<Comment> {
     commentNo: number,
     loginUserNo: number,
   ): Promise<boolean> {
-    const findedComment: Comment = await this.createQueryBuilder('comments')
-      .leftJoin('comments.commenter', 'commenter')
-      .select(['comments.no'])
-      .where('comments.no = :commentNo', { commentNo })
-      .andWhere('commenter.no = :loginUserNo', { loginUserNo })
-      .getOne();
+    try {
+      const findedComment: Comment = await this.createQueryBuilder('comments')
+        .leftJoin('comments.commenter', 'commenter')
+        .select(['comments.no'])
+        .where('comments.no = :commentNo', { commentNo })
+        .andWhere('commenter.no = :loginUserNo', { loginUserNo })
+        .getOne();
 
-    return !!findedComment;
+      return !!findedComment;
+    } catch (err) {
+      throw new InternalServerErrorException(err.message);
+    }
   }
 }

@@ -1,15 +1,9 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { User } from 'src/auth/entity/user.entity';
 import { UserRepository } from 'src/auth/repository/user.repository';
 import { Board } from 'src/boards/entity/board.entity';
 import { BoardRepository } from 'src/boards/repository/board.repository';
 import { ErrorConfirm } from 'src/common/utils/error';
-import { InsertResult } from 'typeorm';
-import { CreateCommentDto } from './dto/create-comment.dto';
-import { ParamCommentDto } from './dto/param-comment.dto';
-import { UpdateCommentDto } from './dto/update-comment.dto';
-import { Comment } from './entity/comment.entity';
 import { CommentRepository } from './repository/comment.repository';
 
 @Injectable()
@@ -24,11 +18,11 @@ export class CommentsService {
     private readonly errorConfirm: ErrorConfirm,
   ) {}
 
-  async readAllComments(boardNo: number, loginUser: User): Promise<object> {
+  async readAllComments(boardNo: number, loginUserNo: number): Promise<object> {
     try {
       const comments: object = await this.commentRepository.readAllComments(
         boardNo,
-        loginUser.no,
+        loginUserNo,
       );
 
       return comments;
@@ -40,7 +34,7 @@ export class CommentsService {
   async createComment(
     boardNo: number,
     content: string,
-    loginUser: User,
+    loginUserNo: number,
   ): Promise<void> {
     try {
       const board: Board = await this.boardRepository.findOne(boardNo, {
@@ -57,11 +51,7 @@ export class CommentsService {
 
       this.errorConfirm.badGatewayError(affectedRows, '댓글 작성 실패');
 
-      await this.userRepository.userRelation(
-        loginUser.no,
-        insertId,
-        'comments',
-      );
+      await this.userRepository.userRelation(loginUserNo, insertId, 'comments');
     } catch (err) {
       throw err;
     }
@@ -70,16 +60,19 @@ export class CommentsService {
   async updateComment(
     commentNo: number,
     content: string,
-    loginUser: User,
+    loginUserNo: number,
   ): Promise<void> {
     try {
       const isCommenter: boolean =
         await this.commentRepository.findOneCommentOfUser(
           commentNo,
-          loginUser.no,
+          loginUserNo,
         );
 
-      this.errorConfirm.badRequestError(isCommenter, '댓글 작성자가 아닙니다.');
+      this.errorConfirm.unauthorizedError(
+        isCommenter,
+        '댓글 작성자가 아닙니다.',
+      );
 
       const isUpdate: boolean = await this.commentRepository.updateComment(
         commentNo,
@@ -92,15 +85,18 @@ export class CommentsService {
     }
   }
 
-  async deleteComment(commentNo: number, loginUser: User): Promise<void> {
+  async deleteComment(commentNo: number, loginUserNo: number): Promise<void> {
     try {
       const isCommenter: boolean =
         await this.commentRepository.findOneCommentOfUser(
           commentNo,
-          loginUser.no,
+          loginUserNo,
         );
 
-      this.errorConfirm.badRequestError(isCommenter, '댓글 작성자가 아닙니다.');
+      this.errorConfirm.unauthorizedError(
+        isCommenter,
+        '댓글 작성자가 아닙니다.',
+      );
 
       const isDelete: boolean = await this.commentRepository.deleteComment(
         commentNo,

@@ -38,7 +38,7 @@ export class CommentsController {
   ): Promise<object> {
     const response: object = await this.commentsService.readAllComments(
       boardNo,
-      loginUser,
+      loginUser.no,
     );
 
     return {
@@ -54,7 +54,7 @@ export class CommentsController {
     @Body() { content }: CreateCommentDto,
     @CurrentUser() loginUser: User,
   ): Promise<object> {
-    await this.commentsService.createComment(boardNo, content, loginUser);
+    await this.commentsService.createComment(boardNo, content, loginUser.no);
 
     return {
       msg: '댓글 작성 성공',
@@ -68,7 +68,7 @@ export class CommentsController {
     @Body() { content }: UpdateCommentDto,
     @CurrentUser() loginUser: User,
   ): Promise<object> {
-    await this.commentsService.updateComment(commentNo, content, loginUser);
+    await this.commentsService.updateComment(commentNo, content, loginUser.no);
 
     return {
       msg: '댓글 수정 성공',
@@ -81,7 +81,7 @@ export class CommentsController {
     @Param() { commentNo }: { commentNo: number },
     @CurrentUser() loginUser: User,
   ): Promise<object> {
-    await this.commentsService.deleteComment(commentNo, loginUser);
+    await this.commentsService.deleteComment(commentNo, loginUser.no);
 
     return {
       msg: '댓글 삭제 성공',
