@@ -1,7 +1,6 @@
-import { IsNumber, IsString } from 'class-validator';
+import { IsNotEmpty, IsString } from 'class-validator';
 import { User } from 'src/auth/entity/user.entity';
-import { Board } from 'src/boards/entity/board.entity';
-import { Reply } from 'src/replies/entity/reply.entity';
+import { Comment } from 'src/comments/entity/comment.entity';
 import {
   BaseEntity,
   Column,
@@ -9,19 +8,17 @@ import {
   DeleteDateColumn,
   Entity,
   JoinColumn,
-  JoinTable,
-  ManyToMany,
   ManyToOne,
-  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 
-@Entity('comments')
-export class Comment extends BaseEntity {
+@Entity('replies')
+export class Reply extends BaseEntity {
   @PrimaryGeneratedColumn()
   no: number;
 
+  @IsNotEmpty()
   @IsString()
   @Column()
   content: string;
@@ -41,18 +38,15 @@ export class Comment extends BaseEntity {
   })
   deletedAt: Date | null;
 
-  @ManyToOne(() => Board, (board) => board.comments, { nullable: true })
+  @ManyToOne(() => Comment, (comment) => comment.replies, { nullable: true })
   @JoinColumn({
-    name: 'board_no',
+    name: 'comment_no',
   })
-  board: Board;
+  comment: Comment;
 
-  @ManyToOne(() => User, (user) => user.comments, { nullable: true })
+  @ManyToOne(() => User, (user) => user.replies, { nullable: true })
   @JoinColumn({
-    name: 'commenter_no',
+    name: 'writer_no',
   })
-  commenter: User;
-
-  @OneToMany(() => Reply, (reply) => reply.comment)
-  replies: Reply[];
+  writer: number;
 }
