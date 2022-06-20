@@ -11,6 +11,8 @@ import { InternalServerErrorException } from '@nestjs/common';
 import { School } from 'src/schools/entity/school.entity';
 import { Major } from 'src/majors/entity/major.entity';
 import { QLDB } from 'aws-sdk';
+import { UserPhotoSizes } from 'src/common/configs/photo-size.config';
+import { NumOpenReactiveInsights } from 'aws-sdk/clients/devopsguru';
 
 @EntityRepository(User)
 export class UserRepository extends Repository<User> {
@@ -235,7 +237,7 @@ export class UserRepository extends Repository<User> {
     }
   }
 
-  async updateProfile(userNo: User, deletedNullprofile: object) {
+  async updateProfile(userNo: User, deletedNullprofile: object): Promise<void> {
     try {
       await this.createQueryBuilder('users')
         .update(User)
@@ -245,6 +247,22 @@ export class UserRepository extends Repository<User> {
     } catch (err) {
       throw new InternalServerErrorException(
         `${err} 프로필 업데이트 중 알 수 없는 서버 에러입니다.`,
+      );
+    }
+  }
+
+  async getProfilePhotoUrl(userNo: number) {
+    try {
+      const profilePhotoUrl = await this.createQueryBuilder('users')
+        .leftJoin('users.profilePhoto', 'profilePhoto')
+        .select(['profilePhoto.photo_url'])
+        .where('users.no = :userNo', { userNo })
+        .getRawOne();
+      console.log(profilePhotoUrl);
+      return profilePhotoUrl;
+    } catch (err) {
+      throw new InternalServerErrorException(
+        `${err} 로그인 과정중 프로필 사진 가져오는 부분에서 발생한 에러입니다.`,
       );
     }
   }

@@ -162,9 +162,13 @@ export class AuthService {
     try {
       const isPassword: boolean = await bcrypt.compare(password, user.salt);
       if (isPassword) {
+        const profilePhotoUrl = await this.userRepository.getProfilePhotoUrl(
+          user.no,
+        );
         const payload: object = {
           email: user.email,
           userNo: user.no,
+          photoUrl: profilePhotoUrl,
           issuer: 'modern-agile',
           expiration: this.configService.get<number>('EXPIRES_IN'),
         };
