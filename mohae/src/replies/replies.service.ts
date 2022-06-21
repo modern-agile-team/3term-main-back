@@ -5,6 +5,7 @@ import { UserRepository } from 'src/auth/repository/user.repository';
 import { Comment } from 'src/comments/entity/comment.entity';
 import { CommentRepository } from 'src/comments/repository/comment.repository';
 import { ErrorConfirm } from 'src/common/utils/error';
+import { Connection, QueryRunner } from 'typeorm';
 import { ReplyRepository } from './repository/reply.repository';
 
 @Injectable()
@@ -19,6 +20,7 @@ export class RepliesService {
     private readonly commentRepository: CommentRepository,
     private readonly userRepository: UserRepository,
 
+    private readonly connection: Connection,
     private readonly errorConfirm: ErrorConfirm,
   ) {}
 
@@ -27,6 +29,11 @@ export class RepliesService {
     content: string,
     loginUserNo: number,
   ): Promise<void> {
+    const queryRunner: QueryRunner = this.connection.createQueryRunner();
+
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
     try {
       const comment: Comment = await this.commentRepository.findOne(commentNo, {
         select: ['no'],
@@ -37,18 +44,26 @@ export class RepliesService {
         '대댓글을 작성할 댓글을 찾을 수 없습니다.',
       );
 
-      const { affectedRows, insertId }: any =
-        await this.replyRepository.createReply(comment, content);
+      const { affectedRows, insertId }: any = await queryRunner.manager
+        .getCustomRepository(ReplyRepository)
+        .createReply(comment, content);
 
       this.errorConfirm.badGatewayError(affectedRows, '대댓글 생성 실패');
 
-      await this.userRepository.userRelation(loginUserNo, insertId, 'replies');
+      await queryRunner.manager
+        .getCustomRepository(UserRepository)
+        .userRelation(loginUserNo, insertId, 'replies');
+
+      await queryRunner.commitTransaction();
     } catch (err) {
+      await queryRunner.rollbackTransaction();
       if (err.response.statusCode / 100 === 5) {
         this.logger.error(err.response, '대댓글 생성 서버 에러');
       }
 
       throw err;
+    } finally {
+      await queryRunner.release();
     }
   }
 
