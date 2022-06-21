@@ -11,6 +11,7 @@ import { BoardRepository } from 'src/boards/repository/board.repository';
 import { ErrorConfirm } from 'src/common/utils/error';
 import { Reply } from 'src/replies/entity/reply.entity';
 import { ReplyRepository } from 'src/replies/repository/reply.repository';
+import { Connection, QueryRunner } from 'typeorm';
 import { Comment } from './entity/comment.entity';
 import { CommentRepository } from './repository/comment.repository';
 
@@ -27,6 +28,7 @@ export class CommentsService {
     private readonly userRepository: UserRepository,
     private readonly replyRepository: ReplyRepository,
 
+    private readonly connection: Connection,
     private readonly errorConfirm: ErrorConfirm,
   ) {}
 
@@ -67,6 +69,11 @@ export class CommentsService {
     content: string,
     loginUserNo: number,
   ): Promise<void> {
+    const queryRunner: QueryRunner = this.connection.createQueryRunner();
+
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
     try {
       const board: Board = await this.boardRepository.findOne(boardNo, {
         select: ['no'],
@@ -77,18 +84,26 @@ export class CommentsService {
         '댓글을 작성하려는 게시글을 찾을 수 없습니다.',
       );
 
-      const { affectedRows, insertId }: any =
-        await this.commentRepository.createComment(board, content);
+      const { affectedRows, insertId }: any = await queryRunner.manager
+        .getCustomRepository(CommentRepository)
+        .createComment(board, content);
 
       this.errorConfirm.badGatewayError(affectedRows, '댓글 작성 실패');
 
-      await this.userRepository.userRelation(loginUserNo, insertId, 'comments');
+      await queryRunner.manager
+        .getCustomRepository(UserRepository)
+        .userRelation(loginUserNo, insertId, 'comments');
+
+      await queryRunner.commitTransaction();
     } catch (err) {
+      await queryRunner.rollbackTransaction();
       if (err.response.statusCode / 100 === 5) {
         this.logger.error(err.response, '댓글 생성 서버 에러');
       }
 
       throw err;
+    } finally {
+      await queryRunner.release();
     }
   }
 
