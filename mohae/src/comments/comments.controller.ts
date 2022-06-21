@@ -12,12 +12,20 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
-import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiCreatedResponse,
+  ApiOkResponse,
+  ApiOperation,
+  ApiTags,
+} from '@nestjs/swagger';
 import { User } from 'src/auth/entity/user.entity';
 import { HTTP_STATUS_CODE } from 'src/common/configs/http-status.config';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 import { HttpExceptionFilter } from 'src/common/exceptions/http-exception.filter';
 import { SuccesseInterceptor } from 'src/common/interceptors/success.interceptor';
+import { operationConfig } from 'src/common/swagger-apis/api-operation.swagger';
+import { apiResponse } from 'src/common/swagger-apis/api-response.swagger';
 import { CommentsService } from './comments.service';
 import { CreateCommentDto } from './dto/create-comment.dto';
 import { UpdateCommentDto } from './dto/update-comment.dto';
@@ -30,40 +38,37 @@ import { UpdateCommentDto } from './dto/update-comment.dto';
 export class CommentsController {
   constructor(private readonly commentsService: CommentsService) {}
 
-  @ApiOperation({
-    summary: '게시글 댓글 전체 조회 경로',
-    description: '댓글 전체 조회 API',
-  })
-  @ApiOkResponse({
-    description: '성공여부',
-    schema: {
-      example: {
-        success: true,
-        statusCode: HTTP_STATUS_CODE.success.ok,
-        msg: '댓글 전체 조회 완료',
-        response: [
-          {
-            commentNo: 8,
-            commentContent: '댓글을 수정했습니다.',
-            commentCreatedAt: '2022년 06월 17일',
-            commenterNo: 2,
-            commenterNickname: 'hneeddjsjde',
-            commenterPhotoUrl: 'profile/165518423416.jpg',
-            isCommenter: 0,
-            replies: [
-              {
-                replyNo: 1,
-                replyContent: '가ㄷㅏㅁㅏㅏㅏㅏ',
-                replyWriterNo: 1,
-                replyWriterPhotoUrl: 'example.com',
-                replyCreatedAt: '2022년 06월 17일',
-              },
-            ],
-          },
-        ],
-      },
-    },
-  })
+  @ApiOperation(
+    operationConfig('게시글 댓글 전체 조회 경로', '댓글 전체 조회 API'),
+  )
+  @ApiOkResponse(
+    apiResponse.success(
+      '성공여부',
+      HTTP_STATUS_CODE.success.ok,
+      '댓글 전체 조회 완료',
+      [
+        {
+          commentNo: 8,
+          commentContent: '댓글을 수정했습니다.',
+          commentCreatedAt: '2022년 06월 17일',
+          commenterNo: 2,
+          commenterNickname: 'hneeddjsjde',
+          commenterPhotoUrl: 'profile/165518423416.jpg',
+          isCommenter: 0,
+          replies: [
+            {
+              replyNo: 1,
+              replyContent: '가ㄷㅏㅁㅏㅏㅏㅏ',
+              replyWriterNo: 1,
+              replyWriterPhotoUrl: 'example.com',
+              replyCreatedAt: '2022년 06월 17일',
+            },
+          ],
+        },
+      ],
+    ),
+  )
+  @ApiBearerAuth('access-token')
   @HttpCode(HTTP_STATUS_CODE.success.ok)
   @Get()
   async readAllComments(
@@ -81,20 +86,15 @@ export class CommentsController {
     };
   }
 
-  @ApiOperation({
-    summary: '댓글 생성',
-    description: '댓글 생성 API',
-  })
-  @ApiOkResponse({
-    description: '댓글 생성 성공 결과',
-    schema: {
-      example: {
-        success: true,
-        statusCode: HTTP_STATUS_CODE.success.created,
-        msg: '댓글 생성 완료',
-      },
-    },
-  })
+  @ApiOperation(operationConfig('댓글 생성', '댓글 생성 API'))
+  @ApiCreatedResponse(
+    apiResponse.success(
+      '댓글 생성 성공 결과',
+      HTTP_STATUS_CODE.success.created,
+      '댓글 생성 완료',
+    ),
+  )
+  @ApiBearerAuth('access-token')
   @HttpCode(HTTP_STATUS_CODE.success.created)
   @Post()
   async createComment(
@@ -109,21 +109,16 @@ export class CommentsController {
     };
   }
 
-  @ApiOperation({
-    summary: '댓글 수정',
-    description: '댓글 수정 API',
-  })
-  @ApiOkResponse({
-    description: '댓글 수정 성공 결과',
-    schema: {
-      example: {
-        success: true,
-        statusCode: HTTP_STATUS_CODE.success.ok,
-        msg: '댓글 수정 완료',
-      },
-    },
-  })
-  @HttpCode(HTTP_STATUS_CODE.success.created)
+  @ApiOperation(operationConfig('댓글 수정', '댓글 수정 API'))
+  @ApiOkResponse(
+    apiResponse.success(
+      '댓글 수정 성공 결과',
+      HTTP_STATUS_CODE.success.ok,
+      '댓글 수정 완료',
+    ),
+  )
+  @ApiBearerAuth('access-token')
+  @HttpCode(HTTP_STATUS_CODE.success.ok)
   @Put(':commentNo')
   async updateComment(
     @Param('commentNo') commentNo: number,
@@ -137,21 +132,16 @@ export class CommentsController {
     };
   }
 
-  @ApiOperation({
-    summary: '댓글 삭제',
-    description: '댓글 삭제 API',
-  })
-  @ApiOkResponse({
-    description: '댓글 삭제 성공 결과',
-    schema: {
-      example: {
-        success: true,
-        statusCode: HTTP_STATUS_CODE.success.ok,
-        msg: '댓글 삭제 완료',
-      },
-    },
-  })
-  @HttpCode(HTTP_STATUS_CODE.success.created)
+  @ApiOperation(operationConfig('댓글 삭제', '댓글 삭제 API'))
+  @ApiOkResponse(
+    apiResponse.success(
+      '댓글 삭제 성공 결과',
+      HTTP_STATUS_CODE.success.ok,
+      '댓글 삭제 완료',
+    ),
+  )
+  @ApiBearerAuth('access-token')
+  @HttpCode(HTTP_STATUS_CODE.success.ok)
   @Delete(':commentNo')
   async deleteComment(
     @Param('commentNo') commentNo: number,
