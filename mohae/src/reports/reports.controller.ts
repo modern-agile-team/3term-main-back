@@ -3,8 +3,6 @@ import {
   Controller,
   Get,
   HttpCode,
-  HttpException,
-  Logger,
   Param,
   Post,
   UseFilters,
@@ -12,12 +10,19 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
-import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOkResponse,
+  ApiOperation,
+  ApiTags,
+} from '@nestjs/swagger';
 import { User } from 'src/auth/entity/user.entity';
 import { HTTP_STATUS_CODE } from 'src/common/configs/http-status.config';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 import { HttpExceptionFilter } from 'src/common/exceptions/http-exception.filter';
 import { SuccesseInterceptor } from 'src/common/interceptors/success.interceptor';
+import { operationConfig } from 'src/common/swagger-apis/api-operation.swagger';
+import { apiResponse } from 'src/common/swagger-apis/api-response.swagger';
 import { CreateReportDto } from './dto/create-report.dto';
 import { ReportedBoard } from './entity/reported-board.entity';
 import { ReportedUser } from './entity/reported-user.entity';
@@ -27,14 +32,24 @@ import { ReportsService } from './reports.service';
 @UseInterceptors(SuccesseInterceptor)
 @UseGuards(AuthGuard('jwt'))
 @ApiTags('Reports')
+@ApiBearerAuth('access-token')
 @Controller('reports')
 export class ReportsController {
   constructor(private reportsService: ReportsService) {}
 
-  @ApiOperation({
-    summary: '신고된 게시글 상세(선택) 조회',
-    description: '신고된 게시글 상세(선택) 조회 API',
-  })
+  @ApiOperation(
+    operationConfig(
+      '신고된 게시글 상세(선택) 조회',
+      '신고된 게시글 상세(선택) 조회 API',
+    ),
+  )
+  @ApiOkResponse(
+    apiResponse.success(
+      '신고된 게시글 상세 조회 성공',
+      HTTP_STATUS_CODE.success.ok,
+      '신고된 게시글 상세 조회 성공 결과',
+    ),
+  )
   @HttpCode(HTTP_STATUS_CODE.success.ok)
   @Get('board/:no')
   async readOneReportedBoard(@Param('no') boardNo: number): Promise<object> {
@@ -47,10 +62,19 @@ export class ReportsController {
     };
   }
 
-  @ApiOperation({
-    summary: '신고된 유저 상세(선택) 조회',
-    description: '신고된 유저 상세(선택) 조회 API',
-  })
+  @ApiOperation(
+    operationConfig(
+      '신고된 유저 상세(선택) 조회',
+      '신고된 유저 상세(선택) 조회 API',
+    ),
+  )
+  @ApiOkResponse(
+    apiResponse.success(
+      '신고된 유저 상세 조회 성공',
+      HTTP_STATUS_CODE.success.ok,
+      '신고된 유저 상세 조회 성공 결과',
+    ),
+  )
   @HttpCode(HTTP_STATUS_CODE.success.ok)
   @Get('user/:no')
   async readOneReportedUser(@Param('no') userNo: number): Promise<object> {
@@ -63,10 +87,19 @@ export class ReportsController {
     };
   }
 
-  @ApiOperation({
-    summary: '유저 또는 게시글 신고 생성',
-    description: '유저 또는 게시글 신고 생성 API',
-  })
+  @ApiOperation(
+    operationConfig(
+      '유저 또는 게시글 신고 생성',
+      '유저 또는 게시글 신고 생성 API',
+    ),
+  )
+  @ApiOkResponse(
+    apiResponse.success(
+      '신고 저장',
+      HTTP_STATUS_CODE.success.created,
+      '신고 저장 성공 결과',
+    ),
+  )
   @HttpCode(HTTP_STATUS_CODE.success.created)
   @Post()
   async createReport(
