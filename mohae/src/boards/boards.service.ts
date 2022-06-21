@@ -236,16 +236,16 @@ export class BoardsService {
   }
 
   async createBoard(
-    createBoardDto: CreateBoardDto,
+    createBoardDto: any,
     user: User,
+    boardPhotoUrl: any,
   ): Promise<boolean> {
     const queryRunner = this.connection.createQueryRunner();
 
     await queryRunner.connect();
     await queryRunner.startTransaction();
     try {
-      const { categoryNo, areaNo, deadline, photoUrl }: CreateBoardDto =
-        createBoardDto;
+      const { categoryNo, areaNo, deadline } = createBoardDto;
 
       const category: Category = await this.categoryRepository.findOne(
         categoryNo,
@@ -274,37 +274,41 @@ export class BoardsService {
         endTime.setDate(endTime.getDate() + deadline);
       }
 
-      const board: Board = await this.boardRepository.createBoard(
-        category,
-        area,
-        user,
-        createBoardDto,
-        endTime,
-      );
-      await this.userRepository.userRelation(user, board.no, 'boards');
+      const createBoard: any = await queryRunner.manager
+        .getCustomRepository(BoardRepository)
+        .createBoard(category, area, user, createBoardDto, endTime);
 
-      if (!board) {
+      const createdBoard: Board = await queryRunner.manager
+        .getCustomRepository(BoardRepository)
+        .createdBoard(createBoard);
+
+      await queryRunner.manager
+        .getCustomRepository(UserRepository)
+        .userRelation(user, createdBoard.no, 'boards');
+
+      if (!createdBoard) {
         throw new BadGatewayException('게시글 생성 관련 오류입니다.');
       }
-
-      const photos: Array<object> = photoUrl.map((photo, index) => {
-        return {
-          photo_url: photo,
-          board: board.no,
-          order: index + 1,
-        };
-      });
-
-      const boardPhotoNo: Array<object> = await queryRunner.manager
-        .getCustomRepository(BoardPhotoRepository)
-        .createBoardPhoto(photos);
-
-      if (photos.length !== boardPhotoNo.length) {
-        throw new BadGatewayException('게시글 사진 등록 도중 DB관련 오류');
+      if (boardPhotoUrl[0] !== 'default.jpg') {
+        const photos: Array<object> = boardPhotoUrl.map(
+          (photo: string, index: number) => {
+            return {
+              photo_url: photo,
+              board: createdBoard.no,
+              order: index + 1,
+            };
+          },
+        );
+        const boardPhotoNo: Array<object> = await queryRunner.manager
+          .getCustomRepository(BoardPhotoRepository)
+          .createBoardPhoto(photos);
+        if (photos.length !== boardPhotoNo.length) {
+          throw new BadGatewayException('게시글 사진 등록 도중 DB관련 오류');
+        }
+        await queryRunner.manager
+          .getCustomRepository(BoardRepository)
+          .saveCategory(categoryNo, createdBoard);
       }
-      await queryRunner.manager
-        .getCustomRepository(BoardRepository)
-        .saveCategory(categoryNo, board);
       await queryRunner.commitTransaction();
 
       return true;

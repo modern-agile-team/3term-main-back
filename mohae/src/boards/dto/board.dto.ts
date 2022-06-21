@@ -26,9 +26,9 @@ export abstract class BoardContent {
     description: 'Example Description입니다.',
     required: true,
   })
-  @IsNumber()
-  @Max(1000001)
-  price: number;
+  @IsString()
+  // @Max(1000001)
+  price: string;
 
   @ApiProperty({
     example: '제목 입력',
@@ -65,24 +65,24 @@ export abstract class BoardContent {
     description: 'Example false = 해주는 사람, true = 구하는 사람.',
     required: true,
   })
-  @IsBoolean()
-  target: boolean;
+  @IsString()
+  target: string;
 
   @ApiProperty({
     example: 3,
     description: 'Example 카테고리.',
     required: true,
   })
-  @IsNumber()
-  categoryNo: number;
+  @IsString()
+  categoryNo: string;
 
   @ApiProperty({
     example: 1,
     description: 'Example 지역.',
     required: true,
   })
-  @IsNumber()
-  areaNo: number;
+  @IsString()
+  areaNo: string;
 
   // @ApiProperty({
   //   example: '첫번째 상세조건',
@@ -114,15 +114,15 @@ export abstract class BoardContent {
   // @MaxLength(100)
   // note3?: string;
 
-  @ApiProperty({
-    example: ['사진url'],
-    description: 'Example 게시글 사진입니다.',
-    required: false,
-  })
-  @IsArray()
-  @IsOptional()
-  @ArrayMaxSize(5)
-  photoUrl?: [];
+  // @ApiProperty({
+  //   example: ['사진url'],
+  //   description: 'Example 게시글 사진입니다.',
+  //   required: false,
+  // })
+  // // @IsArray()
+  // // @IsOptional()
+  // // @ArrayMaxSize(5)
+  // // photoUrl?: [];
 }
 
 export class CreateBoardDto extends BoardContent {
@@ -131,8 +131,8 @@ export class CreateBoardDto extends BoardContent {
     description: 'Example 마감일 0 = 상시, 7 = 일주일, 30 = 1개월, 60 = 3개월',
     required: true,
   })
-  @IsNumber()
-  deadline: number;
+  @IsString()
+  deadline: string;
 }
 
 export class SearchBoardDto {
