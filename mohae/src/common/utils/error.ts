@@ -7,7 +7,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { WinstonLogger, WINSTON_MODULE_PROVIDER } from 'nest-winston';
-// isNotExist 방식으로
+
 export class ErrorConfirm {
   constructor(
     @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: WinstonLogger,
@@ -15,7 +15,6 @@ export class ErrorConfirm {
 
   notFoundError(param: any, msg: string | undefined) {
     if (!param) {
-      this.logger.error('Not found exception error => ', msg);
       throw new NotFoundException(`${msg}`);
     }
   }
@@ -28,6 +27,8 @@ export class ErrorConfirm {
 
   badGatewayError(param: any, msg: string | undefined) {
     if (!param) {
+      this.logger.error('서버 row 변화없는 오류 => ', msg);
+
       throw new BadGatewayException(`${msg}`);
     }
   }

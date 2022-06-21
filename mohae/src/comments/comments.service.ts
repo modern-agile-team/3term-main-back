@@ -1,5 +1,10 @@
-import { Injectable } from '@nestjs/common';
+import {
+  Inject,
+  Injectable,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { WinstonLogger, WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { UserRepository } from 'src/auth/repository/user.repository';
 import { Board } from 'src/boards/entity/board.entity';
 import { BoardRepository } from 'src/boards/repository/board.repository';
@@ -14,6 +19,9 @@ export class CommentsService {
   constructor(
     @InjectRepository(CommentRepository)
     private readonly commentRepository: CommentRepository,
+
+    @Inject(WINSTON_MODULE_PROVIDER)
+    private readonly logger: WinstonLogger,
 
     private readonly boardRepository: BoardRepository,
     private readonly userRepository: UserRepository,
@@ -46,6 +54,10 @@ export class CommentsService {
 
       return comments;
     } catch (err) {
+      if (err.response.statusCode / 100 === 5) {
+        this.logger.error(err.response, '댓글 전체 조회 서버 에러');
+      }
+
       throw err;
     }
   }
@@ -72,6 +84,10 @@ export class CommentsService {
 
       await this.userRepository.userRelation(loginUserNo, insertId, 'comments');
     } catch (err) {
+      if (err.response.statusCode / 100 === 5) {
+        this.logger.error(err.response, '댓글 생성 서버 에러');
+      }
+
       throw err;
     }
   }
@@ -100,6 +116,10 @@ export class CommentsService {
 
       this.errorConfirm.badGatewayError(isUpdate, '댓글 수정 실패');
     } catch (err) {
+      if (err.response.statusCode / 100 === 5) {
+        this.logger.error(err.response, '댓글 수정 서버 에러');
+      }
+
       throw err;
     }
   }
@@ -123,6 +143,10 @@ export class CommentsService {
 
       this.errorConfirm.badGatewayError(isDelete, '댓글 삭제 실패');
     } catch (err) {
+      if (err.response.statusCode / 100 === 5) {
+        this.logger.error(err.response, '댓글 삭제 서버 에러');
+      }
+
       throw err;
     }
   }
