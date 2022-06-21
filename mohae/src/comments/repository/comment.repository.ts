@@ -7,19 +7,38 @@ import {
   Repository,
   UpdateResult,
 } from 'typeorm';
-import { CreateCommentDto } from '../dto/create-comment.dto';
-import { ParamCommentDto } from '../dto/param-comment.dto';
 import { Comment } from '../entity/comment.entity';
 
 @EntityRepository(Comment)
 export class CommentRepository extends Repository<Comment> {
-  async readAllComments(boardNo: number): Promise<Comment[]> {
+  async readAllComments(
+    boardNo: number,
+    loginUserNo: number,
+  ): Promise<Comment[]> {
     try {
       const comments: Comment[] = await this.createQueryBuilder('comments')
-        // .leftJoinAndSelect('comments.commentor_no', 'commentor')
+        .leftJoin(
+          'comments.commenter',
+          'commenter',
+          'comments.commenter = commenter.no',
+        )
         .leftJoin('comments.board', 'board', 'board.no = :boardNo', { boardNo })
-        .select(['comments.no', 'comments.content', 'board.no'])
-        .getMany();
+        .leftJoin(
+          'commenter.profilePhoto',
+          'commenterPhoto',
+          'commenterPhoto.user = commenter.no',
+        )
+        .select([
+          'comments.no AS commentNo',
+          'comments.content AS commentContent',
+          `DATE_FORMAT(comments.createdAt, '%Y년 %m월 %d일') AS commentCreatedAt`,
+          'commenter.no AS commenterNo',
+          'commenter.nickname AS commenterNickname',
+          'commenterPhoto.photo_url AS commenterPhotoUrl',
+          `IF(commenter.no = ${loginUserNo}, true, false) AS isCommenter`,
+        ])
+        .where('board.no = :boardNo', { boardNo })
+        .getRawMany();
 
       return comments;
     } catch (err) {
@@ -27,15 +46,12 @@ export class CommentRepository extends Repository<Comment> {
     }
   }
 
-  async createComment(
-    boardNo: Board,
-    { content, commentorNo }: CreateCommentDto,
-  ): Promise<InsertResult> {
+  async createComment(board: Board, content: string): Promise<InsertResult> {
     try {
       const { raw }: InsertResult = await this.createQueryBuilder('comments')
         .insert()
         .into(Comment)
-        .values({ content, commentorNo, board: boardNo })
+        .values({ content, board })
         .execute();
 
       return raw;
@@ -44,18 +60,14 @@ export class CommentRepository extends Repository<Comment> {
     }
   }
 
-  async updateComment(
-    { boardNo, commentNo }: ParamCommentDto,
-    content: string,
-  ): Promise<boolean> {
+  async updateComment(commentNo: number, content: string): Promise<boolean> {
     try {
       const { affected }: UpdateResult = await this.createQueryBuilder(
         'comments',
       )
         .update(Comment)
-        .set({ no: commentNo, content })
+        .set({ content })
         .where('comments.no = :commentNo', { commentNo })
-        .andWhere('comments.board_no = :boardNo', { boardNo })
         .execute();
 
       return !!affected;
@@ -64,10 +76,7 @@ export class CommentRepository extends Repository<Comment> {
     }
   }
 
-  async deleteComment({
-    boardNo,
-    commentNo,
-  }: ParamCommentDto): Promise<boolean> {
+  async deleteComment(commentNo: number): Promise<boolean> {
     try {
       const { affected }: DeleteResult = await this.createQueryBuilder(
         'comments',
@@ -75,10 +84,27 @@ export class CommentRepository extends Repository<Comment> {
         .delete()
         .from(Comment)
         .where('comments.no = :commentNo', { commentNo })
-        .andWhere('comments.board_no = :boardNo', { boardNo })
         .execute();
 
       return !!affected;
+    } catch (err) {
+      throw new InternalServerErrorException(err.message);
+    }
+  }
+
+  async findOneCommentOfUser(
+    commentNo: number,
+    loginUserNo: number,
+  ): Promise<boolean> {
+    try {
+      const findedComment: Comment = await this.createQueryBuilder('comments')
+        .leftJoin('comments.commenter', 'commenter')
+        .select(['comments.no'])
+        .where('comments.no = :commentNo', { commentNo })
+        .andWhere('commenter.no = :loginUserNo', { loginUserNo })
+        .getOne();
+
+      return !!findedComment;
     } catch (err) {
       throw new InternalServerErrorException(err.message);
     }
