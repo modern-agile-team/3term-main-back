@@ -25,7 +25,6 @@ import {
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
-import { SuccesseInterceptor } from 'src/common/interceptors/success.interceptor';
 import { BoardsService } from './boards.service';
 import {
   CreateBoardDto,
@@ -39,7 +38,6 @@ import { CategoriesService } from 'src/categories/categories.service';
 import { HTTP_STATUS_CODE } from 'src/common/configs/http-status.config';
 
 @ApiTags('Boards')
-@UseInterceptors(SuccesseInterceptor)
 @Controller('boards')
 export class BoardsController {
   private logger = new Logger('BoardsController');

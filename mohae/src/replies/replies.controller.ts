@@ -14,13 +14,11 @@ import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { User } from 'src/auth/entity/user.entity';
 import { HTTP_STATUS_CODE } from 'src/common/configs/http-status.config';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
-import { SuccesseInterceptor } from 'src/common/interceptors/success.interceptor';
 import { CreateReplyDto } from './dto/create-reply.dto';
 import { UpdateReplyDto } from './dto/update-reply.dto';
 import { RepliesService } from './replies.service';
 
 @UseGuards(AuthGuard('jwt'))
-@UseInterceptors(SuccesseInterceptor)
 @ApiTags('Replies')
 @Controller('comments/:commentNo/replies')
 export class RepliesController {

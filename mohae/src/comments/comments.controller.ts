@@ -4,27 +4,22 @@ import {
   Delete,
   Get,
   HttpCode,
+  InternalServerErrorException,
   Param,
   Post,
   Put,
-  UseFilters,
   UseGuards,
-  UseInterceptors,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { User } from 'src/auth/entity/user.entity';
 import { HTTP_STATUS_CODE } from 'src/common/configs/http-status.config';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
-import { HttpExceptionFilter } from 'src/common/exceptions/http-exception.filter';
-import { SuccesseInterceptor } from 'src/common/interceptors/success.interceptor';
 import { CommentsService } from './comments.service';
 import { CreateCommentDto } from './dto/create-comment.dto';
 import { UpdateCommentDto } from './dto/update-comment.dto';
 
 @UseGuards(AuthGuard('jwt'))
-@UseFilters(HttpExceptionFilter)
-@UseInterceptors(SuccesseInterceptor)
 @ApiTags('Comments')
 @Controller('board/:boardNo/comments')
 export class CommentsController {

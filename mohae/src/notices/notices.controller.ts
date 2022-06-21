@@ -17,13 +17,11 @@ import { HTTP_STATUS_CODE } from 'src/common/configs/http-status.config';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 import { Role } from 'src/common/decorators/roles.decorator';
 import { RolesGuard } from 'src/common/guards/roles.guard';
-import { SuccesseInterceptor } from 'src/common/interceptors/success.interceptor';
 import { CreateNoticeDto } from './dto/create-notice.dto';
 import { UpdateNoticeDto } from './dto/update-notice.dtd';
 import { Notice } from './entity/notice.entity';
 import { NoticesService } from './notices.service';
 
-@UseInterceptors(SuccesseInterceptor)
 @ApiTags('Notices')
 @Controller('notices')
 export class NoticesController {
