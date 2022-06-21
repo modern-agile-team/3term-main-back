@@ -31,6 +31,7 @@ import { ReportedBoard } from 'src/reports/entity/reported-board.entity';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ProfilePhoto } from 'src/photo/entity/profile.photo.entity';
 import { Comment } from 'src/comments/entity/comment.entity';
+import { Reply } from 'src/replies/entity/reply.entity';
 
 export const typeOrmConfig: TypeOrmModuleAsyncOptions = {
   imports: [ConfigModule],
@@ -74,6 +75,7 @@ export const typeOrmConfig: TypeOrmModuleAsyncOptions = {
       Basket,
       ProfilePhoto,
       Comment,
+      Reply,
     ],
   }),
 };
