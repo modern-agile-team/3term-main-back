@@ -7,7 +7,6 @@ import {
   IsString,
   MaxLength,
   MinLength,
-  Validate,
 } from 'class-validator';
 import { Board } from '../entity/board.entity';
 
