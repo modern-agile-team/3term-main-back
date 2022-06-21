@@ -1,11 +1,17 @@
-import { Injectable } from '@nestjs/common';
+import {
+  Inject,
+  Injectable,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { WinstonLogger, WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { UserRepository } from 'src/auth/repository/user.repository';
 import { Board } from 'src/boards/entity/board.entity';
 import { BoardRepository } from 'src/boards/repository/board.repository';
 import { ErrorConfirm } from 'src/common/utils/error';
 import { Reply } from 'src/replies/entity/reply.entity';
 import { ReplyRepository } from 'src/replies/repository/reply.repository';
+import { Connection, QueryRunner } from 'typeorm';
 import { Comment } from './entity/comment.entity';
 import { CommentRepository } from './repository/comment.repository';
 
@@ -15,10 +21,14 @@ export class CommentsService {
     @InjectRepository(CommentRepository)
     private readonly commentRepository: CommentRepository,
 
+    @Inject(WINSTON_MODULE_PROVIDER)
+    private readonly logger: WinstonLogger,
+
     private readonly boardRepository: BoardRepository,
     private readonly userRepository: UserRepository,
     private readonly replyRepository: ReplyRepository,
 
+    private readonly connection: Connection,
     private readonly errorConfirm: ErrorConfirm,
   ) {}
 
@@ -46,6 +56,10 @@ export class CommentsService {
 
       return comments;
     } catch (err) {
+      if (err.response.statusCode / 100 === 5) {
+        this.logger.error(err.response, '댓글 전체 조회 서버 에러');
+      }
+
       throw err;
     }
   }
@@ -55,6 +69,11 @@ export class CommentsService {
     content: string,
     loginUserNo: number,
   ): Promise<void> {
+    const queryRunner: QueryRunner = this.connection.createQueryRunner();
+
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
     try {
       const board: Board = await this.boardRepository.findOne(boardNo, {
         select: ['no'],
@@ -65,14 +84,26 @@ export class CommentsService {
         '댓글을 작성하려는 게시글을 찾을 수 없습니다.',
       );
 
-      const { affectedRows, insertId }: any =
-        await this.commentRepository.createComment(board, content);
+      const { affectedRows, insertId }: any = await queryRunner.manager
+        .getCustomRepository(CommentRepository)
+        .createComment(board, content);
 
       this.errorConfirm.badGatewayError(affectedRows, '댓글 작성 실패');
 
-      await this.userRepository.userRelation(loginUserNo, insertId, 'comments');
+      await queryRunner.manager
+        .getCustomRepository(UserRepository)
+        .userRelation(loginUserNo, insertId, 'comments');
+
+      await queryRunner.commitTransaction();
     } catch (err) {
+      await queryRunner.rollbackTransaction();
+      if (err.response.statusCode / 100 === 5) {
+        this.logger.error(err.response, '댓글 생성 서버 에러');
+      }
+
       throw err;
+    } finally {
+      await queryRunner.release();
     }
   }
 
@@ -100,6 +131,10 @@ export class CommentsService {
 
       this.errorConfirm.badGatewayError(isUpdate, '댓글 수정 실패');
     } catch (err) {
+      if (err.response.statusCode / 100 === 5) {
+        this.logger.error(err.response, '댓글 수정 서버 에러');
+      }
+
       throw err;
     }
   }
@@ -123,6 +158,10 @@ export class CommentsService {
 
       this.errorConfirm.badGatewayError(isDelete, '댓글 삭제 실패');
     } catch (err) {
+      if (err.response.statusCode / 100 === 5) {
+        this.logger.error(err.response, '댓글 삭제 서버 에러');
+      }
+
       throw err;
     }
   }

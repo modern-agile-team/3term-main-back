@@ -37,6 +37,7 @@ export class CommentRepository extends Repository<Comment> {
           'commenterPhoto.photo_url AS commenterPhotoUrl',
           `IF(commenter.no = ${loginUserNo}, true, false) AS isCommenter`,
         ])
+        .where('board.no = :boardNo', { boardNo })
         .getRawMany();
 
       return comments;
