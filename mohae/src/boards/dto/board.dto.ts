@@ -1,14 +1,10 @@
 import { ApiProperty, PickType } from '@nestjs/swagger';
 import {
-  ArrayMaxSize,
-  IsArray,
   IsBoolean,
   IsNotEmpty,
   IsNumber,
-  IsObject,
   IsOptional,
   IsString,
-  Max,
   MaxLength,
   MinLength,
   Validate,
@@ -27,7 +23,6 @@ export abstract class BoardContent {
     required: true,
   })
   @IsString()
-  // @Max(1000001)
   price: string;
 
   @ApiProperty({
@@ -113,16 +108,6 @@ export abstract class BoardContent {
   // @IsOptional()
   // @MaxLength(100)
   // note3?: string;
-
-  // @ApiProperty({
-  //   example: ['사진url'],
-  //   description: 'Example 게시글 사진입니다.',
-  //   required: false,
-  // })
-  // // @IsArray()
-  // // @IsOptional()
-  // // @ArrayMaxSize(5)
-  // // photoUrl?: [];
 }
 
 export class CreateBoardDto extends BoardContent {
@@ -172,9 +157,8 @@ export class LikeBoardDto {
 
 export abstract class UpdateBoardDto {
   @IsOptional()
-  @IsNumber()
-  @Max(1000001)
-  price?: number;
+  @IsString()
+  price?: string;
 
   @IsOptional()
   @IsString()
@@ -195,16 +179,16 @@ export abstract class UpdateBoardDto {
   summary?: string;
 
   @IsOptional()
-  @IsBoolean()
-  target?: boolean;
+  @IsString()
+  target?: string;
 
   @IsOptional()
-  @IsNumber()
-  category?: number;
+  @IsString()
+  category?: string;
 
   @IsOptional()
-  @IsNumber()
-  area?: number;
+  @IsString()
+  area?: string;
 
   // @IsOptional()
   // @IsString()
@@ -222,11 +206,6 @@ export abstract class UpdateBoardDto {
   // note3?: string;
 
   @IsOptional()
-  @IsNumber()
+  @IsString()
   deadline?: any;
-
-  @IsOptional()
-  @IsArray()
-  @ArrayMaxSize(5)
-  photoUrl: [];
 }

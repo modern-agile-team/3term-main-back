@@ -474,13 +474,32 @@ export class BoardsController {
   @HttpCode(HTTP_STATUS_CODE.success.created)
   @ApiBearerAuth('access-token')
   @UseGuards(AuthGuard('jwt'))
+  @UseInterceptors(FilesInterceptor('image', 5))
   @Patch(':boardNo')
   async updateBoard(
     @Param('boardNo') boardNo: number,
+    @UploadedFiles() files: Express.Multer.File[],
     @Body() updateBoardDto: UpdateBoardDto,
     @CurrentUser() user: User,
   ): Promise<object> {
-    await this.boardService.updateBoard(boardNo, updateBoardDto, user.no);
+    for (const key of Object.keys(updateBoardDto)) {
+      updateBoardDto[`${key}`] = JSON.parse(updateBoardDto[`${key}`]);
+    }
+    const boardPhotoUrls =
+      files.length === 0
+        ? false
+        : await this.awsService.uploadBoardFileToS3('board', files);
+
+    const originBoardPhotoUrls = await this.boardService.updateBoard(
+      boardNo,
+      updateBoardDto,
+      user.no,
+      boardPhotoUrls,
+    );
+
+    if (originBoardPhotoUrls) {
+      await this.awsService.deleteBoardS3Object(originBoardPhotoUrls);
+    }
 
     return {
       msg: '게시글 수정이 완료되었습니다.',

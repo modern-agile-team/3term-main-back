@@ -278,7 +278,7 @@ export class AwsService {
   async deleteBoardS3Object(
     originSpecPhotoUrls: string,
     callback?: (err: AWS.AWSError, data: AWS.S3.DeleteObjectOutput) => void,
-  ): Promise<{ success: true }> {
+  ): Promise<any> {
     try {
       for await (const originSpecPhotoUrl of originSpecPhotoUrls) {
         await this.awsS3
@@ -291,7 +291,6 @@ export class AwsService {
           )
           .promise();
       }
-      return { success: true };
     } catch (error) {
       throw new BadRequestException(`Failed to delete file : ${error}`);
     }

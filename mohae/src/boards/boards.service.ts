@@ -1,6 +1,7 @@
 import {
   BadGatewayException,
   BadRequestException,
+  ConsoleLogger,
   Injectable,
   InternalServerErrorException,
   UnauthorizedException,
@@ -346,16 +347,16 @@ export class BoardsService {
 
   async updateBoard(
     boardNo: number,
-    updateBoardDto: UpdateBoardDto,
+    updateBoardDto,
     userNo: number,
-  ): Promise<boolean> {
+    boardPhotoUrl: false | string[],
+  ): Promise<any> {
     const queryRunner = this.connection.createQueryRunner();
 
     await queryRunner.connect();
     await queryRunner.startTransaction();
     try {
-      const { category, area, deadline, photoUrl }: UpdateBoardDto =
-        updateBoardDto;
+      const { category, area, deadline } = updateBoardDto;
 
       const board: Board = await this.boardRepository.readByOneBoard(boardNo);
 
@@ -393,7 +394,6 @@ export class BoardsService {
         endTime = null;
         duplicateCheck['deadline'] = endTime;
       }
-
       const categoryNo: Category = await this.categoryRepository.findOne(
         category,
         {
@@ -411,44 +411,55 @@ export class BoardsService {
 
       this.errorConfirm.notFoundError(areaNo, `해당 지역을 찾을 수 없습니다.`);
 
-      if (Object.keys(duplicateCheck).includes('photoUrl')) {
-        const deleteBoardPhoto: number = await queryRunner.manager
-          .getCustomRepository(BoardPhotoRepository)
-          .deleteBoardPhoto(boardNo);
-
-        if (!deleteBoardPhoto) {
-          throw new BadGatewayException('게시글 사진 삭제 도중 DB관련 오류');
-        }
-
-        const photos: Array<object> = photoUrl.map((photo, index) => {
-          return {
-            photo_url: photo,
-            board: board.no,
-            order: index + 1,
-          };
-        });
-
-        const boardPhotoNo: Array<object> = await queryRunner.manager
-          .getCustomRepository(BoardPhotoRepository)
-          .createBoardPhoto(photos);
-
-        if (photos.length !== boardPhotoNo.length) {
-          throw new BadGatewayException('게시글 사진 등록 도중 DB관련 오류');
-        }
-        delete duplicateCheck['photoUrl'];
-      }
-
       const updatedBoard = await queryRunner.manager
         .getCustomRepository(BoardRepository)
         .updateBoard(boardNo, duplicateCheck);
 
-      await queryRunner.commitTransaction();
-
       if (!updatedBoard) {
         throw new BadGatewayException('게시글 업데이트 관련 오류');
       }
+      if (boardPhotoUrl) {
+        const { photos } = await this.boardRepository.findOne(boardNo, {
+          select: ['no', 'photos'],
+          relations: ['photos'],
+        });
 
-      return true;
+        if (photos.length) {
+          const deleteBoardPhoto: number = await queryRunner.manager
+            .getCustomRepository(BoardPhotoRepository)
+            .deleteBoardPhoto(boardNo);
+
+          if (!deleteBoardPhoto) {
+            throw new BadGatewayException('게시글 사진 삭제 도중 DB관련 오류');
+          }
+        }
+        if (boardPhotoUrl[0] !== 'default.jpg') {
+          const boardPhotos: Array<object> = boardPhotoUrl.map(
+            (photo, index) => {
+              return {
+                photo_url: photo,
+                board: board.no,
+                order: index + 1,
+              };
+            },
+          );
+
+          const boardPhotoNo: Array<object> = await queryRunner.manager
+            .getCustomRepository(BoardPhotoRepository)
+            .createBoardPhoto(boardPhotos);
+
+          if (boardPhotos.length !== boardPhotoNo.length) {
+            throw new BadGatewayException('게시글 사진 등록 도중 DB관련 오류');
+          }
+          const originBoardPhotosUrl = photos.map((boardPhoto) => {
+            return boardPhoto.photo_url;
+          });
+          await queryRunner.commitTransaction();
+          return originBoardPhotosUrl;
+        }
+      }
+
+      await queryRunner.commitTransaction();
     } catch (err) {
       await queryRunner.rollbackTransaction();
       throw err;
