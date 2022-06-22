@@ -276,7 +276,7 @@ export class AwsService {
   }
 
   async deleteBoardS3Object(
-    originSpecPhotoUrls: string,
+    originSpecPhotoUrls: string[],
     callback?: (err: AWS.AWSError, data: AWS.S3.DeleteObjectOutput) => void,
   ): Promise<any> {
     try {
