@@ -158,11 +158,12 @@ export class AuthService {
   async passwordConfirm(user: User, password: string) {
     try {
       const isPassword: boolean = await bcrypt.compare(password, user.salt);
+
       if (isPassword) {
         const payload: object = {
           email: user.email,
           userNo: user.no,
-          photoUrl: user.profilePhoto.photo_url,
+          photoUrl: user.profilePhoto,
           issuer: 'modern-agile',
           expiration: this.configService.get<number>('EXPIRES_IN'),
         };

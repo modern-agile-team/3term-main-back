@@ -68,17 +68,16 @@ export class UserRepository extends Repository<User> {
       const user: User = await this.createQueryBuilder('users')
         .leftJoin('users.profilePhoto', 'profilePhoto')
         .select([
-          'users.no',
-          'users.salt',
-          'users.email',
-          'users.isLock',
-          'users.latestLogin',
-          'users.loginFailCount',
-          'profilePhoto.photo_url',
+          'users.no AS no',
+          'users.salt AS salt',
+          'users.email AS email',
+          'users.isLock AS isLock',
+          'users.latestLogin AS latestLogin',
+          'users.loginFailCount AS loginFailCount',
+          'profilePhoto.photo_url AS photo_url',
         ])
         .where('users.email = :email', { email })
-        .getOne();
-
+        .getRawOne();
       return user;
     } catch (err) {
       throw new InternalServerErrorException(
