@@ -1,17 +1,12 @@
 import { ApiProperty, PickType } from '@nestjs/swagger';
 import {
-  ArrayMaxSize,
-  IsArray,
   IsBoolean,
   IsNotEmpty,
   IsNumber,
-  IsObject,
   IsOptional,
   IsString,
-  Max,
   MaxLength,
   MinLength,
-  Validate,
 } from 'class-validator';
 import { Board } from '../entity/board.entity';
 
@@ -26,9 +21,8 @@ export abstract class BoardContent {
     description: 'Example Description입니다.',
     required: true,
   })
-  @IsNumber()
-  @Max(1000001)
-  price: number;
+  @IsString()
+  price: string;
 
   @ApiProperty({
     example: '제목 입력',
@@ -65,64 +59,54 @@ export abstract class BoardContent {
     description: 'Example false = 해주는 사람, true = 구하는 사람.',
     required: true,
   })
-  @IsBoolean()
-  target: boolean;
+  @IsString()
+  target: string;
 
   @ApiProperty({
     example: 3,
     description: 'Example 카테고리.',
     required: true,
   })
-  @IsNumber()
-  categoryNo: number;
+  @IsString()
+  categoryNo: string;
 
   @ApiProperty({
     example: 1,
     description: 'Example 지역.',
     required: true,
   })
-  @IsNumber()
-  areaNo: number;
-
-  @ApiProperty({
-    example: '첫번째 상세조건',
-    description: 'Example 상세조건1 입니다.',
-    required: false,
-  })
   @IsString()
-  @IsOptional()
-  @MaxLength(100)
-  note1?: string;
+  areaNo: string;
 
-  @ApiProperty({
-    example: '두번째 상세조건',
-    description: 'Example 상세조건2 입니다.',
-    required: false,
-  })
-  @IsString()
-  @IsOptional()
-  @MaxLength(100)
-  note2?: string;
+  // @ApiProperty({
+  //   example: '첫번째 상세조건',
+  //   description: 'Example 상세조건1 입니다.',
+  //   required: false,
+  // })
+  // @IsString()
+  // @IsOptional()
+  // @MaxLength(100)
+  // note1?: string;
 
-  @ApiProperty({
-    example: '세번째 상세조건',
-    description: 'Example 상세조건3 입니다.',
-    required: false,
-  })
-  @IsString()
-  @IsOptional()
-  @MaxLength(100)
-  note3?: string;
+  // @ApiProperty({
+  //   example: '두번째 상세조건',
+  //   description: 'Example 상세조건2 입니다.',
+  //   required: false,
+  // })
+  // @IsString()
+  // @IsOptional()
+  // @MaxLength(100)
+  // note2?: string;
 
-  @ApiProperty({
-    example: ['사진url'],
-    description: 'Example 게시글 사진입니다.',
-    required: false,
-  })
-  @IsArray()
-  @IsOptional()
-  @ArrayMaxSize(5)
-  photoUrl?: [];
+  // @ApiProperty({
+  //   example: '세번째 상세조건',
+  //   description: 'Example 상세조건3 입니다.',
+  //   required: false,
+  // })
+  // @IsString()
+  // @IsOptional()
+  // @MaxLength(100)
+  // note3?: string;
 }
 
 export class CreateBoardDto extends BoardContent {
@@ -131,13 +115,13 @@ export class CreateBoardDto extends BoardContent {
     description: 'Example 마감일 0 = 상시, 7 = 일주일, 30 = 1개월, 60 = 3개월',
     required: true,
   })
-  @IsNumber()
-  deadline: number;
+  @IsString()
+  deadline: string;
 }
 
 export class SearchBoardDto {
   @ApiProperty({
-    example: 'Test',
+    example: '게시글',
     description: 'Example 검색 입력 입니다.',
     required: true,
   })
@@ -145,6 +129,18 @@ export class SearchBoardDto {
   @MaxLength(16)
   @MinLength(2)
   title: string;
+}
+
+export class HotBoardDto {
+  @ApiProperty({
+    example: '1, 2',
+    description:
+      'Example query를 입력안했을경우 전체게시글, 1 = 마감이 안된 게시글, 2 = 마감된 게시글',
+    required: true,
+  })
+  @IsOptional()
+  @IsString()
+  select: string;
 }
 
 export class LikeBoardDto {
@@ -160,9 +156,8 @@ export class LikeBoardDto {
 
 export abstract class UpdateBoardDto {
   @IsOptional()
-  @IsNumber()
-  @Max(1000001)
-  price?: number;
+  @IsString()
+  price?: string;
 
   @IsOptional()
   @IsString()
@@ -183,38 +178,33 @@ export abstract class UpdateBoardDto {
   summary?: string;
 
   @IsOptional()
-  @IsBoolean()
-  target?: boolean;
-
-  @IsOptional()
-  @IsNumber()
-  category?: number;
-
-  @IsOptional()
-  @IsNumber()
-  area?: number;
+  @IsString()
+  target?: string;
 
   @IsOptional()
   @IsString()
-  @MaxLength(100)
-  note1?: string;
+  category?: string;
 
   @IsOptional()
   @IsString()
-  @MaxLength(100)
-  note2?: string;
+  area?: string;
+
+  // @IsOptional()
+  // @IsString()
+  // @MaxLength(100)
+  // note1?: string;
+
+  // @IsOptional()
+  // @IsString()
+  // @MaxLength(100)
+  // note2?: string;
+
+  // @IsOptional()
+  // @IsString()
+  // @MaxLength(100)
+  // note3?: string;
 
   @IsOptional()
   @IsString()
-  @MaxLength(100)
-  note3?: string;
-
-  @IsOptional()
-  @IsNumber()
   deadline?: any;
-
-  @IsOptional()
-  @IsArray()
-  @ArrayMaxSize(5)
-  photoUrl: [];
 }

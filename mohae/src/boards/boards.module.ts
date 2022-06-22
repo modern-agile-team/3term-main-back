@@ -16,6 +16,7 @@ import { BoardsService } from './boards.service';
 import { BoardRepository } from './repository/board.repository';
 import { BasketsService } from 'src/baskets/baskets.service';
 import { BasketRepository } from 'src/baskets/repository/baskets.repository';
+import { AwsService } from 'src/aws/aws.service';
 
 @Module({
   imports: [
@@ -34,6 +35,12 @@ import { BasketRepository } from 'src/baskets/repository/baskets.repository';
     AuthModule,
   ],
   controllers: [BoardsController],
-  providers: [BoardsService, CategoriesService, BasketsService, ErrorConfirm],
+  providers: [
+    BoardsService,
+    CategoriesService,
+    BasketsService,
+    AwsService,
+    ErrorConfirm,
+  ],
 })
 export class BoardsModule {}

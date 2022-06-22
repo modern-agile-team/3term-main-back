@@ -16,7 +16,7 @@ async function bootstrap() {
   const swaggerPassword = configService.get('SWAGGER_PASSWORD');
 
   // Cors 적용
-  // app.enableCors();
+  app.enableCors();
 
   app.use(
     ['/mohae-api-docs'],

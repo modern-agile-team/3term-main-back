@@ -11,12 +11,14 @@ import {
   UseGuards,
   UseInterceptors,
   HttpCode,
+  UploadedFiles,
 } from '@nestjs/common';
 import { User } from '@sentry/node';
 import { AuthGuard } from '@nestjs/passport';
 import { Cron } from '@nestjs/schedule';
 import {
   ApiBadRequestResponse,
+  ApiBearerAuth,
   ApiCreatedResponse,
   ApiInternalServerErrorResponse,
   ApiOkResponse,
@@ -28,13 +30,17 @@ import { SuccesseInterceptor } from 'src/common/interceptors/success.interceptor
 import { BoardsService } from './boards.service';
 import {
   CreateBoardDto,
+  HotBoardDto,
   SearchBoardDto,
   UpdateBoardDto,
 } from './dto/board.dto';
+import { AwsService } from 'src/aws/aws.service';
 import { Board } from './entity/board.entity';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 import { CategoriesService } from 'src/categories/categories.service';
 import { HTTP_STATUS_CODE } from 'src/common/configs/http-status.config';
+import { FilesInterceptor } from '@nestjs/platform-express';
+import { create } from 'domain';
 
 @ApiTags('Boards')
 @UseInterceptors(SuccesseInterceptor)
@@ -44,6 +50,7 @@ export class BoardsController {
   constructor(
     private boardService: BoardsService,
     private categoriesService: CategoriesService,
+    private awsService: AwsService,
   ) {}
 
   @Cron('0 1 * * * *')
@@ -88,10 +95,40 @@ export class BoardsController {
     };
   }
 
+  @ApiOperation({
+    summary: '인기게시글 경로',
+    description: '인기게시글 API',
+  })
+  @ApiOkResponse({
+    description: '성공여부',
+    schema: {
+      example: {
+        success: true,
+        statusCode: 200,
+        msg: '인기 게시글 조회가 완료되었습니다.',
+        response: [
+          {
+            no: 8,
+            decimalDay: 5,
+            boardPhotoUrl: null,
+            title: '123-5',
+            isDeadline: 1,
+            price: 1000,
+            target: 1,
+            areaName: '서울특별시',
+            userNo: 2,
+            userNickname: 'hneeddjsjde',
+          },
+        ],
+      },
+    },
+  })
   @HttpCode(HTTP_STATUS_CODE.success.ok)
   @Get('hot')
-  async readHotBoards(@Query('select') select: number): Promise<object> {
-    const response: Board[] = await this.boardService.readHotBoards(select);
+  async readHotBoards(@Query() hotBoardDto: HotBoardDto): Promise<object> {
+    const response: Board[] = await this.boardService.readHotBoards(
+      hotBoardDto,
+    );
 
     return {
       msg: '인기 게시글 조회가 완료되었습니다.',
@@ -107,22 +144,23 @@ export class BoardsController {
     description: '성공여부',
     schema: {
       example: {
-        statusCode: HTTP_STATUS_CODE.success.ok,
+        success: true,
+        statusCode: 200,
         msg: '검색결과에 대한 게시글 조회가 완료되었습니다.',
         response: {
           foundedBoardNum: 1,
-          search: 'Test',
+          search: '게시글',
           boards: [
             {
-              no: 1,
+              no: 19,
+              boardPhoto: '백승범.jpg',
               decimalDay: null,
-              title: '게시글 검색 Test',
+              title: '게시글 생성 test 3',
               isDeadline: 0,
               price: 1000,
               target: 1,
-              areaNo: 1,
               areaName: '서울특별시',
-              userNickname: 'hneeddjjde',
+              userNickname: 'hneeddjsjde',
             },
           ],
         },
@@ -153,7 +191,7 @@ export class BoardsController {
     schema: {
       example: {
         success: true,
-        statusCode: HTTP_STATUS_CODE.success.ok,
+        statusCode: 200,
         msg: '게시글 마감 취소가 완료되었습니다.',
       },
     },
@@ -179,6 +217,7 @@ export class BoardsController {
     },
   })
   @UseGuards(AuthGuard('jwt'))
+  @ApiBearerAuth('access-token')
   @Patch('cancel/:boardNo')
   @HttpCode(HTTP_STATUS_CODE.success.ok)
   async cancelClosedBoard(
@@ -201,7 +240,7 @@ export class BoardsController {
     schema: {
       example: {
         success: true,
-        statusCode: HTTP_STATUS_CODE.success.ok,
+        statusCode: 200,
         msg: '게시글 마감이 완료되었습니다.',
       },
     },
@@ -226,6 +265,7 @@ export class BoardsController {
       },
     },
   })
+  @ApiBearerAuth('access-token')
   @UseGuards(AuthGuard('jwt'))
   @Patch('close/:boardNo')
   @HttpCode(HTTP_STATUS_CODE.success.ok)
@@ -268,8 +308,49 @@ export class BoardsController {
     };
   }
 
+  @ApiOperation({
+    summary: '게시글 상세조회 경로',
+    description: '게시글 상세조회 API',
+  })
+  @ApiOkResponse({
+    description: '성공여부',
+    schema: {
+      example: {
+        success: true,
+        statusCode: 200,
+        msg: '게시글 상세조회가 완료되었습니다.',
+        response: {
+          foundedBoardNum: 1,
+          search: '게시글',
+          response: {
+            no: 15,
+            boardPhoto: '백승범.jpg,11222,1,2',
+            decimalDay: -6,
+            title: '게시글 검색',
+            description: '생성',
+            isDeadline: 0,
+            hit: 17,
+            likeCount: 0,
+            price: 1000,
+            summary: '',
+            target: 1,
+            areaNo: 1,
+            areaName: '서울특별시',
+            categoryNo: 2,
+            categoryName: '디자인',
+            userProfilePhoto: 'profile/1655184234165_�8�P�.jpg',
+            userNo: 2,
+            userName: '수브로',
+            userNickname: 'hneeddjsjde',
+            userSchool: '인덕대학교',
+            userMajor: '컴퓨터',
+          },
+        },
+      },
+    },
+  })
   @HttpCode(HTTP_STATUS_CODE.success.ok)
-  @Get('/:boardNo')
+  @Get(':boardNo')
   async readByOneBoard(@Param('boardNo') boardNo: number): Promise<object> {
     const response = await this.boardService.readByOneBoard(boardNo);
 
@@ -306,23 +387,41 @@ export class BoardsController {
     description: '성공여부',
     schema: {
       example: {
-        statusCode: HTTP_STATUS_CODE.success.created,
+        statusCode: 201,
         msg: '게시글 생성이 완료되었습니다.',
         response: true,
       },
     },
   })
   @HttpCode(HTTP_STATUS_CODE.success.created)
+  @ApiBearerAuth('access-token')
   @UseGuards(AuthGuard('jwt'))
+  @UseInterceptors(FilesInterceptor('image', 5))
   async createBoard(
-    @Body() createBoardDto: CreateBoardDto,
+    @UploadedFiles() files: Express.Multer.File[],
+    @Body()
+    createBoardDto,
     @CurrentUser() user: User,
   ): Promise<object> {
-    await this.boardService.createBoard(createBoardDto, user);
+    try {
+      for (const key of Object.keys(createBoardDto)) {
+        createBoardDto[`${key}`] = JSON.parse(createBoardDto[`${key}`]);
+      }
 
-    return {
-      msg: '게시글 생성이 완료 되었습니다.',
-    };
+      const boardPhotoUrls = await this.awsService.uploadBoardFileToS3(
+        'board',
+        files,
+      );
+
+      await this.boardService.createBoard(createBoardDto, user, boardPhotoUrls);
+
+      return {
+        msg: '게시글 생성이 완료 되었습니다.',
+      };
+    } catch (err) {
+      console.log(err);
+      throw err;
+    }
   }
 
   @ApiOperation({
@@ -333,13 +432,14 @@ export class BoardsController {
     description: '성공여부',
     schema: {
       example: {
-        statusCode: HTTP_STATUS_CODE.success.ok,
+        statusCode: 200,
         msg: '게시글 삭제가 완료되었습니다.',
         response: true,
       },
     },
   })
   @UseGuards(AuthGuard('jwt'))
+  @ApiBearerAuth('access-token')
   @Delete(':boardNo')
   @HttpCode(HTTP_STATUS_CODE.success.ok)
   async deleteBoard(
@@ -357,15 +457,49 @@ export class BoardsController {
     };
   }
 
+  @ApiOperation({
+    summary: '게시글 수정 경로',
+    description: '게시글 수정 API',
+  })
+  @ApiCreatedResponse({
+    description: '성공여부',
+    schema: {
+      example: {
+        success: true,
+        statusCode: 201,
+        msg: '게시글 수정이 완료되었습니다.',
+      },
+    },
+  })
   @HttpCode(HTTP_STATUS_CODE.success.created)
+  @ApiBearerAuth('access-token')
   @UseGuards(AuthGuard('jwt'))
+  @UseInterceptors(FilesInterceptor('image', 5))
   @Patch(':boardNo')
   async updateBoard(
     @Param('boardNo') boardNo: number,
+    @UploadedFiles() files: Express.Multer.File[],
     @Body() updateBoardDto: UpdateBoardDto,
     @CurrentUser() user: User,
   ): Promise<object> {
-    await this.boardService.updateBoard(boardNo, updateBoardDto, user.no);
+    for (const key of Object.keys(updateBoardDto)) {
+      updateBoardDto[`${key}`] = JSON.parse(updateBoardDto[`${key}`]);
+    }
+    const boardPhotoUrls =
+      files.length === 0
+        ? false
+        : await this.awsService.uploadBoardFileToS3('board', files);
+
+    const originBoardPhotoUrls = await this.boardService.updateBoard(
+      boardNo,
+      updateBoardDto,
+      user.no,
+      boardPhotoUrls,
+    );
+
+    if (originBoardPhotoUrls) {
+      await this.awsService.deleteBoardS3Object(originBoardPhotoUrls);
+    }
 
     return {
       msg: '게시글 수정이 완료되었습니다.',

@@ -3,9 +3,9 @@ import { IsNotEmpty, IsNumber } from 'class-validator';
 export class ParamCommentDto {
   @IsNotEmpty()
   @IsNumber()
-  boardNo: number;
+  boardNo: any;
 
   @IsNotEmpty()
   @IsNumber()
-  commentNo: number;
+  commentNo: any;
 }
