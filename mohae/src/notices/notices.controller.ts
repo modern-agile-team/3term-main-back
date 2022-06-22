@@ -11,12 +11,19 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
-import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOkResponse,
+  ApiOperation,
+  ApiTags,
+} from '@nestjs/swagger';
 import { User } from 'src/auth/entity/user.entity';
 import { HTTP_STATUS_CODE } from 'src/common/configs/http-status.config';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 import { Role } from 'src/common/decorators/roles.decorator';
 import { RolesGuard } from 'src/common/guards/roles.guard';
+import { operationConfig } from 'src/common/swagger-apis/api-operation.swagger';
+import { apiResponse } from 'src/common/swagger-apis/api-response.swagger';
 import { CreateNoticeDto } from './dto/create-notice.dto';
 import { UpdateNoticeDto } from './dto/update-notice.dtd';
 import { Notice } from './entity/notice.entity';
@@ -27,10 +34,16 @@ import { NoticesService } from './notices.service';
 export class NoticesController {
   constructor(private noticesService: NoticesService) {}
 
-  @ApiOperation({
-    summary: '공지사항 전체 조회 기능',
-    description: '공지사항을 전체 조회하는 API',
-  })
+  @ApiOperation(
+    operationConfig('공지사항 전체 조회 기능', '공지사항을 전체 조회하는 API'),
+  )
+  @ApiOkResponse(
+    apiResponse.success(
+      '공지사항 전체 조회',
+      HTTP_STATUS_CODE.success.ok,
+      '공지사항 전체 조회 성공',
+    ),
+  )
   @HttpCode(HTTP_STATUS_CODE.success.ok)
   @Get()
   async readAllNotices(): Promise<object> {
@@ -43,10 +56,17 @@ export class NoticesController {
     };
   }
 
-  @ApiOperation({
-    summary: '공지사항 저장 기능',
-    description: '공지사항을 저장하는 API',
-  })
+  @ApiOperation(
+    operationConfig('공지사항 저장 기능', '공지사항을 저장하는 API'),
+  )
+  @ApiOkResponse(
+    apiResponse.success(
+      '공지사항 저장',
+      HTTP_STATUS_CODE.success.ok,
+      '공지사항 저장 결과 성공',
+    ),
+  )
+  @ApiBearerAuth('access-token')
   @Role(true)
   @UseGuards(RolesGuard)
   @UseGuards(AuthGuard('jwt'))
@@ -63,10 +83,17 @@ export class NoticesController {
     };
   }
 
-  @ApiOperation({
-    summary: '공지사항 수정 기능',
-    description: '공지사항을 수정하는 API',
-  })
+  @ApiOperation(
+    operationConfig('공지사항 수정 기능', '공지사항을 수정하는 API'),
+  )
+  @ApiOkResponse(
+    apiResponse.success(
+      '공지사항 수정',
+      HTTP_STATUS_CODE.success.ok,
+      '공지사항 수정 결과 성공',
+    ),
+  )
+  @ApiBearerAuth('access-token')
   @Role(true)
   @UseGuards(RolesGuard)
   @UseGuards(AuthGuard('jwt'))
@@ -84,10 +111,17 @@ export class NoticesController {
     };
   }
 
-  @ApiOperation({
-    summary: '공지사항 삭제 기능',
-    description: '공지사항을 삭제하는 API',
-  })
+  @ApiOperation(
+    operationConfig('공지사항 삭제 기능', '공지사항을 삭제하는 API'),
+  )
+  @ApiOkResponse(
+    apiResponse.success(
+      '공지사항 삭제',
+      HTTP_STATUS_CODE.success.ok,
+      '공지사항 삭제 결과 성공',
+    ),
+  )
+  @ApiBearerAuth('access-token')
   @Role(true)
   @UseGuards(RolesGuard)
   @UseGuards(AuthGuard('jwt'))

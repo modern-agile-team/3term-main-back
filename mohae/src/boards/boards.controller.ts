@@ -11,6 +11,7 @@ import {
   UseGuards,
   UseInterceptors,
   HttpCode,
+  UploadedFiles,
 } from '@nestjs/common';
 import { User } from '@sentry/node';
 import { AuthGuard } from '@nestjs/passport';
@@ -32,10 +33,13 @@ import {
   SearchBoardDto,
   UpdateBoardDto,
 } from './dto/board.dto';
+import { AwsService } from 'src/aws/aws.service';
 import { Board } from './entity/board.entity';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 import { CategoriesService } from 'src/categories/categories.service';
 import { HTTP_STATUS_CODE } from 'src/common/configs/http-status.config';
+import { FilesInterceptor } from '@nestjs/platform-express';
+import { create } from 'domain';
 
 @ApiTags('Boards')
 @Controller('boards')
@@ -44,6 +48,7 @@ export class BoardsController {
   constructor(
     private boardService: BoardsService,
     private categoriesService: CategoriesService,
+    private awsService: AwsService,
   ) {}
 
   @Cron('0 1 * * * *')
@@ -389,15 +394,32 @@ export class BoardsController {
   @HttpCode(HTTP_STATUS_CODE.success.created)
   @ApiBearerAuth('access-token')
   @UseGuards(AuthGuard('jwt'))
+  @UseInterceptors(FilesInterceptor('image', 5))
   async createBoard(
-    @Body() createBoardDto: CreateBoardDto,
+    @UploadedFiles() files: Express.Multer.File[],
+    @Body()
+    createBoardDto,
     @CurrentUser() user: User,
   ): Promise<object> {
-    await this.boardService.createBoard(createBoardDto, user);
+    try {
+      for (const key of Object.keys(createBoardDto)) {
+        createBoardDto[`${key}`] = JSON.parse(createBoardDto[`${key}`]);
+      }
 
-    return {
-      msg: '게시글 생성이 완료 되었습니다.',
-    };
+      const boardPhotoUrls = await this.awsService.uploadBoardFileToS3(
+        'board',
+        files,
+      );
+
+      await this.boardService.createBoard(createBoardDto, user, boardPhotoUrls);
+
+      return {
+        msg: '게시글 생성이 완료 되었습니다.',
+      };
+    } catch (err) {
+      console.log(err);
+      throw err;
+    }
   }
 
   @ApiOperation({
@@ -450,13 +472,32 @@ export class BoardsController {
   @HttpCode(HTTP_STATUS_CODE.success.created)
   @ApiBearerAuth('access-token')
   @UseGuards(AuthGuard('jwt'))
+  @UseInterceptors(FilesInterceptor('image', 5))
   @Patch(':boardNo')
   async updateBoard(
     @Param('boardNo') boardNo: number,
+    @UploadedFiles() files: Express.Multer.File[],
     @Body() updateBoardDto: UpdateBoardDto,
     @CurrentUser() user: User,
   ): Promise<object> {
-    await this.boardService.updateBoard(boardNo, updateBoardDto, user.no);
+    for (const key of Object.keys(updateBoardDto)) {
+      updateBoardDto[`${key}`] = JSON.parse(updateBoardDto[`${key}`]);
+    }
+    const boardPhotoUrls =
+      files.length === 0
+        ? false
+        : await this.awsService.uploadBoardFileToS3('board', files);
+
+    const originBoardPhotoUrls = await this.boardService.updateBoard(
+      boardNo,
+      updateBoardDto,
+      user.no,
+      boardPhotoUrls,
+    );
+
+    if (originBoardPhotoUrls) {
+      await this.awsService.deleteBoardS3Object(originBoardPhotoUrls);
+    }
 
     return {
       msg: '게시글 수정이 완료되었습니다.',

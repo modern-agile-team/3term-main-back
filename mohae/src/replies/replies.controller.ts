@@ -10,10 +10,18 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
-import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiCreatedResponse,
+  ApiOkResponse,
+  ApiOperation,
+  ApiTags,
+} from '@nestjs/swagger';
 import { User } from 'src/auth/entity/user.entity';
 import { HTTP_STATUS_CODE } from 'src/common/configs/http-status.config';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
+import { operationConfig } from 'src/common/swagger-apis/api-operation.swagger';
+import { apiResponse } from 'src/common/swagger-apis/api-response.swagger';
 import { CreateReplyDto } from './dto/create-reply.dto';
 import { UpdateReplyDto } from './dto/update-reply.dto';
 import { RepliesService } from './replies.service';
@@ -24,20 +32,15 @@ import { RepliesService } from './replies.service';
 export class RepliesController {
   constructor(private readonly repliesService: RepliesService) {}
 
-  @ApiOperation({
-    summary: '대댓글 생성',
-    description: '대댓글 생성 API',
-  })
-  @ApiOkResponse({
-    description: '대댓글 생성 성공 결과',
-    schema: {
-      example: {
-        success: true,
-        statusCode: HTTP_STATUS_CODE.success.created,
-        msg: '대댓글 생성 완료',
-      },
-    },
-  })
+  @ApiOperation(operationConfig('대댓글 생성', '대댓글 생성 API'))
+  @ApiCreatedResponse(
+    apiResponse.success(
+      '대댓글 생성 성공 결과',
+      HTTP_STATUS_CODE.success.created,
+      '대댓글 생성 완료',
+    ),
+  )
+  @ApiBearerAuth('access-token')
   @HttpCode(HTTP_STATUS_CODE.success.created)
   @Post()
   async createReply(
@@ -52,20 +55,15 @@ export class RepliesController {
     };
   }
 
-  @ApiOperation({
-    summary: '대댓글 수정',
-    description: '대댓글 수정 API',
-  })
-  @ApiOkResponse({
-    description: '대댓글 수정 성공 결과',
-    schema: {
-      example: {
-        success: true,
-        statusCode: HTTP_STATUS_CODE.success.ok,
-        msg: '대댓글 수정 완료',
-      },
-    },
-  })
+  @ApiOperation(operationConfig('대댓글 수정', '대댓글 수정 API'))
+  @ApiOkResponse(
+    apiResponse.success(
+      '대댓글 수정 성공 결과',
+      HTTP_STATUS_CODE.success.ok,
+      '대댓글 수정 완료',
+    ),
+  )
+  @ApiBearerAuth('access-token')
   @HttpCode(HTTP_STATUS_CODE.success.ok)
   @Put(':replyNo')
   async updateReply(
@@ -80,20 +78,15 @@ export class RepliesController {
     };
   }
 
-  @ApiOperation({
-    summary: '대댓글 삭제',
-    description: '대댓글 삭제 API',
-  })
-  @ApiOkResponse({
-    description: '대댓글 삭제 성공 결과',
-    schema: {
-      example: {
-        success: true,
-        statusCode: HTTP_STATUS_CODE.success.ok,
-        msg: '대댓글 삭제 완료',
-      },
-    },
-  })
+  @ApiOperation(operationConfig('대댓글 삭제', '대댓글 삭제 API'))
+  @ApiOkResponse(
+    apiResponse.success(
+      '대댓글 삭제 성공 결과',
+      HTTP_STATUS_CODE.success.ok,
+      '대댓글 삭제 완료',
+    ),
+  )
+  @ApiBearerAuth('access-token')
   @HttpCode(HTTP_STATUS_CODE.success.ok)
   @Delete(':replyNo')
   async deleteReply(

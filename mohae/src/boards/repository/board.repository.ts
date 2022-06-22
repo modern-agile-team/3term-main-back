@@ -36,7 +36,7 @@ export class BoardRepository extends Repository<Board> {
         .leftJoin('users.profilePhoto', 'profilePhoto')
         .select([
           'boards.no AS no',
-          'GROUP_CONCAT(photo.photo_url) AS boardPhoto',
+          'REPLACE(GROUP_CONCAT(photo.photo_url), ",", ", ") AS boardPhoto',
           'DATEDIFF(boards.deadline, now()) * -1 AS decimalDay',
           'boards.title AS title',
           'boards.description AS description',
@@ -265,9 +265,9 @@ export class BoardRepository extends Repository<Board> {
     category: Category,
     area: object,
     user: User,
-    createBoardDto: CreateBoardDto,
+    createBoardDto: any,
     endTime: Date,
-  ): Promise<Board> {
+  ): Promise<any> {
     try {
       const { price, title, description, summary, target } = createBoardDto;
       const board: InsertResult = await this.createQueryBuilder('boards')
@@ -288,7 +288,17 @@ export class BoardRepository extends Repository<Board> {
         ])
         .execute();
 
-      const { affectedRows, insertId } = board.raw;
+      return board;
+    } catch (err) {
+      throw new InternalServerErrorException(
+        `${err} ### 게시판 생성: 알 수 없는 서버 에러입니다.`,
+      );
+    }
+  }
+
+  async createdBoard(board: any): Promise<Board> {
+    try {
+      const { affectedRows, insertId }: any = board.raw;
       if (affectedRows) {
         return await this.createQueryBuilder('boards')
           .leftJoinAndSelect('boards.category', 'category')
@@ -297,9 +307,7 @@ export class BoardRepository extends Repository<Board> {
           .getOne();
       }
     } catch (err) {
-      throw new InternalServerErrorException(
-        `${err} ### 게시판 생성: 알 수 없는 서버 에러입니다.`,
-      );
+      throw err;
     }
   }
 

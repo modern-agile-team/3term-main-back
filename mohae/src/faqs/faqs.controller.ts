@@ -10,7 +10,12 @@ import {
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
-import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOkResponse,
+  ApiOperation,
+  ApiTags,
+} from '@nestjs/swagger';
 import { CreateFaqDto } from './dto/create-faq.dto';
 import { Faq } from './entity/faq.entity';
 import { FaqsService } from './faqs.service';
@@ -21,16 +26,24 @@ import { UpdateFaqDto } from './dto/update-faq.dto';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 import { User } from 'src/auth/entity/user.entity';
 import { HTTP_STATUS_CODE } from 'src/common/configs/http-status.config';
+import { operationConfig } from 'src/common/swagger-apis/api-operation.swagger';
+import { apiResponse } from 'src/common/swagger-apis/api-response.swagger';
 
 @ApiTags('Faqs')
 @Controller('faqs')
 export class FaqsController {
   constructor(private readonly faqsService: FaqsService) {}
 
-  @ApiOperation({
-    summary: 'FAQ 전체 조회 기능',
-    description: 'FAQ를 전체 조회하는 API',
-  })
+  @ApiOperation(
+    operationConfig('FAQ 전체 조회 기능', 'FAQ를 전체 조회하는 API'),
+  )
+  @ApiOkResponse(
+    apiResponse.success(
+      'FAQ 전체 조회',
+      HTTP_STATUS_CODE.success.ok,
+      'FAQ 전체 조회 결과 성공',
+    ),
+  )
   @HttpCode(HTTP_STATUS_CODE.success.ok)
   @Get()
   async readAllFaqs(): Promise<object> {
@@ -42,10 +55,15 @@ export class FaqsController {
     };
   }
 
-  @ApiOperation({
-    summary: 'FAQ 생성 기능',
-    description: 'FAQ를 생성하는 API',
-  })
+  @ApiOperation(operationConfig('FAQ 저장 기능', 'FAQ를 저장하는 API'))
+  @ApiOkResponse(
+    apiResponse.success(
+      'FAQ 저장',
+      HTTP_STATUS_CODE.success.created,
+      'FAQ 저장 결과 성공',
+    ),
+  )
+  @ApiBearerAuth('access-token')
   @Role(true)
   @UseGuards(RolesGuard)
   @UseGuards(AuthGuard('jwt'))
@@ -62,10 +80,15 @@ export class FaqsController {
     };
   }
 
-  @ApiOperation({
-    summary: 'FAQ 수정 기능',
-    description: 'FAQ를 수정하는 API',
-  })
+  @ApiOperation(operationConfig('FAQ 수정 기능', 'FAQ를 수정하는 API'))
+  @ApiOkResponse(
+    apiResponse.success(
+      'FAQ 수정',
+      HTTP_STATUS_CODE.success.ok,
+      'FAQ 수정 결과 성공',
+    ),
+  )
+  @ApiBearerAuth('access-token')
   @Role(true)
   @UseGuards(RolesGuard)
   @UseGuards(AuthGuard('jwt'))
@@ -83,10 +106,15 @@ export class FaqsController {
     };
   }
 
-  @ApiOperation({
-    summary: 'FAQ 삭제 기능',
-    description: 'FAQ를 삭제하는 API',
-  })
+  @ApiOperation(operationConfig('FAQ 삭제 기능', 'FAQ를 삭제하는 API'))
+  @ApiOkResponse(
+    apiResponse.success(
+      'FAQ 삭제',
+      HTTP_STATUS_CODE.success.ok,
+      'FAQ 삭제 결과 성공',
+    ),
+  )
+  @ApiBearerAuth('access-token')
   @Role(true)
   @UseGuards(RolesGuard)
   @UseGuards(AuthGuard('jwt'))
