@@ -39,12 +39,9 @@ export class AuthService {
     private schoolRepository: SchoolRepository,
     private majorRepository: MajorRepository,
     private categoriesRepository: CategoryRepository,
-    private termsRepository: TermsReporitory,
-    private termsUserRepository: TermsUserReporitory,
     private connection: Connection,
     private errorConfirm: ErrorConfirm,
     private jwtService: JwtService,
-
     private configService: ConfigService,
   ) {}
   async signUp(signUpDto: SignUpDto): Promise<object> {
@@ -165,6 +162,7 @@ export class AuthService {
         const payload: object = {
           email: user.email,
           userNo: user.no,
+          photoUrl: user.profilePhoto.photo_url,
           issuer: 'modern-agile',
           expiration: this.configService.get<number>('EXPIRES_IN'),
         };
