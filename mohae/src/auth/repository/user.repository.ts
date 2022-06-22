@@ -66,6 +66,7 @@ export class UserRepository extends Repository<User> {
   async confirmUser(email: string): Promise<User> {
     try {
       const user: User = await this.createQueryBuilder('users')
+        .leftJoin('users.profilePhoto', 'profilePhoto')
         .select([
           'users.no',
           'users.salt',
@@ -73,6 +74,7 @@ export class UserRepository extends Repository<User> {
           'users.isLock',
           'users.latestLogin',
           'users.loginFailCount',
+          'profilePhoto.photo_url',
         ])
         .where('users.email = :email', { email })
         .getOne();
@@ -247,22 +249,6 @@ export class UserRepository extends Repository<User> {
     } catch (err) {
       throw new InternalServerErrorException(
         `${err} 프로필 업데이트 중 알 수 없는 서버 에러입니다.`,
-      );
-    }
-  }
-
-  async getProfilePhotoUrl(userNo: number) {
-    try {
-      const profilePhotoUrl = await this.createQueryBuilder('users')
-        .leftJoin('users.profilePhoto', 'profilePhoto')
-        .select(['profilePhoto.photo_url'])
-        .where('users.no = :userNo', { userNo })
-        .getRawOne();
-      console.log(profilePhotoUrl);
-      return profilePhotoUrl;
-    } catch (err) {
-      throw new InternalServerErrorException(
-        `${err} 로그인 과정중 프로필 사진 가져오는 부분에서 발생한 에러입니다.`,
       );
     }
   }
