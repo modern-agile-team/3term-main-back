@@ -8,9 +8,9 @@ import {
   SelectQueryBuilder,
   UpdateResult,
 } from 'typeorm';
-import { CreateBoardDto, FilterBoardDto } from '../dto/board.dto';
 import { Board } from '../entity/board.entity';
 import { User } from '@sentry/node';
+import { FilterBoardDto } from '../dto/filterBoard.dto';
 
 @EntityRepository(Board)
 export class BoardRepository extends Repository<Board> {
@@ -36,26 +36,24 @@ export class BoardRepository extends Repository<Board> {
         .leftJoin('users.profilePhoto', 'profilePhoto')
         .select([
           'boards.no AS no',
-          'REPLACE(GROUP_CONCAT(photo.photo_url), ",", ", ") AS boardPhoto',
+          'REPLACE(GROUP_CONCAT(photo.photo_url), ",", ", ") AS boardPhotoUrls',
           'DATEDIFF(boards.deadline, now()) * -1 AS decimalDay',
           'boards.title AS title',
           'boards.description AS description',
           'boards.isDeadline AS isDeadline',
           'boards.hit AS hit',
-          'COUNT(likedUser.likedBoardNo) AS likeCount',
           'boards.price AS price',
           'boards.summary AS summary',
           'boards.target AS target',
           'areas.no AS areaNo',
-          'areas.name AS areaName',
+          'areas.name AS area',
           'categories.no AS categoryNo',
-          'categories.name AS categoryName',
-          'profilePhoto.photo_url AS userProfilePhoto',
+          'categories.name AS category',
+          'profilePhoto.photo_url AS userPhotoUrl',
           'users.no AS userNo',
-          'users.name AS userName',
-          'users.nickname AS userNickname',
-          'school.name AS userSchool',
-          'major.name AS userMajor',
+          'users.nickname AS nickname',
+          'school.name AS school',
+          'major.name AS major',
         ])
         .where('boards.no = :no', { no: boardNo })
         .getRawOne();
@@ -138,14 +136,14 @@ export class BoardRepository extends Repository<Board> {
         .leftJoin('boards.photos', 'photo')
         .select([
           'boards.no AS no',
-          'photo.photo_url AS boardPhoto',
+          'photo.photo_url AS photoUrl',
           'DATEDIFF(boards.deadline, now()) * -1 AS decimalDay',
           'boards.title AS title',
           'boards.isDeadline AS isDeadline',
           'boards.price AS price',
           'boards.target AS target',
-          'areas.name AS areaName',
-          'users.nickname AS userNickname',
+          'areas.name AS area',
+          'users.nickname AS nickname',
         ])
         .where('boards.title like :title', { title: `%${title}%` })
         .orderBy('boards.no', 'DESC')
@@ -186,14 +184,14 @@ export class BoardRepository extends Repository<Board> {
         .leftJoin('boards.photos', 'photo')
         .select([
           'boards.no AS no',
-          'photo.photo_url AS boardPhoto',
+          'photo.photo_url AS PhotoUrl',
           'DATEDIFF(boards.deadline, now()) * -1 AS decimalDay',
           'boards.title AS title',
           'boards.isDeadline AS isDeadline',
           'boards.price AS price',
           'boards.target AS target',
-          'areas.name AS areaName',
-          'users.nickname AS userNickname',
+          'areas.name AS area',
+          'users.nickname AS nickname',
         ])
         .orderBy('boards.no', sort)
         .groupBy('boards.no')
@@ -378,14 +376,14 @@ export class BoardRepository extends Repository<Board> {
         .select([
           'boards.no AS no',
           'DATEDIFF(boards.deadline, now()) * -1 AS decimalDay',
-          'photo.photo_url AS boardPhotoUrl',
+          'photo.photo_url AS photoUrl',
           'boards.title AS title',
           'boards.isDeadline AS isDeadline',
           'boards.price AS price',
           'boards.target AS target',
-          'areas.name AS areaName',
+          'areas.name AS area',
           'users.no AS userNo',
-          'users.nickname AS userNickname',
+          'users.nickname AS nickName',
         ])
         .where('Year(boards.createdAt) <= :year', { year })
         .andWhere('Month(boards.createdAt) <= :month', { month })

@@ -26,7 +26,7 @@ export class CategoriesService {
 
   async findOneCategory(no: number): Promise<object> {
     try {
-      if (no === 1) {
+      if (no === 17) {
         const boards: Board[] = await this.boardRepository.getAllBoards();
 
         return { boardNum: boards.length, categoryName: '전체 게시판', boards };

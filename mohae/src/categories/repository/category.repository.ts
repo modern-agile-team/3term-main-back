@@ -44,9 +44,8 @@ export class CategoryRepository extends Repository<Category> {
           'board.isDeadline AS isDeadline',
           'board.price AS price',
           'board.target AS target',
-          'area.no AS areaNo',
-          'area.name AS areaName',
-          'user.nickname AS userNickname',
+          'area.name AS area',
+          'user.nickname AS nickname',
         ])
         .groupBy('board.no')
         .having('COUNT(board.no) > 0')
