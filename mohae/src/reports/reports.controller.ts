@@ -19,7 +19,6 @@ import {
 import { User } from 'src/auth/entity/user.entity';
 import { HTTP_STATUS_CODE } from 'src/common/configs/http-status.config';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
-import { HttpExceptionFilter } from 'src/common/exceptions/http-exception.filter';
 import { operationConfig } from 'src/common/swagger-apis/api-operation.swagger';
 import { apiResponse } from 'src/common/swagger-apis/api-response.swagger';
 import { CreateReportDto } from './dto/create-report.dto';
@@ -27,7 +26,6 @@ import { ReportedBoard } from './entity/reported-board.entity';
 import { ReportedUser } from './entity/reported-user.entity';
 import { ReportsService } from './reports.service';
 
-@UseFilters(HttpExceptionFilter)
 @UseGuards(AuthGuard('jwt'))
 @ApiTags('Reports')
 @ApiBearerAuth('access-token')
