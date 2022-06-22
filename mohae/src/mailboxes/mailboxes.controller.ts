@@ -12,13 +12,11 @@ import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { User } from 'src/auth/entity/user.entity';
 import { HTTP_STATUS_CODE } from 'src/common/configs/http-status.config';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
-import { SuccesseInterceptor } from 'src/common/interceptors/success.interceptor';
 import { Mailbox } from './entity/mailbox.entity';
 import { MailboxesService } from './mailboxes.service';
 
 @ApiTags('Mailboxes')
 @UseGuards(AuthGuard('jwt'))
-@UseInterceptors(SuccesseInterceptor)
 @Controller('mailboxes')
 export class MailboxesController {
   constructor(private mailboxesService: MailboxesService) {}

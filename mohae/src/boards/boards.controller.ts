@@ -26,7 +26,6 @@ import {
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
-import { SuccesseInterceptor } from 'src/common/interceptors/success.interceptor';
 import { BoardsService } from './boards.service';
 
 import { AwsService } from 'src/aws/aws.service';
@@ -45,7 +44,6 @@ import { winstonConfig } from 'src/common/configs/winston.config';
 import winston from 'winston';
 
 @ApiTags('Boards')
-@UseInterceptors(SuccesseInterceptor)
 @Controller('boards')
 export class BoardsController {
   private logger = new Logger('BoardsController');

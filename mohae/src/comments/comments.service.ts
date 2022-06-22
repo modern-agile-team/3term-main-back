@@ -56,10 +56,6 @@ export class CommentsService {
 
       return comments;
     } catch (err) {
-      if (err.response.statusCode / 100 === 5) {
-        this.logger.error(err.response, '댓글 전체 조회 서버 에러');
-      }
-
       throw err;
     }
   }
@@ -97,9 +93,6 @@ export class CommentsService {
       await queryRunner.commitTransaction();
     } catch (err) {
       await queryRunner.rollbackTransaction();
-      if (err.response.statusCode / 100 === 5) {
-        this.logger.error(err.response, '댓글 생성 서버 에러');
-      }
 
       throw err;
     } finally {
@@ -131,10 +124,6 @@ export class CommentsService {
 
       this.errorConfirm.badGatewayError(isUpdate, '댓글 수정 실패');
     } catch (err) {
-      if (err.response.statusCode / 100 === 5) {
-        this.logger.error(err.response, '댓글 수정 서버 에러');
-      }
-
       throw err;
     }
   }
@@ -158,10 +147,6 @@ export class CommentsService {
 
       this.errorConfirm.badGatewayError(isDelete, '댓글 삭제 실패');
     } catch (err) {
-      if (err.response.statusCode / 100 === 5) {
-        this.logger.error(err.response, '댓글 삭제 서버 에러');
-      }
-
       throw err;
     }
   }
