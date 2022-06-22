@@ -12,6 +12,7 @@ import { AreasRepository } from 'src/areas/repository/area.repository';
 import { Any, Connection, DeleteResult, RelationId } from 'typeorm';
 import {
   CreateBoardDto,
+  FilterBoardDto,
   HotBoardDto,
   SearchBoardDto,
   UpdateBoardDto,
@@ -60,19 +61,10 @@ export class BoardsService {
     }
   }
 
-  async filteredBoards(
-    categoryNo: number,
-    sort: any,
-    title: string,
-    popular: string,
-    areaNo: number,
-    max: number,
-    min: number,
-    target: boolean,
-    date: any,
-    free: string,
-  ): Promise<object> {
+  async filteredBoards(filterBoardDto: FilterBoardDto): Promise<object> {
     try {
+      const { date }: FilterBoardDto = filterBoardDto;
+
       const currentTime: Date = new Date();
       currentTime.setHours(currentTime.getHours() + 9);
 
@@ -82,22 +74,14 @@ export class BoardsService {
         endTime = null;
       } else {
         endTime.setHours(endTime.getHours() + 9);
-        endTime.setDate(endTime.getDate() + date);
+        endTime.setDate(endTime.getDate() + +date);
       }
 
       const boards: Board[] = await this.boardRepository.filteredBoards(
-        categoryNo,
-        sort,
-        title,
-        popular,
-        areaNo,
-        max,
-        min,
-        target,
-        Number(date),
+        filterBoardDto,
+        +date,
         endTime,
         currentTime,
-        free,
       );
 
       return { filteredBoardNum: boards.length, boards };

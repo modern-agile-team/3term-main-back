@@ -208,3 +208,44 @@ export abstract class UpdateBoardDto {
   @IsString()
   deadline?: any;
 }
+
+export class FilterBoardDto {
+  @IsOptional()
+  @IsString()
+  sort?: any;
+
+  @IsOptional()
+  categoryNo?: string;
+
+  @IsOptional()
+  @IsString()
+  title?: string;
+
+  @IsOptional()
+  @IsString()
+  popular?: string;
+
+  @IsOptional()
+  @IsString()
+  date?: string;
+
+  @IsOptional()
+  @IsString()
+  free?: string;
+
+  @IsOptional()
+  @IsString()
+  areaNo?: string;
+
+  @IsOptional()
+  @IsString()
+  max?: string;
+
+  @IsOptional()
+  @IsString()
+  min?: string;
+
+  @IsOptional()
+  @IsString()
+  target?: string;
+}

@@ -30,6 +30,7 @@ import { SuccesseInterceptor } from 'src/common/interceptors/success.interceptor
 import { BoardsService } from './boards.service';
 import {
   CreateBoardDto,
+  FilterBoardDto,
   HotBoardDto,
   SearchBoardDto,
   UpdateBoardDto,
@@ -62,37 +63,21 @@ export class BoardsController {
 
   @HttpCode(HTTP_STATUS_CODE.success.ok)
   @Get('filter')
-  async filteredBoards(@Query() paginationQuery): Promise<object> {
-    const {
-      categoryNo,
-      sort,
-      title,
-      popular,
-      areaNo,
-      max,
-      min,
-      target,
-      date,
-      free,
-    } = paginationQuery;
+  async filteredBoards(
+    @Query() filterBoardDto: FilterBoardDto,
+  ): Promise<object> {
+    try {
+      const response: object = await this.boardService.filteredBoards(
+        filterBoardDto,
+      );
 
-    const response: object = await this.boardService.filteredBoards(
-      categoryNo,
-      sort,
-      title,
-      popular,
-      areaNo,
-      max,
-      min,
-      target,
-      +date,
-      free,
-    );
-
-    return {
-      msg: '게시글 필터링이 완료되었습니다.',
-      response,
-    };
+      return {
+        msg: '게시글 필터링이 완료되었습니다.',
+        response,
+      };
+    } catch (err) {
+      throw err;
+    }
   }
 
   @ApiOperation({
@@ -126,14 +111,18 @@ export class BoardsController {
   @HttpCode(HTTP_STATUS_CODE.success.ok)
   @Get('hot')
   async readHotBoards(@Query() hotBoardDto: HotBoardDto): Promise<object> {
-    const response: Board[] = await this.boardService.readHotBoards(
-      hotBoardDto,
-    );
+    try {
+      const response: Board[] = await this.boardService.readHotBoards(
+        hotBoardDto,
+      );
 
-    return {
-      msg: '인기 게시글 조회가 완료되었습니다.',
-      response,
-    };
+      return {
+        msg: '인기 게시글 조회가 완료되었습니다.',
+        response,
+      };
+    } catch (err) {
+      throw err;
+    }
   }
 
   @ApiOperation({
@@ -172,14 +161,18 @@ export class BoardsController {
   async searchAllBoards(
     @Query() searchBoardDto: SearchBoardDto,
   ): Promise<object> {
-    const response: object = await this.boardService.searchAllBoards(
-      searchBoardDto,
-    );
+    try {
+      const response: object = await this.boardService.searchAllBoards(
+        searchBoardDto,
+      );
 
-    return {
-      msg: '검색결과에 대한 게시글 조회가 완료되었습니다.',
-      response,
-    };
+      return {
+        msg: '검색결과에 대한 게시글 조회가 완료되었습니다.',
+        response,
+      };
+    } catch (err) {
+      throw err;
+    }
   }
 
   @ApiOperation({
@@ -224,11 +217,15 @@ export class BoardsController {
     @Param('boardNo') boardNo: number,
     @CurrentUser() user: User,
   ): Promise<object> {
-    await this.boardService.cancelClosedBoard(boardNo, user.no);
+    try {
+      await this.boardService.cancelClosedBoard(boardNo, user.no);
 
-    return {
-      msg: '게시글 마감 취소가 완료되었습니다.',
-    };
+      return {
+        msg: '게시글 마감 취소가 완료되었습니다.',
+      };
+    } catch (err) {
+      throw err;
+    }
   }
 
   @ApiOperation({
@@ -273,11 +270,15 @@ export class BoardsController {
     @Param('boardNo') boardNo: number,
     @CurrentUser() user: User,
   ): Promise<object> {
-    await this.boardService.boardClosed(boardNo, user.no);
+    try {
+      await this.boardService.boardClosed(boardNo, user.no);
 
-    return {
-      msg: '게시글 마감이 완료되었습니다.',
-    };
+      return {
+        msg: '게시글 마감이 완료되었습니다.',
+      };
+    } catch (err) {
+      throw err;
+    }
   }
 
   @Get('profile')
@@ -352,12 +353,16 @@ export class BoardsController {
   @HttpCode(HTTP_STATUS_CODE.success.ok)
   @Get(':boardNo')
   async readByOneBoard(@Param('boardNo') boardNo: number): Promise<object> {
-    const response = await this.boardService.readByOneBoard(boardNo);
+    try {
+      const response = await this.boardService.readByOneBoard(boardNo);
 
-    return {
-      msg: '게시글 상세 조회가 완료되었습니다.',
-      response,
-    };
+      return {
+        msg: '게시글 상세 조회가 완료되었습니다.',
+        response,
+      };
+    } catch (err) {
+      throw err;
+    }
   }
 
   @HttpCode(HTTP_STATUS_CODE.success.ok)
@@ -365,17 +370,21 @@ export class BoardsController {
   async getByCategory(
     @Param('categoryNo') categoryNo: number,
   ): Promise<object> {
-    this.logger.verbose(
-      `카테고리 선택 조회 시도. 카테고리 번호 : ${categoryNo}`,
-    );
-    const response: object = await this.categoriesService.findOneCategory(
-      categoryNo,
-    );
+    try {
+      this.logger.verbose(
+        `카테고리 선택 조회 시도. 카테고리 번호 : ${categoryNo}`,
+      );
+      const response: object = await this.categoriesService.findOneCategory(
+        categoryNo,
+      );
 
-    return {
-      msg: '카테고리 선택 조회가 완료되었습니다.',
-      response,
-    };
+      return {
+        msg: '카테고리 선택 조회가 완료되었습니다.',
+        response,
+      };
+    } catch (err) {
+      throw err;
+    }
   }
 
   @Post()
@@ -419,7 +428,6 @@ export class BoardsController {
         msg: '게시글 생성이 완료 되었습니다.',
       };
     } catch (err) {
-      console.log(err);
       throw err;
     }
   }
@@ -446,15 +454,19 @@ export class BoardsController {
     @Param('boardNo') boardNo: number,
     @CurrentUser() user: User,
   ): Promise<object> {
-    const response: boolean = await this.boardService.deleteBoard(
-      boardNo,
-      user.no,
-    );
+    try {
+      const response: boolean = await this.boardService.deleteBoard(
+        boardNo,
+        user.no,
+      );
 
-    return {
-      msg: '게시글 삭제가 완료되었습니다',
-      response,
-    };
+      return {
+        msg: '게시글 삭제가 완료되었습니다',
+        response,
+      };
+    } catch (err) {
+      throw err;
+    }
   }
 
   @ApiOperation({
@@ -482,27 +494,31 @@ export class BoardsController {
     @Body() updateBoardDto: UpdateBoardDto,
     @CurrentUser() user: User,
   ): Promise<object> {
-    for (const key of Object.keys(updateBoardDto)) {
-      updateBoardDto[`${key}`] = JSON.parse(updateBoardDto[`${key}`]);
+    try {
+      for (const key of Object.keys(updateBoardDto)) {
+        updateBoardDto[`${key}`] = JSON.parse(updateBoardDto[`${key}`]);
+      }
+      const boardPhotoUrls =
+        files.length === 0
+          ? false
+          : await this.awsService.uploadBoardFileToS3('board', files);
+
+      const originBoardPhotoUrls = await this.boardService.updateBoard(
+        boardNo,
+        updateBoardDto,
+        user.no,
+        boardPhotoUrls,
+      );
+
+      if (originBoardPhotoUrls) {
+        await this.awsService.deleteBoardS3Object(originBoardPhotoUrls);
+      }
+
+      return {
+        msg: '게시글 수정이 완료되었습니다.',
+      };
+    } catch (err) {
+      throw err;
     }
-    const boardPhotoUrls =
-      files.length === 0
-        ? false
-        : await this.awsService.uploadBoardFileToS3('board', files);
-
-    const originBoardPhotoUrls = await this.boardService.updateBoard(
-      boardNo,
-      updateBoardDto,
-      user.no,
-      boardPhotoUrls,
-    );
-
-    if (originBoardPhotoUrls) {
-      await this.awsService.deleteBoardS3Object(originBoardPhotoUrls);
-    }
-
-    return {
-      msg: '게시글 수정이 완료되었습니다.',
-    };
   }
 }

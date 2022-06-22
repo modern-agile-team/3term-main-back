@@ -8,7 +8,7 @@ import {
   SelectQueryBuilder,
   UpdateResult,
 } from 'typeorm';
-import { CreateBoardDto } from '../dto/board.dto';
+import { CreateBoardDto, FilterBoardDto } from '../dto/board.dto';
 import { Board } from '../entity/board.entity';
 import { User } from '@sentry/node';
 
@@ -162,20 +162,23 @@ export class BoardRepository extends Repository<Board> {
   }
 
   async filteredBoards(
-    categoryNo: number,
-    sort: any,
-    title: string,
-    popular: string,
-    areaNo: number,
-    max: number,
-    min: number,
-    target: boolean,
-    date: any,
+    filterBoardDto: FilterBoardDto,
+    date: number,
     endTime: Date,
     currentTime: Date,
-    free: string,
   ): Promise<Board[]> {
     try {
+      const {
+        sort,
+        categoryNo,
+        title,
+        areaNo,
+        max,
+        min,
+        target,
+        free,
+        popular,
+      }: FilterBoardDto = filterBoardDto;
       const boardFiltering = this.createQueryBuilder('boards')
         .leftJoin('boards.area', 'areas')
         .leftJoin('boards.category', 'categories')
@@ -196,7 +199,7 @@ export class BoardRepository extends Repository<Board> {
         .groupBy('boards.no')
         .addGroupBy('boards.no = photo.no');
 
-      if (categoryNo > 1) {
+      if (+categoryNo > 1) {
         boardFiltering.andWhere('boards.category = :categoryNo', {
           categoryNo,
         });
@@ -210,7 +213,7 @@ export class BoardRepository extends Repository<Board> {
       if (min) boardFiltering.andWhere('boards.price >= :min', { min });
       if (target)
         boardFiltering.andWhere('boards.target = :target', { target });
-      if (date === NaN) {
+      if (date === 0) {
         boardFiltering.andWhere('boards.deadline is null');
       }
       if (date) {
