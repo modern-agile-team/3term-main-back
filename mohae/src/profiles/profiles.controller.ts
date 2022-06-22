@@ -26,13 +26,11 @@ import { User } from '@sentry/node';
 import { AwsService } from 'src/aws/aws.service';
 import { HTTP_STATUS_CODE } from 'src/common/configs/http-status.config';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
-import { SuccesseInterceptor } from 'src/common/interceptors/success.interceptor';
 import { JudgeDuplicateNicknameDto } from './dto/judge-duplicate-nickname.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { ProfilesService } from './profiles.service';
 
 @Controller('profile')
-@UseInterceptors(SuccesseInterceptor)
 @ApiTags('Profile')
 export class ProfilesController {
   constructor(

@@ -26,7 +26,6 @@ import {
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
-import { SuccesseInterceptor } from 'src/common/interceptors/success.interceptor';
 import { BoardsService } from './boards.service';
 import {
   CreateBoardDto,
@@ -43,7 +42,6 @@ import { FilesInterceptor } from '@nestjs/platform-express';
 import { create } from 'domain';
 
 @ApiTags('Boards')
-@UseInterceptors(SuccesseInterceptor)
 @Controller('boards')
 export class BoardsController {
   private logger = new Logger('BoardsController');
