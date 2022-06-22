@@ -54,8 +54,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
 
     const sentryDsn = process.env.SENTRY_DSN;
     const webhook = new IncomingWebhook(sentryDsn);
-
-    webhook.send({
+    const sentryConfig = {
       attachments: [
         {
           color: 'danger',
@@ -70,7 +69,9 @@ export class HttpExceptionFilter implements ExceptionFilter {
           ts: Math.floor(new Date().getTime() / 1000).toString(),
         },
       ],
-    });
+    };
+
+    webhook.send(sentryConfig);
 
     this.logger.error(errorMsg, '알 수 없는 서버 에러입니다.');
 

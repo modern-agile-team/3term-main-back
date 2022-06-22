@@ -19,14 +19,25 @@ export class ClientErrorInterceptor implements NestInterceptor {
   ) {}
 
   intercept(context: ExecutionContext, next: CallHandler) {
+    const status = context.switchToHttp().getResponse().statusCode;
+
     return next.handle().pipe(
-      map((data) => ({
-        success: true,
-        date: new Date().toLocaleString(),
-        statusCode: data.statusCode,
-        msg: data.msg,
-        response: data.response,
-      })),
+      map(({ statusCode, msg, response }) => {
+        const successData = {
+          success: true,
+          date: new Date().toLocaleString(),
+          statusCode: statusCode || status,
+          msg,
+          response,
+        };
+
+        this.logger.verbose(
+          'successData',
+          `${successData.date}, ${successData.msg}`,
+        );
+
+        return successData;
+      }),
     );
   }
 }

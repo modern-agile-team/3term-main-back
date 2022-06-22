@@ -16,6 +16,7 @@ async function bootstrap() {
   const serverPort = configService.get('SERVER_PORT');
   const swaggerUser = configService.get('SWAGGER_USER');
   const swaggerPassword = configService.get('SWAGGER_PASSWORD');
+  const winstonLogger = app.get(WINSTON_MODULE_NEST_PROVIDER);
 
   // Cors 적용
   app.enableCors();
@@ -36,9 +37,8 @@ async function bootstrap() {
       transform: true,
     }),
   );
-  const winstonLogger = app.get(WINSTON_MODULE_NEST_PROVIDER);
-  app.useGlobalFilters(new HttpExceptionFilter(winstonLogger));
   app.useGlobalInterceptors(new ClientErrorInterceptor(winstonLogger));
+  app.useGlobalFilters(new HttpExceptionFilter(winstonLogger));
 
   //Swagger 환경설정 연결
   setupSwagger(app);
