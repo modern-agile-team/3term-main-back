@@ -58,11 +58,10 @@ export class ProfilesService {
               name: categoryInfo[1],
             };
           });
-        delete profile.categoryNo;
       } else {
-        delete profile.categoryNo;
         profile.categories = null;
       }
+      delete profile.categoryNo;
       profile.isLike = !!Number(profile.isLike);
 
       return profile;
