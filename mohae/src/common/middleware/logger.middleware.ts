@@ -1,20 +1,24 @@
-import { Injectable, Logger, NestMiddleware } from '@nestjs/common';
+import { Inject, Injectable, Logger, NestMiddleware } from '@nestjs/common';
 import { NextFunction, Request, Response } from 'express';
+import { WinstonLogger, WINSTON_MODULE_PROVIDER } from 'nest-winston';
 
 @Injectable()
 export class LoggerMiddleware implements NestMiddleware {
-  private logger = new Logger('HTTP');
+  constructor(
+    @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: WinstonLogger,
+  ) {}
 
   use(request: Request, response: Response, next: NextFunction): void {
-    const { ip, method, originalUrl } = request;
-    const userAgent = request.get('user-agent') || '';
+    const { ip, method, originalUrl }: Request = request;
+    const userAgent: string = request.get('user-agent') || '';
 
     response.on('finish', () => {
-      const { statusCode } = response;
-      const contentLength = response.get('content-length');
+      const { statusCode }: Response = response;
+      const contentLength: string = response.get('content-length');
 
-      this.logger.log(
+      this.logger.verbose(
         `${method} ${originalUrl} ${statusCode} ${contentLength} - ${userAgent} ${ip}`,
+        contentLength,
       );
     });
 

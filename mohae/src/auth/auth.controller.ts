@@ -23,7 +23,6 @@ import {
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
-import { SuccesseInterceptor } from 'src/common/interceptors/success.interceptor';
 import { AuthService } from './auth.service';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { SignUpDto } from './dto/sign-up.dto';
@@ -35,7 +34,6 @@ import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 import { HTTP_STATUS_CODE } from 'src/common/configs/http-status.config';
 
 @Controller('auth')
-@UseInterceptors(SuccesseInterceptor)
 @ApiTags('Auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
