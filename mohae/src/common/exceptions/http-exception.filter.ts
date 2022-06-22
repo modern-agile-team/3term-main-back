@@ -11,19 +11,8 @@ import { IncomingWebhook } from '@slack/client';
 // import slackConfig from '../config/slack.config';
 import * as Sentry from '@sentry/minimal';
 import { HttpArgumentsHost } from '@nestjs/common/interfaces';
+import { ErrorMsg, ErrorObj } from './error.interface';
 
-interface ErrorObj {
-  error: string;
-  statusCode: number;
-  message: string | string[];
-}
-
-interface ErrorMsg {
-  success: boolean;
-  timestamp: string;
-  path: string;
-  error: ErrorObj;
-}
 @Catch(HttpException)
 export class HttpExceptionFilter implements ExceptionFilter {
   constructor(
