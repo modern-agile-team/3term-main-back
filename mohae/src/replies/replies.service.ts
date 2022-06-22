@@ -57,9 +57,6 @@ export class RepliesService {
       await queryRunner.commitTransaction();
     } catch (err) {
       await queryRunner.rollbackTransaction();
-      if (err.response.statusCode / 100 === 5) {
-        this.logger.error(err.response, '대댓글 생성 서버 에러');
-      }
 
       throw err;
     } finally {
@@ -90,10 +87,6 @@ export class RepliesService {
 
       this.errorConfirm.badGatewayError(isUpdate, '대댓글 수정 실패');
     } catch (err) {
-      if (err.response.statusCode / 100 === 5) {
-        this.logger.error(err.response, '대댓글 수정 서버 에러');
-      }
-
       throw err;
     }
   }
@@ -114,10 +107,6 @@ export class RepliesService {
 
       this.errorConfirm.badGatewayError(isDelete, '대댓글 삭제 실패');
     } catch (err) {
-      if (err.response.statusCode / 100 === 5) {
-        this.logger.error(err.response, '대댓글 삭제 서버 에러');
-      }
-
       throw err;
     }
   }

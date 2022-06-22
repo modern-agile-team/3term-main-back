@@ -25,12 +25,10 @@ import { AuthGuard } from '@nestjs/passport';
 import { UpdateFaqDto } from './dto/update-faq.dto';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 import { User } from 'src/auth/entity/user.entity';
-import { SuccesseInterceptor } from 'src/common/interceptors/success.interceptor';
 import { HTTP_STATUS_CODE } from 'src/common/configs/http-status.config';
 import { operationConfig } from 'src/common/swagger-apis/api-operation.swagger';
 import { apiResponse } from 'src/common/swagger-apis/api-response.swagger';
 
-@UseInterceptors(SuccesseInterceptor)
 @ApiTags('Faqs')
 @Controller('faqs')
 export class FaqsController {

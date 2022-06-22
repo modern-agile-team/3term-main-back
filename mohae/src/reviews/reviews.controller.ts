@@ -14,12 +14,10 @@ import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { User } from 'src/auth/entity/user.entity';
 import { HTTP_STATUS_CODE } from 'src/common/configs/http-status.config';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
-import { SuccesseInterceptor } from 'src/common/interceptors/success.interceptor';
 import { CreateReviewDto } from './dto/create-review.dto';
 import { ReviewsService } from './reviews.service';
 
 @UseGuards(AuthGuard('jwt'))
-@UseInterceptors(SuccesseInterceptor)
 @ApiTags('Reviews')
 @Controller('reviews')
 export class ReviewsController {
