@@ -41,6 +41,7 @@ import { WinstonModule } from 'nest-winston';
 import { envConfig } from './common/configs/env.config';
 import { winstonConfig } from './common/configs/winston.config';
 import { CommentsModule } from './comments/comments.module';
+import { RepliesModule } from './replies/replies.module';
 
 @Module({
   imports: [
@@ -80,6 +81,7 @@ import { CommentsModule } from './comments/comments.module';
     ReportChecksModule,
     ReportCheckboxesModule,
     CommentsModule,
+    RepliesModule,
   ],
   controllers: [AppController],
   providers: [

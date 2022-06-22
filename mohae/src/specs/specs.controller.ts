@@ -222,7 +222,6 @@ export class SpecsController {
       throw new BadRequestException(
         '사진을 선택하지 않은 경우 기본사진을 넣어주셔야 스펙 등록이 가능 합니다.',
       );
-
     const specPhotoUrls = await this.awsService.uploadSpecFileToS3(
       'spec',
       files,

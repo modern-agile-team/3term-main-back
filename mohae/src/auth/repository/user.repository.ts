@@ -11,6 +11,8 @@ import { InternalServerErrorException } from '@nestjs/common';
 import { School } from 'src/schools/entity/school.entity';
 import { Major } from 'src/majors/entity/major.entity';
 import { QLDB } from 'aws-sdk';
+import { UserPhotoSizes } from 'src/common/configs/photo-size.config';
+import { NumOpenReactiveInsights } from 'aws-sdk/clients/devopsguru';
 
 @EntityRepository(User)
 export class UserRepository extends Repository<User> {
@@ -64,6 +66,7 @@ export class UserRepository extends Repository<User> {
   async confirmUser(email: string): Promise<User> {
     try {
       const user: User = await this.createQueryBuilder('users')
+        .leftJoin('users.profilePhoto', 'profilePhoto')
         .select([
           'users.no',
           'users.salt',
@@ -71,6 +74,7 @@ export class UserRepository extends Repository<User> {
           'users.isLock',
           'users.latestLogin',
           'users.loginFailCount',
+          'profilePhoto.photo_url',
         ])
         .where('users.email = :email', { email })
         .getOne();
@@ -235,7 +239,7 @@ export class UserRepository extends Repository<User> {
     }
   }
 
-  async updateProfile(userNo: User, deletedNullprofile: object) {
+  async updateProfile(userNo: User, deletedNullprofile: object): Promise<void> {
     try {
       await this.createQueryBuilder('users')
         .update(User)

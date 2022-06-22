@@ -95,7 +95,6 @@ export class ProfilesController {
       profileUserNo,
       user.no,
     );
-
     return {
       msg: '프로필 조회에 성공했습니다.',
       response,
