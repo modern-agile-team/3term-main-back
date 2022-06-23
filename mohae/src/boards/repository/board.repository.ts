@@ -434,19 +434,18 @@ export class BoardRepository extends Repository<Board> {
         .leftJoin('boards.user', 'user')
         .leftJoin('boards.photos', 'boardPhotos')
         .select([
-          'boards.no',
-          'boards.title',
-          'boards.description',
-          'boardPhotos.photo_url',
-          'boards.target',
-          'user.no',
+          'boards.no AS no',
+          'boards.title AS title',
+          'boards.description AS description',
+          'boardPhotos.photo_url AS photoUrl',
+          'boards.target AS target',
+          'user.no AS userNo',
         ])
         .where('user.no = :userNo', { userNo })
-        .andWhere('boards.no = boardPhotos.board')
         .andWhere('boards.target = :target', { target })
-        .take(take)
-        .skip(take * (page - 1))
-        .getMany();
+        .limit(take)
+        .offset((page - 1) * take)
+        .getRawMany();
 
       return boards;
     } catch (err) {
