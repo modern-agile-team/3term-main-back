@@ -92,8 +92,8 @@ export class AwsService {
 
   async uploadSpecFileToS3(folder: string, files: any): Promise<Array<string>> {
     try {
-      if (files[0].originalname === 'default.jpg') {
-        return ['default.jpg'];
+      if (files[0].originalname === 'logo.jpg') {
+        return ['logo.jpg'];
       }
       const specPhotoUrls = [];
 
@@ -146,8 +146,8 @@ export class AwsService {
 
   async uploadProfileFileToS3(folder: string, file: any): Promise<string> {
     try {
-      if (file.originalname === 'default.jpg') {
-        return 'default.jpg';
+      if (file.originalname === 'logo.jpg') {
+        return 'logo.jpg';
       }
       const profilePhotoUrl: string = `${folder}/${Date.now()}_${path.basename(
         file.originalname,
@@ -247,8 +247,8 @@ export class AwsService {
     files: any,
   ): Promise<Array<string>> {
     try {
-      if (files[0].originalname === 'default.jpg') {
-        return ['default.jpg'];
+      if (files[0].originalname === 'logo.jpg') {
+        return ['logo.jpg'];
       }
       const boardPhotoUrls = [];
 
