@@ -76,7 +76,8 @@ export class BoardsController {
         boards: [
           {
             no: 75,
-            photoUrl: 'board/1655864764068_dsn.jpg',
+            photoUrl:
+              'https://mohaeproj.s3.amazonaws.com/board/1655961063222_dsn.jpg',
             decimalDay: -10,
             title: 'board test',
             isDeadline: 0,
