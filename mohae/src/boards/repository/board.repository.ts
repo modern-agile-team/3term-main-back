@@ -11,6 +11,8 @@ import {
 import { Board } from '../entity/board.entity';
 import { User } from '@sentry/node';
 import { FilterBoardDto } from '../dto/filterBoard.dto';
+import { PaginationDto } from '../dto/pagination.dto';
+import { SearchBoardDto } from '../dto/searchBoard.dto';
 
 @EntityRepository(Board)
 export class BoardRepository extends Repository<Board> {
@@ -128,7 +130,11 @@ export class BoardRepository extends Repository<Board> {
     }
   }
 
-  async searchAllBoards(title: string): Promise<Board[]> {
+  async searchAllBoards({
+    title,
+    take,
+    page,
+  }: SearchBoardDto): Promise<Board[]> {
     try {
       const boards = await this.createQueryBuilder('boards')
         .leftJoin('boards.area', 'areas')
@@ -149,6 +155,8 @@ export class BoardRepository extends Repository<Board> {
         .orderBy('boards.no', 'DESC')
         .groupBy('boards.no')
         .addGroupBy('boards.no = photo.no')
+        .limit(+take)
+        .offset((+page - 1) * +take)
         .getRawMany();
 
       return boards;
@@ -176,6 +184,8 @@ export class BoardRepository extends Repository<Board> {
         target,
         free,
         popular,
+        page,
+        take,
       }: FilterBoardDto = filterBoardDto;
       const boardFiltering = this.createQueryBuilder('boards')
         .leftJoin('boards.area', 'areas')
@@ -195,7 +205,10 @@ export class BoardRepository extends Repository<Board> {
         ])
         .orderBy('boards.no', sort)
         .groupBy('boards.no')
-        .addGroupBy('boards.no = photo.no');
+        .addGroupBy('boards.no = photo.no')
+        .limit(+page)
+        .offset((+page - 1) * +take)
+        .offset();
 
       if (+categoryNo > 1) {
         boardFiltering.andWhere('boards.category = :categoryNo', {
@@ -231,7 +244,7 @@ export class BoardRepository extends Repository<Board> {
     }
   }
 
-  async getAllBoards(): Promise<Board[]> {
+  async getAllBoards({ take, page }: PaginationDto): Promise<Board[]> {
     try {
       return await this.createQueryBuilder('boards')
         .leftJoin('boards.area', 'area')
@@ -254,6 +267,8 @@ export class BoardRepository extends Repository<Board> {
         .andWhere('boards.category = category.no')
         .groupBy('boards.no')
         .orderBy('boards.no', 'DESC')
+        .limit(+page)
+        .offset((+page - 1) * +take)
         .getRawMany();
     } catch (err) {
       throw new InternalServerErrorException(

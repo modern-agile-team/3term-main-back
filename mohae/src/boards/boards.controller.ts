@@ -12,6 +12,7 @@ import {
   UseInterceptors,
   HttpCode,
   UploadedFiles,
+  Inject,
 } from '@nestjs/common';
 import { User } from '@sentry/node';
 import { AuthGuard } from '@nestjs/passport';
@@ -40,24 +41,29 @@ import { FilterBoardDto } from './dto/filterBoard.dto';
 import { HotBoardDto } from './dto/hotBoard.dto';
 import { SearchBoardDto } from './dto/searchBoard.dto';
 import { UpdateBoardDto } from './dto/updateBoard.dto';
-import { winstonConfig } from 'src/common/configs/winston.config';
-import winston from 'winston';
+import { WinstonLogger, WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { PaginationDto } from './dto/pagination.dto';
 
 @ApiTags('Boards')
 @Controller('boards')
 export class BoardsController {
-  private logger = new Logger('BoardsController');
   constructor(
+    @Inject(WINSTON_MODULE_PROVIDER)
+    private readonly logger: WinstonLogger,
+
     private readonly boardService: BoardsService,
     private readonly categoriesService: CategoriesService,
     private readonly awsService: AwsService,
   ) {}
 
   @Cron('0 1 * * * *')
-  async handleCron() {
-    const closedNum: number = await this.boardService.closingBoard();
+  async handleBoardSchedule() {
+    const closedBoardNum: number = await this.boardService.closingBoard();
 
-    this.logger.verbose(`게시글 ${closedNum}개 마감처리`);
+    this.logger.verbose(
+      `게시글 ${closedBoardNum}개 마감처리`,
+      '마감된 게시글 개수',
+    );
   }
 
   @ApiOperation(operationConfig('게시글 필터링 경로', '게시글 필터링 API'))
@@ -289,7 +295,7 @@ export class BoardsController {
       '게시글 상세조회가 완료되었습니다.',
       {
         no: 15,
-        boardPhotoUrls: '백승범.jpg, 11222, 1, 2',
+        boardPhotoUrls: 'seungBum.jpg, 11222.jpg, 1.png, 2.jpeg',
         decimalDay: -6,
         title: '게시글 검색',
         description: '생성',
@@ -302,7 +308,7 @@ export class BoardsController {
         area: '서울특별시',
         categoryNo: 2,
         category: '디자인',
-        userPhotoUrl: 'profile/1655184234165_�8�P�.jpg',
+        userPhotoUrl: 'profile/1655184234165_test.jpg',
         userNo: 2,
         nickname: 'hneeddjsjde',
         school: '인덕대학교',
@@ -360,12 +366,14 @@ export class BoardsController {
   @Get('category/:categoryNo')
   async getByCategory(
     @Param('categoryNo') categoryNo: number,
+    @Query() paginationDto: PaginationDto,
   ): Promise<object> {
     this.logger.verbose(
       `카테고리 선택 조회 시도. 카테고리 번호 : ${categoryNo}`,
     );
     const response: object = await this.categoriesService.findOneCategory(
       categoryNo,
+      paginationDto,
     );
 
     return {

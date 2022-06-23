@@ -59,6 +59,7 @@ export class Board extends BaseEntity {
 
   @Column({
     type: 'mediumtext',
+    nullable: true,
   })
   summary: string;
 

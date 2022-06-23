@@ -1,7 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsOptional, IsString, MaxLength, MinLength } from 'class-validator';
+import { PaginationDto } from './pagination.dto';
 
-export class FilterBoardDto {
+export class FilterBoardDto extends PaginationDto {
   @ApiProperty({
     example: 'ASC',
     description: 'ASC = 오래된 순, DESC = 최신순',

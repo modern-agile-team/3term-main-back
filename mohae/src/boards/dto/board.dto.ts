@@ -3,6 +3,7 @@ import {
   IsBoolean,
   IsNotEmpty,
   IsNumber,
+  IsOptional,
   IsString,
   MaxLength,
   MinLength,
@@ -24,8 +25,8 @@ export class CreateBoardDto {
   })
   @IsString()
   @IsNotEmpty()
-  @MinLength(3)
-  @MaxLength(15)
+  @MinLength(2)
+  @MaxLength(16)
   title: string;
 
   @ApiProperty({
@@ -43,6 +44,7 @@ export class CreateBoardDto {
     description: 'Example summary입니다.',
     required: false,
   })
+  @IsOptional()
   @IsString()
   @MaxLength(100)
   summary?: string;

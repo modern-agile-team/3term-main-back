@@ -22,6 +22,7 @@ import { User } from '@sentry/node';
 import { FilterBoardDto } from './dto/filterBoard.dto';
 import { HotBoardDto } from './dto/hotBoard.dto';
 import { SearchBoardDto } from './dto/searchBoard.dto';
+import { PaginationDto } from './dto/pagination.dto';
 
 @Injectable()
 export class BoardsService {
@@ -208,10 +209,12 @@ export class BoardsService {
   async searchAllBoards(searchBoardDto: SearchBoardDto): Promise<object> {
     try {
       const { title }: SearchBoardDto = searchBoardDto;
-      const boards: Board[] = await this.boardRepository.searchAllBoards(title);
+      const boards: Board[] = await this.boardRepository.searchAllBoards(
+        searchBoardDto,
+      );
       this.errorConfirm.notFoundError(boards, '게시글을 찾을 수 없습니다.');
 
-      return { foundedBoardNum: boards.length, search: title, boards };
+      return { boardNum: boards.length, search: title, boards };
     } catch (err) {
       throw err;
     }
