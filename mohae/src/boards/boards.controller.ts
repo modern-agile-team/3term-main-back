@@ -73,7 +73,6 @@ export class BoardsController {
       HTTP_STATUS_CODE.success.ok,
       '게시글 필터링이 완료되었습니다.',
       {
-        boardNum: 1,
         boards: [
           {
             no: 75,
@@ -147,7 +146,6 @@ export class BoardsController {
       HTTP_STATUS_CODE.success.ok,
       '게시글 검색 완료',
       {
-        foundedBoardNum: 1,
         search: '게시글',
         boards: [
           {
@@ -344,7 +342,6 @@ export class BoardsController {
       HTTP_STATUS_CODE.success.ok,
       '카테고리 선택 조회가 완료되었습니다.',
       {
-        boardNum: 1,
         categoryName: '전체 게시판',
         boards: [
           {

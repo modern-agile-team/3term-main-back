@@ -82,7 +82,7 @@ export class BoardsService {
         currentTime,
       );
 
-      return { boardNum: boards.length, boards };
+      return { boards };
     } catch (err) {
       throw err;
     }
@@ -214,7 +214,7 @@ export class BoardsService {
       );
       this.errorConfirm.notFoundError(boards, '게시글을 찾을 수 없습니다.');
 
-      return { boardNum: boards.length, search: title, boards };
+      return { search: title, boards };
     } catch (err) {
       throw err;
     }
@@ -274,7 +274,7 @@ export class BoardsService {
       if (!createdBoard) {
         throw new BadGatewayException('게시글 생성 관련 오류입니다.');
       }
-      if (boardPhotoUrl[0] !== 'default.jpg') {
+      if (boardPhotoUrl[0] !== 'logo.jpg') {
         const photos: Array<object> = boardPhotoUrl.map(
           (photo: string, index: number) => {
             return {
@@ -417,7 +417,7 @@ export class BoardsService {
             throw new BadGatewayException('게시글 사진 삭제 도중 DB관련 오류');
           }
         }
-        if (boardPhotoUrl[0] !== 'default.jpg') {
+        if (boardPhotoUrl[0] !== 'logo.jpg') {
           const boardPhotos: Array<object> = boardPhotoUrl.map(
             (photo, index) => {
               return {

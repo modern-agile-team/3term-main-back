@@ -247,8 +247,8 @@ export class AwsService {
     files: any,
   ): Promise<Array<string>> {
     try {
-      if (files[0].originalname === 'default.jpg') {
-        return ['default.jpg'];
+      if (files[0].originalname === 'logo.jpg') {
+        return ['logo.jpg'];
       }
       const boardPhotoUrls = [];
 
@@ -267,8 +267,9 @@ export class AwsService {
           })
           .promise();
 
-        boardPhotoUrls.push(key);
+        boardPhotoUrls.push(this.getAwsS3FileUrl(key));
       }
+
       return boardPhotoUrls;
     } catch (error) {
       throw new BadRequestException(`File upload failed : ${error}`);

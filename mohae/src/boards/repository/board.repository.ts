@@ -206,9 +206,8 @@ export class BoardRepository extends Repository<Board> {
         .orderBy('boards.no', sort)
         .groupBy('boards.no')
         .addGroupBy('boards.no = photo.no')
-        .limit(+page)
-        .offset((+page - 1) * +take)
-        .offset();
+        .limit(+take)
+        .offset((+page - 1) * +take);
 
       if (+categoryNo > 1) {
         boardFiltering.andWhere('boards.category = :categoryNo', {
@@ -267,7 +266,7 @@ export class BoardRepository extends Repository<Board> {
         .andWhere('boards.category = category.no')
         .groupBy('boards.no')
         .orderBy('boards.no', 'DESC')
-        .limit(+page)
+        .limit(+take)
         .offset((+page - 1) * +take)
         .getRawMany();
     } catch (err) {

@@ -36,7 +36,6 @@ export class CategoriesService {
         );
 
         return {
-          boardNum: boards.length,
           categoryName: '전체 게시판',
           category: { boards },
         };
@@ -53,7 +52,6 @@ export class CategoriesService {
       }
 
       return {
-        boardNum: category['boards'].length,
         categoryName: `${category['categoryName']} 게시판`,
         category,
       };
