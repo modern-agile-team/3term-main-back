@@ -45,17 +45,17 @@ export class SpecRepository extends Repository<Spec> {
         .leftJoin('specs.specPhotos', 'specPhotos')
         .leftJoin('specs.user', 'user')
         .select([
-          'specs.no',
-          'specs.title',
-          'specs.description',
-          'specPhotos.photo_url',
-          'user.no',
+          'specs.no AS no',
+          'specs.title AS title',
+          'specs.description AS description',
+          'specPhotos.photo_url AS photoUrl',
+          'user.no AS userNo',
         ])
         .where('user.no = :userNo', { userNo })
-        .andWhere('specs.no = specPhotos.spec')
-        .take(take)
-        .skip(take * (page - 1))
-        .getMany();
+        .limit(take)
+        .offset((page - 1) * take)
+        .groupBy('specs.no')
+        .getRawMany();
 
       return specs;
     } catch (err) {

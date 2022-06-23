@@ -28,7 +28,7 @@ export class SpecPhotoRepository extends Repository<SpecPhoto> {
     }
   }
 
-  async deleteBeforePhoto(specNo: number): Promise<void> {
+  async deleteSpecPhoto(specNo: number): Promise<void> {
     try {
       await this.createQueryBuilder('spec_photos')
         .delete()
