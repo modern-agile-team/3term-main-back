@@ -452,7 +452,7 @@ export class BoardRepository extends Repository<Board> {
       return boards;
     } catch (err) {
       throw new InternalServerErrorException(
-        `${err}####스펙 전체 조회 관련 서버 에러입니다`,
+        `${err}####게시글 전체 조회 관련 서버 에러입니다`,
       );
     }
   }

@@ -50,7 +50,9 @@ export class SpecsService {
   async getOneSpec(specNo: number): Promise<Spec> {
     try {
       const spec: Spec = await this.specRepository.getOneSpec(specNo);
+
       this.errorConfirm.notFoundError(spec, '해당 스펙이 존재하지 않습니다.');
+
       return spec;
     } catch (err) {
       throw err;
@@ -187,6 +189,7 @@ export class SpecsService {
           '스펙의 작성자 만이 스펙을 삭제할 수 있습니다.',
         );
       }
+
       return isDelete;
     } catch (err) {
       throw err;
@@ -204,6 +207,7 @@ export class SpecsService {
         take,
         page,
       );
+
       return profileSpecs;
     } catch (err) {
       throw err;

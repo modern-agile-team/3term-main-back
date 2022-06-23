@@ -112,7 +112,7 @@ export class AwsService {
           })
           .promise();
 
-        specPhotoUrls.push(key);
+        specPhotoUrls.push(this.getAwsS3FileUrl(key));
       }
       return specPhotoUrls;
     } catch (error) {
@@ -163,7 +163,7 @@ export class AwsService {
         })
         .promise();
 
-      return profilePhotoUrl;
+      return this.getAwsS3FileUrl(profilePhotoUrl);
     } catch (error) {
       throw new BadRequestException(`File upload failed : ${error}`);
     }
