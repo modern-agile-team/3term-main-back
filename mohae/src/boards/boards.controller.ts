@@ -446,14 +446,10 @@ export class BoardsController {
     @Param('boardNo') boardNo: number,
     @CurrentUser() user: User,
   ): Promise<object> {
-    const response: boolean = await this.boardService.deleteBoard(
-      boardNo,
-      user.no,
-    );
+    await this.boardService.deleteBoard(boardNo, user.no);
 
     return {
       msg: '게시글 삭제가 완료되었습니다',
-      response,
     };
   }
 
