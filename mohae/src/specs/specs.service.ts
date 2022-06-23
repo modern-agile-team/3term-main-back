@@ -1,10 +1,7 @@
 import {
-  BadGatewayException,
-  BadRequestException,
   ForbiddenException,
   Injectable,
   InternalServerErrorException,
-  UnauthorizedException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/auth/entity/user.entity';
@@ -50,7 +47,9 @@ export class SpecsService {
   async getOneSpec(specNo: number): Promise<Spec> {
     try {
       const spec: Spec = await this.specRepository.getOneSpec(specNo);
+
       this.errorConfirm.notFoundError(spec, '해당 스펙이 존재하지 않습니다.');
+
       return spec;
     } catch (err) {
       throw err;
@@ -76,7 +75,7 @@ export class SpecsService {
         .getCustomRepository(SpecRepository)
         .registSpec(createSpecDto, user);
 
-      if (specPhotoUrls[0] !== 'default.jpg') {
+      if (specPhotoUrls[0] !== 'logo.jpg') {
         const specPhotos: object[] = specPhotoUrls.map(
           (photoUrl: string, index: number) => {
             return {
@@ -142,9 +141,9 @@ export class SpecsService {
         if (specPhotos.length) {
           await queryRunner.manager
             .getCustomRepository(SpecPhotoRepository)
-            .deleteBeforePhoto(spec.no);
+            .deleteSpecPhoto(spec.no);
         }
-        if (specPhotoUrls[0] !== 'default.jpg') {
+        if (specPhotoUrls[0] !== 'logo.jpg') {
           const newSpecPhotos: Array<object> = specPhotoUrls.map(
             (photoUrl: string, index: number) => {
               return {
@@ -176,18 +175,46 @@ export class SpecsService {
     }
   }
 
-  async deleteSpec(specNo: number, userNo: number): Promise<number> {
+  async deleteSpec(specNo: number, userNo: number): Promise<any> {
+    const queryRunner = this.connection.createQueryRunner();
+
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
     try {
-      const isDelete: number = await this.specRepository.deleteSpec(
-        specNo,
-        userNo,
+      const isSpec = await this.specRepository.findOne(specNo, {
+        select: ['no', 'user', 'deletedAt'],
+        relations: ['user'],
+      });
+      console.log(isSpec);
+      this.errorConfirm.notFoundError(
+        isSpec,
+        '스펙 삭제를 중복으로 할 수 없습니다.',
       );
-      if (!isDelete) {
+
+      const { specPhotos }: Spec = await this.specRepository.findOne(specNo, {
+        select: ['no', 'specPhotos'],
+        relations: ['specPhotos'],
+      });
+
+      const isSpecDelete: number = await queryRunner.manager
+        .getCustomRepository(SpecRepository)
+        .deleteSpec(specNo, userNo);
+
+      if (!isSpecDelete) {
         throw new ForbiddenException(
           '스펙의 작성자 만이 스펙을 삭제할 수 있습니다.',
         );
       }
-      return isDelete;
+      const originSpecPhotosUrl: string[] = specPhotos.map((specPhoto) => {
+        return specPhoto.photo_url;
+      });
+
+      await queryRunner.manager
+        .getCustomRepository(SpecPhotoRepository)
+        .deleteSpecPhoto(specNo);
+
+      await queryRunner.commitTransaction();
+      return originSpecPhotosUrl;
     } catch (err) {
       throw err;
     }
@@ -204,6 +231,7 @@ export class SpecsService {
         take,
         page,
       );
+
       return profileSpecs;
     } catch (err) {
       throw err;

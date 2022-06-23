@@ -8,17 +8,11 @@ import {
   MaxLength,
   MinLength,
 } from 'class-validator';
-import { Board } from '../entity/board.entity';
 
-export class BoardPickType extends PickType(Board, [
-  'title',
-  'description',
-] as const) {}
-
-export abstract class BoardContent {
+export class CreateBoardDto {
   @ApiProperty({
     example: 10000,
-    description: 'Example Description입니다.',
+    description: 'Example price입니다.',
     required: true,
   })
   @IsString()
@@ -26,13 +20,13 @@ export abstract class BoardContent {
 
   @ApiProperty({
     example: '제목 입력',
-    description: 'Example Description입니다.',
+    description: 'Example title입니다.',
     required: true,
   })
   @IsString()
   @IsNotEmpty()
-  @MinLength(3)
-  @MaxLength(15)
+  @MinLength(2)
+  @MaxLength(16)
   title: string;
 
   @ApiProperty({
@@ -47,9 +41,10 @@ export abstract class BoardContent {
 
   @ApiProperty({
     example: '한줄 요약 입력',
-    description: 'Example Description입니다.',
+    description: 'Example summary입니다.',
     required: false,
   })
+  @IsOptional()
   @IsString()
   @MaxLength(100)
   summary?: string;
@@ -77,6 +72,14 @@ export abstract class BoardContent {
   })
   @IsString()
   areaNo: string;
+
+  @ApiProperty({
+    example: 0,
+    description: 'Example 마감일 0 = 상시, 7 = 일주일, 30 = 1개월, 60 = 3개월',
+    required: true,
+  })
+  @IsString()
+  deadline: string;
 
   // @ApiProperty({
   //   example: '첫번째 상세조건',
@@ -107,104 +110,4 @@ export abstract class BoardContent {
   // @IsOptional()
   // @MaxLength(100)
   // note3?: string;
-}
-
-export class CreateBoardDto extends BoardContent {
-  @ApiProperty({
-    example: 0,
-    description: 'Example 마감일 0 = 상시, 7 = 일주일, 30 = 1개월, 60 = 3개월',
-    required: true,
-  })
-  @IsString()
-  deadline: string;
-}
-
-export class SearchBoardDto {
-  @ApiProperty({
-    example: '게시글',
-    description: 'Example 검색 입력 입니다.',
-    required: true,
-  })
-  @IsString()
-  @MaxLength(16)
-  @MinLength(2)
-  title: string;
-}
-
-export class HotBoardDto {
-  @ApiProperty({
-    example: '1, 2',
-    description:
-      'Example query를 입력안했을경우 전체게시글, 1 = 마감이 안된 게시글, 2 = 마감된 게시글',
-    required: true,
-  })
-  @IsOptional()
-  @IsString()
-  select: string;
-}
-
-export class LikeBoardDto {
-  @IsNumber()
-  boardNo: number;
-
-  @IsNumber()
-  userNo: number;
-
-  @IsBoolean()
-  judge: boolean;
-}
-
-export abstract class UpdateBoardDto {
-  @IsOptional()
-  @IsString()
-  price?: string;
-
-  @IsOptional()
-  @IsString()
-  @IsNotEmpty()
-  @MinLength(3)
-  @MaxLength(15)
-  title?: string;
-
-  @IsOptional()
-  @IsString()
-  @IsNotEmpty()
-  @MaxLength(1000)
-  description?: string;
-
-  @IsOptional()
-  @IsString()
-  @MaxLength(100)
-  summary?: string;
-
-  @IsOptional()
-  @IsString()
-  target?: string;
-
-  @IsOptional()
-  @IsString()
-  category?: string;
-
-  @IsOptional()
-  @IsString()
-  area?: string;
-
-  // @IsOptional()
-  // @IsString()
-  // @MaxLength(100)
-  // note1?: string;
-
-  // @IsOptional()
-  // @IsString()
-  // @MaxLength(100)
-  // note2?: string;
-
-  // @IsOptional()
-  // @IsString()
-  // @MaxLength(100)
-  // note3?: string;
-
-  @IsOptional()
-  @IsString()
-  deadline?: any;
 }

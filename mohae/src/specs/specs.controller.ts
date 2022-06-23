@@ -10,7 +10,6 @@ import {
   UseGuards,
   UseInterceptors,
   Query,
-  Put,
   HttpCode,
   BadRequestException,
 } from '@nestjs/common';
@@ -23,14 +22,12 @@ import {
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
-  ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
 import { User } from '@sentry/node';
 import { AwsService } from 'src/aws/aws.service';
 import { HTTP_STATUS_CODE } from 'src/common/configs/http-status.config';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
-import { SuccesseInterceptor } from 'src/common/interceptors/success.interceptor';
 import { CreateSpecDto } from './dto/create-spec.dto';
 import { UpdateSpecDto } from './dto/update-spec.dto';
 import { Spec } from './entity/spec.entity';
@@ -38,7 +35,6 @@ import { SpecsService } from './specs.service';
 
 @ApiTags('스펙 API')
 @UseGuards(AuthGuard('jwt'))
-@UseInterceptors(SuccesseInterceptor)
 @Controller('specs')
 export class SpecsController {
   constructor(
@@ -222,7 +218,6 @@ export class SpecsController {
       throw new BadRequestException(
         '사진을 선택하지 않은 경우 기본사진을 넣어주셔야 스펙 등록이 가능 합니다.',
       );
-
     const specPhotoUrls = await this.awsService.uploadSpecFileToS3(
       'spec',
       files,
@@ -273,7 +268,7 @@ export class SpecsController {
   @ApiBearerAuth('access-token')
   @UseGuards(AuthGuard('jwt'))
   @UseInterceptors(FilesInterceptor('image', 10))
-  @Put(':specNo')
+  @Patch(':specNo')
   async updateSpec(
     @Param('specNo') specNo: number,
     @UploadedFiles() files: Express.Multer.File[],
@@ -329,7 +324,14 @@ export class SpecsController {
     @Param('specNo') specNo: number,
     @CurrentUser() user: User,
   ): Promise<object> {
-    await this.specsService.deleteSpec(specNo, user.no);
+    const originSpecPhotoUrls = await this.specsService.deleteSpec(
+      specNo,
+      user.no,
+    );
+
+    if (originSpecPhotoUrls) {
+      await this.awsService.deleteSpecS3Object(originSpecPhotoUrls);
+    }
 
     return {
       msg: '성공적으로 스팩을 삭제하였습니다.',

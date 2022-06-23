@@ -16,12 +16,10 @@ import { User } from 'src/auth/entity/user.entity';
 import { AwsService } from 'src/aws/aws.service';
 import { HTTP_STATUS_CODE } from 'src/common/configs/http-status.config';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
-import { SuccesseInterceptor } from 'src/common/interceptors/success.interceptor';
 import { SendLetterDto } from './dto/letter.dto';
 import { LettersService } from './letters.service';
 
 @UseGuards(AuthGuard('jwt'))
-@UseInterceptors(SuccesseInterceptor)
 @ApiTags('Letters')
 @Controller('letters')
 export class LettersController {

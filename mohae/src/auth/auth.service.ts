@@ -39,12 +39,9 @@ export class AuthService {
     private schoolRepository: SchoolRepository,
     private majorRepository: MajorRepository,
     private categoriesRepository: CategoryRepository,
-    private termsRepository: TermsReporitory,
-    private termsUserRepository: TermsUserReporitory,
     private connection: Connection,
     private errorConfirm: ErrorConfirm,
     private jwtService: JwtService,
-
     private configService: ConfigService,
   ) {}
   async signUp(signUpDto: SignUpDto): Promise<object> {
@@ -161,10 +158,12 @@ export class AuthService {
   async passwordConfirm(user: User, password: string) {
     try {
       const isPassword: boolean = await bcrypt.compare(password, user.salt);
+
       if (isPassword) {
         const payload: object = {
           email: user.email,
           userNo: user.no,
+          photoUrl: user.profilePhoto,
           issuer: 'modern-agile',
           expiration: this.configService.get<number>('EXPIRES_IN'),
         };

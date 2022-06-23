@@ -10,7 +10,7 @@ export class CreateSpecDto {
   })
   @IsNotEmpty()
   @IsString()
-  @ApiProperty({ description: '스펙 제목' })
+  @ApiProperty({ title: '스펙 제목' })
   title: string;
 
   @ApiProperty({

@@ -92,8 +92,8 @@ export class AwsService {
 
   async uploadSpecFileToS3(folder: string, files: any): Promise<Array<string>> {
     try {
-      if (files[0].originalname === 'default.jpg') {
-        return ['default.jpg'];
+      if (files[0].originalname === 'logo.jpg') {
+        return ['logo.jpg'];
       }
       const specPhotoUrls = [];
 
@@ -112,7 +112,7 @@ export class AwsService {
           })
           .promise();
 
-        specPhotoUrls.push(key);
+        specPhotoUrls.push(this.getAwsS3FileUrl(key));
       }
       return specPhotoUrls;
     } catch (error) {
@@ -146,8 +146,8 @@ export class AwsService {
 
   async uploadProfileFileToS3(folder: string, file: any): Promise<string> {
     try {
-      if (file.originalname === 'default.jpg') {
-        return 'default.jpg';
+      if (file.originalname === 'logo.jpg') {
+        return 'logo.jpg';
       }
       const profilePhotoUrl: string = `${folder}/${Date.now()}_${path.basename(
         file.originalname,
@@ -163,7 +163,7 @@ export class AwsService {
         })
         .promise();
 
-      return profilePhotoUrl;
+      return this.getAwsS3FileUrl(profilePhotoUrl);
     } catch (error) {
       throw new BadRequestException(`File upload failed : ${error}`);
     }
@@ -247,8 +247,8 @@ export class AwsService {
     files: any,
   ): Promise<Array<string>> {
     try {
-      if (files[0].originalname === 'default.jpg') {
-        return ['default.jpg'];
+      if (files[0].originalname === 'logo.jpg') {
+        return ['logo.jpg'];
       }
       const boardPhotoUrls = [];
 
@@ -267,8 +267,9 @@ export class AwsService {
           })
           .promise();
 
-        boardPhotoUrls.push(key);
+        boardPhotoUrls.push(this.getAwsS3FileUrl(key));
       }
+
       return boardPhotoUrls;
     } catch (error) {
       throw new BadRequestException(`File upload failed : ${error}`);

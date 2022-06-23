@@ -43,29 +43,28 @@ export class ProfilesService {
         profileUserNo,
         userNo,
       );
-
-      profile.categories = profile.categoryNo
-        .split('|')
-        .map((categoriesInfo: string) => {
-          const categoryInfo: string[] = categoriesInfo.split(',');
-          return {
-            no: categoryInfo[0],
-            name: categoryInfo[1],
-          };
-        });
-
-      profile.isLike = !!Number(profile.isLike);
-      delete profile.categoryNo;
-
       if (!profile) {
         throw new NotFoundException(
           `No: ${profileUserNo}에 해당하는 회원을 찾을 수 없습니다.`,
         );
       }
+      if (profile.categoryNo.length) {
+        profile.categories = profile.categoryNo
+          .split('|')
+          .map((categoriesInfo: string) => {
+            const categoryInfo: string[] = categoriesInfo.split(',');
+            return {
+              no: categoryInfo[0],
+              name: categoryInfo[1],
+            };
+          });
+      } else {
+        profile.categories = null;
+      }
+      delete profile.categoryNo;
+      profile.isLike = !!Number(profile.isLike);
 
-      return {
-        profile,
-      };
+      return profile;
     } catch (err) {
       throw err;
     }
@@ -153,7 +152,7 @@ export class ProfilesService {
             .getCustomRepository(ProfilePhotoRepository)
             .deleteProfilePhoto(beforeProfile.no);
         }
-        if (profilePhotoUrl !== 'default.jpg')
+        if (profilePhotoUrl !== 'logo.jpg')
           await queryRunner.manager
             .getCustomRepository(ProfilePhotoRepository)
             .saveProfilePhoto(profilePhotoUrl, userNo);

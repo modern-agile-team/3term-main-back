@@ -3,8 +3,10 @@ import { AppModule } from './app.module';
 import { Logger, ValidationPipe } from '@nestjs/common';
 import { setupSwagger } from './common/utils/swagger';
 import * as expressBasicAuth from 'express-basic-auth';
-import { SentryInterceptor } from './common/interceptors/sentry.interceptor';
 import { ConfigService } from '@nestjs/config';
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
+import { HttpExceptionFilter } from './common/exceptions/http-exception.filter';
+import { ClientErrorInterceptor } from './common/interceptors/client-error.interceptor';
 
 declare const module: any;
 
@@ -14,6 +16,7 @@ async function bootstrap() {
   const serverPort = configService.get('SERVER_PORT');
   const swaggerUser = configService.get('SWAGGER_USER');
   const swaggerPassword = configService.get('SWAGGER_PASSWORD');
+  const winstonLogger = app.get(WINSTON_MODULE_NEST_PROVIDER);
 
   // Cors 적용
   app.enableCors();
@@ -34,7 +37,8 @@ async function bootstrap() {
       transform: true,
     }),
   );
-  app.useGlobalInterceptors(new SentryInterceptor());
+  app.useGlobalInterceptors(new ClientErrorInterceptor(winstonLogger));
+  app.useGlobalFilters(new HttpExceptionFilter(winstonLogger));
 
   //Swagger 환경설정 연결
   setupSwagger(app);
