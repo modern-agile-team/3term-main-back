@@ -10,12 +10,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { CategoryRepository } from 'src/categories/repository/category.repository';
 import { AreasRepository } from 'src/areas/repository/area.repository';
 import { Any, Connection, DeleteResult, RelationId } from 'typeorm';
-import {
-  CreateBoardDto,
-  HotBoardDto,
-  SearchBoardDto,
-  UpdateBoardDto,
-} from './dto/board.dto';
+import { CreateBoardDto } from './dto/board.dto';
 import { BoardRepository } from './repository/board.repository';
 import { ErrorConfirm } from 'src/common/utils/error';
 import { UserRepository } from 'src/auth/repository/user.repository';
@@ -24,25 +19,29 @@ import { Category } from 'src/categories/entity/category.entity';
 import { Area } from 'src/areas/entity/areas.entity';
 import { BoardPhotoRepository } from 'src/photo/repository/photo.repository';
 import { User } from '@sentry/node';
+import { FilterBoardDto } from './dto/filterBoard.dto';
+import { HotBoardDto } from './dto/hotBoard.dto';
+import { SearchBoardDto } from './dto/searchBoard.dto';
+import { PaginationDto } from './dto/pagination.dto';
 
 @Injectable()
 export class BoardsService {
   constructor(
     @InjectRepository(BoardRepository)
-    private boardRepository: BoardRepository,
+    private readonly boardRepository: BoardRepository,
 
     @InjectRepository(AreasRepository)
-    private areaRepository: AreasRepository,
+    private readonly areaRepository: AreasRepository,
 
     @InjectRepository(CategoryRepository)
-    private categoryRepository: CategoryRepository,
+    private readonly categoryRepository: CategoryRepository,
 
     @InjectRepository(UserRepository)
-    private userRepository: UserRepository,
+    private readonly userRepository: UserRepository,
 
-    private connection: Connection,
+    private readonly connection: Connection,
 
-    private errorConfirm: ErrorConfirm,
+    private readonly errorConfirm: ErrorConfirm,
   ) {}
 
   async closingBoard(): Promise<number> {
@@ -60,19 +59,10 @@ export class BoardsService {
     }
   }
 
-  async filteredBoards(
-    categoryNo: number,
-    sort: any,
-    title: string,
-    popular: string,
-    areaNo: number,
-    max: number,
-    min: number,
-    target: boolean,
-    date: any,
-    free: string,
-  ): Promise<object> {
+  async filteredBoards(filterBoardDto: FilterBoardDto): Promise<object> {
     try {
+      const { date }: FilterBoardDto = filterBoardDto;
+
       const currentTime: Date = new Date();
       currentTime.setHours(currentTime.getHours() + 9);
 
@@ -82,25 +72,17 @@ export class BoardsService {
         endTime = null;
       } else {
         endTime.setHours(endTime.getHours() + 9);
-        endTime.setDate(endTime.getDate() + date);
+        endTime.setDate(endTime.getDate() + +date);
       }
 
       const boards: Board[] = await this.boardRepository.filteredBoards(
-        categoryNo,
-        sort,
-        title,
-        popular,
-        areaNo,
-        max,
-        min,
-        target,
-        Number(date),
+        filterBoardDto,
+        +date,
         endTime,
         currentTime,
-        free,
       );
 
-      return { filteredBoardNum: boards.length, boards };
+      return { boards };
     } catch (err) {
       throw err;
     }
@@ -227,10 +209,12 @@ export class BoardsService {
   async searchAllBoards(searchBoardDto: SearchBoardDto): Promise<object> {
     try {
       const { title }: SearchBoardDto = searchBoardDto;
-      const boards: Board[] = await this.boardRepository.searchAllBoards(title);
+      const boards: Board[] = await this.boardRepository.searchAllBoards(
+        searchBoardDto,
+      );
       this.errorConfirm.notFoundError(boards, '게시글을 찾을 수 없습니다.');
 
-      return { foundedBoardNum: boards.length, search: title, boards };
+      return { search: title, boards };
     } catch (err) {
       throw err;
     }

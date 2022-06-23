@@ -5,6 +5,7 @@ import { User } from 'src/auth/entity/user.entity';
 import { Board } from 'src/boards/entity/board.entity';
 import { EntityRepository, Repository, SelectQueryBuilder } from 'typeorm';
 import { Category } from '../entity/category.entity';
+import { PaginationDto } from 'src/boards/dto/pagination.dto';
 
 @EntityRepository(Category)
 export class CategoryRepository extends Repository<Category> {
@@ -20,7 +21,10 @@ export class CategoryRepository extends Repository<Category> {
     }
   }
 
-  async findOneCategory(no: number): Promise<object> {
+  async findOneCategory(
+    no: number,
+    { page, take }: PaginationDto,
+  ): Promise<object> {
     try {
       const category: SelectQueryBuilder<Category> = this.createQueryBuilder(
         'categories',
@@ -44,13 +48,14 @@ export class CategoryRepository extends Repository<Category> {
           'board.isDeadline AS isDeadline',
           'board.price AS price',
           'board.target AS target',
-          'area.no AS areaNo',
-          'area.name AS areaName',
-          'user.nickname AS userNickname',
+          'area.name AS area',
+          'user.nickname AS nickname',
         ])
         .groupBy('board.no')
         .having('COUNT(board.no) > 0')
         .orderBy('board.no', 'DESC')
+        .limit(+page)
+        .offset((+page - 1) * +take)
         .getRawMany();
 
       return { boards, categoryName };

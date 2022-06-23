@@ -4,6 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { PaginationDto } from 'src/boards/dto/pagination.dto';
 import { Board } from 'src/boards/entity/board.entity';
 import { BoardRepository } from 'src/boards/repository/board.repository';
 import { Category } from './entity/category.entity';
@@ -24,15 +25,24 @@ export class CategoriesService {
     return categories;
   }
 
-  async findOneCategory(no: number): Promise<object> {
+  async findOneCategory(
+    no: number,
+    paginationDto: PaginationDto,
+  ): Promise<object> {
     try {
-      if (no === 1) {
-        const boards: Board[] = await this.boardRepository.getAllBoards();
+      if (no === 17) {
+        const boards: Board[] = await this.boardRepository.getAllBoards(
+          paginationDto,
+        );
 
-        return { boardNum: boards.length, categoryName: '전체 게시판', boards };
+        return {
+          categoryName: '전체 게시판',
+          category: { boards },
+        };
       }
       const category: object = await this.categoryRepository.findOneCategory(
         no,
+        paginationDto,
       );
 
       if (!category) {
@@ -42,7 +52,6 @@ export class CategoriesService {
       }
 
       return {
-        boardNum: category['boards'].length,
         categoryName: `${category['categoryName']} 게시판`,
         category,
       };
