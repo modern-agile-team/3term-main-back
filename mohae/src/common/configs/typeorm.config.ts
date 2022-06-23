@@ -45,6 +45,11 @@ export const typeOrmConfig: TypeOrmModuleAsyncOptions = {
     database: configService.get<string>('DB_DATABASE'),
     synchronize: configService.get<boolean>('DB_SYNCHRONIZE'),
     logging: configService.get<boolean>('DB_LOGGING'),
+    migrations: ['dist/migrations/*{.ts,.js}'],
+    cli: {
+      migrationsDir: './src/common/database/migrations',
+    },
+    migrationsTableName: './src/common/database/migrations/migrations',
     entities: [
       Area,
       User,
