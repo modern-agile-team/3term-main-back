@@ -267,8 +267,9 @@ export class AwsService {
           })
           .promise();
 
-        boardPhotoUrls.push(key);
+        boardPhotoUrls.push(this.getAwsS3FileUrl(key));
       }
+
       return boardPhotoUrls;
     } catch (error) {
       throw new BadRequestException(`File upload failed : ${error}`);

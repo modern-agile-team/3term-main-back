@@ -8,9 +8,11 @@ import {
   SelectQueryBuilder,
   UpdateResult,
 } from 'typeorm';
-import { CreateBoardDto } from '../dto/board.dto';
 import { Board } from '../entity/board.entity';
 import { User } from '@sentry/node';
+import { FilterBoardDto } from '../dto/filterBoard.dto';
+import { PaginationDto } from '../dto/pagination.dto';
+import { SearchBoardDto } from '../dto/searchBoard.dto';
 
 @EntityRepository(Board)
 export class BoardRepository extends Repository<Board> {
@@ -36,26 +38,24 @@ export class BoardRepository extends Repository<Board> {
         .leftJoin('users.profilePhoto', 'profilePhoto')
         .select([
           'boards.no AS no',
-          'REPLACE(GROUP_CONCAT(photo.photo_url), ",", ", ") AS boardPhoto',
+          'REPLACE(GROUP_CONCAT(photo.photo_url), ",", ", ") AS boardPhotoUrls',
           'DATEDIFF(boards.deadline, now()) * -1 AS decimalDay',
           'boards.title AS title',
           'boards.description AS description',
           'boards.isDeadline AS isDeadline',
           'boards.hit AS hit',
-          'COUNT(likedUser.likedBoardNo) AS likeCount',
           'boards.price AS price',
           'boards.summary AS summary',
           'boards.target AS target',
           'areas.no AS areaNo',
-          'areas.name AS areaName',
+          'areas.name AS area',
           'categories.no AS categoryNo',
-          'categories.name AS categoryName',
-          'profilePhoto.photo_url AS userProfilePhoto',
+          'categories.name AS category',
+          'profilePhoto.photo_url AS userPhotoUrl',
           'users.no AS userNo',
-          'users.name AS userName',
-          'users.nickname AS userNickname',
-          'school.name AS userSchool',
-          'major.name AS userMajor',
+          'users.nickname AS nickname',
+          'school.name AS school',
+          'major.name AS major',
         ])
         .where('boards.no = :no', { no: boardNo })
         .getRawOne();
@@ -130,7 +130,11 @@ export class BoardRepository extends Repository<Board> {
     }
   }
 
-  async searchAllBoards(title: string): Promise<Board[]> {
+  async searchAllBoards({
+    title,
+    take,
+    page,
+  }: SearchBoardDto): Promise<Board[]> {
     try {
       const boards = await this.createQueryBuilder('boards')
         .leftJoin('boards.area', 'areas')
@@ -138,19 +142,21 @@ export class BoardRepository extends Repository<Board> {
         .leftJoin('boards.photos', 'photo')
         .select([
           'boards.no AS no',
-          'photo.photo_url AS boardPhoto',
+          'photo.photo_url AS photoUrl',
           'DATEDIFF(boards.deadline, now()) * -1 AS decimalDay',
           'boards.title AS title',
           'boards.isDeadline AS isDeadline',
           'boards.price AS price',
           'boards.target AS target',
-          'areas.name AS areaName',
-          'users.nickname AS userNickname',
+          'areas.name AS area',
+          'users.nickname AS nickname',
         ])
         .where('boards.title like :title', { title: `%${title}%` })
         .orderBy('boards.no', 'DESC')
         .groupBy('boards.no')
         .addGroupBy('boards.no = photo.no')
+        .limit(+take)
+        .offset((+page - 1) * +take)
         .getRawMany();
 
       return boards;
@@ -162,20 +168,25 @@ export class BoardRepository extends Repository<Board> {
   }
 
   async filteredBoards(
-    categoryNo: number,
-    sort: any,
-    title: string,
-    popular: string,
-    areaNo: number,
-    max: number,
-    min: number,
-    target: boolean,
-    date: any,
+    filterBoardDto: FilterBoardDto,
+    date: number,
     endTime: Date,
     currentTime: Date,
-    free: string,
   ): Promise<Board[]> {
     try {
+      const {
+        sort,
+        categoryNo,
+        title,
+        areaNo,
+        max,
+        min,
+        target,
+        free,
+        popular,
+        page,
+        take,
+      }: FilterBoardDto = filterBoardDto;
       const boardFiltering = this.createQueryBuilder('boards')
         .leftJoin('boards.area', 'areas')
         .leftJoin('boards.category', 'categories')
@@ -183,20 +194,22 @@ export class BoardRepository extends Repository<Board> {
         .leftJoin('boards.photos', 'photo')
         .select([
           'boards.no AS no',
-          'photo.photo_url AS boardPhoto',
+          'photo.photo_url AS PhotoUrl',
           'DATEDIFF(boards.deadline, now()) * -1 AS decimalDay',
           'boards.title AS title',
           'boards.isDeadline AS isDeadline',
           'boards.price AS price',
           'boards.target AS target',
-          'areas.name AS areaName',
-          'users.nickname AS userNickname',
+          'areas.name AS area',
+          'users.nickname AS nickname',
         ])
         .orderBy('boards.no', sort)
         .groupBy('boards.no')
-        .addGroupBy('boards.no = photo.no');
+        .addGroupBy('boards.no = photo.no')
+        .limit(+take)
+        .offset((+page - 1) * +take);
 
-      if (categoryNo > 1) {
+      if (+categoryNo > 1) {
         boardFiltering.andWhere('boards.category = :categoryNo', {
           categoryNo,
         });
@@ -210,7 +223,7 @@ export class BoardRepository extends Repository<Board> {
       if (min) boardFiltering.andWhere('boards.price >= :min', { min });
       if (target)
         boardFiltering.andWhere('boards.target = :target', { target });
-      if (date === NaN) {
+      if (date === 0) {
         boardFiltering.andWhere('boards.deadline is null');
       }
       if (date) {
@@ -230,7 +243,7 @@ export class BoardRepository extends Repository<Board> {
     }
   }
 
-  async getAllBoards(): Promise<Board[]> {
+  async getAllBoards({ take, page }: PaginationDto): Promise<Board[]> {
     try {
       return await this.createQueryBuilder('boards')
         .leftJoin('boards.area', 'area')
@@ -253,6 +266,8 @@ export class BoardRepository extends Repository<Board> {
         .andWhere('boards.category = category.no')
         .groupBy('boards.no')
         .orderBy('boards.no', 'DESC')
+        .limit(+take)
+        .offset((+page - 1) * +take)
         .getRawMany();
     } catch (err) {
       throw new InternalServerErrorException(
@@ -375,14 +390,14 @@ export class BoardRepository extends Repository<Board> {
         .select([
           'boards.no AS no',
           'DATEDIFF(boards.deadline, now()) * -1 AS decimalDay',
-          'photo.photo_url AS boardPhotoUrl',
+          'photo.photo_url AS photoUrl',
           'boards.title AS title',
           'boards.isDeadline AS isDeadline',
           'boards.price AS price',
           'boards.target AS target',
-          'areas.name AS areaName',
+          'areas.name AS area',
           'users.no AS userNo',
-          'users.nickname AS userNickname',
+          'users.nickname AS nickName',
         ])
         .where('Year(boards.createdAt) <= :year', { year })
         .andWhere('Month(boards.createdAt) <= :month', { month })
