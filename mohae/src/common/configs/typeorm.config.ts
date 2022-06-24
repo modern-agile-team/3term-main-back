@@ -47,9 +47,9 @@ export const typeOrmConfig: TypeOrmModuleAsyncOptions = {
     logging: configService.get<boolean>('DB_LOGGING'),
     migrations: ['dist/migrations/*{.ts,.js}'],
     cli: {
-      migrationsDir: './src/common/database/migrations',
+      migrationsDir: 'src/migrations',
     },
-    migrationsTableName: './src/common/database/migrations/migrations',
+    migrationsTableName: 'migrations',
     entities: [
       Area,
       User,
