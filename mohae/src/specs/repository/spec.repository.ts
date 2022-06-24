@@ -75,8 +75,6 @@ export class SpecRepository extends Repository<Spec> {
           'specs.description',
           'specPhotos.photo_url',
           'specPhotos.no',
-          'specs.createdAt',
-          'specs.latestUpdateSpec',
         ])
         .where('specs.no = :specNo', { specNo })
         .getOne();
