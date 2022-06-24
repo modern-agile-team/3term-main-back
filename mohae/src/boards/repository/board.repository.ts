@@ -32,8 +32,8 @@ export class BoardRepository extends Repository<Board> {
         .leftJoin(
           'boards.likedUser',
           'likedUser',
-          'likedUser.likedBoardNo = :no',
-          { no: boardNo },
+          'likedUser.likedBoardNo = :boardNo',
+          { boardNo },
         )
         .leftJoin('users.profilePhoto', 'profilePhoto')
         .select([
@@ -47,6 +47,7 @@ export class BoardRepository extends Repository<Board> {
           'boards.price AS price',
           'boards.summary AS summary',
           'boards.target AS target',
+          'COUNT(likedUser.no) AS likeCount',
           `EXISTS(SELECT no FROM board_likes WHERE board_likes.likedUserNo = ${userNo} AND board_likes.likedBoardNo = ${boardNo}) AS isLike`,
           'areas.no AS areaNo',
           'areas.name AS area',

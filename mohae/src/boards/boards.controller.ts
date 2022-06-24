@@ -331,7 +331,10 @@ export class BoardsController {
     @Param('boardNo') boardNo: number,
     @CurrentUser() user: User,
   ): Promise<object> {
-    const response = await this.boardService.readByOneBoard(boardNo, user.no);
+    const response: Board = await this.boardService.readByOneBoard(
+      boardNo,
+      user.no,
+    );
 
     return {
       msg: '게시글 상세 조회가 완료되었습니다.',
