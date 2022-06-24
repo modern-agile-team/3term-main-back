@@ -1,5 +1,7 @@
-import { Injectable } from '@nestjs/common';
+import { CACHE_MANAGER, Inject, Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
+import { Cache } from 'cache-manager';
 import { User } from 'src/auth/entity/user.entity';
 import { UserRepository } from 'src/auth/repository/user.repository';
 import { ErrorConfirm } from 'src/common/utils/error';
@@ -12,16 +14,30 @@ import { FaqRepository } from './repository/faq.repository';
 @Injectable()
 export class FaqsService {
   constructor(
-    @InjectRepository(FaqRepository)
-    private faqRepository: FaqRepository,
+    @Inject(CACHE_MANAGER)
+    private readonly cacheManager: Cache,
 
-    private connection: Connection,
-    private errorConfirm: ErrorConfirm,
+    @InjectRepository(FaqRepository)
+    private readonly faqRepository: FaqRepository,
+
+    private readonly config: ConfigService,
+
+    private readonly connection: Connection,
+    private readonly errorConfirm: ErrorConfirm,
   ) {}
+
+  async getFaqCacheData(key: string): Promise<Faq | Faq[]> {
+    return await this.cacheManager.get<Faq | Faq[]>(key);
+  }
 
   async readAllFaqs(): Promise<Faq | Faq[]> {
     try {
-      const faqs = await this.faqRepository.readAllFaqs();
+      const faqs: Faq | Faq[] = await this.faqRepository.readAllFaqs();
+
+      await this.cacheManager.set<Faq | Faq[]>('faqs', faqs, {
+        ttl: await this.config.get('REDIS_FAQ_TTL'),
+      });
+
       this.errorConfirm.notFoundError(faqs, '자주 묻는 질문이 없습니다.');
 
       return faqs;
