@@ -23,6 +23,10 @@ import { FilterBoardDto } from './dto/filterBoard.dto';
 import { HotBoardDto } from './dto/hotBoard.dto';
 import { SearchBoardDto } from './dto/searchBoard.dto';
 import { PaginationDto } from './dto/pagination.dto';
+import {
+  BoardLikeRepository,
+  LikeRepository,
+} from 'src/like/repository/like.repository';
 
 @Injectable()
 export class BoardsService {
@@ -38,6 +42,9 @@ export class BoardsService {
 
     @InjectRepository(UserRepository)
     private readonly userRepository: UserRepository,
+
+    @InjectRepository(BoardLikeRepository)
+    private readonly boardLikeRepository: BoardLikeRepository,
 
     private readonly connection: Connection,
 
@@ -114,9 +121,16 @@ export class BoardsService {
     }
   }
 
-  async readByOneBoard(boardNo: number): Promise<any> {
+  async readByOneBoard(boardNo: number, userNo: number): Promise<any> {
     try {
-      const board: any = await this.boardRepository.readByOneBoard(boardNo);
+      const user = await this.userRepository.findOne(userNo);
+
+      this.errorConfirm.notFoundError(user.no, `해당 회원을 찾을 수 없습니다.`);
+
+      const board: any = await this.boardRepository.readByOneBoard(
+        boardNo,
+        userNo,
+      );
 
       this.errorConfirm.notFoundError(
         board.no,
@@ -140,7 +154,10 @@ export class BoardsService {
 
   async boardClosed(boardNo: number, userNo: number): Promise<boolean> {
     try {
-      const board: Board = await this.boardRepository.readByOneBoard(boardNo);
+      const board: Board = await this.boardRepository.readByOneBoard(
+        boardNo,
+        userNo,
+      );
       this.errorConfirm.notFoundError(board.no, '게시글을 찾을 수 없습니다.');
 
       if (board['userNo'] !== userNo) {
@@ -165,7 +182,10 @@ export class BoardsService {
 
   async cancelClosedBoard(boardNo: number, userNo: number): Promise<boolean> {
     try {
-      const board: Board = await this.boardRepository.readByOneBoard(boardNo);
+      const board: Board = await this.boardRepository.readByOneBoard(
+        boardNo,
+        userNo,
+      );
       this.errorConfirm.notFoundError(
         board.no,
         `해당 게시글을 찾을 수 없습니다.`,
@@ -307,7 +327,10 @@ export class BoardsService {
 
   async deleteBoard(boardNo: number, userNo: number): Promise<boolean> {
     try {
-      const board: Board = await this.boardRepository.readByOneBoard(boardNo);
+      const board: Board = await this.boardRepository.readByOneBoard(
+        boardNo,
+        userNo,
+      );
       this.errorConfirm.notFoundError(
         board.no,
         `해당 게시글을 찾을 수 없습니다.`,
@@ -342,7 +365,10 @@ export class BoardsService {
     try {
       const { category, area, deadline } = updateBoardDto;
 
-      const board: Board = await this.boardRepository.readByOneBoard(boardNo);
+      const board: Board = await this.boardRepository.readByOneBoard(
+        boardNo,
+        userNo,
+      );
 
       this.errorConfirm.notFoundError(board, `해당 게시글을 찾을 수 없습니다.`);
 

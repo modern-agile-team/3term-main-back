@@ -16,7 +16,7 @@ import { SearchBoardDto } from '../dto/searchBoard.dto';
 
 @EntityRepository(Board)
 export class BoardRepository extends Repository<Board> {
-  async readByOneBoard(boardNo: number): Promise<any> {
+  async readByOneBoard(boardNo: number, userNo: number): Promise<any> {
     try {
       return await this.createQueryBuilder('boards')
         .leftJoin('boards.area', 'areas', 'areas.no = boards.area')
@@ -32,8 +32,8 @@ export class BoardRepository extends Repository<Board> {
         .leftJoin(
           'boards.likedUser',
           'likedUser',
-          'likedUser.likedBoardNo = :no',
-          { no: boardNo },
+          'likedUser.likedBoardNo = :boardNo',
+          { boardNo },
         )
         .leftJoin('users.profilePhoto', 'profilePhoto')
         .select([
@@ -47,6 +47,8 @@ export class BoardRepository extends Repository<Board> {
           'boards.price AS price',
           'boards.summary AS summary',
           'boards.target AS target',
+          'COUNT(likedUser.no) AS likeCount',
+          `EXISTS(SELECT no FROM board_likes WHERE board_likes.likedUserNo = ${userNo} AND board_likes.likedBoardNo = ${boardNo}) AS isLike`,
           'areas.no AS areaNo',
           'areas.name AS area',
           'categories.no AS categoryNo',
@@ -445,6 +447,7 @@ export class BoardRepository extends Repository<Board> {
         .andWhere('boards.target = :target', { target })
         .limit(take)
         .offset((page - 1) * take)
+        .groupBy('boards.no')
         .getRawMany();
 
       return boards;
