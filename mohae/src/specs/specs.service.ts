@@ -1,7 +1,9 @@
 import {
   BadGatewayException,
   BadRequestException,
+  CACHE_MANAGER,
   ForbiddenException,
+  Inject,
   Injectable,
   InternalServerErrorException,
   UnauthorizedException,
@@ -16,10 +18,15 @@ import { UpdateSpecDto } from './dto/update-spec.dto';
 import { Spec } from './entity/spec.entity';
 import { SpecRepository } from './repository/spec.repository';
 import { Connection } from 'typeorm';
+import { Cache } from 'cache-manager';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class SpecsService {
   constructor(
+    @Inject(CACHE_MANAGER)
+    private readonly cacheManager: Cache,
+
     @InjectRepository(SpecRepository)
     private readonly specRepository: SpecRepository,
 
@@ -29,18 +36,32 @@ export class SpecsService {
     @InjectRepository(SpecPhotoRepository)
     private readonly specPhotoRepository: SpecPhotoRepository,
 
+    private readonly configService: ConfigService,
+
     private readonly connection: Connection,
     private readonly errorConfirm: ErrorConfirm,
   ) {}
-  async getAllSpec(profileUserNo: number): Promise<any> {
+
+  async getSpecCacheData(key: string): Promise<Spec | Spec[]> {
     try {
-      const specs: Array<Spec> = await this.specRepository.getAllSpec(
-        profileUserNo,
-      );
+      return await this.cacheManager.get<Spec | Spec[]>(key);
+    } catch (err) {
+      throw new InternalServerErrorException('스펙 캐시 데이터 조회 에러');
+    }
+  }
+
+  async getAllSpec(profileUserNo: number): Promise<Spec | Spec[] | string> {
+    try {
+      const specs: Spec[] = await this.specRepository.getAllSpec(profileUserNo);
 
       if (!specs.length) {
         return '현재 등록된 스펙이 없습니다.';
       }
+
+      await this.cacheManager.set(`specs_${profileUserNo}`, specs, {
+        ttl: this.configService.get<number>('REDIS_SPEC_TTL'),
+      });
+
       return specs;
     } catch (err) {
       throw err;
@@ -108,6 +129,8 @@ export class SpecsService {
             .userRelation(userNo, specNo, 'specs');
         }
       }
+
+      await this.cacheManager.del(`specs_${userNo}`);
       await queryRunner.commitTransaction();
     } catch (err) {
       await queryRunner.rollbackTransaction();
@@ -121,6 +144,7 @@ export class SpecsService {
     specNo: number,
     updateSpecDto: UpdateSpecDto,
     specPhotoUrls: false | string[],
+    loginUserNo: number,
   ): Promise<any> {
     const queryRunner = this.connection.createQueryRunner();
 
@@ -169,6 +193,7 @@ export class SpecsService {
         }
       }
 
+      await this.cacheManager.del(`specs_${loginUserNo}`);
       await queryRunner.commitTransaction();
     } catch (err) {
       await queryRunner.rollbackTransaction();
@@ -190,6 +215,7 @@ export class SpecsService {
         );
       }
 
+      await this.cacheManager.del(`specs_${userNo}`);
       return isDelete;
     } catch (err) {
       throw err;

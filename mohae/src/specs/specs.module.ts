@@ -9,9 +9,13 @@ import { SpecRepository } from './repository/spec.repository';
 import { SpecsController } from './specs.controller';
 import { SpecsService } from './specs.service';
 import { AwsService } from 'src/aws/aws.service';
+import { cacheModule } from 'src/common/configs/redis.config';
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
   imports: [
+    cacheModule,
+    ConfigModule,
     TypeOrmModule.forFeature([
       UserRepository,
       SpecRepository,

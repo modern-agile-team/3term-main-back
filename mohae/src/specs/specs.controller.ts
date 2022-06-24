@@ -75,7 +75,19 @@ export class SpecsController {
   async getAllSpec(
     @Param('profileUserNo') profileUserNo: number,
   ): Promise<object> {
-    const response: Spec = await this.specsService.getAllSpec(profileUserNo);
+    const specCacheData: Spec | Spec[] =
+      await this.specsService.getSpecCacheData(`specs_${profileUserNo}`);
+
+    if (specCacheData) {
+      return {
+        msg: '성공적으로 스펙을 불러왔습니다.',
+        response: specCacheData,
+      };
+    }
+
+    const response: Spec | Spec[] | string = await this.specsService.getAllSpec(
+      profileUserNo,
+    );
 
     return {
       msg: '성공적으로 스펙을 불러왔습니다.',
@@ -272,6 +284,7 @@ export class SpecsController {
   @UseInterceptors(FilesInterceptor('image', 10))
   @Put(':specNo')
   async updateSpec(
+    @CurrentUser() loginUser: User,
     @Param('specNo') specNo: number,
     @UploadedFiles() files: Express.Multer.File[],
     @Body() updateSpecdto: UpdateSpecDto,
@@ -285,6 +298,7 @@ export class SpecsController {
       specNo,
       updateSpecdto,
       specPhotoUrls,
+      loginUser.no,
     );
     if (originSpecPhotoUrls) {
       await this.awsService.deleteSpecS3Object(originSpecPhotoUrls);
