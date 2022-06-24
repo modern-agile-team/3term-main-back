@@ -1,5 +1,6 @@
 import {
   Body,
+  CacheInterceptor,
   Controller,
   Delete,
   Get,
@@ -47,6 +48,17 @@ export class FaqsController {
   @HttpCode(HTTP_STATUS_CODE.success.ok)
   @Get()
   async readAllFaqs(): Promise<object> {
+    const faqCacheData: Faq | Faq[] = await this.faqsService.getFaqCacheData(
+      'faqs',
+    );
+
+    if (faqCacheData) {
+      return {
+        msg: '전체 FAQ가 조회되었습니다.',
+        response: faqCacheData,
+      };
+    }
+
     const response: Faq | Faq[] = await this.faqsService.readAllFaqs();
 
     return {
