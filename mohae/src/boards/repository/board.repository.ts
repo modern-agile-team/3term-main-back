@@ -16,7 +16,7 @@ import { SearchBoardDto } from '../dto/searchBoard.dto';
 
 @EntityRepository(Board)
 export class BoardRepository extends Repository<Board> {
-  async readByOneBoard(boardNo: number): Promise<any> {
+  async readByOneBoard(boardNo: number, userNo: number): Promise<any> {
     try {
       return await this.createQueryBuilder('boards')
         .leftJoin('boards.area', 'areas', 'areas.no = boards.area')
@@ -47,6 +47,7 @@ export class BoardRepository extends Repository<Board> {
           'boards.price AS price',
           'boards.summary AS summary',
           'boards.target AS target',
+          `EXISTS(SELECT no FROM board_likes WHERE board_likes.likedUserNo = ${userNo} AND board_likes.likedBoardNo = ${boardNo}) AS isLike`,
           'areas.no AS areaNo',
           'areas.name AS area',
           'categories.no AS categoryNo',

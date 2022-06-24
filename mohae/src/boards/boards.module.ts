@@ -17,6 +17,7 @@ import { BoardRepository } from './repository/board.repository';
 import { BasketsService } from 'src/baskets/baskets.service';
 import { BasketRepository } from 'src/baskets/repository/baskets.repository';
 import { AwsService } from 'src/aws/aws.service';
+import { BoardLikeRepository } from 'src/like/repository/like.repository';
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { AwsService } from 'src/aws/aws.service';
       UserRepository,
       BoardPhotoRepository,
       BasketRepository,
+      BoardLikeRepository,
     ]),
     CategoriesModule,
     AreasModule,

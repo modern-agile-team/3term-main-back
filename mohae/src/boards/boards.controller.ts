@@ -324,9 +324,14 @@ export class BoardsController {
     ),
   )
   @HttpCode(HTTP_STATUS_CODE.success.ok)
+  @ApiBearerAuth('access-token')
+  @UseGuards(AuthGuard('jwt'))
   @Get(':boardNo')
-  async readByOneBoard(@Param('boardNo') boardNo: number): Promise<object> {
-    const response = await this.boardService.readByOneBoard(boardNo);
+  async readByOneBoard(
+    @Param('boardNo') boardNo: number,
+    @CurrentUser() user: User,
+  ): Promise<object> {
+    const response = await this.boardService.readByOneBoard(boardNo, user.no);
 
     return {
       msg: '게시글 상세 조회가 완료되었습니다.',
