@@ -445,6 +445,7 @@ export class BoardRepository extends Repository<Board> {
         .andWhere('boards.target = :target', { target })
         .limit(take)
         .offset((page - 1) * take)
+        .groupBy('boards.no')
         .getRawMany();
 
       return boards;
