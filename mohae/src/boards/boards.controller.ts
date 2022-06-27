@@ -46,7 +46,6 @@ import { SearchBoardDto } from './dto/searchBoard.dto';
 import { UpdateBoardDto } from './dto/updateBoard.dto';
 import { WinstonLogger, WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { PaginationDto } from './dto/pagination.dto';
-import jwt from 'jwt-simple';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 
