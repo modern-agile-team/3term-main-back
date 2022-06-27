@@ -338,7 +338,7 @@ export class BoardsController {
     @Param('boardNo') boardNo: number,
     @Req() token,
   ): Promise<object> {
-    if (!token.headers.authorization.length) {
+    if (token.headers.authorization === null) {
       const response: Board = await this.boardService.readOneBoardByUnAuth(
         boardNo,
       );
