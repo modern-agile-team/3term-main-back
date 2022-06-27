@@ -50,14 +50,14 @@ export class BoardRepository extends Repository<Board> {
           'COUNT(likedUser.no) AS likeCount',
           `EXISTS(SELECT no FROM board_likes WHERE board_likes.likedUserNo = ${userNo} AND board_likes.likedBoardNo = ${boardNo}) AS isLike`,
           'areas.no AS areaNo',
-          'areas.name AS area',
+          'areas.name AS areaName',
           'categories.no AS categoryNo',
-          'categories.name AS category',
+          'categories.name AS categoryName',
           'profilePhoto.photo_url AS userPhotoUrl',
           'users.no AS userNo',
           'users.nickname AS nickname',
-          'school.name AS school',
-          'major.name AS major',
+          'school.name AS schoolName',
+          'major.name AS majorName',
         ])
         .where('boards.no = :no', { no: boardNo })
         .getRawOne();
@@ -96,12 +96,14 @@ export class BoardRepository extends Repository<Board> {
           'boards.summary AS summary',
           'boards.target AS target',
           'COUNT(likedUser.no) AS likeCount',
-          'areas.name AS area',
-          'categories.name AS category',
+          'areas.no AS areaNo',
+          'areas.name AS areaName',
+          'categories.no AS categoryNo',
+          'categories.name AS categoryName',
           'profilePhoto.photo_url AS userPhotoUrl',
           'users.no AS userNo',
           'users.nickname AS nickname',
-          'major.name AS major',
+          'major.name AS majorName',
         ])
         .where('boards.no = :no', { no: boardNo })
         .getRawOne();
@@ -194,7 +196,8 @@ export class BoardRepository extends Repository<Board> {
           'boards.isDeadline AS isDeadline',
           'boards.price AS price',
           'boards.target AS target',
-          'areas.name AS area',
+          'areas.no AS areaNo',
+          'areas.name AS areaName',
           'users.nickname AS nickname',
         ])
         .where('boards.title like :title', { title: `%${title}%` })
@@ -246,7 +249,8 @@ export class BoardRepository extends Repository<Board> {
           'boards.isDeadline AS isDeadline',
           'boards.price AS price',
           'boards.target AS target',
-          'areas.name AS area',
+          'areas.no AS areaNo',
+          'areas.name AS areaName',
           'users.nickname AS nickname',
         ])
         .orderBy('boards.no', sort)
@@ -306,7 +310,7 @@ export class BoardRepository extends Repository<Board> {
           'boards.target AS target',
           'area.no AS areaNo',
           'area.name AS areaName',
-          'user.nickname AS userNickname',
+          'user.nickname AS nickname',
         ])
         .where('boards.area = area.no')
         .andWhere('boards.category = category.no')
@@ -443,7 +447,7 @@ export class BoardRepository extends Repository<Board> {
           'boards.target AS target',
           'areas.name AS area',
           'users.no AS userNo',
-          'users.nickname AS nickName',
+          'users.nickname AS nickname',
         ])
         .where('Year(boards.createdAt) <= :year', { year })
         .andWhere('Month(boards.createdAt) <= :month', { month })
