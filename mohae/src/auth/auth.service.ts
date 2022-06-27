@@ -161,9 +161,10 @@ export class AuthService {
 
       if (isPassword) {
         const payload: object = {
-          email: user.email,
           userNo: user.no,
-          photoUrl: user.profilePhoto,
+          email: user.email,
+          nickname: user.nickname,
+          photoUrl: user['photo_url'],
           issuer: 'modern-agile',
           expiration: this.configService.get<number>('EXPIRES_IN'),
         };
