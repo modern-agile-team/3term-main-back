@@ -90,30 +90,40 @@ export class AwsService {
     }
   }
 
-  async uploadSpecFileToS3(folder: string, files: any): Promise<Array<string>> {
+  async uploadSpecFileToS3(
+    folder: string,
+    files: Express.Multer.File[],
+  ): Promise<Array<string>> {
     try {
       if (files[0].originalname === 'logo.jpg') {
         return ['logo.jpg'];
       }
-      const specPhotoUrls = [];
 
-      for await (const file of files) {
+      const uploadList: object[] = files.map((file: Express.Multer.File) => {
         const key: string = `${folder}/${Date.now()}_${path.basename(
           file.originalname,
         )}`.replace(/ /g, '');
 
-        this.awsS3
-          .putObject({
-            Bucket: this.S3_BUCKET_NAME,
-            Key: key,
-            Body: file.buffer,
-            ACL: 'public-read',
-            ContentType: file.mimetype,
-          })
-          .promise();
+        return {
+          Bucket: this.S3_BUCKET_NAME,
+          Key: key,
+          Body: file.buffer,
+          ACL: 'public-read',
+          ContentType: file.mimetype,
+        };
+      });
+      await Promise.all(
+        uploadList.map((uploadFile: any) =>
+          this.awsS3.upload(uploadFile).promise(),
+        ),
+      );
 
-        specPhotoUrls.push(this.getAwsS3FileUrl(key));
-      }
+      const specPhotoUrls: string[] = uploadList.map((file: any) => {
+        {
+          return this.getAwsS3FileUrl(file.Key);
+        }
+      });
+
       return specPhotoUrls;
     } catch (error) {
       throw new BadRequestException(`File upload failed : ${error}`);

@@ -16,7 +16,7 @@ import { SearchBoardDto } from '../dto/searchBoard.dto';
 
 @EntityRepository(Board)
 export class BoardRepository extends Repository<Board> {
-  async readByOneBoard(boardNo: number, userNo: number): Promise<any> {
+  async readOneBoardByAuth(boardNo: number, userNo: number): Promise<any> {
     try {
       return await this.createQueryBuilder('boards')
         .leftJoin('boards.area', 'areas', 'areas.no = boards.area')
@@ -57,6 +57,50 @@ export class BoardRepository extends Repository<Board> {
           'users.no AS userNo',
           'users.nickname AS nickname',
           'school.name AS school',
+          'major.name AS major',
+        ])
+        .where('boards.no = :no', { no: boardNo })
+        .getRawOne();
+    } catch (err) {
+      `${err} ### 게시판 상세 조회 : 알 수 없는 서버 에러입니다.`;
+    }
+  }
+
+  async readOneBoardByUnAuth(boardNo: number): Promise<any> {
+    try {
+      return await this.createQueryBuilder('boards')
+        .leftJoin('boards.area', 'areas', 'areas.no = boards.area')
+        .leftJoin(
+          'boards.category',
+          'categories',
+          'categories.no = boards.category',
+        )
+        .leftJoin('boards.user', 'users')
+        .leftJoin('boards.photos', 'photo')
+        .leftJoin('users.major', 'major')
+        .leftJoin(
+          'boards.likedUser',
+          'likedUser',
+          'likedUser.likedBoardNo = :boardNo',
+          { boardNo },
+        )
+        .leftJoin('users.profilePhoto', 'profilePhoto')
+        .select([
+          'boards.no AS no',
+          'REPLACE(GROUP_CONCAT(photo.photo_url), ",", ", ") AS boardPhotoUrls',
+          'DATEDIFF(boards.deadline, now()) * -1 AS decimalDay',
+          'boards.title AS title',
+          'boards.isDeadline AS isDeadline',
+          'boards.hit AS hit',
+          'boards.price AS price',
+          'boards.summary AS summary',
+          'boards.target AS target',
+          'COUNT(likedUser.no) AS likeCount',
+          'areas.name AS area',
+          'categories.name AS category',
+          'profilePhoto.photo_url AS userPhotoUrl',
+          'users.no AS userNo',
+          'users.nickname AS nickname',
           'major.name AS major',
         ])
         .where('boards.no = :no', { no: boardNo })

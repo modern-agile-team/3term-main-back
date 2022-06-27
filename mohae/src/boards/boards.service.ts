@@ -121,13 +121,13 @@ export class BoardsService {
     }
   }
 
-  async readByOneBoard(boardNo: number, userNo: number): Promise<any> {
+  async readOneBoardByAuth(boardNo: number, userNo: number): Promise<Board> {
     try {
-      const user = await this.userRepository.findOne(userNo);
+      const user: User = await this.userRepository.findOne(userNo);
 
       this.errorConfirm.notFoundError(user.no, `해당 회원을 찾을 수 없습니다.`);
 
-      const board: any = await this.boardRepository.readByOneBoard(
+      const board: any = await this.boardRepository.readOneBoardByAuth(
         boardNo,
         userNo,
       );
@@ -152,9 +152,28 @@ export class BoardsService {
     }
   }
 
+  async readOneBoardByUnAuth(boardNo: number): Promise<Board> {
+    try {
+      const board: Board = await this.boardRepository.readOneBoardByUnAuth(
+        boardNo,
+      );
+
+      this.errorConfirm.notFoundError(
+        board.no,
+        `해당 게시글을 찾을 수 없습니다.`,
+      );
+
+      board.likeCount = Number(board.likeCount);
+
+      return board;
+    } catch (err) {
+      throw err;
+    }
+  }
+
   async boardClosed(boardNo: number, userNo: number): Promise<boolean> {
     try {
-      const board: Board = await this.boardRepository.readByOneBoard(
+      const board: Board = await this.boardRepository.readOneBoardByAuth(
         boardNo,
         userNo,
       );
@@ -182,7 +201,7 @@ export class BoardsService {
 
   async cancelClosedBoard(boardNo: number, userNo: number): Promise<boolean> {
     try {
-      const board: Board = await this.boardRepository.readByOneBoard(
+      const board: Board = await this.boardRepository.readOneBoardByAuth(
         boardNo,
         userNo,
       );
@@ -327,7 +346,7 @@ export class BoardsService {
 
   async deleteBoard(boardNo: number, userNo: number): Promise<boolean> {
     try {
-      const board: Board = await this.boardRepository.readByOneBoard(
+      const board: Board = await this.boardRepository.readOneBoardByAuth(
         boardNo,
         userNo,
       );
@@ -365,7 +384,7 @@ export class BoardsService {
     try {
       const { category, area, deadline } = updateBoardDto;
 
-      const board: Board = await this.boardRepository.readByOneBoard(
+      const board: Board = await this.boardRepository.readOneBoardByAuth(
         boardNo,
         userNo,
       );

@@ -18,10 +18,13 @@ import { BasketsService } from 'src/baskets/baskets.service';
 import { BasketRepository } from 'src/baskets/repository/baskets.repository';
 import { AwsService } from 'src/aws/aws.service';
 import { BoardLikeRepository } from 'src/like/repository/like.repository';
+import { JwtModule } from '@nestjs/jwt';
+import { jwtConfig } from 'src/common/configs/jwt.config';
 
 @Module({
   imports: [
     ScheduleModule.forRoot(),
+    JwtModule.registerAsync(jwtConfig),
     TypeOrmModule.forFeature([
       BoardRepository,
       ReviewRepository,
