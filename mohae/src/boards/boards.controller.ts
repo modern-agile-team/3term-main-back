@@ -13,6 +13,9 @@ import {
   HttpCode,
   UploadedFiles,
   Inject,
+  Redirect,
+  Header,
+  Req,
 } from '@nestjs/common';
 import { User } from '@sentry/node';
 import { AuthGuard } from '@nestjs/passport';
@@ -43,10 +46,13 @@ import { SearchBoardDto } from './dto/searchBoard.dto';
 import { UpdateBoardDto } from './dto/updateBoard.dto';
 import { WinstonLogger, WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { PaginationDto } from './dto/pagination.dto';
+import { ConfigService } from '@nestjs/config';
+import { JwtService } from '@nestjs/jwt';
 
 @ApiTags('Boards')
 @Controller('boards')
 export class BoardsController {
+  validateToken: any;
   constructor(
     @Inject(WINSTON_MODULE_PROVIDER)
     private readonly logger: WinstonLogger,
@@ -54,6 +60,8 @@ export class BoardsController {
     private readonly boardService: BoardsService,
     private readonly categoriesService: CategoriesService,
     private readonly awsService: AwsService,
+    private readonly configService: ConfigService,
+    private readonly jwtService: JwtService,
   ) {}
 
   @Cron('0 1 * * * *')
@@ -324,12 +332,37 @@ export class BoardsController {
     ),
   )
   @HttpCode(HTTP_STATUS_CODE.success.ok)
+  @ApiBearerAuth('access-token')
   @Get(':boardNo')
-  async readByOneBoard(@Param('boardNo') boardNo: number): Promise<object> {
-    const response = await this.boardService.readByOneBoard(boardNo);
+  async readOneBoardByAuth(
+    @Param('boardNo') boardNo: number,
+    @Req() token,
+  ): Promise<object> {
+    if (token.headers.authorization === null) {
+      const response: Board = await this.boardService.readOneBoardByUnAuth(
+        boardNo,
+      );
+
+      return {
+        msg: '게시글 상세 조회가 완료되었습니다(비회원).',
+        response,
+      };
+    }
+
+    const tokenDecode: object = this.jwtService.verify(
+      token.headers.authorization,
+      {
+        secret: this.configService.get('JWT_SECRET'),
+      },
+    );
+
+    const response: Board = await this.boardService.readOneBoardByAuth(
+      boardNo,
+      tokenDecode['userNo'],
+    );
 
     return {
-      msg: '게시글 상세 조회가 완료되었습니다.',
+      msg: '게시글 상세 조회가 완료되었습니다(회원).',
       response,
     };
   }
