@@ -129,20 +129,17 @@ export class LikeService {
         if (!isLikeBoard) {
           throw new Error('게시글 좋아요 도중 일어난 알수 없는 오류 입니다.');
         }
-        await queryRunner.commitTransaction();
+      } else {
+        const isLikeBoard: number = await queryRunner.manager
+          .getCustomRepository(BoardLikeRepository)
+          .dislikeBoard(board.no, user.no);
 
-        return isLikeBoard;
+        if (!isLikeBoard) {
+          throw new ConflictException(
+            '좋아요 취소를 중복해서 요청할 수 없습니다 (좋아요는 judge true로 넣어주세요)',
+          );
+        }
       }
-      const isLikeBoard: number = await queryRunner.manager
-        .getCustomRepository(BoardLikeRepository)
-        .dislikeBoard(board.no, user.no);
-
-      if (!isLikeBoard) {
-        throw new ConflictException(
-          '좋아요 취소를 중복해서 요청할 수 없습니다 (좋아요는 judge true로 넣어주세요)',
-        );
-      }
-
       await queryRunner.commitTransaction();
     } catch (err) {
       await queryRunner.rollbackTransaction();
