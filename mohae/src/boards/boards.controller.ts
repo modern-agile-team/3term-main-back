@@ -301,25 +301,30 @@ export class BoardsController {
       HTTP_STATUS_CODE.success.ok,
       '게시글 상세조회가 완료되었습니다.',
       {
-        no: 15,
-        boardPhotoUrls: 'seungBum.jpg, 11222.jpg, 1.png, 2.jpeg',
-        decimalDay: -6,
-        title: '게시글 검색',
-        description: '생성',
-        isDeadline: 0,
-        hit: 17,
-        price: 1000,
-        summary: '',
-        target: 1,
-        areaNo: 1,
-        area: '서울특별시',
-        categoryNo: 2,
-        category: '디자인',
-        userPhotoUrl: 'profile/1655184234165_test.jpg',
-        userNo: 2,
-        nickname: 'hneeddjsjde',
-        school: '인덕대학교',
-        major: '컴퓨터',
+        board: {
+          no: 15,
+          boardPhotoUrls: 'seungBum.jpg, 11222.jpg, 1.png, 2.jpeg',
+          decimalDay: -6,
+          title: '게시글 검색',
+          description: '생성',
+          isDeadline: 0,
+          hit: 17,
+          price: 1000,
+          summary: '',
+          target: 1,
+          likeCount: 2,
+          isLike: 1,
+          areaNo: 1,
+          areaName: '서울특별시',
+          categoryNo: 2,
+          categoryName: '디자인',
+          userPhotoUrl: 'profile/1655184234165_test.jpg',
+          userNo: 2,
+          nickname: 'hneeddjsjde',
+          schoolName: '인덕대학교',
+          majorName: '컴퓨터',
+        },
+        authorization: true,
       },
     ),
   )
@@ -340,7 +345,7 @@ export class BoardsController {
   ): Promise<object> {
     const sliceToken = token.headers.authorization.substr(7);
     if (sliceToken === 'null') {
-      const response: Board = await this.boardService.readOneBoardByUnAuth(
+      const response: object = await this.boardService.readOneBoardByUnAuth(
         boardNo,
       );
 
@@ -354,7 +359,7 @@ export class BoardsController {
       secret: this.configService.get('JWT_SECRET'),
     });
 
-    const response: Board = await this.boardService.readOneBoardByAuth(
+    const response: object = await this.boardService.readOneBoardByAuth(
       boardNo,
       tokenDecode['userNo'],
     );
