@@ -48,6 +48,7 @@ import { WinstonLogger, WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { PaginationDto } from './dto/pagination.dto';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
+import { CreateBoardDto } from './dto/createBoard.dto';
 
 @ApiTags('Boards')
 @Controller('boards')
@@ -431,8 +432,7 @@ export class BoardsController {
   @UseInterceptors(FilesInterceptor('image', 5))
   async createBoard(
     @UploadedFiles() files: Express.Multer.File[],
-    @Body()
-    createBoardDto,
+    @Body() createBoardDto: CreateBoardDto,
     @CurrentUser() user: User,
   ): Promise<object> {
     for (const key of Object.keys(createBoardDto)) {

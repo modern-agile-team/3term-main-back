@@ -56,7 +56,6 @@ export class BoardRepository extends Repository<Board> {
           'profilePhoto.photo_url AS userPhotoUrl',
           'users.no AS userNo',
           'users.nickname AS nickname',
-          'school.name AS schoolName',
           'major.name AS majorName',
         ])
         .where('boards.no = :no', { no: boardNo })
