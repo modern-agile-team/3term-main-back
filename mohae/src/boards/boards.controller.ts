@@ -312,7 +312,7 @@ export class BoardsController {
           price: 1000,
           summary: '',
           target: 1,
-          likeCount: 2,
+          likeCount: 3,
           isLike: 1,
           areaNo: 1,
           areaName: '서울특별시',
