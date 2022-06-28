@@ -1,6 +1,14 @@
-import { Body, Controller, HttpCode, Post, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  HttpCode,
+  Param,
+  Post,
+  UseGuards,
+} from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import {
+  ApiBadRequestResponse,
   ApiBearerAuth,
   ApiConflictResponse,
   ApiInternalServerErrorResponse,
@@ -8,11 +16,15 @@ import {
   ApiOkResponse,
   ApiOperation,
   ApiTags,
+  ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { User } from 'src/auth/entity/user.entity';
 import { HTTP_STATUS_CODE } from 'src/common/configs/http-status.config';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
-import { LikeBoardDto, LikeUserDto } from './dto/user-like.dto';
+import { operationConfig } from 'src/common/swagger-apis/api-operation.swagger';
+import { apiResponse } from 'src/common/swagger-apis/api-response.swagger';
+import { LikeBoardDto } from './dto/board-like.dto';
+import { LikeUserDto } from './dto/user-like.dto';
 import { LikeService } from './like.service';
 
 @Controller('like')
@@ -80,17 +92,51 @@ export class LikeController {
     }
   }
 
-  @Post('/board')
-  async likeBoard(@Body() likeBoardDto: LikeBoardDto) {
-    try {
-      await this.likeService.likeBoard(likeBoardDto);
+  @ApiOperation(operationConfig('게시글 좋아요 경로', '게시글 좋아요 API'))
+  @ApiOkResponse(
+    apiResponse.success(
+      '성공여부',
+      HTTP_STATUS_CODE.success.ok,
+      '성공적으로 요청이 처리되었습니다.',
+    ),
+  )
+  @ApiUnauthorizedResponse(
+    apiResponse.error(
+      '가입한 회원이 아닌 경우',
+      HTTP_STATUS_CODE.clientError.unauthorized,
+      'Unauthorized',
+      'Unauthorized',
+    ),
+  )
+  @ApiConflictResponse(
+    apiResponse.error(
+      '좋아요를 중복해서 눌렀거나, 좋아요 취소를 중복해서 눌렀을 때',
+      HTTP_STATUS_CODE.clientError.conflict,
+      '좋아요를 중복해서 요청할 수 없습니다 (좋아요 취소는 judge false로 넣어주세요)',
+      'Confilct',
+    ),
+  )
+  @ApiNotFoundResponse(
+    apiResponse.error(
+      '존재하지 않는 게시글의 좋아요 요청을 보냈을 때',
+      HTTP_STATUS_CODE.clientError.notFound,
+      '115번의 게시글은 존재하지 않는 게시글 입니다',
+      'Not Found',
+    ),
+  )
+  @UseGuards(AuthGuard('jwt'))
+  @ApiBearerAuth('access-token')
+  @HttpCode(HTTP_STATUS_CODE.success.ok)
+  @Post('/board/:boardNo')
+  async likeBoard(
+    @Param('boardNo') boardNo: number,
+    @Body() likeBoardDto: LikeBoardDto,
+    @CurrentUser() user: User,
+  ) {
+    await this.likeService.likeBoard(user.no, boardNo, likeBoardDto);
 
-      return Object.assign({
-        success: true,
-        msg: '성공적으로 요청이 처리되었습니다.',
-      });
-    } catch (err) {
-      throw err;
-    }
+    return {
+      msg: '성공적으로 요청이 처리되었습니다.',
+    };
   }
 }
