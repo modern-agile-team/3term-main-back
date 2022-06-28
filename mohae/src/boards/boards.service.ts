@@ -121,7 +121,7 @@ export class BoardsService {
     }
   }
 
-  async readOneBoardByAuth(boardNo: number, userNo: number): Promise<Board> {
+  async readOneBoardByAuth(boardNo: number, userNo: number): Promise<object> {
     try {
       const user: User = await this.userRepository.findOne(userNo);
 
@@ -146,13 +146,13 @@ export class BoardsService {
       }
       board.likeCount = Number(board.likeCount);
 
-      return board;
+      return { board, authorization: true };
     } catch (err) {
       throw err;
     }
   }
 
-  async readOneBoardByUnAuth(boardNo: number): Promise<Board> {
+  async readOneBoardByUnAuth(boardNo: number): Promise<object> {
     try {
       const board: Board = await this.boardRepository.readOneBoardByUnAuth(
         boardNo,
@@ -165,7 +165,7 @@ export class BoardsService {
 
       board.likeCount = Number(board.likeCount);
 
-      return board;
+      return { board, authorization: false };
     } catch (err) {
       throw err;
     }
