@@ -10,7 +10,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { CategoryRepository } from 'src/categories/repository/category.repository';
 import { AreasRepository } from 'src/areas/repository/area.repository';
 import { Any, Connection, DeleteResult, RelationId } from 'typeorm';
-import { CreateBoardDto } from './dto/board.dto';
+import { CreateBoardDto } from './dto/createBoard.dto';
 import { BoardRepository } from './repository/board.repository';
 import { ErrorConfirm } from 'src/common/utils/error';
 import { UserRepository } from 'src/auth/repository/user.repository';

@@ -1,8 +1,6 @@
 import { ApiProperty, PickType } from '@nestjs/swagger';
 import {
-  IsBoolean,
   IsNotEmpty,
-  IsNumber,
   IsOptional,
   IsString,
   MaxLength,
