@@ -338,7 +338,8 @@ export class BoardsController {
     @Param('boardNo') boardNo: number,
     @Req() token,
   ): Promise<object> {
-    if (token.headers.authorization === null) {
+    const sliceToken = token.headers.authorization.substr(7);
+    if (sliceToken === 'null') {
       const response: Board = await this.boardService.readOneBoardByUnAuth(
         boardNo,
       );
@@ -349,12 +350,9 @@ export class BoardsController {
       };
     }
 
-    const tokenDecode: object = this.jwtService.verify(
-      token.headers.authorization,
-      {
-        secret: this.configService.get('JWT_SECRET'),
-      },
-    );
+    const tokenDecode: object = this.jwtService.verify(sliceToken, {
+      secret: this.configService.get('JWT_SECRET'),
+    });
 
     const response: Board = await this.boardService.readOneBoardByAuth(
       boardNo,
