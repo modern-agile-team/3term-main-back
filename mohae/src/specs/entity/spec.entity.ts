@@ -38,18 +38,18 @@ export class Spec extends BaseEntity {
 
   @CreateDateColumn({
     name: 'create_at',
-    comment: '스팩 등록 시간',
+    comment: '스펙 등록 시간',
   })
   createdAt: Date;
 
   @DeleteDateColumn({
     name: 'delete_at',
-    comment: '스팩 삭제일',
+    comment: '스펙 삭제일',
   })
   deletedAt: Date | null;
 
   @UpdateDateColumn({
-    comment: '마지막 스팩 업데이트 시간',
+    comment: '마지막 스펙 업데이트 시간',
   })
   latestUpdateSpec: Date;
 
