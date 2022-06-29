@@ -131,7 +131,6 @@ export class BoardsService {
         boardNo,
         userNo,
       );
-      console.log(board);
 
       this.errorConfirm.notFoundError(
         board.no,
