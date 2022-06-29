@@ -260,25 +260,31 @@ export class AwsService {
       if (files[0].originalname === 'logo.jpg') {
         return ['logo.jpg'];
       }
-      const boardPhotoUrls = [];
 
-      for await (const file of files) {
+      const uploadList: object[] = files.map((file: Express.Multer.File) => {
         const key: string = `${folder}/${Date.now()}_${path.basename(
           file.originalname,
         )}`.replace(/ /g, '');
 
-        this.awsS3
-          .putObject({
-            Bucket: this.S3_BUCKET_NAME,
-            Key: key,
-            Body: file.buffer,
-            ACL: 'public-read',
-            ContentType: file.mimetype,
-          })
-          .promise();
+        return {
+          Bucket: this.S3_BUCKET_NAME,
+          Key: key,
+          Body: file.buffer,
+          ACL: 'public-read',
+          ContentType: file.mimetype,
+        };
+      });
+      await Promise.all(
+        uploadList.map((uploadFile: any) =>
+          this.awsS3.upload(uploadFile).promise(),
+        ),
+      );
 
-        boardPhotoUrls.push(this.getAwsS3FileUrl(key));
-      }
+      const boardPhotoUrls: string[] = uploadList.map((file: any) => {
+        {
+          return file.Key;
+        }
+      });
 
       return boardPhotoUrls;
     } catch (error) {
