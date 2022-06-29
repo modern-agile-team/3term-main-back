@@ -282,7 +282,7 @@ export class AwsService {
 
       const boardPhotoUrls: string[] = uploadList.map((file: any) => {
         {
-          return file.Key;
+          return this.getAwsS3FileUrl(file.Key);
         }
       });
 

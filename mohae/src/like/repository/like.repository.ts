@@ -60,7 +60,7 @@ export class LikeRepository extends Repository<UserLike> {
 
 @EntityRepository(BoardLike)
 export class BoardLikeRepository extends Repository<BoardLike> {
-  async isBoardLike(boardNo: number, userNo: number) {
+  async isBoardLike(boardNo: number, userNo: number): Promise<number> {
     try {
       const numberOfLikes = await this.createQueryBuilder('board_like')
         .where('likedBoardNo = :boardNo', { boardNo })
@@ -75,9 +75,9 @@ export class BoardLikeRepository extends Repository<BoardLike> {
     }
   }
 
-  async likeBoard(likedBoard: Board, likedUser: User) {
+  async likeBoard(likedBoard: Board, likedUser: User): Promise<number> {
     try {
-      const { raw } = await this.createQueryBuilder('board_like')
+      const { raw }: InsertResult = await this.createQueryBuilder('board_like')
         .insert()
         .into(BoardLike)
         .values({ likedBoard, likedUser })
@@ -91,9 +91,11 @@ export class BoardLikeRepository extends Repository<BoardLike> {
     }
   }
 
-  async dislikeBoard(boardNo: number, userNo: number) {
+  async dislikeBoard(boardNo: number, userNo: number): Promise<number> {
     try {
-      const { affected } = await this.createQueryBuilder('board_like')
+      const { affected }: DeleteResult = await this.createQueryBuilder(
+        'board_like',
+      )
         .delete()
         .where('likedBoardNo = :boardNo', { boardNo })
         .andWhere('likedUserNo = :userNo', { userNo })
