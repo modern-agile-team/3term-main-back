@@ -345,6 +345,7 @@ export class BoardsController {
     @Req() token,
   ): Promise<object> {
     const sliceToken = token.headers.authorization.substr(7);
+
     if (sliceToken === 'null') {
       const response: object = await this.boardService.readOneBoardByUnAuth(
         boardNo,
@@ -359,7 +360,6 @@ export class BoardsController {
     const tokenDecode: object = this.jwtService.verify(sliceToken, {
       secret: this.configService.get('JWT_SECRET'),
     });
-
     const response: object = await this.boardService.readOneBoardByAuth(
       boardNo,
       tokenDecode['userNo'],
