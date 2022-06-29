@@ -66,7 +66,7 @@ export class BoardLikeRepository extends Repository<BoardLike> {
         .where('likedBoardNo = :boardNo', { boardNo })
         .andWhere('likedUserNo = :userNo', { userNo })
         .execute();
-      console.log(numberOfLikes);
+
       return numberOfLikes.length;
     } catch (err) {
       throw new InternalServerErrorException(

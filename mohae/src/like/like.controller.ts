@@ -132,7 +132,7 @@ export class LikeController {
     @Param('boardNo') boardNo: number,
     @Body() likeBoardDto: LikeBoardDto,
     @CurrentUser() user: User,
-  ) {
+  ): Promise<object> {
     await this.likeService.likeBoard(user.no, boardNo, likeBoardDto);
 
     return {
