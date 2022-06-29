@@ -69,12 +69,14 @@ export class SpecRepository extends Repository<Spec> {
     try {
       const spec = await this.createQueryBuilder('specs')
         .leftJoin('specs.specPhotos', 'specPhotos')
+        .leftJoin('specs.user', 'user')
         .select([
           'specs.no',
           'specs.title',
           'specs.description',
           'specPhotos.photo_url',
           'specPhotos.no',
+          'user.nickname',
         ])
         .where('specs.no = :specNo', { specNo })
         .getOne();
@@ -136,7 +138,7 @@ export class SpecRepository extends Repository<Spec> {
       return affected;
     } catch (err) {
       throw new InternalServerErrorException(
-        `스팩 업데이트 도중 발생한 서버에러${err}`,
+        `스펙 업데이트 도중 발생한 서버에러${err}`,
       );
     }
   }
@@ -153,7 +155,7 @@ export class SpecRepository extends Repository<Spec> {
       return affected;
     } catch (err) {
       throw new InternalServerErrorException(
-        '스팩 삭제 도중 발생한 서버에러',
+        '스펙 삭제 도중 발생한 서버에러',
         err,
       );
     }

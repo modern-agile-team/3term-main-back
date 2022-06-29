@@ -13,6 +13,16 @@ import { UpdateSpecDto } from './dto/update-spec.dto';
 import { Spec } from './entity/spec.entity';
 import { SpecRepository } from './repository/spec.repository';
 import { Connection } from 'typeorm';
+import { PickType } from '@nestjs/swagger';
+
+export class OneSpec extends PickType(Spec, [
+  'no',
+  'title',
+  'description',
+  'specPhotos',
+]) {
+  nickname?: string;
+}
 
 @Injectable()
 export class SpecsService {
@@ -44,10 +54,13 @@ export class SpecsService {
     }
   }
 
-  async getOneSpec(specNo: number): Promise<Spec> {
+  async getOneSpec(specNo: number): Promise<OneSpec> {
     try {
-      const spec: Spec = await this.specRepository.getOneSpec(specNo);
+      const { user, ...spec }: Spec = await this.specRepository.getOneSpec(
+        specNo,
+      );
 
+      spec['nickname'] = user.nickname;
       this.errorConfirm.notFoundError(spec, '해당 스펙이 존재하지 않습니다.');
 
       return spec;
