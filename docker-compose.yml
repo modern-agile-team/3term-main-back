@@ -1,0 +1,67 @@
+version: "3"
+
+services:
+  redis:
+    container_name: redis
+    image: redis:latest
+    hostname: redis
+    ports:
+      - 6379:6379
+    command: redis-server
+    env_file: ./mohae/.env.production
+    # networks:
+    #   - backend
+    restart: always
+
+  nest:
+    depends_on:
+      - redis
+    build:
+      context: .
+      dockerfile: dockerfile
+    image: nest-prod
+    container_name: nest-prod
+    ports:
+      - 8080:8080
+    # volumes:
+    # - ./app/logs:/usr/server/logs
+    env_file: ./mohae/.env.production
+    # networks:
+    #   - backend
+    restart: always
+
+  nginx:
+    depends_on:
+      - redis
+      - nest
+    image: nginx:stable
+    container_name: nginx
+    user: root
+    hostname: nginx
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx/conf.d:/etc/nginx/conf.d
+      - ../certbot/conf:/etc/letsencrypt # 추가
+      - ../certbot/www:/var/www/certbot # 추가
+    # networks:
+    #   - backend
+    restart: always
+    ports:
+      - 80:80
+      - 443:443
+    expose:
+      - 80
+      - 443
+    command: '/bin/sh -c ''while :; do sleep 6h & wait $${!}; nginx -s reload; done & nginx -g "daemon off;"'''
+
+  certbot: # certbot 서비스 추가
+    image: certbot/certbot
+    container_name: certbot_service
+    volumes:
+      - ../certbot/conf:/etc/letsencrypt
+      - ../certbot/www:/var/www/certbot
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
+# 도커 컴포즈로 띄는 이미지들은 하나의 네트워크를 공유하므로 별도의 설정을 해줄 필요가 없지만
+# 같은 네트워크 대역을 사용한다는 명시용으로 적어두었음.
+# networks:
+#   backend:
