@@ -9,8 +9,6 @@ services:
       - 6379:6379
     command: redis-server
     env_file: ./mohae/.env.production
-    # networks:
-    #   - backend
     restart: always
 
   nest:
@@ -23,11 +21,9 @@ services:
     container_name: nest-prod
     ports:
       - 8080:8080
-    # volumes:
-    # - ./app/logs:/usr/server/logs
+    volumes:
+      - ./app/logs:/usr/server/logs
     env_file: ./mohae/.env.production
-    # networks:
-    #   - backend
     restart: always
 
   nginx:
@@ -40,11 +36,9 @@ services:
     hostname: nginx
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf
-      - ./nginx/conf.d:/etc/nginx/conf.d
-      - ../certbot/conf:/etc/letsencrypt # 추가
-      - ../certbot/www:/var/www/certbot # 추가
-    # networks:
-    #   - backend
+      - ./nginx/conf.d/mohae.conf:/etc/nginx/conf.d
+      - ./certbot/conf:/etc/letsencrypt # 추가
+      - ./certbot/www:/var/www/certbot # 추가
     restart: always
     ports:
       - 80:80
