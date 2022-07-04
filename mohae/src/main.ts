@@ -1,13 +1,35 @@
-import { NestFactory } from '@nestjs/core';
+import { NestApplication, NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import * as config from 'config';
-<<<<<<< HEAD
 import { Logger, ValidationPipe } from '@nestjs/common';
+import { setupSwagger } from './common/utils/swagger';
+import * as expressBasicAuth from 'express-basic-auth';
+import { ConfigService } from '@nestjs/config';
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
+import { HttpExceptionFilter } from './common/exceptions/http-exception.filter';
+import { ClientErrorInterceptor } from './common/interceptors/client-error.interceptor';
+
+declare const module: any;
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
-  const serverConfig = config.get('server');
-  const port = serverConfig.port;
+  const app = await NestFactory.create<NestApplication>(AppModule);
+  const configService = app.get(ConfigService);
+  const serverPort = configService.get('SERVER_PORT');
+  const swaggerUser = configService.get('SWAGGER_USER');
+  const swaggerPassword = configService.get('SWAGGER_PASSWORD');
+  const winstonLogger = app.get(WINSTON_MODULE_NEST_PROVIDER);
+
+  // Cors 적용
+  app.enableCors();
+
+  app.use(
+    ['/mohae-api-docs'],
+    expressBasicAuth({
+      challenge: true,
+      users: {
+        [swaggerUser]: swaggerPassword,
+      },
+    }),
+  );
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
@@ -15,16 +37,21 @@ async function bootstrap() {
       transform: true,
     }),
   );
-=======
-import { Logger } from '@nestjs/common';
+  app.useGlobalInterceptors(new ClientErrorInterceptor(winstonLogger));
+  app.useGlobalFilters(new HttpExceptionFilter(winstonLogger));
 
-async function bootstrap() {
-  const serverConfig = config.get('server');
-  const port = serverConfig.port;
+  //Swagger 환경설정 연결
+  setupSwagger(app);
 
-  const app = await NestFactory.create(AppModule);
->>>>>>> cb50d5df1c24fb0d5587411120777e2bdcffab98
-  await app.listen(port);
-  Logger.log(`Start Run ${port}`);
+  await app.listen(serverPort);
+
+  Logger.log(`Start Run: ${serverPort}`);
+
+  if (module.hot) {
+    module.hot.accept();
+    module.hot.dispose(() => {
+      app.close();
+    });
+  }
 }
 bootstrap();

@@ -2,53 +2,110 @@ import {
   Body,
   Controller,
   Get,
-  Logger,
+  HttpCode,
   Param,
   Post,
-  UsePipes,
-  ValidationPipe,
+  UseFilters,
+  UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
 import {
-  CreateReportBoardDto,
-  CreateReportUserDto,
-} from './dto/create-report.dto';
-import { ReportBoard, ReportUser } from './entity/report.entity';
+  ApiBearerAuth,
+  ApiOkResponse,
+  ApiOperation,
+  ApiTags,
+} from '@nestjs/swagger';
+import { User } from 'src/auth/entity/user.entity';
+import { HTTP_STATUS_CODE } from 'src/common/configs/http-status.config';
+import { CurrentUser } from 'src/common/decorators/current-user.decorator';
+import { operationConfig } from 'src/common/swagger-apis/api-operation.swagger';
+import { apiResponse } from 'src/common/swagger-apis/api-response.swagger';
+import { CreateReportDto } from './dto/create-report.dto';
+import { ReportedBoard } from './entity/reported-board.entity';
+import { ReportedUser } from './entity/reported-user.entity';
 import { ReportsService } from './reports.service';
 
+@UseGuards(AuthGuard('jwt'))
+@ApiTags('Reports')
+@ApiBearerAuth('access-token')
 @Controller('reports')
 export class ReportsController {
-  private logger = new Logger('ReportsController');
   constructor(private reportsService: ReportsService) {}
 
-  // 데이터 입력 테스트를 위한 조회 기능
-  @Get('/:id')
-  findOne(@Param('id') id: number): Promise<ReportBoard> {
-    return this.reportsService.findOne(id);
+  @ApiOperation(
+    operationConfig(
+      '신고된 게시글 상세(선택) 조회',
+      '신고된 게시글 상세(선택) 조회 API',
+    ),
+  )
+  @ApiOkResponse(
+    apiResponse.success(
+      '신고된 게시글 상세 조회 성공',
+      HTTP_STATUS_CODE.success.ok,
+      '신고된 게시글 상세 조회 성공 결과',
+    ),
+  )
+  @HttpCode(HTTP_STATUS_CODE.success.ok)
+  @Get('board/:no')
+  async readOneReportedBoard(@Param('no') boardNo: number): Promise<object> {
+    const response: ReportedBoard =
+      await this.reportsService.readOneReportedBoard(boardNo);
+
+    return {
+      msg: `No:${boardNo} 신고 내역(게시글)이 조회되었습니다.`,
+      response,
+    };
   }
 
-  @Post('board')
-  @UsePipes(ValidationPipe)
-  createBoardReport(
-    @Body() createReportBoardDto: CreateReportBoardDto,
-  ): Promise<ReportBoard> {
-    this.logger.verbose(
-      `Board report has been received. Reported board Payload: ${JSON.stringify(
-        createReportBoardDto,
-      )}`,
-    );
-    return this.reportsService.createBoardReport(createReportBoardDto);
+  @ApiOperation(
+    operationConfig(
+      '신고된 유저 상세(선택) 조회',
+      '신고된 유저 상세(선택) 조회 API',
+    ),
+  )
+  @ApiOkResponse(
+    apiResponse.success(
+      '신고된 유저 상세 조회 성공',
+      HTTP_STATUS_CODE.success.ok,
+      '신고된 유저 상세 조회 성공 결과',
+    ),
+  )
+  @HttpCode(HTTP_STATUS_CODE.success.ok)
+  @Get('user/:no')
+  async readOneReportedUser(@Param('no') userNo: number): Promise<object> {
+    const response: ReportedUser =
+      await this.reportsService.readOneReportedUser(userNo);
+
+    return {
+      msg: `No:${userNo} 신고 내역(유저)이 조회되었습니다.`,
+      response,
+    };
   }
 
-  @Post('user')
-  @UsePipes(ValidationPipe)
-  createUserReport(
-    @Body() createReportUserDto: CreateReportUserDto,
-  ): Promise<ReportUser> {
-    this.logger.verbose(
-      `User report has been received. Reported user Payload: ${JSON.stringify(
-        createReportUserDto,
-      )}`,
-    );
-    return this.reportsService.createUserReport(createReportUserDto);
+  @ApiOperation(
+    operationConfig(
+      '유저 또는 게시글 신고 생성',
+      '유저 또는 게시글 신고 생성 API',
+    ),
+  )
+  @ApiOkResponse(
+    apiResponse.success(
+      '신고 저장',
+      HTTP_STATUS_CODE.success.created,
+      '신고 저장 성공 결과',
+    ),
+  )
+  @HttpCode(HTTP_STATUS_CODE.success.created)
+  @Post()
+  async createReport(
+    @CurrentUser() reporter: User,
+    @Body() createReportDto: CreateReportDto,
+  ): Promise<object> {
+    await this.reportsService.createReport(reporter, createReportDto);
+
+    return {
+      msg: `${createReportDto.head} 신고가 접수되었습니다.`,
+    };
   }
 }

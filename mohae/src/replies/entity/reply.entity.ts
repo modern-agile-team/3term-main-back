@@ -1,0 +1,52 @@
+import { IsNotEmpty, IsString } from 'class-validator';
+import { User } from 'src/auth/entity/user.entity';
+import { Comment } from 'src/comments/entity/comment.entity';
+import {
+  BaseEntity,
+  Column,
+  CreateDateColumn,
+  DeleteDateColumn,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from 'typeorm';
+
+@Entity('replies')
+export class Reply extends BaseEntity {
+  @PrimaryGeneratedColumn()
+  no: number;
+
+  @IsNotEmpty()
+  @IsString()
+  @Column()
+  content: string;
+
+  @CreateDateColumn({
+    name: 'created_at',
+  })
+  createdAt: Date;
+
+  @UpdateDateColumn({
+    name: 'updated_at',
+  })
+  updatedAt: Date;
+
+  @DeleteDateColumn({
+    name: 'deleted_at',
+  })
+  deletedAt: Date | null;
+
+  @ManyToOne(() => Comment, (comment) => comment.replies, { nullable: true })
+  @JoinColumn({
+    name: 'comment_no',
+  })
+  comment: Comment;
+
+  @ManyToOne(() => User, (user) => user.replies, { nullable: true })
+  @JoinColumn({
+    name: 'writer_no',
+  })
+  writer: number;
+}
