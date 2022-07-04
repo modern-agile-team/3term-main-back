@@ -32,7 +32,7 @@ export class CategoriesController {
     });
   }
 
-  @ApiOperation(operationConfig('게시글 검색 경로', '게시글 검색 API'))
+  @ApiOperation(operationConfig('인기 카테고리 조회 경로', '인기 카테고리 API'))
   @ApiOkResponse(
     apiResponse.success(
       '성공여부',
