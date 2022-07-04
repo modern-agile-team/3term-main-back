@@ -40,19 +40,24 @@ export class CategoriesController {
       '인기 카테고리 조회 완료',
       [
         {
-          category: '디자인',
+          no: 2,
+          name: '디자인',
         },
         {
-          category: '사진/영상',
+          no: 4,
+          name: '사진/영상',
         },
         {
-          category: 'IT/개발',
+          no: 3,
+          name: 'IT/개발',
         },
         {
-          category: 'All',
+          no: 8,
+          name: '컨설팅',
         },
         {
-          category: '컨설팅',
+          no: 5,
+          name: '기획/마케팅',
         },
       ],
     ),
