@@ -58,7 +58,7 @@ export class CategoriesController {
     ),
   )
   @HttpCode(HTTP_STATUS_CODE.success.ok)
-  @Get('/popular')
+  @Get('popular')
   async readHotCategories(): Promise<object> {
     const response: Category[] = await this.categoryService.readHotCategories();
 
