@@ -47,7 +47,7 @@ export class EmailService {
   async sendEmail(sendEmailDto) {
     try {
       const emailFromUserName = this.configService.get<string>(
-        'EMAIL_AUTH_PASSWORD',
+        'EMAIL_FROM_USER_NAME',
       );
       const { name, email } = sendEmailDto;
       const user = await this.userRepository.signIn(email);
