@@ -116,7 +116,7 @@ export class CategoryRepository extends Repository<Category> {
     try {
       return await this.createQueryBuilder('categories')
         .leftJoin('categories.boards', 'board')
-        .select(['categories.name AS category'])
+        .select(['categories.no AS no', 'categories.name AS name'])
         .where('categories.no = board.category')
         .groupBy('categories.no')
         .orderBy('COUNT(board.no)', 'DESC')
