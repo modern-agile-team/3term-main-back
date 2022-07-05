@@ -1,6 +1,4 @@
 import { InternalServerErrorException } from '@nestjs/common';
-import { Area } from 'src/areas/entity/areas.entity';
-import { error } from 'console';
 import { User } from 'src/auth/entity/user.entity';
 import { Board } from 'src/boards/entity/board.entity';
 import { EntityRepository, Repository, SelectQueryBuilder } from 'typeorm';
