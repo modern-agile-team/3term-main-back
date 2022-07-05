@@ -21,7 +21,7 @@ export class BoardPhoto extends BaseEntity {
   photo_url: string | null;
 
   @ManyToOne((type) => Board, (board) => board.photos, {
-    onDelete: 'SET NULL',
+    onDelete: 'CASCADE',
   })
   @JoinColumn({ name: 'board_no' })
   board: Board;

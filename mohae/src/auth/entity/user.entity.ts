@@ -129,9 +129,7 @@ export class User extends BaseEntity {
   })
   likedMe: UserLike[];
 
-  @OneToMany((type) => Board, (board) => board.user, {
-    onDelete: 'SET NULL',
-  })
+  @OneToMany((type) => Board, (board) => board.user)
   boards: Board[];
 
   @OneToMany((type) => Letter, (letter) => letter.sender, {

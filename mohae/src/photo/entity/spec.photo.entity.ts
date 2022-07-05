@@ -21,7 +21,7 @@ export class SpecPhoto extends BaseEntity {
   photo_url: string | null;
 
   @ManyToOne((type) => Spec, (spec) => spec.specPhotos, {
-    onDelete: 'SET NULL',
+    onDelete: 'CASCADE',
   })
   @JoinColumn({ name: 'spec_no' })
   spec: Spec;

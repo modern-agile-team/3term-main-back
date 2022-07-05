@@ -1,4 +1,5 @@
 import {
+  DeleteResult,
   EntityRepository,
   Repository,
   SelectQueryBuilder,
@@ -89,8 +90,9 @@ export class UserRepository extends Repository<User> {
 
   async signDown(no: number): Promise<number> {
     try {
-      const { affected }: UpdateResult = await this.createQueryBuilder()
-        .softDelete()
+      const { affected }: DeleteResult = await this.createQueryBuilder()
+        // .softDelete()
+        .delete()
         .from(User)
         .where('no = :no', { no })
         .execute();

@@ -209,24 +209,17 @@ export class AuthController {
   @HttpCode(HTTP_STATUS_CODE.success.ok)
   @ApiBearerAuth('access-token')
   @UseGuards(AuthGuard('jwt'))
-  @Delete(':userNo')
+  @Delete()
   async signDown(
-    @Param('userNo') userNo: number,
     @Body() signDownDto: SignDownDto,
     @CurrentUser() user: User,
   ): Promise<Object> {
     try {
-      if (userNo === user.no) {
-        await this.authService.signDown(userNo, user.email, signDownDto);
+      await this.authService.signDown(user.no, user.email, signDownDto);
 
-        return {
-          msg: `성공적으로 회원탈퇴가 진행되었습니다.`,
-        };
-      }
-
-      throw new UnauthorizedException(
-        '로그인 한 유저와 탈퇴 하려는 유저 번호 불일치!',
-      );
+      return {
+        msg: `성공적으로 회원탈퇴가 진행되었습니다.`,
+      };
     } catch (err) {
       throw err;
     }
