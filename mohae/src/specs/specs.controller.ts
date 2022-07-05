@@ -31,7 +31,7 @@ import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 import { CreateSpecDto } from './dto/create-spec.dto';
 import { UpdateSpecDto } from './dto/update-spec.dto';
 import { Spec } from './entity/spec.entity';
-import { SpecsService } from './specs.service';
+import { OneSpec, SpecsService } from './specs.service';
 
 @ApiTags('스펙 API')
 @UseGuards(AuthGuard('jwt'))
@@ -119,7 +119,7 @@ export class SpecsController {
   @UseGuards(AuthGuard('jwt'))
   @Get('spec/:specNo')
   async getOneSpec(@Param('specNo') specNo: number): Promise<object> {
-    const response: Spec = await this.specsService.getOneSpec(specNo);
+    const response: OneSpec = await this.specsService.getOneSpec(specNo);
 
     return {
       msg: '성공적으로 스펙을 불러왔습니다.',
@@ -175,11 +175,11 @@ export class SpecsController {
     description: '스펙을 등록해주는 API입니다.',
   })
   @ApiOkResponse({
-    description: '성공적으로 스팩등록이 되었습니다.',
+    description: '성공적으로 스펙등록이 되었습니다.',
     schema: {
       example: {
         statusCode: 201,
-        msg: '성공적으로 스팩등록이 되었습니다.',
+        msg: '성공적으로 스펙등록이 되었습니다.',
       },
     },
   })
@@ -226,7 +226,7 @@ export class SpecsController {
     await this.specsService.registSpec(user.no, specPhotoUrls, createSpecDto);
 
     return {
-      msg: '성공적으로 스팩등록이 되었습니다.',
+      msg: '성공적으로 스펙등록이 되었습니다.',
     };
   }
 
@@ -239,7 +239,7 @@ export class SpecsController {
     schema: {
       example: {
         statusCode: 200,
-        msg: '성공적으로 스팩이 수정되었습니다.',
+        msg: '성공적으로 스펙이 수정되었습니다.',
       },
     },
   })
@@ -289,7 +289,7 @@ export class SpecsController {
     }
 
     return {
-      msg: '성공적으로 스팩이 수정되었습니다.',
+      msg: '성공적으로 스펙이 수정되었습니다.',
     };
   }
 
@@ -302,7 +302,7 @@ export class SpecsController {
     schema: {
       example: {
         statusCode: 200,
-        msg: '성공적으로 스팩을 삭제하였습니다.',
+        msg: '성공적으로 스펙을 삭제하였습니다.',
       },
     },
   })
@@ -334,7 +334,7 @@ export class SpecsController {
     }
 
     return {
-      msg: '성공적으로 스팩을 삭제하였습니다.',
+      msg: '성공적으로 스펙을 삭제하였습니다.',
     };
   }
 }

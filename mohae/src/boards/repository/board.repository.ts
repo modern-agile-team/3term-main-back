@@ -47,7 +47,7 @@ export class BoardRepository extends Repository<Board> {
           'boards.price AS price',
           'boards.summary AS summary',
           'boards.target AS target',
-          'COUNT(likedUser.no) AS likeCount',
+          'COUNT(DISTINCT likedUser.no) AS likeCount',
           `EXISTS(SELECT no FROM board_likes WHERE board_likes.likedUserNo = ${userNo} AND board_likes.likedBoardNo = ${boardNo}) AS isLike`,
           'areas.no AS areaNo',
           'areas.name AS areaName',
@@ -56,7 +56,6 @@ export class BoardRepository extends Repository<Board> {
           'profilePhoto.photo_url AS userPhotoUrl',
           'users.no AS userNo',
           'users.nickname AS nickname',
-          'school.name AS schoolName',
           'major.name AS majorName',
         ])
         .where('boards.no = :no', { no: boardNo })
