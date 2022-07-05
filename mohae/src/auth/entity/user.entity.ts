@@ -112,9 +112,7 @@ export class User extends BaseEntity {
   @OneToOne(() => ProfilePhoto, (profilePhoto) => profilePhoto.user)
   profilePhoto: ProfilePhoto;
 
-  @OneToMany((type) => TermsUser, (termsUser) => termsUser.user, {
-    nullable: true,
-  })
+  @OneToMany((type) => TermsUser, (termsUser) => termsUser.user)
   userTerms: TermsUser[];
 
   // 나를 좋아요 한 유저 목록

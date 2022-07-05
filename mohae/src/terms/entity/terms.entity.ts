@@ -51,7 +51,7 @@ export class TermsUser extends BaseEntity {
   agree: boolean;
 
   @ManyToOne((type) => User, (user) => user.userTerms, {
-    onDelete: 'SET NULL',
+    onDelete: 'CASCADE',
   })
   user: User;
 
