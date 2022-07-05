@@ -115,11 +115,13 @@ export class CategoryRepository extends Repository<Category> {
   async readHotCategories(): Promise<Category[]> {
     try {
       return await this.createQueryBuilder('categories')
-        .select(['categories.no', 'categories.name'])
-        .orderBy('categories.hit', 'DESC')
-        .where('categories.hit > 0')
-        .limit(3)
-        .getMany();
+        .leftJoin('categories.boards', 'board')
+        .select(['categories.no AS no', 'categories.name AS name'])
+        .where('categories.no = board.category')
+        .groupBy('categories.no')
+        .orderBy('COUNT(board.no)', 'DESC')
+        .limit(5)
+        .getRawMany();
     } catch (e) {
       throw new InternalServerErrorException(
         `${e} ### 인기 카테고리 조회 : 알 수 없는 서버 에러입니다.`,
