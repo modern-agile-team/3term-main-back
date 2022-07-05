@@ -171,10 +171,16 @@ export class AuthService {
         await this.userRepository.clearLoginCount(user.no);
 
         const accessToken: string = this.jwtService.sign(payload);
+
+        if (user.deletedAt) {
+          await this.userRepository.cancelSignDown(user.email);
+        }
+
         return accessToken;
       }
       await this.userRepository.plusLoginFailCount(user);
-      const afterUser = await this.userRepository.findOne(user.no);
+      const afterUser = await this.userRepository.confirmUser(user.email);
+
       if (afterUser.loginFailCount >= 5) {
         await this.userRepository.changeIsLock(afterUser.no, afterUser.isLock);
       }
@@ -189,11 +195,14 @@ export class AuthService {
   async confirmUser(signInDto: SignInDto) {
     try {
       const { email }: SignInDto = signInDto;
+
       const user: User = await this.userRepository.confirmUser(email);
+
       this.errorConfirm.notFoundError(
         user,
         '아이디 또는 비밀번호가 일치하지 않습니다.',
       );
+
       if (!user.isLock) {
         return user;
       }

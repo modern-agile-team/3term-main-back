@@ -64,6 +64,20 @@ export class UserRepository extends Repository<User> {
     }
   }
 
+  async cancelSignDown(email: string): Promise<void> {
+    try {
+      await this.createQueryBuilder('users')
+        .update(User)
+        .set({ deletedAt: null })
+        .where('users.email = :email', { email })
+        .execute();
+    } catch (err) {
+      throw new InternalServerErrorException(
+        `${err} 로그인 도중 유저 cancelSignDown 관련 서버에러`,
+      );
+    }
+  }
+
   async confirmUser(email: string): Promise<User> {
     try {
       const user: User = await this.createQueryBuilder('users')
@@ -77,7 +91,9 @@ export class UserRepository extends Repository<User> {
           'users.loginFailCount AS loginFailCount',
           'users.nickname AS nickname',
           'profilePhoto.photo_url AS photo_url',
+          'users.deletedAt AS deletedAt',
         ])
+        .withDeleted()
         .where('users.email = :email', { email })
         .getRawOne();
       return user;
@@ -91,8 +107,7 @@ export class UserRepository extends Repository<User> {
   async signDown(no: number): Promise<number> {
     try {
       const { affected }: DeleteResult = await this.createQueryBuilder()
-        // .softDelete()
-        .delete()
+        .softDelete()
         .from(User)
         .where('no = :no', { no })
         .execute();
