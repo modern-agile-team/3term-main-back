@@ -77,7 +77,6 @@ export class BoardsController {
       HTTP_STATUS_CODE.success.ok,
       '게시글 필터링이 완료되었습니다.',
       {
-        categoryName: '~ 게시판',
         boards: [
           {
             no: 75,
@@ -376,7 +375,6 @@ export class BoardsController {
       HTTP_STATUS_CODE.success.ok,
       '카테고리 선택 조회가 완료되었습니다.',
       {
-        categoryName: '전체 게시판',
         boards: [
           {
             decimalDay: -1,
@@ -392,14 +390,6 @@ export class BoardsController {
           },
         ],
       },
-    ),
-  )
-  @ApiNotFoundResponse(
-    apiResponse.error(
-      '없는 카테고리를 조회 하려고 했을 때',
-      HTTP_STATUS_CODE.clientError.notFound,
-      '20번에 해당하는 카테고리를 찾을 수 없습니다.',
-      'Not Found',
     ),
   )
   @HttpCode(HTTP_STATUS_CODE.success.ok)

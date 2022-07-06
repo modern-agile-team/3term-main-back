@@ -242,7 +242,7 @@ export class BoardRepository extends Repository<Board> {
         .leftJoin('boards.photos', 'photo')
         .select([
           'boards.no AS no',
-          'REPLACE(GROUP_CONCAT(photo.photo_url), ",", ", ") AS photoUrls',
+          'photo.photo_url AS photoUrl',
           'DATEDIFF(boards.deadline, now()) * -1 AS decimalDay',
           'boards.title AS title',
           'boards.isDeadline AS isDeadline',
