@@ -43,13 +43,24 @@ export class AuthService {
   ) {}
 
   async hardDeleteUser(): Promise<number> {
+    const queryRunner = this.connection.createQueryRunner();
+
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
     try {
-      const hardDeletedUserNum: number =
-        await this.userRepository.hardDeleteUser();
+      const hardDeletedUserNum: number = await queryRunner.manager
+        .getCustomRepository(UserRepository)
+        .hardDeleteUser();
+
+      await queryRunner.commitTransaction();
 
       return hardDeletedUserNum;
     } catch (err) {
+      await queryRunner.rollbackTransaction();
       throw err;
+    } finally {
+      await queryRunner.release();
     }
   }
 
