@@ -1,7 +1,8 @@
 #!/bin/bash
 ssh -t -t ubuntu@13.125.167.73 <<EOF
     cd ~/mohae-back/mohae
-    git pull origin develop
+    git checkout master
+    git pull origin master
     curl -o-   https://raw.githubusercontent.com/creationix/nvm/v0.33.8/install.sh | bash
     . ~/.nvm/nvm.sh
     sudo nvm install 16.2.0
