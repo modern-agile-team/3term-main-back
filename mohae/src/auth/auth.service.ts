@@ -1,5 +1,4 @@
 import {
-  BadGatewayException,
   BadRequestException,
   ConflictException,
   Injectable,
@@ -7,7 +6,6 @@ import {
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
-import { getCustomRepositoryToken, InjectRepository } from '@nestjs/typeorm';
 import { UserRepository } from './repository/user.repository';
 import * as bcrypt from 'bcryptjs';
 import { JwtService } from '@nestjs/jwt';
@@ -24,7 +22,6 @@ import {
   TermsReporitory,
   TermsUserReporitory,
 } from 'src/terms/repository/terms.repository';
-import { Terms } from 'src/terms/entity/terms.entity';
 import { SignUpDto } from './dto/sign-up.dto';
 import { SignInDto } from './dto/sign-in.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
@@ -44,6 +41,29 @@ export class AuthService {
     private jwtService: JwtService,
     private configService: ConfigService,
   ) {}
+
+  async hardDeleteUser(): Promise<number> {
+    const queryRunner = this.connection.createQueryRunner();
+
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    try {
+      const hardDeletedUserNum: number = await queryRunner.manager
+        .getCustomRepository(UserRepository)
+        .hardDeleteUser();
+
+      await queryRunner.commitTransaction();
+
+      return hardDeletedUserNum;
+    } catch (err) {
+      await queryRunner.rollbackTransaction();
+      throw err;
+    } finally {
+      await queryRunner.release();
+    }
+  }
+
   async signUp(signUpDto: SignUpDto): Promise<object> {
     const queryRunner = this.connection.createQueryRunner();
 
@@ -171,10 +191,16 @@ export class AuthService {
         await this.userRepository.clearLoginCount(user.no);
 
         const accessToken: string = this.jwtService.sign(payload);
+
+        if (user.deletedAt) {
+          await this.userRepository.cancelSignDown(user.email);
+        }
+
         return accessToken;
       }
       await this.userRepository.plusLoginFailCount(user);
-      const afterUser = await this.userRepository.findOne(user.no);
+      const afterUser = await this.userRepository.confirmUser(user.email);
+
       if (afterUser.loginFailCount >= 5) {
         await this.userRepository.changeIsLock(afterUser.no, afterUser.isLock);
       }
@@ -189,11 +215,14 @@ export class AuthService {
   async confirmUser(signInDto: SignInDto) {
     try {
       const { email }: SignInDto = signInDto;
+
       const user: User = await this.userRepository.confirmUser(email);
+
       this.errorConfirm.notFoundError(
         user,
         '아이디 또는 비밀번호가 일치하지 않습니다.',
       );
+
       if (!user.isLock) {
         return user;
       }
