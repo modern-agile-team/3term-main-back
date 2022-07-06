@@ -523,8 +523,7 @@ export class BoardRepository extends Repository<Board> {
     { page, take }: PaginationDto,
   ): Promise<object> {
     try {
-      console.log(no);
-      const category: any = await this.createQueryBuilder('boards')
+      const findedinCategoryBoard: any = await this.createQueryBuilder('boards')
         .leftJoin('boards.category', 'category')
         .leftJoin('boards.area', 'area')
         .leftJoin('boards.user', 'user')
@@ -537,19 +536,18 @@ export class BoardRepository extends Repository<Board> {
           'boards.isDeadline AS isDeadline',
           'boards.price AS price',
           'boards.target AS target',
-          'area.name AS area',
+          'area.no AS areaNo',
+          'area.name AS areaName',
           'user.nickname AS nickname',
-          'category.name AS categoryName',
         ])
         .groupBy('boards.no')
-        // .having('COUNT(boards.no) > 0')
         .orderBy('boards.no', 'DESC')
         .limit(+take)
         .offset((+page - 1) * +take)
         .where('boards.category = :no', { no })
         .getRawMany();
-      console.log(category);
-      return category;
+
+      return findedinCategoryBoard;
     } catch (err) {
       throw new InternalServerErrorException(
         `${err}, ### 카테고리 선택조회 관련 서버에러`,

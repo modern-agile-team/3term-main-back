@@ -7,14 +7,11 @@ import {
   Delete,
   Patch,
   Query,
-  Logger,
   UseGuards,
   UseInterceptors,
   HttpCode,
   UploadedFiles,
   Inject,
-  Redirect,
-  Header,
   Req,
 } from '@nestjs/common';
 import { User } from '@sentry/node';
@@ -35,7 +32,6 @@ import { BoardsService } from './boards.service';
 import { AwsService } from 'src/aws/aws.service';
 import { Board } from './entity/board.entity';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
-import { CategoriesService } from 'src/categories/categories.service';
 import { HTTP_STATUS_CODE } from 'src/common/configs/http-status.config';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { operationConfig } from 'src/common/swagger-apis/api-operation.swagger';
@@ -59,7 +55,6 @@ export class BoardsController {
     private readonly logger: WinstonLogger,
 
     private readonly boardService: BoardsService,
-    private readonly categoriesService: CategoriesService,
     private readonly awsService: AwsService,
     private readonly configService: ConfigService,
     private readonly jwtService: JwtService,
@@ -391,11 +386,20 @@ export class BoardsController {
             isDeadline: 0,
             price: 1000,
             target: 1,
-            area: '서울특별시',
+            areaNo: 1,
+            areaName: '서울특별시',
             nickname: 'hneeddjsjde',
           },
         ],
       },
+    ),
+  )
+  @ApiNotFoundResponse(
+    apiResponse.error(
+      '없는 카테고리를 조회 하려고 했을 때',
+      HTTP_STATUS_CODE.clientError.notFound,
+      '20번에 해당하는 카테고리를 찾을 수 없습니다.',
+      'Not Found',
     ),
   )
   @HttpCode(HTTP_STATUS_CODE.success.ok)
@@ -407,7 +411,7 @@ export class BoardsController {
     this.logger.verbose(
       `카테고리 선택 조회 시도. 카테고리 번호 : ${categoryNo}`,
     );
-    const response: object = await this.categoriesService.findOneCategory(
+    const response: object = await this.boardService.findOneCategory(
       categoryNo,
       paginationDto,
     );

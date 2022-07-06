@@ -19,42 +19,6 @@ export class CategoryRepository extends Repository<Category> {
     }
   }
 
-  async findOneCategory(
-    no: number,
-    { page, take }: PaginationDto,
-  ): Promise<object> {
-    try {
-      const category: any = await this.createQueryBuilder('categories')
-        .leftJoin('categories.boards', 'boards')
-        .leftJoin('boards.area', 'area')
-        .leftJoin('boards.user', 'user')
-        .leftJoin('boards.photos', 'photo')
-        .select([
-          'DATEDIFF(boards.deadline, now()) AS decimalDay',
-          'photo.photo_Url AS photoUrl',
-          'boards.no AS no',
-          'boards.title AS title',
-          'boards.isDeadline AS isDeadline',
-          'boards.price AS price',
-          'boards.target AS target',
-          'area.name AS area',
-          'user.nickname AS nickname',
-        ])
-        .groupBy('boards.no')
-        .orderBy('boards.no', 'DESC')
-        .limit(+take)
-        .offset((+page - 1) * +take)
-        .where('boards.category = :no', { no })
-        .getRawMany();
-
-      return category;
-    } catch (err) {
-      throw new InternalServerErrorException(
-        `${err}, ### 카테고리 선택조회 관련 서버에러`,
-      );
-    }
-  }
-
   async selectCategory(categories: Category[]): Promise<Category[]> {
     try {
       return [
