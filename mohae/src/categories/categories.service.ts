@@ -14,9 +14,9 @@ import { CategoryRepository } from './repository/category.repository';
 export class CategoriesService {
   constructor(
     @InjectRepository(CategoryRepository)
-    private categoryRepository: CategoryRepository,
+    private readonly categoryRepository: CategoryRepository,
 
-    private boardRepository: BoardRepository,
+    private readonly boardRepository: BoardRepository,
   ) {}
 
   async findAllCategories(): Promise<Category[]> {
@@ -60,15 +60,14 @@ export class CategoriesService {
     }
   }
 
-  async readHotCategories(): Promise<Object> {
-    const categories = await this.categoryRepository.readHotCategories();
+  async readHotCategories(): Promise<Category[]> {
+    try {
+      const categories: Category[] =
+        await this.categoryRepository.readHotCategories();
 
-    if (!categories.length) {
-      return {
-        msg: '이번달 인기 카테고리가 없습니다.',
-      };
+      return categories;
+    } catch (err) {
+      throw err;
     }
-
-    return categories;
   }
 }
