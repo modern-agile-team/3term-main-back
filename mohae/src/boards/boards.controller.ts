@@ -76,22 +76,20 @@ export class BoardsController {
       '성공여부',
       HTTP_STATUS_CODE.success.ok,
       '게시글 필터링이 완료되었습니다.',
-      {
-        boards: [
-          {
-            no: 75,
-            photoUrl:
-              'https://mohaeproj.s3.amazonaws.com/board/1655961063222_dsn.jpg',
-            decimalDay: -10,
-            title: 'board test',
-            isDeadline: 0,
-            price: 0,
-            target: 0,
-            area: '서울 특별시',
-            nickName: 'hheeddjsjde',
-          },
-        ],
-      },
+      [
+        {
+          no: 75,
+          photoUrl:
+            'https://mohaeproj.s3.amazonaws.com/board/1655961063222_dsn.jpg',
+          decimalDay: -10,
+          title: 'board test',
+          isDeadline: 0,
+          price: 0,
+          target: 0,
+          area: '서울 특별시',
+          nickName: 'hheeddjsjde',
+        },
+      ],
     ),
   )
   @HttpCode(HTTP_STATUS_CODE.success.ok)
@@ -374,22 +372,20 @@ export class BoardsController {
       '성공여부',
       HTTP_STATUS_CODE.success.ok,
       '카테고리 선택 조회가 완료되었습니다.',
-      {
-        boards: [
-          {
-            decimalDay: -1,
-            photoUrl: '백승범.jpg',
-            no: 15,
-            title: '게시글 검색',
-            isDeadline: 0,
-            price: 1000,
-            target: 1,
-            areaNo: 1,
-            areaName: '서울특별시',
-            nickname: 'hneeddjsjde',
-          },
-        ],
-      },
+      [
+        {
+          decimalDay: -1,
+          photoUrl: '백승범.jpg',
+          no: 15,
+          title: '게시글 검색',
+          isDeadline: 0,
+          price: 1000,
+          target: 1,
+          areaNo: 1,
+          areaName: '서울특별시',
+          nickname: 'hneeddjsjde',
+        },
+      ],
     ),
   )
   @HttpCode(HTTP_STATUS_CODE.success.ok)
