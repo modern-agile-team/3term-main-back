@@ -99,7 +99,7 @@ export class BoardsController {
   async filteredBoards(
     @Query() filterBoardDto: FilterBoardDto,
   ): Promise<object> {
-    const response: object = await this.boardService.filteredBoards(
+    const response: Board[] = await this.boardService.filteredBoards(
       filterBoardDto,
     );
 
@@ -401,7 +401,7 @@ export class BoardsController {
     this.logger.verbose(
       `카테고리 선택 조회 시도. 카테고리 번호 : ${categoryNo}`,
     );
-    const response: object = await this.boardService.findOneCategory(
+    const response: Board[] = await this.boardService.findOneCategory(
       categoryNo,
       paginationDto,
     );

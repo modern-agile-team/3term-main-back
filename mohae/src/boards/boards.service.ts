@@ -67,9 +67,9 @@ export class BoardsService {
     }
   }
 
-  async filteredBoards(filterBoardDto: FilterBoardDto): Promise<object> {
+  async filteredBoards(filterBoardDto: FilterBoardDto): Promise<Board[]> {
     try {
-      const { date, categoryNo }: FilterBoardDto = filterBoardDto;
+      const { date }: FilterBoardDto = filterBoardDto;
 
       const currentTime: Date = new Date();
       currentTime.setHours(currentTime.getHours() + 9);
@@ -93,16 +93,14 @@ export class BoardsService {
           : 0;
       });
 
-      const filteredBoard: object = await this.boardRepository.filteredBoards(
+      const filteredBoard: Board[] = await this.boardRepository.filteredBoards(
         duplicateCheck,
         +date,
         endTime,
         currentTime,
       );
 
-      return {
-        boards: filteredBoard,
-      };
+      return filteredBoard;
     } catch (err) {
       throw err;
     }
