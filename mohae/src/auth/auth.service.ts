@@ -1,5 +1,4 @@
 import {
-  BadGatewayException,
   BadRequestException,
   ConflictException,
   Injectable,
@@ -7,7 +6,6 @@ import {
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
-import { getCustomRepositoryToken, InjectRepository } from '@nestjs/typeorm';
 import { UserRepository } from './repository/user.repository';
 import * as bcrypt from 'bcryptjs';
 import { JwtService } from '@nestjs/jwt';
@@ -24,7 +22,6 @@ import {
   TermsReporitory,
   TermsUserReporitory,
 } from 'src/terms/repository/terms.repository';
-import { Terms } from 'src/terms/entity/terms.entity';
 import { SignUpDto } from './dto/sign-up.dto';
 import { SignInDto } from './dto/sign-in.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
@@ -44,6 +41,18 @@ export class AuthService {
     private jwtService: JwtService,
     private configService: ConfigService,
   ) {}
+
+  async hardDeleteUser(): Promise<number> {
+    try {
+      const hardDeletedUserNum: number =
+        await this.userRepository.hardDeleteUser();
+
+      return hardDeletedUserNum;
+    } catch (err) {
+      throw err;
+    }
+  }
+
   async signUp(signUpDto: SignUpDto): Promise<object> {
     const queryRunner = this.connection.createQueryRunner();
 

@@ -2,8 +2,6 @@ import {
   DeleteResult,
   EntityRepository,
   Repository,
-  SelectQueryBuilder,
-  Timestamp,
   UpdateResult,
 } from 'typeorm';
 import { CreateUserDto } from '../dto/auth-credential.dto';
@@ -11,9 +9,6 @@ import { User } from '../entity/user.entity';
 import { InternalServerErrorException } from '@nestjs/common';
 import { School } from 'src/schools/entity/school.entity';
 import { Major } from 'src/majors/entity/major.entity';
-import { QLDB } from 'aws-sdk';
-import { UserPhotoSizes } from 'src/common/configs/photo-size.config';
-import { NumOpenReactiveInsights } from 'aws-sdk/clients/devopsguru';
 
 @EntityRepository(User)
 export class UserRepository extends Repository<User> {
@@ -266,6 +261,22 @@ export class UserRepository extends Repository<User> {
     } catch (err) {
       throw new InternalServerErrorException(
         `${err} 프로필 업데이트 중 알 수 없는 서버 에러입니다.`,
+      );
+    }
+  }
+
+  async hardDeleteUser(): Promise<number> {
+    try {
+      const { affected }: DeleteResult = await this.createQueryBuilder('users')
+        .delete()
+        .from(User)
+        .where('users.deleted_At is not null')
+        .andWhere('DATE_ADD(users.deleted_At, INTERVAL 15 DAY) >= NOW()')
+        .execute();
+      return affected;
+    } catch (err) {
+      throw new InternalServerErrorException(
+        `${err} 유저 hard Delete 중 알 수 없는 서버 에러입니다.`,
       );
     }
   }

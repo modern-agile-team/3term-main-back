@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   HttpCode,
+  Inject,
   Param,
   Patch,
   Post,
@@ -32,11 +33,24 @@ import { User } from './entity/user.entity';
 import { SignDownDto } from './dto/sign-down.dto';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 import { HTTP_STATUS_CODE } from 'src/common/configs/http-status.config';
+import { WinstonLogger, WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { Cron } from '@nestjs/schedule';
 
 @Controller('auth')
 @ApiTags('Auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    @Inject(WINSTON_MODULE_PROVIDER)
+    private readonly logger: WinstonLogger,
+    private readonly authService: AuthService,
+  ) {}
+
+  @Cron('0 0 0 * * *')
+  async handleHardDeleteUserSchedule(): Promise<void> {
+    const hardDeletedUserNum: number = await this.authService.hardDeleteUser();
+
+    this.logger.verbose(`hard delete 된 회원 수 :${hardDeletedUserNum}`);
+  }
 
   @ApiOperation({
     summary: '회원가입 API',
