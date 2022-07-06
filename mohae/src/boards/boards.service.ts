@@ -67,9 +67,9 @@ export class BoardsService {
     }
   }
 
-  async filteredBoards(filterBoardDto: FilterBoardDto): Promise<object> {
+  async filteredBoards(filterBoardDto: FilterBoardDto): Promise<Board[]> {
     try {
-      const { date, categoryNo }: FilterBoardDto = filterBoardDto;
+      const { date }: FilterBoardDto = filterBoardDto;
 
       const currentTime: Date = new Date();
       currentTime.setHours(currentTime.getHours() + 9);
@@ -93,21 +93,14 @@ export class BoardsService {
           : 0;
       });
 
-      const { name }: Category = await this.categoryRepository.findOne(
-        +categoryNo,
-      );
-
-      const filteredBoard: object = await this.boardRepository.filteredBoards(
+      const filteredBoard: Board[] = await this.boardRepository.filteredBoards(
         duplicateCheck,
         +date,
         endTime,
         currentTime,
       );
 
-      return {
-        categoryName: `${name} 게시판`,
-        boards: filteredBoard,
-      };
+      return filteredBoard;
     } catch (err) {
       throw err;
     }
@@ -537,34 +530,21 @@ export class BoardsService {
   async findOneCategory(
     no: number,
     paginationDto: PaginationDto,
-  ): Promise<object> {
+  ): Promise<Board[]> {
     try {
-      const category: Category = await this.categoryRepository.findOne(no);
-
-      if (!category) {
-        throw new NotFoundException(
-          `${no}번에 해당하는 카테고리를 찾을 수 없습니다.`,
-        );
-      }
       if (no === 1) {
         const boards: Board[] = await this.boardRepository.getAllBoards(
           paginationDto,
         );
 
-        return {
-          categoryName: `${category.name} 게시판`,
-          boards: boards,
-        };
+        return boards;
       }
       const boards: any = await this.boardRepository.findOneCategory(
         no,
         paginationDto,
       );
 
-      return {
-        categoryName: `${category.name} 게시판`,
-        boards: boards,
-      };
+      return boards;
     } catch (err) {
       throw err;
     }
