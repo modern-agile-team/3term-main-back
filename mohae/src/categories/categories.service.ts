@@ -30,30 +30,31 @@ export class CategoriesService {
     paginationDto: PaginationDto,
   ): Promise<object> {
     try {
-      if (no === 17) {
+      const category: Category = await this.categoryRepository.findOne(no);
+
+      if (!category) {
+        throw new NotFoundException(
+          `${no}번에 해당하는 카테고리를 찾을 수 없습니다.`,
+        );
+      }
+      if (no === 1) {
         const boards: Board[] = await this.boardRepository.getAllBoards(
           paginationDto,
         );
 
         return {
-          categoryName: '전체 게시판',
-          category: { boards },
+          categoryName: `${category.name} 게시판`,
+          boards: boards,
         };
       }
-      const category: object = await this.categoryRepository.findOneCategory(
+      const boards: any = await this.categoryRepository.findOneCategory(
         no,
         paginationDto,
       );
 
-      if (!category) {
-        throw new NotFoundException(
-          `${no}에 해당하는 카테고리를 찾을 수 없습니다.`,
-        );
-      }
-
       return {
-        categoryName: `${category['categoryName']} 게시판`,
-        category,
+        categoryName: `${category.name} 게시판`,
+        boards: boards,
       };
     } catch (err) {
       throw err;
