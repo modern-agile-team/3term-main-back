@@ -59,7 +59,7 @@ export class Spec extends BaseEntity {
   specPhotos: SpecPhoto[];
 
   @ManyToOne((type) => User, (user) => user.specs, {
-    onDelete: 'SET NULL',
+    onDelete: 'CASCADE',
   })
   @JoinColumn({ name: 'user_no' })
   user: User;

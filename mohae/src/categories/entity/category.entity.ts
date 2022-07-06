@@ -26,6 +26,8 @@ export class Category extends BaseEntity {
   })
   boards: Board[];
 
-  @ManyToMany((type) => User, (user) => user.categories)
+  @ManyToMany((type) => User, (user) => user.categories, {
+    onDelete: 'CASCADE',
+  })
   users: User[];
 }

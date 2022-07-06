@@ -216,7 +216,7 @@ export class BoardRepository extends Repository<Board> {
   }
 
   async filteredBoards(
-    filterBoardDto: FilterBoardDto,
+    duplicateCheck: any,
     date: number,
     endTime: Date,
     currentTime: Date,
@@ -234,15 +234,15 @@ export class BoardRepository extends Repository<Board> {
         popular,
         page,
         take,
-      }: FilterBoardDto = filterBoardDto;
-      const boardFiltering = this.createQueryBuilder('boards')
+      }: any = duplicateCheck;
+      const boardFiltering: any = this.createQueryBuilder('boards')
         .leftJoin('boards.area', 'areas')
         .leftJoin('boards.category', 'categories')
         .leftJoin('boards.user', 'users')
         .leftJoin('boards.photos', 'photo')
         .select([
           'boards.no AS no',
-          'photo.photo_url AS PhotoUrl',
+          'REPLACE(GROUP_CONCAT(photo.photo_url), ",", ", ") AS photoUrls',
           'DATEDIFF(boards.deadline, now()) * -1 AS decimalDay',
           'boards.title AS title',
           'boards.isDeadline AS isDeadline',
@@ -254,7 +254,7 @@ export class BoardRepository extends Repository<Board> {
         ])
         .orderBy('boards.no', sort)
         .groupBy('boards.no')
-        .addGroupBy('boards.no = photo.no')
+        .addGroupBy('boards.no = photo.board_no')
         .limit(+take)
         .offset((+page - 1) * +take);
 
@@ -514,6 +514,43 @@ export class BoardRepository extends Repository<Board> {
     } catch (err) {
       throw new InternalServerErrorException(
         `${err} 게시글 관계형성 도중 생긴 오류`,
+      );
+    }
+  }
+
+  async findOneCategory(
+    no: number,
+    { page, take }: PaginationDto,
+  ): Promise<object> {
+    try {
+      const findedinCategoryBoard: any = await this.createQueryBuilder('boards')
+        .leftJoin('boards.category', 'category')
+        .leftJoin('boards.area', 'area')
+        .leftJoin('boards.user', 'user')
+        .leftJoin('boards.photos', 'photo')
+        .select([
+          'DATEDIFF(boards.deadline, now()) AS decimalDay',
+          'photo.photo_Url AS photoUrl',
+          'boards.no AS no',
+          'boards.title AS title',
+          'boards.isDeadline AS isDeadline',
+          'boards.price AS price',
+          'boards.target AS target',
+          'area.no AS areaNo',
+          'area.name AS areaName',
+          'user.nickname AS nickname',
+        ])
+        .groupBy('boards.no')
+        .orderBy('boards.no', 'DESC')
+        .limit(+take)
+        .offset((+page - 1) * +take)
+        .where('boards.category = :no', { no })
+        .getRawMany();
+
+      return findedinCategoryBoard;
+    } catch (err) {
+      throw new InternalServerErrorException(
+        `${err}, ### 카테고리 선택조회 관련 서버에러`,
       );
     }
   }
