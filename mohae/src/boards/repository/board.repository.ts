@@ -216,7 +216,7 @@ export class BoardRepository extends Repository<Board> {
   }
 
   async filteredBoards(
-    filterBoardDto: FilterBoardDto,
+    duplicateCheck: any,
     date: number,
     endTime: Date,
     currentTime: Date,
@@ -234,15 +234,15 @@ export class BoardRepository extends Repository<Board> {
         popular,
         page,
         take,
-      }: FilterBoardDto = filterBoardDto;
-      const boardFiltering = this.createQueryBuilder('boards')
+      }: any = duplicateCheck;
+      const boardFiltering: any = this.createQueryBuilder('boards')
         .leftJoin('boards.area', 'areas')
         .leftJoin('boards.category', 'categories')
         .leftJoin('boards.user', 'users')
         .leftJoin('boards.photos', 'photo')
         .select([
           'boards.no AS no',
-          'photo.photo_url AS PhotoUrl',
+          'REPLACE(GROUP_CONCAT(photo.photo_url), ",", ", ") AS photoUrls',
           'DATEDIFF(boards.deadline, now()) * -1 AS decimalDay',
           'boards.title AS title',
           'boards.isDeadline AS isDeadline',
@@ -254,7 +254,7 @@ export class BoardRepository extends Repository<Board> {
         ])
         .orderBy('boards.no', sort)
         .groupBy('boards.no')
-        .addGroupBy('boards.no = photo.no')
+        .addGroupBy('boards.no = photo.board_no')
         .limit(+take)
         .offset((+page - 1) * +take);
 

@@ -82,6 +82,7 @@ export class BoardsController {
       HTTP_STATUS_CODE.success.ok,
       '게시글 필터링이 완료되었습니다.',
       {
+        categoryName: '~ 게시판',
         boards: [
           {
             no: 75,
