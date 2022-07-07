@@ -430,7 +430,7 @@ export class BoardsController {
       createBoardDto[`${key}`] = JSON.parse(createBoardDto[`${key}`]);
     }
 
-    const boardPhotoUrls = await this.awsService.uploadBoardFileToS3(
+    const boardPhotoUrls: string[] = await this.awsService.uploadBoardFileToS3(
       'board',
       files,
     );
@@ -518,7 +518,7 @@ export class BoardsController {
     for (const key of Object.keys(updateBoardDto)) {
       updateBoardDto[`${key}`] = JSON.parse(updateBoardDto[`${key}`]);
     }
-    const boardPhotoUrls =
+    const boardPhotoUrls: false | string[] =
       files.length === 0
         ? false
         : await this.awsService.uploadBoardFileToS3('board', files);

@@ -159,13 +159,13 @@ export class BoardRepository extends Repository<Board> {
     }
   }
 
-  async closingBoard(currentTime: Date) {
+  async closingBoard() {
     try {
       const { affected } = await this.createQueryBuilder()
         .update(Board)
         .set({ isDeadline: true })
         .where(`deadline is not null`)
-        .andWhere('deadline <= :currentTime', { currentTime })
+        .andWhere('deadline <= now()')
         .andWhere('isDeadline = false')
         .execute();
 
