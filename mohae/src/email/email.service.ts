@@ -67,7 +67,7 @@ export class EmailService {
                     <tbody>
                       <tr>
                         <td align="center">
-                          <h1 style="margin: 0">
+                          <h1 style="margin: 0; padding-top: 16px;">
                             <img
                               src="https://d2ffbnf2hpheay.cloudfront.net/email/mohae.png?w=100"
                               alt="로고"
