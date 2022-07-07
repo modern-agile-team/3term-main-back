@@ -25,41 +25,6 @@ export class CategoriesService {
     return categories;
   }
 
-  async findOneCategory(
-    no: number,
-    paginationDto: PaginationDto,
-  ): Promise<object> {
-    try {
-      if (no === 17) {
-        const boards: Board[] = await this.boardRepository.getAllBoards(
-          paginationDto,
-        );
-
-        return {
-          categoryName: '전체 게시판',
-          category: { boards },
-        };
-      }
-      const category: object = await this.categoryRepository.findOneCategory(
-        no,
-        paginationDto,
-      );
-
-      if (!category) {
-        throw new NotFoundException(
-          `${no}에 해당하는 카테고리를 찾을 수 없습니다.`,
-        );
-      }
-
-      return {
-        categoryName: `${category['categoryName']} 게시판`,
-        category,
-      };
-    } catch (err) {
-      throw err;
-    }
-  }
-
   async readHotCategories(): Promise<Category[]> {
     try {
       const categories: Category[] =
