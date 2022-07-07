@@ -60,12 +60,12 @@ export class BoardsController {
     private readonly jwtService: JwtService,
   ) {}
 
-  @Cron('* * * * * *')
+  @Cron('0 1 * * * *')
   async handleBoardSchedule() {
     const closedBoardNum: number = await this.boardService.closingBoard();
 
     this.logger.verbose(
-      `게시글 ${closedBoardNum}개 마감처리`,
+      `게시글 ${closedBoardNum}개 마감처리.`,
       '마감된 게시글 개수',
     );
   }
@@ -430,7 +430,7 @@ export class BoardsController {
       createBoardDto[`${key}`] = JSON.parse(createBoardDto[`${key}`]);
     }
 
-    const boardPhotoUrls = await this.awsService.uploadBoardFileToS3(
+    const boardPhotoUrls: string[] = await this.awsService.uploadBoardFileToS3(
       'board',
       files,
     );
@@ -474,7 +474,7 @@ export class BoardsController {
     @CurrentUser() user: User,
   ): Promise<object> {
     await this.boardService.deleteBoard(boardNo, user.no);
-    // await this.awsService.deleteBoardS3Object(originBoardPhotoUrls);
+
     return {
       msg: '게시글 삭제가 완료되었습니다',
     };
@@ -518,7 +518,7 @@ export class BoardsController {
     for (const key of Object.keys(updateBoardDto)) {
       updateBoardDto[`${key}`] = JSON.parse(updateBoardDto[`${key}`]);
     }
-    const boardPhotoUrls =
+    const boardPhotoUrls: false | string[] =
       files.length === 0
         ? false
         : await this.awsService.uploadBoardFileToS3('board', files);
