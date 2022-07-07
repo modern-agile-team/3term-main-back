@@ -3,8 +3,6 @@ import * as AWS from 'aws-sdk';
 import * as sharp from 'sharp';
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { PromiseResult } from 'aws-sdk/lib/request';
-import { connect } from 'http2';
 
 @Injectable()
 export class AwsService {
@@ -120,7 +118,7 @@ export class AwsService {
 
       const specPhotoUrls: string[] = uploadList.map((file: any) => {
         {
-          return this.getAwsS3FileUrl(file.Key);
+          return file.Key;
         }
       });
 
@@ -173,7 +171,7 @@ export class AwsService {
         })
         .promise();
 
-      return this.getAwsS3FileUrl(profilePhotoUrl);
+      return profilePhotoUrl;
     } catch (error) {
       throw new BadRequestException(`File upload failed : ${error}`);
     }
