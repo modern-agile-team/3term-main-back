@@ -1,6 +1,4 @@
 import { InternalServerErrorException } from '@nestjs/common';
-import { Area } from 'src/areas/entity/areas.entity';
-import { error } from 'console';
 import { User } from 'src/auth/entity/user.entity';
 import { Board } from 'src/boards/entity/board.entity';
 import { EntityRepository, Repository, SelectQueryBuilder } from 'typeorm';
@@ -21,50 +19,6 @@ export class CategoryRepository extends Repository<Category> {
     }
   }
 
-  async findOneCategory(
-    no: number,
-    { page, take }: PaginationDto,
-  ): Promise<object> {
-    try {
-      const category: SelectQueryBuilder<Category> = this.createQueryBuilder(
-        'categories',
-      )
-        .leftJoin('categories.boards', 'board')
-        .leftJoin('board.area', 'area')
-        .leftJoin('board.user', 'user')
-        .leftJoin('board.photos', 'photo')
-        .where('categories.no = :no', { no });
-
-      const { categoryName }: any = await category
-        .addSelect(['categories.name AS categoryName'])
-        .getRawOne();
-
-      const boards: Board[] = await category
-        .select([
-          'DATEDIFF(board.deadline, now()) AS decimalDay',
-          'photo.photo_Url AS photoUrl',
-          'board.no AS no',
-          'board.title AS title',
-          'board.isDeadline AS isDeadline',
-          'board.price AS price',
-          'board.target AS target',
-          'area.name AS area',
-          'user.nickname AS nickname',
-        ])
-        .groupBy('board.no')
-        .having('COUNT(board.no) > 0')
-        .orderBy('board.no', 'DESC')
-        .limit(+page)
-        .offset((+page - 1) * +take)
-        .getRawMany();
-
-      return { boards, categoryName };
-    } catch (err) {
-      throw new InternalServerErrorException(
-        `${err}, ### 카테고리 선택조회 관련 서버에러`,
-      );
-    }
-  }
   async selectCategory(categories: Category[]): Promise<Category[]> {
     try {
       return [

@@ -1,4 +1,4 @@
-import { Validate } from 'class-validator';
+import { IsOptional, Validate } from 'class-validator';
 import { Major } from 'src/majors/entity/major.entity';
 import { Review } from 'src/reviews/entity/review.entity';
 import { School } from 'src/schools/entity/school.entity';
@@ -56,6 +56,7 @@ export class User extends BaseEntity {
   @Column({
     type: 'varchar',
     comment: '회원 전화번호',
+    nullable: true,
   })
   phone: string;
 
