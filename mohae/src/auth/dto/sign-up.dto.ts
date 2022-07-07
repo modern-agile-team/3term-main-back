@@ -1,4 +1,4 @@
-import { ApiProperty, PickType } from '@nestjs/swagger';
+import { ApiProperty } from '@nestjs/swagger';
 import {
   IsArray,
   IsBoolean,
@@ -52,8 +52,9 @@ export class SignUpDto {
     description: '사용자 전화번호',
     required: false,
   })
+  @IsOptional()
   @IsString()
-  phone: string;
+  phone?: string;
 
   @ApiProperty({
     example: false,
@@ -65,8 +66,7 @@ export class SignUpDto {
 
   @ApiProperty({
     example: 1,
-    description:
-      '회원가입시 선택한 학교 고유번호 (학교 선택 안하면 [1] 보내주시면 됩니다.)',
+    description: '회원가입시 선택한 학교 고유번호',
     required: true,
   })
   @IsOptional()
@@ -75,19 +75,16 @@ export class SignUpDto {
 
   @ApiProperty({
     example: 1,
-    description:
-      '회원가입시 선택한 전공 고유번호 (전공 선택 안하면 [1] 보내주시면 됩니다.)',
+    description: '회원가입시 선택한 전공 고유번호 ',
     required: true,
   })
   @IsOptional()
   @IsNumber()
-  // Matches 사용하여 DB에 있는 전공 값 맞춰보기
   major?: number;
 
   @ApiProperty({
     example: [2, 3],
-    description:
-      '회원가입시 선택한 관심사 (관심사 선택 안하면 [1] 보내주시면 됩니다.)',
+    description: '회원가입시 선택한 관심사',
     required: true,
   })
   @IsOptional()
@@ -102,8 +99,4 @@ export class SignUpDto {
   @IsArray()
   @IsNotEmpty()
   terms: [];
-
-  @IsString()
-  @IsOptional()
-  photo_url: string;
 }

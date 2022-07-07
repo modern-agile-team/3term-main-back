@@ -14,8 +14,6 @@ import { SchoolRepository } from 'src/schools/repository/school.repository';
 import { MajorRepository } from 'src/majors/repository/major.repository';
 import { CategoryRepository } from 'src/categories/repository/category.repository';
 import { ErrorConfirm } from 'src/common/utils/error';
-import { School } from 'src/schools/entity/school.entity';
-import { Major } from 'src/majors/entity/major.entity';
 import { Category } from 'src/categories/entity/category.entity';
 import { Connection } from 'typeorm';
 import {
@@ -26,8 +24,10 @@ import { SignUpDto } from './dto/sign-up.dto';
 import { SignInDto } from './dto/sign-in.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { ForgetPasswordDto } from './dto/forget-password.dto';
-import { SignDownDto } from './dto/auth-credential.dto';
+import { SignDownDto } from './dto/sign-down.dto';
 import { ConfigService } from '@nestjs/config';
+import { School } from 'src/schools/entity/school.entity';
+import { Major } from 'src/majors/entity/major.entity';
 
 @Injectable()
 export class AuthService {
@@ -80,27 +80,20 @@ export class AuthService {
         password,
         terms,
       }: SignUpDto = signUpDto;
-      const schoolRepo: School = await this.schoolRepository.findOne(school, {
-        select: ['no'],
-      });
-      const majorRepo: Major = await this.majorRepository.findOne(major, {
-        select: ['no'],
-      });
 
-      if (!schoolRepo || !majorRepo) {
-        const notFoundObj: object = { 학교: schoolRepo, 전공: majorRepo };
-        const notFoundKey: Array<string> = Object.keys(notFoundObj).filter(
-          (key) => !notFoundObj[key],
-        );
-        if (notFoundKey.length) {
-          throw new NotFoundException(
-            `해당 번호에 해당하는 ${notFoundKey}이(가) 존재하지 않습니다.`,
-          );
-        }
-      }
-
+      const schoolRepo: School | null = school
+        ? await this.schoolRepository.findOne(school, {
+            select: ['no'],
+          })
+        : null;
+      const majorRepo: Major | null = major
+        ? await this.majorRepository.findOne(major, {
+            select: ['no'],
+          })
+        : null;
       const categoriesRepo: Array<Category> =
         await this.categoriesRepository.selectCategory(categories);
+
       const duplicateEmail: User = await this.userRepository.duplicateCheck(
         'email',
         email,
@@ -157,13 +150,16 @@ export class AuthService {
           .getCustomRepository(CategoryRepository)
           .addUser(categoryNo.no, user);
       }
-      await queryRunner.manager
-        .getCustomRepository(SchoolRepository)
-        .addUser(schoolRepo.no, user);
-      await queryRunner.manager
-        .getCustomRepository(MajorRepository)
-        .addUser(majorRepo.no, user);
-
+      if (schoolRepo) {
+        await queryRunner.manager
+          .getCustomRepository(SchoolRepository)
+          .addUser(schoolRepo, user);
+      }
+      if (majorRepo) {
+        await queryRunner.manager
+          .getCustomRepository(MajorRepository)
+          .addUser(majorRepo, user);
+      }
       await queryRunner.commitTransaction();
 
       return { email, nickname };
