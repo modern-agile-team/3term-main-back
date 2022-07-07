@@ -65,7 +65,7 @@ export class BoardsController {
     const closedBoardNum: number = await this.boardService.closingBoard();
 
     this.logger.verbose(
-      `게시글 ${closedBoardNum}개 마감처리.`,
+      `게시글 ${closedBoardNum}개 마감처리`,
       '마감된 게시글 개수',
     );
   }
