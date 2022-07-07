@@ -59,7 +59,7 @@ export class ProfilesService {
             };
           });
       } else {
-        profile.categories = null;
+        profile.categories = [];
       }
       delete profile.categoryNo;
       profile.isLike = !!Number(profile.isLike);

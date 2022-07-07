@@ -4,22 +4,22 @@ import {
   Repository,
   UpdateResult,
 } from 'typeorm';
-import { CreateUserDto } from '../dto/auth-credential.dto';
 import { User } from '../entity/user.entity';
 import { InternalServerErrorException } from '@nestjs/common';
 import { School } from 'src/schools/entity/school.entity';
 import { Major } from 'src/majors/entity/major.entity';
+import { SignUpDto } from '../dto/sign-up.dto';
 
 @EntityRepository(User)
 export class UserRepository extends Repository<User> {
   // 인증 관련 부분
   async createUser(
-    createUserDto: CreateUserDto,
+    createUserDto: SignUpDto,
     school: School,
     major: Major,
   ): Promise<User> {
     try {
-      const { email, password, phone, nickname, manager, name }: CreateUserDto =
+      const { email, password, phone, nickname, manager, name }: SignUpDto =
         createUserDto;
 
       const { raw } = await this.createQueryBuilder('users')

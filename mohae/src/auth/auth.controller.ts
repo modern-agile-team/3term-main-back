@@ -107,9 +107,9 @@ export class AuthController {
   })
   @HttpCode(HTTP_STATUS_CODE.success.created)
   @Post('signup')
-  async signUp(@Body() signUpDto: SignUpDto): Promise<Object> {
+  async signUp(@Body() signUpDto: SignUpDto): Promise<object> {
     try {
-      const response = await this.authService.signUp(signUpDto);
+      const response: object = await this.authService.signUp(signUpDto);
 
       return {
         msg: `성공적으로 회원가입이 되었습니다.`,
@@ -168,7 +168,7 @@ export class AuthController {
   })
   @HttpCode(HTTP_STATUS_CODE.success.ok)
   @Post('signin')
-  async signIn(@Body() signInDto: SignInDto): Promise<Object> {
+  async signIn(@Body() signInDto: SignInDto): Promise<object> {
     try {
       // id 맞는지 확인 + 패널티 시간 지나지 않았을 때 로그인 시도했을 때 알림
       const userInfo: User = await this.authService.confirmUser(signInDto);
@@ -227,7 +227,7 @@ export class AuthController {
   async signDown(
     @Body() signDownDto: SignDownDto,
     @CurrentUser() user: User,
-  ): Promise<Object> {
+  ): Promise<object> {
     try {
       await this.authService.signDown(user.no, user.email, signDownDto);
 
@@ -298,7 +298,7 @@ export class AuthController {
   @Patch('change/password')
   async changePassword(
     @Body() changePasswordDto: ChangePasswordDto,
-  ): Promise<Object> {
+  ): Promise<object> {
     try {
       await this.authService.changePassword(changePasswordDto);
 
@@ -368,7 +368,7 @@ export class AuthController {
   @Patch('forget/password')
   async forgetPassword(
     @Body() forgetPasswordDto: ForgetPasswordDto,
-  ): Promise<Object> {
+  ): Promise<object> {
     try {
       await this.authService.forgetPassword(forgetPasswordDto);
 
