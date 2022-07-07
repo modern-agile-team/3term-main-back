@@ -60,7 +60,7 @@ export class BoardsController {
     private readonly jwtService: JwtService,
   ) {}
 
-  @Cron('0 1 * * * *')
+  @Cron('* * * * * *')
   async handleBoardSchedule() {
     const closedBoardNum: number = await this.boardService.closingBoard();
 
@@ -474,7 +474,7 @@ export class BoardsController {
     @CurrentUser() user: User,
   ): Promise<object> {
     await this.boardService.deleteBoard(boardNo, user.no);
-
+    // await this.awsService.deleteBoardS3Object(originBoardPhotoUrls);
     return {
       msg: '게시글 삭제가 완료되었습니다',
     };

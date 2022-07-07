@@ -54,12 +54,7 @@ export class BoardsService {
 
   async closingBoard(): Promise<number> {
     try {
-      const currentTime: Date = new Date();
-      currentTime.setHours(currentTime.getHours() + 9);
-
-      const result: number = await this.boardRepository.closingBoard(
-        currentTime,
-      );
+      const result: number = await this.boardRepository.closingBoard();
 
       return result;
     } catch (err) {
