@@ -26,6 +26,8 @@ import { ChangePasswordDto } from './dto/change-password.dto';
 import { ForgetPasswordDto } from './dto/forget-password.dto';
 import { SignDownDto } from './dto/sign-down.dto';
 import { ConfigService } from '@nestjs/config';
+import { School } from 'src/schools/entity/school.entity';
+import { Major } from 'src/majors/entity/major.entity';
 
 @Injectable()
 export class AuthService {
@@ -79,12 +81,12 @@ export class AuthService {
         terms,
       }: SignUpDto = signUpDto;
 
-      const schoolRepo = school
+      const schoolRepo: School | null = school
         ? await this.schoolRepository.findOne(school, {
             select: ['no'],
           })
         : null;
-      const majorRepo = major
+      const majorRepo: Major | null = major
         ? await this.majorRepository.findOne(major, {
             select: ['no'],
           })
