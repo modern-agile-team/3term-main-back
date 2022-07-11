@@ -39,9 +39,17 @@ export class NoticesController {
   )
   @ApiOkResponse(
     apiResponse.success(
-      '공지사항 전체 조회',
+      'Notice 전체 조회',
       HTTP_STATUS_CODE.success.ok,
-      '공지사항 전체 조회 성공',
+      'Notice 전체 조회 결과 성공',
+      [
+        {
+          no: 1,
+          title: 'Notice 예시 제목입니다.',
+          description: 'Notice 예시 내용입니다.',
+          createdAt: '2022년 07월 11일',
+        },
+      ],
     ),
   )
   @HttpCode(HTTP_STATUS_CODE.success.ok)
@@ -62,7 +70,7 @@ export class NoticesController {
   @ApiOkResponse(
     apiResponse.success(
       '공지사항 저장',
-      HTTP_STATUS_CODE.success.ok,
+      HTTP_STATUS_CODE.success.created,
       '공지사항 저장 결과 성공',
     ),
   )
