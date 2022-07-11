@@ -1,3 +1,4 @@
+import { ApiProperty } from '@nestjs/swagger';
 import { IsNumber, IsString } from 'class-validator';
 import { User } from 'src/auth/entity/user.entity';
 import { Board } from 'src/boards/entity/board.entity';
@@ -22,6 +23,11 @@ export class Comment extends BaseEntity {
   @PrimaryGeneratedColumn()
   no: number;
 
+  @ApiProperty({
+    example: '댓글 내용 입력',
+    description: '댓글 내용 입력',
+    required: true,
+  })
   @IsString()
   @Column()
   content: string;
