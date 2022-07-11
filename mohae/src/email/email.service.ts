@@ -4,6 +4,7 @@ import Mail = require('nodemailer/lib/mailer');
 import * as nodemailer from 'nodemailer';
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { QuestionEmailDto } from './dto/question.email.dto';
 interface EmailOptions {
   to: string;
   from: string;
@@ -149,6 +150,29 @@ export class EmailService {
       throw new UnauthorizedException(
         '등록하셨던 이름과 현재 이름이 맞지 않습니다.',
       );
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  async questionEmail(nickname: string, questionEmailDto: QuestionEmailDto) {
+    try {
+      const { title, description }: QuestionEmailDto = questionEmailDto;
+
+      const emailFromUserName =
+        this.configService.get<string>('EMAIL_AUTH_EMAIL');
+
+      const mailOptions: EmailOptions = {
+        to: emailFromUserName,
+        from: emailFromUserName,
+        subject: `모해 사이트를 이용하는 ${nickname}님의 문의사항 입니다.`,
+        html: `<body>
+      <h1>${title}</h1>
+      <p>${description}</p>
+      </body>`,
+      };
+
+      return await this.transpoter.sendMail(mailOptions);
     } catch (err) {
       throw err;
     }
