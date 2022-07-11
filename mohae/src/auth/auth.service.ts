@@ -239,17 +239,8 @@ export class AuthService {
     }
   }
 
-  async signDown(
-    userNo: number,
-    userEmail: string,
-    { email }: SignDownDto,
-  ): Promise<void> {
+  async signDown(userNo: number): Promise<void> {
     try {
-      if (userEmail !== email) {
-        throw new UnauthorizedException(
-          '회원님의 이메일이 일치 하지 않습니다.',
-        );
-      }
       const affected: number = await this.userRepository.signDown(userNo);
       if (!affected) {
         throw new InternalServerErrorException(
