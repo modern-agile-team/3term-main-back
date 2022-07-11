@@ -3,12 +3,11 @@ import { IsEmail, IsNotEmpty, IsString } from 'class-validator';
 
 export class SignDownDto {
   @ApiProperty({
-    example: 'aaa@aaa.aaa',
-    description: '가입시 입력했던 이메일',
+    example: '1234',
+    description: '비밀번호',
     required: true,
   })
-  @IsEmail()
   @IsNotEmpty()
   @IsString()
-  email: string;
+  password: string;
 }
