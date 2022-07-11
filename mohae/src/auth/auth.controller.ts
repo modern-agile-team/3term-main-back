@@ -224,12 +224,9 @@ export class AuthController {
   @ApiBearerAuth('access-token')
   @UseGuards(AuthGuard('jwt'))
   @Delete()
-  async signDown(
-    @Body() signDownDto: SignDownDto,
-    @CurrentUser() user: User,
-  ): Promise<object> {
+  async signDown(@CurrentUser() user: User): Promise<object> {
     try {
-      await this.authService.signDown(user.no, user.email, signDownDto);
+      await this.authService.signDown(user.no);
 
       return {
         msg: `성공적으로 회원탈퇴가 진행되었습니다.`,
