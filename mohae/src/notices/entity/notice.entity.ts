@@ -1,11 +1,6 @@
+import { ApiProperty } from '@nestjs/swagger';
 import { Exclude } from 'class-transformer';
-import {
-  IsNotEmpty,
-  IsNumber,
-  IsString,
-  Length,
-  MaxLength,
-} from 'class-validator';
+import { IsNotEmpty, IsString, Length, MaxLength } from 'class-validator';
 import { User } from 'src/auth/entity/user.entity';
 import {
   BaseEntity,
@@ -16,7 +11,6 @@ import {
   JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
-  RelationId,
   UpdateDateColumn,
 } from 'typeorm';
 
@@ -25,6 +19,11 @@ export class Notice extends BaseEntity {
   @PrimaryGeneratedColumn()
   no: number;
 
+  @ApiProperty({
+    example: 'Notice 제목 입력',
+    description: 'Notice 제목 입력',
+    required: true,
+  })
   @IsNotEmpty({ message: '제목을 입력해 주세요.' })
   @IsString()
   @Length(3, 45, { message: '제목은 3자 ~ 45자 입력해 주세요.' })
@@ -35,6 +34,11 @@ export class Notice extends BaseEntity {
   })
   title: string;
 
+  @ApiProperty({
+    example: 'Notice 내용 입력',
+    description: 'Notice 내용 입력',
+    required: true,
+  })
   @IsNotEmpty({ message: '내용을 입력해 주세요.' })
   @IsString()
   @MaxLength(1000, { message: '내용은 1000자 이내로 입력해 주세요.' })
