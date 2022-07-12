@@ -43,6 +43,13 @@ export class FaqsController {
       'FAQ 전체 조회',
       HTTP_STATUS_CODE.success.ok,
       'FAQ 전체 조회 결과 성공',
+      [
+        {
+          no: 1,
+          title: 'FAQ 예시 제목입니다.',
+          description: 'FAQ 예시 내용입니다.',
+        },
+      ],
     ),
   )
   @HttpCode(HTTP_STATUS_CODE.success.ok)

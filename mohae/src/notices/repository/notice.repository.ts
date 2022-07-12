@@ -18,13 +18,13 @@ export class NoticeRepository extends Repository<Notice> {
         'notices',
       )
         .select([
-          'notices.no',
-          'notices.title',
-          'notices.description',
-          'notices.createdAt',
+          'notices.no AS no',
+          'notices.title AS title',
+          'notices.description AS description',
+          `DATE_FORMAT(notices.createdAt,'%Y년 %m월 %d일') AS createdAt`,
         ])
-        .orderBy('notices.updatedAt', 'DESC')
-        .getMany();
+        .orderBy('notices.createdAt', 'DESC')
+        .getRawMany();
 
       return notices;
     } catch (err) {
