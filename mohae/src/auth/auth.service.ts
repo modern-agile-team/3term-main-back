@@ -239,22 +239,22 @@ export class AuthService {
     }
   }
 
-  async signDown(
-    userNo: number,
-    userEmail: string,
-    { email }: SignDownDto,
-  ): Promise<void> {
+  async signDown(user: User, password: string): Promise<void> {
     try {
-      if (userEmail !== email) {
-        throw new UnauthorizedException(
-          '회원님의 이메일이 일치 하지 않습니다.',
-        );
-      }
-      const affected: number = await this.userRepository.signDown(userNo);
-      if (!affected) {
-        throw new InternalServerErrorException(
-          `${userNo} 회원님의 회원탈퇴가 정상적으로 이루어 지지 않았습니다.`,
-        );
+      const { email, no } = user;
+      const { salt }: User = await this.userRepository.confirmUser(email);
+      const isPassword: boolean = await bcrypt.compare(password, salt);
+
+      if (isPassword) {
+        const affected: number = await this.userRepository.signDown(no);
+
+        if (!affected) {
+          throw new InternalServerErrorException(
+            `${no} 회원님의 회원탈퇴가 정상적으로 이루어 지지 않았습니다.`,
+          );
+        }
+      } else {
+        throw new UnauthorizedException('비밀번호가 일치하지 않습니다.');
       }
     } catch (err) {
       throw err;

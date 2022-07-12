@@ -223,13 +223,13 @@ export class AuthController {
   @HttpCode(HTTP_STATUS_CODE.success.ok)
   @ApiBearerAuth('access-token')
   @UseGuards(AuthGuard('jwt'))
-  @Delete()
+  @Patch()
   async signDown(
-    @Body() signDownDto: SignDownDto,
+    @Body() { password }: SignDownDto,
     @CurrentUser() user: User,
   ): Promise<object> {
     try {
-      await this.authService.signDown(user.no, user.email, signDownDto);
+      await this.authService.signDown(user, password);
 
       return {
         msg: `성공적으로 회원탈퇴가 진행되었습니다.`,

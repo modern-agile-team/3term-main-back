@@ -16,7 +16,7 @@ export class FaqRepository extends Repository<Faq> {
   async readAllFaqs(): Promise<Faq | Faq[]> {
     try {
       const faqs: Faq | Faq[] = await this.createQueryBuilder('faqs')
-        .select(['faqs.no', 'faqs.title', 'faqs.description', 'faqs.createdAt'])
+        .select(['faqs.no', 'faqs.title', 'faqs.description'])
         .orderBy('faqs.updatedAt', 'DESC')
         .getMany();
 
