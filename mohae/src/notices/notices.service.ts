@@ -5,6 +5,7 @@ import { UserRepository } from 'src/auth/repository/user.repository';
 import { ErrorConfirm } from 'src/common/utils/error';
 import { Connection, QueryRunner } from 'typeorm';
 import { CreateNoticeDto } from './dto/create-notice.dto';
+import { SearchNoticesDto } from './dto/search-notice.dto';
 import { UpdateNoticeDto } from './dto/update-notice.dtd';
 import { Notice } from './entity/notice.entity';
 import { NoticeRepository } from './repository/notice.repository';
@@ -101,5 +102,14 @@ export class NoticesService {
     } catch (err) {
       throw err;
     }
+  }
+
+  async searchNotices(
+    searchNoticesDto: SearchNoticesDto,
+  ): Promise<Notice | Notice[]> {
+    const searchedNotices: Notice | Notice[] =
+      await this.noticeRepository.searchNotices(searchNoticesDto);
+
+    return searchedNotices;
   }
 }
