@@ -7,6 +7,7 @@ import { UserRepository } from 'src/auth/repository/user.repository';
 import { ErrorConfirm } from 'src/common/utils/error';
 import { Connection, QueryRunner } from 'typeorm';
 import { CreateFaqDto } from './dto/create-faq.dto';
+import { SearchFaqsDto } from './dto/search-faq.dto';
 import { UpdateFaqDto } from './dto/update-faq.dto';
 import { Faq } from './entity/faq.entity';
 import { FaqRepository } from './repository/faq.repository';
@@ -108,5 +109,13 @@ export class FaqsService {
     } catch (err) {
       throw err;
     }
+  }
+
+  async searchFaqs(searchFaqsDto: SearchFaqsDto): Promise<Faq | Faq[]> {
+    const searchedFaqs: Faq | Faq[] = await this.faqRepository.searchFaqs(
+      searchFaqsDto,
+    );
+
+    return searchedFaqs;
   }
 }
