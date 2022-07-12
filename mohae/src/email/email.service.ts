@@ -155,10 +155,9 @@ export class EmailService {
     }
   }
 
-  async questionEmail(nickname: string, questionEmailDto: QuestionEmailDto) {
+  async questionEmail(nickname: string, questionEmailDto, files) {
     try {
-      const { title, description }: QuestionEmailDto = questionEmailDto;
-
+      const { title, description } = questionEmailDto;
       const emailFromUserName =
         this.configService.get<string>('EMAIL_AUTH_EMAIL');
 
@@ -172,7 +171,7 @@ export class EmailService {
       </body>`,
       };
 
-      return await this.transpoter.sendMail(mailOptions);
+      // return await this.transpoter.sendMail(mailOptions);
     } catch (err) {
       throw err;
     }

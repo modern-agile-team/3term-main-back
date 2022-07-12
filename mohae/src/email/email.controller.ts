@@ -1,5 +1,14 @@
-import { Body, Controller, HttpCode, Post, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  HttpCode,
+  Post,
+  UploadedFiles,
+  UseGuards,
+  UseInterceptors,
+} from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
+import { FilesInterceptor } from '@nestjs/platform-express';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { User } from 'src/auth/entity/user.entity';
 import { HTTP_STATUS_CODE } from 'src/common/configs/http-status.config';
@@ -23,14 +32,20 @@ export class EmailController {
     };
   }
 
+  @Post('/question')
   @UseGuards(AuthGuard('jwt'))
   @ApiBearerAuth('access-token')
-  @Post('/question')
+  @UseInterceptors(FilesInterceptor('image', 10))
   async questionEmail(
-    @CurrentUser() user: User,
     @Body() questionEmailDto: QuestionEmailDto,
+    @CurrentUser() user: User,
+    @UploadedFiles() files: Express.Multer.File[],
   ) {
-    await this.emailService.questionEmail(user.nickname, questionEmailDto);
+    await this.emailService.questionEmail(
+      user.nickname,
+      questionEmailDto,
+      files,
+    );
 
     return {
       msg: '문의사항이 성공적으로 전송 되었습니다.',
