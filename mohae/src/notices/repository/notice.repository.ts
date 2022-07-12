@@ -103,7 +103,7 @@ export class NoticeRepository extends Repository<Notice> {
           'notices.no AS no',
           'notices.title AS title',
           'notices.description AS description',
-          'notices.created_at AS createdAt',
+          `DATE_FORMAT(notices.createdAt,'%Y년 %m월 %d일') AS createdAt`,
         ])
         .where('notices.title like :title', { title: `%${title}%` })
         .orderBy('notices.created_at', 'DESC')

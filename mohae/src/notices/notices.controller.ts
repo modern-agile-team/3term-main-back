@@ -154,13 +154,15 @@ export class NoticesController {
       [
         {
           no: 3,
-          title: 'test3',
-          description: 'test3',
+          title: '공지제목3',
+          description: '공지내용3',
+          createdAt: '2022년 07월 11일',
         },
         {
           no: 2,
-          title: 'test2',
-          description: 'test2',
+          title: '공지제목2',
+          description: '공지내용2',
+          createdAt: '2022년 07월 10일',
         },
       ],
     ),
