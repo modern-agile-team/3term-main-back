@@ -301,7 +301,7 @@ export class BoardRepository extends Repository<Board> {
         .leftJoin('boards.photos', 'photo')
         .select([
           'DATEDIFF(boards.deadline, now()) * -1 AS decimalDay',
-          'photo.photo_url AS boardPhoto',
+          'photo.photo_url AS photoUrl',
           'boards.no AS no',
           'boards.title AS title',
           'boards.isDeadline AS isDeadline',
