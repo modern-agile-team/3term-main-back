@@ -12,7 +12,7 @@ import { Notice } from '../entity/notice.entity';
 
 @EntityRepository(Notice)
 export class NoticeRepository extends Repository<Notice> {
-  async readAllNotices(): Promise<Notice | Notice[]> {
+  async readAllNotices(take = 5): Promise<Notice | Notice[]> {
     try {
       const notices: Notice | Notice[] = await this.createQueryBuilder(
         'notices',
@@ -24,6 +24,7 @@ export class NoticeRepository extends Repository<Notice> {
           `DATE_FORMAT(notices.createdAt,'%Y년 %m월 %d일') AS createdAt`,
         ])
         .orderBy('notices.createdAt', 'DESC')
+        .limit(+take)
         .getRawMany();
 
       return notices;
