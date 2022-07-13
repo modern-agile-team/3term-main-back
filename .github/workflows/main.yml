@@ -57,7 +57,7 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.MOHAE_TOKEN }}
       # 3000 -> 80 포트로 수행하도록 지정
-      - name: Docker run
+      - name: Docker run 
         run: |
          cd ~/mohae-prod
                 docker-compose pull
