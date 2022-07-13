@@ -241,7 +241,7 @@ export class AuthService {
 
   async signDown(user: User, password: string): Promise<void> {
     try {
-      const { email, no } = user;
+      const { email, no }: User = user;
       const { salt }: User = await this.userRepository.confirmUser(email);
       const isPassword: boolean = await bcrypt.compare(password, salt);
 
