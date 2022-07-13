@@ -24,7 +24,7 @@ export class EmailService {
     private configService: ConfigService,
   ) {
     const emailHost = this.configService.get<string>('EMAIL_HOST');
-    const emailPort = this.configService.get<string>('EMAIL_PORT');
+    // const emailPort = this.configService.get<string>('EMAIL_PORT');
     const emailAuthEmail = this.configService.get<string>('EMAIL_AUTH_EMAIL');
     const emailAuthPassword = this.configService.get<string>(
       'EMAIL_AUTH_PASSWORD',
