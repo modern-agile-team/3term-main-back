@@ -11,6 +11,7 @@ import { AuthGuard } from '@nestjs/passport';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { User } from 'src/auth/entity/user.entity';
+import { AwsService } from 'src/aws/aws.service';
 import { HTTP_STATUS_CODE } from 'src/common/configs/http-status.config';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 import { SendEmailDto } from './dto/email.dto';
@@ -20,7 +21,10 @@ import { EmailService } from './email.service';
 @Controller('email')
 @ApiTags('Email')
 export class EmailController {
-  constructor(private emailService: EmailService) {}
+  constructor(
+    private emailService: EmailService,
+    private awsService: AwsService,
+  ) {}
 
   @HttpCode(HTTP_STATUS_CODE.success.ok)
   @Post('/forget/password')
@@ -28,7 +32,7 @@ export class EmailController {
     await this.emailService.sendEmail(sendEmailDto);
 
     return {
-      msg: '가입하신 email로 링크가 전송 되었습니다.',
+      msg: `해당 이메일(${sendEmailDto.email})로 비밀번호 변경 링크가 전송되었습니다.`,
     };
   }
 
@@ -41,10 +45,13 @@ export class EmailController {
     @CurrentUser() user: User,
     @UploadedFiles() files: Express.Multer.File[],
   ) {
+    const questionPhotoUrls: string[] =
+      await this.awsService.uploadQuestionFileToS3('question', files);
+
     await this.emailService.questionEmail(
-      user.nickname,
+      user,
       questionEmailDto,
-      files,
+      questionPhotoUrls,
     );
 
     return {

@@ -10,6 +10,7 @@ interface EmailOptions {
   from: string;
   subject: string;
   html: string;
+  attachments?: any;
 }
 @Injectable()
 export class EmailService {
@@ -28,7 +29,6 @@ export class EmailService {
 
     this.transpoter = nodemailer.createTransport({
       host: emailHost,
-      port: emailPort,
       secure: false,
       auth: {
         user: emailAuthEmail,
@@ -52,7 +52,7 @@ export class EmailService {
           to: email,
           from: emailFromUserName,
           subject: `모해로부터 온 ${name}님의 비밀번호 변경 관련 메일입니다.`,
-          html: `<body style="box-sizing: border-box; width: 100%; color: #4f4e5c">
+          html: `<body style="box-sizing: border-box; width: 100%; color: #4f4e5c; background: #f5f5f5">
           <table border="0" cellpadding="0" cellspacing="0" width="100%">
             <tbody width="732px">
               <tr>
@@ -140,6 +140,24 @@ export class EmailService {
                   </table>
                 </td>
               </tr>
+              <tr>
+              <td align="center"
+                style="
+                width: 100%;
+                min-width: 700px;
+                background: #f5f5f5;
+                padding: 16px calc((100% - 668px) / 2);
+              ">
+                <img
+                  src="https://mohaeproj.s3.amazonaws.com/question/1657612862109_modern-logo.png"
+                  alt="Creating Email Magic"
+                  width="25"
+                  height="25"
+                  align="center"
+                />
+                  Modern Agile Team
+              </td>
+            </tr>
             </tbody>
           </table>
         </body>`,
@@ -155,23 +173,69 @@ export class EmailService {
     }
   }
 
-  async questionEmail(nickname: string, questionEmailDto, files) {
+  async questionEmail(
+    { nickname, email }: any,
+    questionEmailDto: QuestionEmailDto,
+    questionPhotoUrls: Array<string>,
+  ) {
     try {
-      const { title, description } = questionEmailDto;
+      const { title, description }: QuestionEmailDto = questionEmailDto;
       const emailFromUserName =
         this.configService.get<string>('EMAIL_AUTH_EMAIL');
+
+      const urlLists = questionPhotoUrls.map((el) => {
+        const obj = {};
+        obj['path'] = encodeURI(el);
+        return obj;
+      });
 
       const mailOptions: EmailOptions = {
         to: emailFromUserName,
         from: emailFromUserName,
-        subject: `모해 사이트를 이용하는 ${nickname}님의 문의사항 입니다.`,
-        html: `<body>
-      <h1>${title}</h1>
-      <p>${description}</p>
-      </body>`,
+        subject: `#모해 문의 접수 : ${nickname}님`,
+        html: ` <body style="background: #f5f5f5">
+        <table align="center" cellpadding="0" cellspacing="0" width="700">
+          <tr>
+            <td align="center" style="padding: 40px 0 30px 0">
+              <img
+                src="https://d2ffbnf2hpheay.cloudfront.net/email/mohae.png?w=100"
+                alt="Creating Email Magic"
+                width="100"
+                height="75"
+                style="display: block"
+              />
+            </td>
+          </tr>
+          <tr>
+            <td
+              align="center"
+              bgcolor="#ffffff"
+              style="border-radius: 24px; padding: 20px"
+            >
+              <p style="font-size: 20px">작성자 : ${email}</p>
+              <p style="font-size: 18px">제목 : ${title}</p>
+              <p style="font-size: 14px">${description}</p>
+            </td>
+          </tr>
+          <tr>
+            <td align="center" style="padding: 20px">
+              <img
+                src="https://mohaeproj.s3.amazonaws.com/question/1657612862109_modern-logo.png"
+                alt="Creating Email Magic"
+                width="25"
+                height="25"
+                align="center"
+              />
+                Modern Agile Team
+            </td>
+          </tr>
+        </table>
+      </body>
+      `,
+        attachments: urlLists,
       };
 
-      // return await this.transpoter.sendMail(mailOptions);
+      return await this.transpoter.sendMail(mailOptions);
     } catch (err) {
       throw err;
     }
