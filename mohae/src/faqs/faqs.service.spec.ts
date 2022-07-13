@@ -142,7 +142,6 @@ describe('FaqsService', () => {
       try {
         await faqService.createFaq(createFaqDto);
       } catch (e) {
-        console.log(e);
         expect(e).toBeInstanceOf(NotFoundException);
         expect(e.response).toStrictEqual({
           statusCode: 404,
