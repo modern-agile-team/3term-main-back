@@ -11,6 +11,9 @@ export class ExampleType {
   @IsBoolean()
   success: boolean;
 
+  @IsString()
+  date: string;
+
   @IsNotEmpty()
   @IsNumber()
   statusCode: number;
