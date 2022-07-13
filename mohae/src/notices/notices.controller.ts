@@ -7,6 +7,7 @@ import {
   Param,
   Post,
   Put,
+  Query,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
@@ -25,6 +26,7 @@ import { RolesGuard } from 'src/common/guards/roles.guard';
 import { operationConfig } from 'src/common/swagger-apis/api-operation.swagger';
 import { apiResponse } from 'src/common/swagger-apis/api-response.swagger';
 import { CreateNoticeDto } from './dto/create-notice.dto';
+import { SearchNoticesDto } from './dto/search-notice.dto';
 import { UpdateNoticeDto } from './dto/update-notice.dtd';
 import { Notice } from './entity/notice.entity';
 import { NoticesService } from './notices.service';
@@ -39,9 +41,17 @@ export class NoticesController {
   )
   @ApiOkResponse(
     apiResponse.success(
-      '공지사항 전체 조회',
+      'Notice 전체 조회',
       HTTP_STATUS_CODE.success.ok,
-      '공지사항 전체 조회 성공',
+      'Notice 전체 조회 결과 성공',
+      [
+        {
+          no: 1,
+          title: 'Notice 예시 제목입니다.',
+          description: 'Notice 예시 내용입니다.',
+          createdAt: '2022년 07월 11일',
+        },
+      ],
     ),
   )
   @HttpCode(HTTP_STATUS_CODE.success.ok)
@@ -62,7 +72,7 @@ export class NoticesController {
   @ApiOkResponse(
     apiResponse.success(
       '공지사항 저장',
-      HTTP_STATUS_CODE.success.ok,
+      HTTP_STATUS_CODE.success.created,
       '공지사항 저장 결과 성공',
     ),
   )
@@ -132,6 +142,43 @@ export class NoticesController {
 
     return {
       msg: '공지사항 삭제 완료',
+    };
+  }
+
+  @ApiOperation(operationConfig('Notice 검색 기능', 'Notice를 검색하는 API'))
+  @ApiOkResponse(
+    apiResponse.success(
+      'Notice 검색',
+      HTTP_STATUS_CODE.success.ok,
+      'Notice 검색 결과',
+      [
+        {
+          no: 3,
+          title: '공지제목3',
+          description: '공지내용3',
+          createdAt: '2022년 07월 11일',
+        },
+        {
+          no: 2,
+          title: '공지제목2',
+          description: '공지내용2',
+          createdAt: '2022년 07월 10일',
+        },
+      ],
+    ),
+  )
+  @HttpCode(HTTP_STATUS_CODE.success.ok)
+  @Get('search')
+  async searchNotices(
+    @Query() searchNoticesDto: SearchNoticesDto,
+  ): Promise<object> {
+    const response: Notice | Notice[] = await this.noticesService.searchNotices(
+      searchNoticesDto,
+    );
+
+    return {
+      msg: '검색 결과',
+      response,
     };
   }
 }

@@ -1,5 +1,4 @@
 import {
-  BadGatewayException,
   BadRequestException,
   ConflictException,
   Injectable,
@@ -7,7 +6,6 @@ import {
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
-import { getCustomRepositoryToken, InjectRepository } from '@nestjs/typeorm';
 import { UserRepository } from './repository/user.repository';
 import * as bcrypt from 'bcryptjs';
 import { JwtService } from '@nestjs/jwt';
@@ -16,21 +14,20 @@ import { SchoolRepository } from 'src/schools/repository/school.repository';
 import { MajorRepository } from 'src/majors/repository/major.repository';
 import { CategoryRepository } from 'src/categories/repository/category.repository';
 import { ErrorConfirm } from 'src/common/utils/error';
-import { School } from 'src/schools/entity/school.entity';
-import { Major } from 'src/majors/entity/major.entity';
 import { Category } from 'src/categories/entity/category.entity';
 import { Connection } from 'typeorm';
 import {
   TermsReporitory,
   TermsUserReporitory,
 } from 'src/terms/repository/terms.repository';
-import { Terms } from 'src/terms/entity/terms.entity';
 import { SignUpDto } from './dto/sign-up.dto';
 import { SignInDto } from './dto/sign-in.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { ForgetPasswordDto } from './dto/forget-password.dto';
-import { SignDownDto } from './dto/auth-credential.dto';
+import { SignDownDto } from './dto/sign-down.dto';
 import { ConfigService } from '@nestjs/config';
+import { School } from 'src/schools/entity/school.entity';
+import { Major } from 'src/majors/entity/major.entity';
 
 @Injectable()
 export class AuthService {
@@ -44,6 +41,29 @@ export class AuthService {
     private jwtService: JwtService,
     private configService: ConfigService,
   ) {}
+
+  async hardDeleteUser(): Promise<number> {
+    const queryRunner = this.connection.createQueryRunner();
+
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    try {
+      const hardDeletedUserNum: number = await queryRunner.manager
+        .getCustomRepository(UserRepository)
+        .hardDeleteUser();
+
+      await queryRunner.commitTransaction();
+
+      return hardDeletedUserNum;
+    } catch (err) {
+      await queryRunner.rollbackTransaction();
+      throw err;
+    } finally {
+      await queryRunner.release();
+    }
+  }
+
   async signUp(signUpDto: SignUpDto): Promise<object> {
     const queryRunner = this.connection.createQueryRunner();
 
@@ -60,27 +80,20 @@ export class AuthService {
         password,
         terms,
       }: SignUpDto = signUpDto;
-      const schoolRepo: School = await this.schoolRepository.findOne(school, {
-        select: ['no'],
-      });
-      const majorRepo: Major = await this.majorRepository.findOne(major, {
-        select: ['no'],
-      });
 
-      if (!schoolRepo || !majorRepo) {
-        const notFoundObj: object = { 학교: schoolRepo, 전공: majorRepo };
-        const notFoundKey: Array<string> = Object.keys(notFoundObj).filter(
-          (key) => !notFoundObj[key],
-        );
-        if (notFoundKey.length) {
-          throw new NotFoundException(
-            `해당 번호에 해당하는 ${notFoundKey}이(가) 존재하지 않습니다.`,
-          );
-        }
-      }
-
+      const schoolRepo: School | null = school
+        ? await this.schoolRepository.findOne(school, {
+            select: ['no'],
+          })
+        : null;
+      const majorRepo: Major | null = major
+        ? await this.majorRepository.findOne(major, {
+            select: ['no'],
+          })
+        : null;
       const categoriesRepo: Array<Category> =
         await this.categoriesRepository.selectCategory(categories);
+
       const duplicateEmail: User = await this.userRepository.duplicateCheck(
         'email',
         email,
@@ -137,13 +150,16 @@ export class AuthService {
           .getCustomRepository(CategoryRepository)
           .addUser(categoryNo.no, user);
       }
-      await queryRunner.manager
-        .getCustomRepository(SchoolRepository)
-        .addUser(schoolRepo.no, user);
-      await queryRunner.manager
-        .getCustomRepository(MajorRepository)
-        .addUser(majorRepo.no, user);
-
+      if (schoolRepo) {
+        await queryRunner.manager
+          .getCustomRepository(SchoolRepository)
+          .addUser(schoolRepo, user);
+      }
+      if (majorRepo) {
+        await queryRunner.manager
+          .getCustomRepository(MajorRepository)
+          .addUser(majorRepo, user);
+      }
       await queryRunner.commitTransaction();
 
       return { email, nickname };
@@ -171,10 +187,16 @@ export class AuthService {
         await this.userRepository.clearLoginCount(user.no);
 
         const accessToken: string = this.jwtService.sign(payload);
+
+        if (user.deletedAt) {
+          await this.userRepository.cancelSignDown(user.email);
+        }
+
         return accessToken;
       }
       await this.userRepository.plusLoginFailCount(user);
-      const afterUser = await this.userRepository.findOne(user.no);
+      const afterUser = await this.userRepository.confirmUser(user.email);
+
       if (afterUser.loginFailCount >= 5) {
         await this.userRepository.changeIsLock(afterUser.no, afterUser.isLock);
       }
@@ -189,11 +211,14 @@ export class AuthService {
   async confirmUser(signInDto: SignInDto) {
     try {
       const { email }: SignInDto = signInDto;
+
       const user: User = await this.userRepository.confirmUser(email);
+
       this.errorConfirm.notFoundError(
         user,
         '아이디 또는 비밀번호가 일치하지 않습니다.',
       );
+
       if (!user.isLock) {
         return user;
       }
@@ -214,22 +239,22 @@ export class AuthService {
     }
   }
 
-  async signDown(
-    userNo: number,
-    userEmail: string,
-    { email }: SignDownDto,
-  ): Promise<void> {
+  async signDown(user: User, password: string): Promise<void> {
     try {
-      if (userEmail !== email) {
-        throw new UnauthorizedException(
-          '회원님의 이메일이 일치 하지 않습니다.',
-        );
-      }
-      const affected: number = await this.userRepository.signDown(userNo);
-      if (!affected) {
-        throw new InternalServerErrorException(
-          `${userNo} 회원님의 회원탈퇴가 정상적으로 이루어 지지 않았습니다.`,
-        );
+      const { email, no }: User = user;
+      const { salt }: User = await this.userRepository.confirmUser(email);
+      const isPassword: boolean = await bcrypt.compare(password, salt);
+
+      if (isPassword) {
+        const affected: number = await this.userRepository.signDown(no);
+
+        if (!affected) {
+          throw new InternalServerErrorException(
+            `${no} 회원님의 회원탈퇴가 정상적으로 이루어 지지 않았습니다.`,
+          );
+        }
+      } else {
+        throw new UnauthorizedException('비밀번호가 일치하지 않습니다.');
       }
     } catch (err) {
       throw err;

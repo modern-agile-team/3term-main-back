@@ -27,7 +27,7 @@ export class FilterBoardDto extends PaginationDto {
   })
   @IsOptional()
   @IsString()
-  @MinLength(3)
+  @MinLength(1)
   @MaxLength(15)
   title?: string;
 

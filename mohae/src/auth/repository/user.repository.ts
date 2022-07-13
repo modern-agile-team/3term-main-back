@@ -1,29 +1,25 @@
 import {
+  DeleteResult,
   EntityRepository,
   Repository,
-  SelectQueryBuilder,
-  Timestamp,
   UpdateResult,
 } from 'typeorm';
-import { CreateUserDto } from '../dto/auth-credential.dto';
 import { User } from '../entity/user.entity';
 import { InternalServerErrorException } from '@nestjs/common';
 import { School } from 'src/schools/entity/school.entity';
 import { Major } from 'src/majors/entity/major.entity';
-import { QLDB } from 'aws-sdk';
-import { UserPhotoSizes } from 'src/common/configs/photo-size.config';
-import { NumOpenReactiveInsights } from 'aws-sdk/clients/devopsguru';
+import { SignUpDto } from '../dto/sign-up.dto';
 
 @EntityRepository(User)
 export class UserRepository extends Repository<User> {
   // 인증 관련 부분
   async createUser(
-    createUserDto: CreateUserDto,
+    createUserDto: SignUpDto,
     school: School,
     major: Major,
   ): Promise<User> {
     try {
-      const { email, password, phone, nickname, manager, name }: CreateUserDto =
+      const { email, password, phone, nickname, manager, name }: SignUpDto =
         createUserDto;
 
       const { raw } = await this.createQueryBuilder('users')
@@ -63,6 +59,20 @@ export class UserRepository extends Repository<User> {
     }
   }
 
+  async cancelSignDown(email: string): Promise<void> {
+    try {
+      await this.createQueryBuilder('users')
+        .update(User)
+        .set({ deletedAt: null })
+        .where('users.email = :email', { email })
+        .execute();
+    } catch (err) {
+      throw new InternalServerErrorException(
+        `${err} 로그인 도중 유저 cancelSignDown 관련 서버에러`,
+      );
+    }
+  }
+
   async confirmUser(email: string): Promise<User> {
     try {
       const user: User = await this.createQueryBuilder('users')
@@ -76,7 +86,9 @@ export class UserRepository extends Repository<User> {
           'users.loginFailCount AS loginFailCount',
           'users.nickname AS nickname',
           'profilePhoto.photo_url AS photo_url',
+          'users.deletedAt AS deletedAt',
         ])
+        .withDeleted()
         .where('users.email = :email', { email })
         .getRawOne();
       return user;
@@ -89,7 +101,7 @@ export class UserRepository extends Repository<User> {
 
   async signDown(no: number): Promise<number> {
     try {
-      const { affected }: UpdateResult = await this.createQueryBuilder()
+      const { affected }: DeleteResult = await this.createQueryBuilder()
         .softDelete()
         .from(User)
         .where('no = :no', { no })
@@ -249,6 +261,22 @@ export class UserRepository extends Repository<User> {
     } catch (err) {
       throw new InternalServerErrorException(
         `${err} 프로필 업데이트 중 알 수 없는 서버 에러입니다.`,
+      );
+    }
+  }
+
+  async hardDeleteUser(): Promise<number> {
+    try {
+      const { affected }: DeleteResult = await this.createQueryBuilder('users')
+        .delete()
+        .from(User)
+        .where('users.deleted_At is not null')
+        .andWhere('DATE_ADD(users.deleted_At, INTERVAL 15 DAY) >= NOW()')
+        .execute();
+      return affected;
+    } catch (err) {
+      throw new InternalServerErrorException(
+        `${err} 유저 hard Delete 중 알 수 없는 서버 에러입니다.`,
       );
     }
   }

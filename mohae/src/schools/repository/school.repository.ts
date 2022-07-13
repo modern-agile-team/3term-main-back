@@ -22,7 +22,7 @@ export class SchoolRepository extends Repository<School> {
     return school;
   }
 
-  async addUser(schoolNo: number, user: User) {
+  async addUser(schoolNo: School, user: User) {
     try {
       await this.createQueryBuilder()
         .relation(School, 'users')

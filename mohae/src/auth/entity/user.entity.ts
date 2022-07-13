@@ -1,4 +1,4 @@
-import { Validate } from 'class-validator';
+import { IsOptional, Validate } from 'class-validator';
 import { Major } from 'src/majors/entity/major.entity';
 import { Review } from 'src/reviews/entity/review.entity';
 import { School } from 'src/schools/entity/school.entity';
@@ -56,6 +56,7 @@ export class User extends BaseEntity {
   @Column({
     type: 'varchar',
     comment: '회원 전화번호',
+    nullable: true,
   })
   phone: string;
 
@@ -112,9 +113,7 @@ export class User extends BaseEntity {
   @OneToOne(() => ProfilePhoto, (profilePhoto) => profilePhoto.user)
   profilePhoto: ProfilePhoto;
 
-  @OneToMany((type) => TermsUser, (termsUser) => termsUser.user, {
-    nullable: true,
-  })
+  @OneToMany((type) => TermsUser, (termsUser) => termsUser.user)
   userTerms: TermsUser[];
 
   // 나를 좋아요 한 유저 목록
@@ -129,9 +128,7 @@ export class User extends BaseEntity {
   })
   likedMe: UserLike[];
 
-  @OneToMany((type) => Board, (board) => board.user, {
-    onDelete: 'SET NULL',
-  })
+  @OneToMany((type) => Board, (board) => board.user)
   boards: Board[];
 
   @OneToMany((type) => Letter, (letter) => letter.sender, {

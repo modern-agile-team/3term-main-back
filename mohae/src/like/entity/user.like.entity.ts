@@ -8,13 +8,13 @@ export class UserLike extends BaseEntity {
 
   // 좋아요를 누른 유저
   @ManyToOne((type) => User, (user) => user.likedUser, {
-    onDelete: 'SET NULL',
+    onDelete: 'CASCADE',
   })
   likedMe: User;
 
   // 좋아요를 받은 유저
   @ManyToOne((type) => User, (user) => user.likedMe, {
-    onDelete: 'SET NULL',
+    onDelete: 'CASCADE',
   })
   likedUser: User;
 }
