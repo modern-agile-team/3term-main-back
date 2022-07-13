@@ -5,7 +5,7 @@ import * as nodemailer from 'nodemailer';
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { QuestionEmailDto } from './dto/question.email.dto';
-import { CHANGE_EMAIL } from './htmls/change-email.html';
+import { CHANGE_PASSWORD_BY_EMAIL } from './htmls/change-password-by-email.html';
 import { questionHtml } from './htmls/question-email';
 import { SendEmailDto } from './dto/email.dto';
 interface EmailOptions {
@@ -23,10 +23,12 @@ export class EmailService {
     private userRepository: UserRepository,
     private configService: ConfigService,
   ) {
-    const emailHost = this.configService.get<string>('EMAIL_HOST');
+    const emailHost: string = this.configService.get<string>('EMAIL_HOST');
+    // 사용할 곳이 생길 수도있어 남겨둠
     // const emailPort = this.configService.get<string>('EMAIL_PORT');
-    const emailAuthEmail = this.configService.get<string>('EMAIL_AUTH_EMAIL');
-    const emailAuthPassword = this.configService.get<string>(
+    const emailAuthEmail: string =
+      this.configService.get<string>('EMAIL_AUTH_EMAIL');
+    const emailAuthPassword: string = this.configService.get<string>(
       'EMAIL_AUTH_PASSWORD',
     );
 
@@ -55,7 +57,7 @@ export class EmailService {
           to: email,
           from: emailFromUserName,
           subject: `모해로부터 온 ${name}님의 비밀번호 변경 관련 메일입니다.`,
-          html: CHANGE_EMAIL,
+          html: CHANGE_PASSWORD_BY_EMAIL,
         };
 
         return await this.transpoter.sendMail(mailOptions);

@@ -1,4 +1,4 @@
-export const CHANGE_EMAIL = `<body style="box-sizing: border-box; width: 100%; color: #4f4e5c; background: #f5f5f5">
+export const CHANGE_PASSWORD_BY_EMAIL = `<body style="box-sizing: border-box; width: 100%; color: #4f4e5c; background: #f5f5f5">
 <table border="0" cellpadding="0" cellspacing="0" width="100%">
     <tbody width="732px">
         <tr>
