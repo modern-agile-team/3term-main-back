@@ -9,6 +9,7 @@ export const apiResponse: any = {
   ) => {
     const exampleObj: ExampleType = {
       success: true,
+      date: new Date().toLocaleString(),
       statusCode,
       msg,
       response,
@@ -30,6 +31,7 @@ export const apiResponse: any = {
   ) => {
     const exampleObj: ExampleType = {
       success: false,
+      date: new Date().toLocaleString(),
       statusCode,
       msg,
       err,
