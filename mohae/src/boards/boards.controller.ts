@@ -7,14 +7,11 @@ import {
   Delete,
   Patch,
   Query,
-  Logger,
   UseGuards,
   UseInterceptors,
   HttpCode,
   UploadedFiles,
   Inject,
-  Redirect,
-  Header,
   Req,
 } from '@nestjs/common';
 import { User } from '@sentry/node';
@@ -35,7 +32,6 @@ import { BoardsService } from './boards.service';
 import { AwsService } from 'src/aws/aws.service';
 import { Board } from './entity/board.entity';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
-import { CategoriesService } from 'src/categories/categories.service';
 import { HTTP_STATUS_CODE } from 'src/common/configs/http-status.config';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { operationConfig } from 'src/common/swagger-apis/api-operation.swagger';
@@ -59,7 +55,6 @@ export class BoardsController {
     private readonly logger: WinstonLogger,
 
     private readonly boardService: BoardsService,
-    private readonly categoriesService: CategoriesService,
     private readonly awsService: AwsService,
     private readonly configService: ConfigService,
     private readonly jwtService: JwtService,
@@ -81,22 +76,20 @@ export class BoardsController {
       '성공여부',
       HTTP_STATUS_CODE.success.ok,
       '게시글 필터링이 완료되었습니다.',
-      {
-        boards: [
-          {
-            no: 75,
-            photoUrl:
-              'https://mohaeproj.s3.amazonaws.com/board/1655961063222_dsn.jpg',
-            decimalDay: -10,
-            title: 'board test',
-            isDeadline: 0,
-            price: 0,
-            target: 0,
-            area: '서울 특별시',
-            nickName: 'hheeddjsjde',
-          },
-        ],
-      },
+      [
+        {
+          no: 75,
+          photoUrl:
+            'https://mohaeproj.s3.amazonaws.com/board/1655961063222_dsn.jpg',
+          decimalDay: -10,
+          title: 'board test',
+          isDeadline: 0,
+          price: 0,
+          target: 0,
+          area: '서울 특별시',
+          nickName: 'hheeddjsjde',
+        },
+      ],
     ),
   )
   @HttpCode(HTTP_STATUS_CODE.success.ok)
@@ -104,7 +97,7 @@ export class BoardsController {
   async filteredBoards(
     @Query() filterBoardDto: FilterBoardDto,
   ): Promise<object> {
-    const response: object = await this.boardService.filteredBoards(
+    const response: Board[] = await this.boardService.filteredBoards(
       filterBoardDto,
     );
 
@@ -379,22 +372,20 @@ export class BoardsController {
       '성공여부',
       HTTP_STATUS_CODE.success.ok,
       '카테고리 선택 조회가 완료되었습니다.',
-      {
-        categoryName: '전체 게시판',
-        boards: [
-          {
-            decimalDay: -1,
-            photoUrl: '백승범.jpg',
-            no: 15,
-            title: '게시글 검색',
-            isDeadline: 0,
-            price: 1000,
-            target: 1,
-            area: '서울특별시',
-            nickname: 'hneeddjsjde',
-          },
-        ],
-      },
+      [
+        {
+          decimalDay: -1,
+          photoUrl: '백승범.jpg',
+          no: 15,
+          title: '게시글 검색',
+          isDeadline: 0,
+          price: 1000,
+          target: 1,
+          areaNo: 1,
+          areaName: '서울특별시',
+          nickname: 'hneeddjsjde',
+        },
+      ],
     ),
   )
   @HttpCode(HTTP_STATUS_CODE.success.ok)
@@ -406,7 +397,7 @@ export class BoardsController {
     this.logger.verbose(
       `카테고리 선택 조회 시도. 카테고리 번호 : ${categoryNo}`,
     );
-    const response: object = await this.categoriesService.findOneCategory(
+    const response: Board[] = await this.boardService.findOneCategory(
       categoryNo,
       paginationDto,
     );
@@ -439,7 +430,7 @@ export class BoardsController {
       createBoardDto[`${key}`] = JSON.parse(createBoardDto[`${key}`]);
     }
 
-    const boardPhotoUrls = await this.awsService.uploadBoardFileToS3(
+    const boardPhotoUrls: string[] = await this.awsService.uploadBoardFileToS3(
       'board',
       files,
     );
@@ -527,7 +518,7 @@ export class BoardsController {
     for (const key of Object.keys(updateBoardDto)) {
       updateBoardDto[`${key}`] = JSON.parse(updateBoardDto[`${key}`]);
     }
-    const boardPhotoUrls =
+    const boardPhotoUrls: false | string[] =
       files.length === 0
         ? false
         : await this.awsService.uploadBoardFileToS3('board', files);

@@ -1,3 +1,4 @@
+import { ApiProperty } from '@nestjs/swagger';
 import { Exclude } from 'class-transformer';
 import { IsNotEmpty, IsString, Length, MaxLength } from 'class-validator';
 import { User } from 'src/auth/entity/user.entity';
@@ -18,6 +19,11 @@ export class Faq extends BaseEntity {
   @PrimaryGeneratedColumn()
   no: number;
 
+  @ApiProperty({
+    example: 'test',
+    description: 'FAQ 제목 입력',
+    required: true,
+  })
   @IsNotEmpty({
     message: '제목을 입력해 주세요.',
   })
@@ -32,6 +38,11 @@ export class Faq extends BaseEntity {
   })
   title: string;
 
+  @ApiProperty({
+    example: 'FAQ 내용 입력',
+    description: 'FAQ 내용 입력',
+    required: true,
+  })
   @IsNotEmpty({
     message: '내용을 입력해 주세요.',
   })

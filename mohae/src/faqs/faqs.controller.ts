@@ -8,6 +8,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
@@ -29,6 +30,7 @@ import { User } from 'src/auth/entity/user.entity';
 import { HTTP_STATUS_CODE } from 'src/common/configs/http-status.config';
 import { operationConfig } from 'src/common/swagger-apis/api-operation.swagger';
 import { apiResponse } from 'src/common/swagger-apis/api-response.swagger';
+import { SearchFaqsDto } from './dto/search-faq.dto';
 
 @ApiTags('Faqs')
 @Controller('faqs')
@@ -43,6 +45,13 @@ export class FaqsController {
       'FAQ 전체 조회',
       HTTP_STATUS_CODE.success.ok,
       'FAQ 전체 조회 결과 성공',
+      [
+        {
+          no: 1,
+          title: 'FAQ 예시 제목입니다.',
+          description: 'FAQ 예시 내용입니다.',
+        },
+      ],
     ),
   )
   @HttpCode(HTTP_STATUS_CODE.success.ok)
@@ -137,6 +146,39 @@ export class FaqsController {
 
     return {
       msg: `FAQ 삭제 완료`,
+    };
+  }
+
+  @ApiOperation(operationConfig('FAQ 검색 기능', 'FAQ를 검색하는 API'))
+  @ApiOkResponse(
+    apiResponse.success(
+      'FAQ 검색',
+      HTTP_STATUS_CODE.success.ok,
+      'FAQ 검색 결과',
+      [
+        {
+          no: 3,
+          title: 'test3',
+          description: 'test3',
+        },
+        {
+          no: 2,
+          title: 'test2',
+          description: 'test2',
+        },
+      ],
+    ),
+  )
+  @HttpCode(HTTP_STATUS_CODE.success.ok)
+  @Get('search')
+  async searchFaqs(@Query() searchFaqsDto: SearchFaqsDto): Promise<object> {
+    const response: Faq | Faq[] = await this.faqsService.searchFaqs(
+      searchFaqsDto,
+    );
+
+    return {
+      msg: '검색 결과',
+      response,
     };
   }
 }

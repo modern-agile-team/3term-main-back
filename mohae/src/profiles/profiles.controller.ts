@@ -136,7 +136,6 @@ export class ProfilesController {
   })
   @HttpCode(HTTP_STATUS_CODE.success.ok)
   @ApiBearerAuth('access-token')
-  @UseGuards(AuthGuard('jwt'))
   @Post('/check-nickname')
   async judgeDuplicateNickname(
     @Body() judgeDuplicateNicknameDto: JudgeDuplicateNicknameDto,

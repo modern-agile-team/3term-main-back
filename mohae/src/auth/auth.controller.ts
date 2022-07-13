@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   HttpCode,
+  Inject,
   Param,
   Patch,
   Post,
@@ -32,11 +33,24 @@ import { User } from './entity/user.entity';
 import { SignDownDto } from './dto/sign-down.dto';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 import { HTTP_STATUS_CODE } from 'src/common/configs/http-status.config';
+import { WinstonLogger, WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { Cron } from '@nestjs/schedule';
 
 @Controller('auth')
 @ApiTags('Auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    @Inject(WINSTON_MODULE_PROVIDER)
+    private readonly logger: WinstonLogger,
+    private readonly authService: AuthService,
+  ) {}
+
+  @Cron('0 0 0 * * *')
+  async handleHardDeleteUserSchedule(): Promise<void> {
+    const hardDeletedUserNum: number = await this.authService.hardDeleteUser();
+
+    this.logger.verbose(`hard delete 된 회원 수 :${hardDeletedUserNum}`);
+  }
 
   @ApiOperation({
     summary: '회원가입 API',
@@ -93,9 +107,9 @@ export class AuthController {
   })
   @HttpCode(HTTP_STATUS_CODE.success.created)
   @Post('signup')
-  async signUp(@Body() signUpDto: SignUpDto): Promise<Object> {
+  async signUp(@Body() signUpDto: SignUpDto): Promise<object> {
     try {
-      const response = await this.authService.signUp(signUpDto);
+      const response: object = await this.authService.signUp(signUpDto);
 
       return {
         msg: `성공적으로 회원가입이 되었습니다.`,
@@ -154,7 +168,7 @@ export class AuthController {
   })
   @HttpCode(HTTP_STATUS_CODE.success.ok)
   @Post('signin')
-  async signIn(@Body() signInDto: SignInDto): Promise<Object> {
+  async signIn(@Body() signInDto: SignInDto): Promise<object> {
     try {
       // id 맞는지 확인 + 패널티 시간 지나지 않았을 때 로그인 시도했을 때 알림
       const userInfo: User = await this.authService.confirmUser(signInDto);
@@ -209,24 +223,17 @@ export class AuthController {
   @HttpCode(HTTP_STATUS_CODE.success.ok)
   @ApiBearerAuth('access-token')
   @UseGuards(AuthGuard('jwt'))
-  @Delete(':userNo')
+  @Patch()
   async signDown(
-    @Param('userNo') userNo: number,
-    @Body() signDownDto: SignDownDto,
+    @Body() { password }: SignDownDto,
     @CurrentUser() user: User,
-  ): Promise<Object> {
+  ): Promise<object> {
     try {
-      if (userNo === user.no) {
-        await this.authService.signDown(userNo, user.email, signDownDto);
+      await this.authService.signDown(user, password);
 
-        return {
-          msg: `성공적으로 회원탈퇴가 진행되었습니다.`,
-        };
-      }
-
-      throw new UnauthorizedException(
-        '로그인 한 유저와 탈퇴 하려는 유저 번호 불일치!',
-      );
+      return {
+        msg: `성공적으로 회원탈퇴가 진행되었습니다.`,
+      };
     } catch (err) {
       throw err;
     }
@@ -291,7 +298,7 @@ export class AuthController {
   @Patch('change/password')
   async changePassword(
     @Body() changePasswordDto: ChangePasswordDto,
-  ): Promise<Object> {
+  ): Promise<object> {
     try {
       await this.authService.changePassword(changePasswordDto);
 
@@ -361,7 +368,7 @@ export class AuthController {
   @Patch('forget/password')
   async forgetPassword(
     @Body() forgetPasswordDto: ForgetPasswordDto,
-  ): Promise<Object> {
+  ): Promise<object> {
     try {
       await this.authService.forgetPassword(forgetPasswordDto);
 

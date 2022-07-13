@@ -22,7 +22,7 @@ export class MajorRepository extends Repository<Major> {
     return major;
   }
 
-  async addUser(majorNo: number, user: User) {
+  async addUser(majorNo: Major, user: User) {
     try {
       await this.createQueryBuilder()
         .relation(Major, 'users')

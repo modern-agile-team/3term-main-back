@@ -16,8 +16,8 @@ export class FaqRepository extends Repository<Faq> {
   async readAllFaqs(): Promise<Faq | Faq[]> {
     try {
       const faqs: Faq | Faq[] = await this.createQueryBuilder('faqs')
-        .select(['faqs.no', 'faqs.title', 'faqs.description', 'faqs.createdAt'])
-        .orderBy('faqs.updatedAt', 'DESC')
+        .select(['faqs.no', 'faqs.title', 'faqs.description'])
+        .orderBy('faqs.createdAt', 'DESC')
         .getMany();
 
       return faqs;
@@ -83,6 +83,26 @@ export class FaqRepository extends Repository<Faq> {
         .execute();
 
       return affected;
+    } catch (err) {
+      throw new InternalServerErrorException(err.message);
+    }
+  }
+
+  async searchFaqs({ title, take, page }: any): Promise<Faq | Faq[]> {
+    try {
+      const searchedFaqs: Faq | Faq[] = await this.createQueryBuilder('faqs')
+        .select([
+          'faqs.no AS no',
+          'faqs.title AS title',
+          'faqs.description AS description',
+        ])
+        .where('faqs.title like :title', { title: `%${title}%` })
+        .orderBy('faqs.created_at', 'DESC')
+        .limit(+take)
+        .offset((+page - 1) * +take)
+        .getRawMany();
+
+      return searchedFaqs;
     } catch (err) {
       throw new InternalServerErrorException(err.message);
     }

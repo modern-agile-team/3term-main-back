@@ -14,9 +14,9 @@ import { CategoryRepository } from './repository/category.repository';
 export class CategoriesService {
   constructor(
     @InjectRepository(CategoryRepository)
-    private categoryRepository: CategoryRepository,
+    private readonly categoryRepository: CategoryRepository,
 
-    private boardRepository: BoardRepository,
+    private readonly boardRepository: BoardRepository,
   ) {}
 
   async findAllCategories(): Promise<Category[]> {
@@ -25,50 +25,14 @@ export class CategoriesService {
     return categories;
   }
 
-  async findOneCategory(
-    no: number,
-    paginationDto: PaginationDto,
-  ): Promise<object> {
+  async readHotCategories(): Promise<Category[]> {
     try {
-      if (no === 17) {
-        const boards: Board[] = await this.boardRepository.getAllBoards(
-          paginationDto,
-        );
+      const categories: Category[] =
+        await this.categoryRepository.readHotCategories();
 
-        return {
-          categoryName: '전체 게시판',
-          category: { boards },
-        };
-      }
-      const category: object = await this.categoryRepository.findOneCategory(
-        no,
-        paginationDto,
-      );
-
-      if (!category) {
-        throw new NotFoundException(
-          `${no}에 해당하는 카테고리를 찾을 수 없습니다.`,
-        );
-      }
-
-      return {
-        categoryName: `${category['categoryName']} 게시판`,
-        category,
-      };
+      return categories;
     } catch (err) {
       throw err;
     }
-  }
-
-  async readHotCategories(): Promise<Object> {
-    const categories = await this.categoryRepository.readHotCategories();
-
-    if (!categories.length) {
-      return {
-        msg: '이번달 인기 카테고리가 없습니다.',
-      };
-    }
-
-    return categories;
   }
 }

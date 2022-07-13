@@ -137,7 +137,7 @@ export class Board extends BaseEntity {
   baskets: Basket[];
 
   @ManyToOne((type) => User, (user) => user.boards, {
-    onDelete: 'SET NULL',
+    onDelete: 'CASCADE',
   })
   user: User;
 

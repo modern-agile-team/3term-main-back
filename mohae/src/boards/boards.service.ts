@@ -4,6 +4,7 @@ import {
   ConsoleLogger,
   Injectable,
   InternalServerErrorException,
+  NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -53,12 +54,7 @@ export class BoardsService {
 
   async closingBoard(): Promise<number> {
     try {
-      const currentTime: Date = new Date();
-      currentTime.setHours(currentTime.getHours() + 9);
-
-      const result: number = await this.boardRepository.closingBoard(
-        currentTime,
-      );
+      const result: number = await this.boardRepository.closingBoard();
 
       return result;
     } catch (err) {
@@ -66,7 +62,7 @@ export class BoardsService {
     }
   }
 
-  async filteredBoards(filterBoardDto: FilterBoardDto): Promise<object> {
+  async filteredBoards(filterBoardDto: FilterBoardDto): Promise<Board[]> {
     try {
       const { date }: FilterBoardDto = filterBoardDto;
 
@@ -82,14 +78,24 @@ export class BoardsService {
         endTime.setDate(endTime.getDate() + +date);
       }
 
-      const boards: Board[] = await this.boardRepository.filteredBoards(
-        filterBoardDto,
+      const boardKey: any = Object.keys(filterBoardDto);
+
+      const duplicateCheck: object = {};
+
+      boardKey.forEach((item: any) => {
+        filterBoardDto[item] !== 'null'
+          ? (duplicateCheck[item] = filterBoardDto[item])
+          : 0;
+      });
+
+      const filteredBoard: Board[] = await this.boardRepository.filteredBoards(
+        duplicateCheck,
         +date,
         endTime,
         currentTime,
       );
 
-      return { boards };
+      return filteredBoard;
     } catch (err) {
       throw err;
     }
@@ -511,6 +517,29 @@ export class BoardsService {
         target,
       );
       return profileBoards;
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  async findOneCategory(
+    no: number,
+    paginationDto: PaginationDto,
+  ): Promise<Board[]> {
+    try {
+      if (no === 1) {
+        const boards: Board[] = await this.boardRepository.getAllBoards(
+          paginationDto,
+        );
+
+        return boards;
+      }
+      const boards: any = await this.boardRepository.findOneCategory(
+        no,
+        paginationDto,
+      );
+
+      return boards;
     } catch (err) {
       throw err;
     }

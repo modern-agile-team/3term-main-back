@@ -21,17 +21,13 @@ export class Category extends BaseEntity {
   })
   name: string;
 
-  @Column({
-    type: 'varchar',
-    comment: '카테고리 사진',
-  })
-  photo_url: string;
-
   @OneToMany((type) => Board, (board) => board.category, {
     nullable: true,
   })
   boards: Board[];
 
-  @ManyToMany((type) => User, (user) => user.categories)
+  @ManyToMany((type) => User, (user) => user.categories, {
+    onDelete: 'CASCADE',
+  })
   users: User[];
 }
