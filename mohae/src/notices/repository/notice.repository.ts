@@ -12,7 +12,7 @@ import { Notice } from '../entity/notice.entity';
 
 @EntityRepository(Notice)
 export class NoticeRepository extends Repository<Notice> {
-  async readAllNotices(): Promise<Notice | Notice[]> {
+  async readAllNotices(take = 5): Promise<Notice | Notice[]> {
     try {
       const notices: Notice | Notice[] = await this.createQueryBuilder(
         'notices',
@@ -24,6 +24,7 @@ export class NoticeRepository extends Repository<Notice> {
           `DATE_FORMAT(notices.createdAt,'%Y년 %m월 %d일') AS createdAt`,
         ])
         .orderBy('notices.createdAt', 'DESC')
+        .limit(+take)
         .getRawMany();
 
       return notices;
@@ -89,6 +90,29 @@ export class NoticeRepository extends Repository<Notice> {
         .execute();
 
       return affected;
+    } catch (err) {
+      throw new InternalServerErrorException(err.message);
+    }
+  }
+
+  async searchNotices({ title, take, page }: any): Promise<Notice | Notice[]> {
+    try {
+      const searchedNotices: Notice | Notice[] = await this.createQueryBuilder(
+        'notices',
+      )
+        .select([
+          'notices.no AS no',
+          'notices.title AS title',
+          'notices.description AS description',
+          `DATE_FORMAT(notices.createdAt,'%Y년 %m월 %d일') AS createdAt`,
+        ])
+        .where('notices.title like :title', { title: `%${title}%` })
+        .orderBy('notices.created_at', 'DESC')
+        .limit(+take)
+        .offset((+page - 1) * +take)
+        .getRawMany();
+
+      return searchedNotices;
     } catch (err) {
       throw new InternalServerErrorException(err.message);
     }

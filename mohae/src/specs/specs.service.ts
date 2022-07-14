@@ -198,7 +198,6 @@ export class SpecsService {
         select: ['no', 'user', 'deletedAt'],
         relations: ['user'],
       });
-      console.log(isSpec);
       this.errorConfirm.notFoundError(
         isSpec,
         '스펙 삭제를 중복으로 할 수 없습니다.',

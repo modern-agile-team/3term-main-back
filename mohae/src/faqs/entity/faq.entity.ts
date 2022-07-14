@@ -20,7 +20,7 @@ export class Faq extends BaseEntity {
   no: number;
 
   @ApiProperty({
-    example: 'FAQ 제목 입력',
+    example: 'test',
     description: 'FAQ 제목 입력',
     required: true,
   })
