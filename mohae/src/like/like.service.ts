@@ -129,6 +129,9 @@ export class LikeService {
         if (!isLikeBoard) {
           throw new Error('게시글 좋아요 도중 일어난 알수 없는 오류 입니다.');
         }
+        await queryRunner.commitTransaction();
+
+        return { msg: '좋아요 요청이 반영 되었습니다.' };
       } else {
         const isLikeBoard: number = await queryRunner.manager
           .getCustomRepository(BoardLikeRepository)
@@ -139,8 +142,10 @@ export class LikeService {
             '좋아요 취소를 중복해서 요청할 수 없습니다 (좋아요는 judge true로 넣어주세요)',
           );
         }
+        await queryRunner.commitTransaction();
+
+        return { msg: '좋아요 취소 요청이 반영 되었습니다.' };
       }
-      await queryRunner.commitTransaction();
     } catch (err) {
       await queryRunner.rollbackTransaction();
       throw err;

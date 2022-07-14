@@ -133,10 +133,14 @@ export class LikeController {
     @Body() likeBoardDto: LikeBoardDto,
     @CurrentUser() user: User,
   ): Promise<object> {
-    await this.likeService.likeBoard(user.no, boardNo, likeBoardDto);
+    const likeBoard: any = await this.likeService.likeBoard(
+      user.no,
+      boardNo,
+      likeBoardDto,
+    );
 
     return {
-      msg: '성공적으로 요청이 처리되었습니다.',
+      msg: likeBoard.msg,
     };
   }
 }
