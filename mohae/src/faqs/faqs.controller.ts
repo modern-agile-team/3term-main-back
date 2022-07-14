@@ -68,7 +68,7 @@ export class FaqsController {
       };
     }
 
-    const response: Faq | Faq[] = await this.faqsService.readAllFaqs(take);
+    const response: Faq | Faq[] = await this.faqsService.readAllFaqs(+take);
 
     return {
       msg: `전체 FAQ가 조회되었습니다.`,

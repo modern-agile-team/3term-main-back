@@ -31,7 +31,7 @@ export class FaqsService {
     return await this.cacheManager.get<Faq | Faq[]>(key);
   }
 
-  async readAllFaqs(take): Promise<Faq | Faq[]> {
+  async readAllFaqs(take: number): Promise<Faq | Faq[]> {
     try {
       const faqs: Faq | Faq[] = await this.faqRepository.readAllFaqs(+take);
 
