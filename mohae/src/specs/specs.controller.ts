@@ -43,45 +43,6 @@ export class SpecsController {
   ) {}
 
   @ApiOperation({
-    summary:
-      '한 명의 유저 스펙 전체 조회 API (사용안하는데 혹시 몰라서 만들어놓은 API입니다)',
-    description: '한명의 유저 스펙을 한번에 불러온다',
-  })
-  @ApiOkResponse({
-    description: '성공적으로 유저의 스펙이 불러와진 경우.',
-    schema: {
-      example: {
-        statusCode: 201,
-        msg: '성공적으로 스펙을 불러왔습니다.',
-      },
-    },
-  })
-  @ApiInternalServerErrorResponse({
-    description: '요청에 대한 응답 처리중 서버에러가 발생한 경우',
-    schema: {
-      example: {
-        statusCode: 500,
-        msg: 'DB관련한 에러 메시지 + ~에서 일어난 에러입니다.',
-        err: 'InternalServerErrorException',
-      },
-    },
-  })
-  @HttpCode(HTTP_STATUS_CODE.success.ok)
-  @ApiBearerAuth('access-token')
-  @UseGuards(AuthGuard('jwt'))
-  @Get('user/:profileUserNo')
-  async getAllSpec(
-    @Param('profileUserNo') profileUserNo: number,
-  ): Promise<object> {
-    const response: Spec = await this.specsService.getAllSpec(profileUserNo);
-
-    return {
-      msg: '성공적으로 스펙을 불러왔습니다.',
-      response,
-    };
-  }
-
-  @ApiOperation({
     summary: '스펙 상세조회 API',
     description: '하나의 스펙을 불러와 줍니다.',
   })
@@ -164,6 +125,7 @@ export class SpecsController {
       take,
       page,
     );
+
     return {
       msg: '프로필 스펙 조회에 성공했습니다.',
       response,
