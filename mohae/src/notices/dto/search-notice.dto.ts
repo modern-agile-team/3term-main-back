@@ -4,8 +4,9 @@ import { Notice } from '../entity/notice.entity';
 
 export class SearchNoticesDto extends PickType(Notice, ['title'] as const) {
   @ApiProperty({
-    example: '3',
-    description: '불러올 개수',
+    example: '5',
+    description:
+      '불러올 개수, 초기값은 5이며 추가 로딩시 +3 해서 보내면 됩니다.',
     required: true,
   })
   @IsNotEmpty()

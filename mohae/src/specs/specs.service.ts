@@ -39,20 +39,6 @@ export class SpecsService {
     private readonly connection: Connection,
     private readonly errorConfirm: ErrorConfirm,
   ) {}
-  async getAllSpec(profileUserNo: number): Promise<any> {
-    try {
-      const specs: Array<Spec> = await this.specRepository.getAllSpec(
-        profileUserNo,
-      );
-
-      if (!specs.length) {
-        return '현재 등록된 스펙이 없습니다.';
-      }
-      return specs;
-    } catch (err) {
-      throw err;
-    }
-  }
 
   async getOneSpec(specNo: number): Promise<OneSpec> {
     try {
