@@ -31,9 +31,9 @@ export class FaqsService {
     return await this.cacheManager.get<Faq | Faq[]>(key);
   }
 
-  async readAllFaqs(): Promise<Faq | Faq[]> {
+  async readAllFaqs(take): Promise<Faq | Faq[]> {
     try {
-      const faqs: Faq | Faq[] = await this.faqRepository.readAllFaqs();
+      const faqs: Faq | Faq[] = await this.faqRepository.readAllFaqs(take);
 
       await this.cacheManager.set<Faq | Faq[]>('faqs', faqs, {
         ttl: await this.config.get('REDIS_FAQ_TTL'),

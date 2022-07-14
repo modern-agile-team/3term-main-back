@@ -310,6 +310,42 @@ export class AwsService {
       throw new BadRequestException(`Failed to delete file : ${error}`);
     }
   }
+
+  async uploadQuestionFileToS3(
+    folder: string,
+    files: any,
+  ): Promise<Array<string>> {
+    try {
+      const uploadList: object[] = files.map((file: Express.Multer.File) => {
+        const key: string = `${folder}/${Date.now()}_${path.basename(
+          file.originalname,
+        )}`.replace(/ /g, '');
+
+        return {
+          Bucket: this.S3_BUCKET_NAME,
+          Key: key,
+          Body: file.buffer,
+          ACL: 'public-read',
+          ContentType: file.mimetype,
+        };
+      });
+      await Promise.all(
+        uploadList.map((uploadFile: any) =>
+          this.awsS3.upload(uploadFile).promise(),
+        ),
+      );
+
+      const questionPhotoUrls: string[] = uploadList.map((file: any) => {
+        {
+          return this.getAwsS3FileUrl(file.Key);
+        }
+      });
+
+      return questionPhotoUrls;
+    } catch (error) {
+      throw new BadRequestException(`File upload failed : ${error}`);
+    }
+  }
 }
 interface Image {
   imageUrl: string;
