@@ -58,7 +58,7 @@ export class NoticesController {
   @Get()
   async readAllNotices(@Query() { take }): Promise<object> {
     const response: Notice | Notice[] =
-      await this.noticesService.readAllNotices(+take);
+      await this.noticesService.readAllNotices(take);
 
     return {
       msg: `Notice 전체 조회 완료`,
