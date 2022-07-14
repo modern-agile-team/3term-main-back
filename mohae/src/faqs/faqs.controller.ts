@@ -56,7 +56,7 @@ export class FaqsController {
   )
   @HttpCode(HTTP_STATUS_CODE.success.ok)
   @Get()
-  async readAllFaqs(@Query() { take }: SearchFaqsDto): Promise<object> {
+  async readAllFaqs(@Query() { take }): Promise<object> {
     const faqCacheData: Faq | Faq[] = await this.faqsService.getFaqCacheData(
       'faqs',
     );
