@@ -114,34 +114,13 @@ export class ProfilesService {
       const profile: User = await this.userRepository.findOne(userNo, {
         relations: ['categories'],
       });
-      const profileKeys: string[] = Object.keys(updateProfileDto);
-      const deletedNullprofile: object = {};
 
-      profileKeys.forEach((item) => {
-        updateProfileDto[item]
-          ? (deletedNullprofile[item] = updateProfileDto[item])
-          : 0;
-      });
-      delete deletedNullprofile['categories'];
-
-      const { school, major, categories }: UpdateProfileDto = updateProfileDto;
-      const schoolNo: School = await this.schoolRepository.findOne(school);
-
-      this.errorConfirm.notFoundError(
-        schoolNo,
-        `${school}에 해당하는 학교를 찾을 수 없습니다.`,
-      );
-
-      const majorNo: Major = await this.majorRepository.findOne(major);
-
-      this.errorConfirm.notFoundError(
-        majorNo,
-        `${major}에 해당하는 전공을 찾을 수 없습니다.`,
-      );
+      const { categories }: UpdateProfileDto = updateProfileDto;
+      delete updateProfileDto.categories;
 
       await queryRunner.manager
         .getCustomRepository(UserRepository)
-        .updateProfile(userNo, deletedNullprofile);
+        .updateProfile(userNo, updateProfileDto);
 
       const beforeProfile: ProfilePhoto =
         await this.profilePhotoRepository.readProfilePhoto(userNo);
