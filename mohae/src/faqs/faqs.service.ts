@@ -33,7 +33,7 @@ export class FaqsService {
 
   async readAllFaqs(take): Promise<Faq | Faq[]> {
     try {
-      const faqs: Faq | Faq[] = await this.faqRepository.readAllFaqs(take);
+      const faqs: Faq | Faq[] = await this.faqRepository.readAllFaqs(+take);
 
       await this.cacheManager.set<Faq | Faq[]>('faqs', faqs, {
         ttl: await this.config.get('REDIS_FAQ_TTL'),

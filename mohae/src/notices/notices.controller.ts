@@ -56,7 +56,7 @@ export class NoticesController {
   )
   @HttpCode(HTTP_STATUS_CODE.success.ok)
   @Get()
-  async readAllNotices(@Query() { take }: SearchNoticesDto): Promise<object> {
+  async readAllNotices(@Query() { take }): Promise<object> {
     const response: Notice | Notice[] =
       await this.noticesService.readAllNotices(+take);
 
