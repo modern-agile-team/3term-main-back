@@ -53,4 +53,9 @@ export const HTTP_STATUS_CODE = {
     requestHeaderFieldsTooLarge: 431,
     unavailableForLegalReasons: 451,
   },
+
+  serverError: {
+    internalServerErrorException: 500,
+    badGateway: 502,
+  },
 };
