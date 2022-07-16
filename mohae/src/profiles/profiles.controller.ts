@@ -33,7 +33,7 @@ import { ProfilesService } from './profiles.service';
 import { profileSwagger } from './profiles.swagger';
 
 @Controller('profile')
-@ApiTags('Profile')
+@ApiTags('Profiles')
 export class ProfilesController {
   constructor(
     private readonly profileService: ProfilesService,
