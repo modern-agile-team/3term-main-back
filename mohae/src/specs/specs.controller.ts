@@ -18,13 +18,14 @@ import { FilesInterceptor } from '@nestjs/platform-express';
 import {
   ApiBadRequestResponse,
   ApiBearerAuth,
+  ApiForbiddenResponse,
   ApiInternalServerErrorResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
   ApiTags,
 } from '@nestjs/swagger';
-import { User } from '@sentry/node';
+import { User } from 'src/auth/entity/user.entity';
 import { AwsService } from 'src/aws/aws.service';
 import { HTTP_STATUS_CODE } from 'src/common/configs/http-status.config';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
@@ -129,6 +130,7 @@ export class SpecsController {
   )
   @ApiOkResponse(specSwagger.updateSpec.success)
   @ApiNotFoundResponse(specSwagger.updateSpec.notFoundResponse)
+  @ApiForbiddenResponse(specSwagger.updateSpec.forbiddenResponse)
   @ApiInternalServerErrorResponse(specSwagger.internalServerErrorResponse)
   @HttpCode(HTTP_STATUS_CODE.success.ok)
   @ApiBearerAuth('access-token')
@@ -139,7 +141,10 @@ export class SpecsController {
     @Param('specNo') specNo: number,
     @UploadedFiles() files: Express.Multer.File[],
     @Body() updateSpecdto: UpdateSpecDto,
+    @CurrentUser() user: User,
   ): Promise<object> {
+    await this.specsService.comfirmCertification(specNo, user.no);
+
     const specPhotoUrls =
       files.length === 0
         ? false
@@ -161,6 +166,7 @@ export class SpecsController {
 
   @ApiOperation(operationConfig('스펙 삭제 API', '스펙을 삭제한다'))
   @ApiOkResponse(specSwagger.deleteSpec.success)
+  @ApiForbiddenResponse(specSwagger.deleteSpec.forbiddenResponse)
   @ApiInternalServerErrorResponse(specSwagger.internalServerErrorResponse)
   @ApiNotFoundResponse()
   @HttpCode(HTTP_STATUS_CODE.success.ok)
@@ -171,6 +177,8 @@ export class SpecsController {
     @Param('specNo') specNo: number,
     @CurrentUser() user: User,
   ): Promise<object> {
+    await this.specsService.comfirmCertification(specNo, user.no);
+
     const originSpecPhotoUrls = await this.specsService.deleteSpec(
       specNo,
       user.no,

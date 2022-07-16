@@ -54,6 +54,7 @@ export class SpecRepository extends Repository<Spec> {
           'specPhotos.photo_url',
           'specPhotos.no',
           'user.nickname',
+          'user.no',
         ])
         .where('specs.no = :specNo', { specNo })
         .getOne();

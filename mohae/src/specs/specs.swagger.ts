@@ -53,6 +53,14 @@ export const specSwagger: any = {
       HTTP_STATUS_CODE.success.created,
       '성공적으로 스펙이 수정되었습니다.',
     ),
+
+    forbiddenResponse: apiResponse.error(
+      '해당 스펙의 수정 권한이 없는 사용자가 요청을 한 경우.',
+      HTTP_STATUS_CODE.clientError.forbidden,
+      '스펙의 작성자와 현재 사용자가 다릅니다.',
+      'Forbidden',
+    ),
+
     notFoundResponse: apiResponse.error(
       '수정하려는 스펙이 DB에 존재하지 않는 경우(혹시모를 예외처리임)',
       HTTP_STATUS_CODE.clientError.notFound,
@@ -66,6 +74,13 @@ export const specSwagger: any = {
       '성공적으로 스펙이 삭제된 경우.',
       HTTP_STATUS_CODE.success.created,
       '성공적으로 스펙을 삭제하였습니다.',
+    ),
+
+    forbiddenResponse: apiResponse.error(
+      '해당 스펙의 수정 권한이 없는 사용자가 요청을 한 경우.',
+      HTTP_STATUS_CODE.clientError.forbidden,
+      '스펙의 작성자와 현재 사용자가 다릅니다.',
+      'Forbidden',
     ),
   },
 };
