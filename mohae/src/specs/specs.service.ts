@@ -237,7 +237,6 @@ export class SpecsService {
 
       if (user.no !== userNo)
         throw new ForbiddenException('스펙의 작성자와 현재 사용자가 다릅니다.');
-      return;
     } catch (err) {
       throw err;
     }
