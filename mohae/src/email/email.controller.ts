@@ -34,14 +34,14 @@ export class EmailController {
   @HttpCode(HTTP_STATUS_CODE.success.ok)
   @Post('/forget/password')
   async sendEmail(@Body() sendEmailDto: SendEmailDto): Promise<object> {
-    const id = String(Date.now());
-    const saveToken = await this.emailService.createToken(id);
+    const key: string = String(Date.now());
+    const saveToken: string = await this.emailService.createToken(key);
 
     if (saveToken) {
       await this.emailService.sendEmail(sendEmailDto);
       return {
         msg: `해당 이메일(${sendEmailDto.email})로 비밀번호 변경 링크가 전송되었습니다.`,
-        response: id,
+        response: key,
       };
     }
     throw new InternalServerErrorException(

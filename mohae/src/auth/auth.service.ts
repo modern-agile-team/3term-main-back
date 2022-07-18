@@ -1,6 +1,9 @@
 import {
   BadRequestException,
+  CACHE_MANAGER,
   ConflictException,
+  ForbiddenException,
+  Inject,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
@@ -24,14 +27,16 @@ import { SignUpDto } from './dto/sign-up.dto';
 import { SignInDto } from './dto/sign-in.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { ForgetPasswordDto } from './dto/forget-password.dto';
-import { SignDownDto } from './dto/sign-down.dto';
 import { ConfigService } from '@nestjs/config';
 import { School } from 'src/schools/entity/school.entity';
 import { Major } from 'src/majors/entity/major.entity';
+import { Cache } from 'cache-manager';
 
 @Injectable()
 export class AuthService {
   constructor(
+    @Inject(CACHE_MANAGER)
+    private readonly cacheManager: Cache,
     private userRepository: UserRepository,
     private schoolRepository: SchoolRepository,
     private majorRepository: MajorRepository,
@@ -343,6 +348,14 @@ export class AuthService {
       throw new UnauthorizedException('존재하지 않는 이메일 입니다.');
     } catch (err) {
       throw err;
+    }
+  }
+
+  async getTokenCacheData(key: string) {
+    const token: string | null = await this.cacheManager.get<string>(key);
+
+    if (!token) {
+      throw new UnauthorizedException('유효시간이 만료된 토큰 입니다.');
     }
   }
 }

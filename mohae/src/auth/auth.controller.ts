@@ -1,15 +1,12 @@
 import {
   Body,
   Controller,
-  Delete,
+  Headers,
   HttpCode,
   Inject,
-  Param,
   Patch,
   Post,
-  UnauthorizedException,
   UseGuards,
-  UseInterceptors,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import {
@@ -171,9 +168,11 @@ export class AuthController {
   @HttpCode(HTTP_STATUS_CODE.success.ok)
   @Patch('forget/password')
   async forgetPassword(
+    @Headers('key') key: string,
     @Body() forgetPasswordDto: ForgetPasswordDto,
   ): Promise<object> {
     try {
+      await this.authService.getTokenCacheData(key);
       await this.authService.forgetPassword(forgetPasswordDto);
 
       return {
