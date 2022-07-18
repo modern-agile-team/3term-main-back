@@ -182,6 +182,7 @@ export class AuthService {
           nickname: user.nickname,
           photoUrl: user['photo_url'],
           issuer: 'modern-agile',
+          manager: user.manager,
           expiration: this.configService.get<number>('EXPIRES_IN'),
         };
         await this.userRepository.clearLoginCount(user.no);
@@ -213,7 +214,6 @@ export class AuthService {
       const { email }: SignInDto = signInDto;
 
       const user: User = await this.userRepository.confirmUser(email);
-
       this.errorConfirm.notFoundError(
         user,
         '아이디 또는 비밀번호가 일치하지 않습니다.',

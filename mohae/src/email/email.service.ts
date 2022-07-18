@@ -2,12 +2,20 @@ import { UserRepository } from 'src/auth/repository/user.repository';
 import { ErrorConfirm } from 'src/common/utils/error';
 import Mail = require('nodemailer/lib/mailer');
 import * as nodemailer from 'nodemailer';
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  CACHE_MANAGER,
+  Inject,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { QuestionEmailDto } from './dto/question.email.dto';
 import { CHANGE_PASSWORD_BY_EMAIL } from './htmls/change-password-by-email.html';
 import { questionHtml } from './htmls/question-email';
 import { SendEmailDto } from './dto/email.dto';
+import * as bcrypt from 'bcryptjs';
+import { Cache } from 'cache-manager';
+
 interface EmailOptions {
   to: string;
   from: string;
@@ -19,8 +27,15 @@ interface EmailOptions {
 export class EmailService {
   private transpoter: Mail;
   constructor(
+    @Inject(CACHE_MANAGER)
+    private readonly cacheManager: Cache,
+
+    private readonly config: ConfigService,
+
     private errorConfirm: ErrorConfirm,
+
     private userRepository: UserRepository,
+
     private configService: ConfigService,
   ) {
     const emailHost: string = this.configService.get<string>('EMAIL_HOST');
@@ -95,6 +110,18 @@ export class EmailService {
       };
 
       return await this.transpoter.sendMail(mailOptions);
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  async createToken(id: string) {
+    try {
+      const token: string = await bcrypt.genSalt();
+
+      return await this.cacheManager.set(id, token, {
+        ttl: await this.config.get('REDIS_EMAIL_TTL'),
+      });
     } catch (err) {
       throw err;
     }

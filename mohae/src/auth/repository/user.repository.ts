@@ -84,6 +84,7 @@ export class UserRepository extends Repository<User> {
           'users.isLock AS isLock',
           'users.latestLogin AS latestLogin',
           'users.loginFailCount AS loginFailCount',
+          'users.manager AS manager',
           'users.nickname AS nickname',
           'profilePhoto.photo_url AS photo_url',
           'users.deletedAt AS deletedAt',
