@@ -25,6 +25,7 @@ import {
 } from 'src/terms/repository/terms.repository';
 import { ConfigService } from '@nestjs/config';
 import { jwtConfig } from 'src/common/configs/jwt.config';
+import { cacheModule } from 'src/common/configs/redis.config';
 
 @Module({
   imports: [
@@ -46,6 +47,7 @@ import { jwtConfig } from 'src/common/configs/jwt.config';
     MajorsModule,
     CategoriesModule,
     TermsModule,
+    cacheModule,
   ],
   controllers: [AuthController],
   providers: [AuthService, JwtStrategy, ErrorConfirm, LoginProcess],
