@@ -27,7 +27,7 @@ export const HTTP_STATUS_CODE = {
     badRequest: 400,
     unauthorized: 401,
     paymentRequired: 402,
-    Forbidden: 403,
+    forbidden: 403,
     notFound: 404,
     methodNotAllowed: 405,
     notAcceptable: 406,
@@ -52,5 +52,10 @@ export const HTTP_STATUS_CODE = {
     tooManyRequests: 429,
     requestHeaderFieldsTooLarge: 431,
     unavailableForLegalReasons: 451,
+  },
+
+  serverError: {
+    internalServerErrorException: 500,
+    badGateway: 502,
   },
 };

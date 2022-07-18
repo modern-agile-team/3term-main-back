@@ -39,27 +39,13 @@ export class SpecsService {
     private readonly connection: Connection,
     private readonly errorConfirm: ErrorConfirm,
   ) {}
-  async getAllSpec(profileUserNo: number): Promise<any> {
-    try {
-      const specs: Array<Spec> = await this.specRepository.getAllSpec(
-        profileUserNo,
-      );
-
-      if (!specs.length) {
-        return '현재 등록된 스펙이 없습니다.';
-      }
-      return specs;
-    } catch (err) {
-      throw err;
-    }
-  }
 
   async getOneSpec(specNo: number): Promise<OneSpec> {
     try {
       const { user, ...spec }: Spec = await this.specRepository.getOneSpec(
         specNo,
       );
-
+      spec['userNo'] = user.no;
       spec['nickname'] = user.nickname;
       this.errorConfirm.notFoundError(spec, '해당 스펙이 존재하지 않습니다.');
 
@@ -208,15 +194,10 @@ export class SpecsService {
         relations: ['specPhotos'],
       });
 
-      const isSpecDelete: number = await queryRunner.manager
+      await queryRunner.manager
         .getCustomRepository(SpecRepository)
         .deleteSpec(specNo, userNo);
 
-      if (!isSpecDelete) {
-        throw new ForbiddenException(
-          '스펙의 작성자 만이 스펙을 삭제할 수 있습니다.',
-        );
-      }
       const originSpecPhotosUrl: string[] = specPhotos.map((specPhoto) => {
         return specPhoto.photo_url;
       });
@@ -245,6 +226,17 @@ export class SpecsService {
       );
 
       return profileSpecs;
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  async comfirmCertification(specNo: number, userNo: number) {
+    try {
+      const { user }: Spec = await this.specRepository.getOneSpec(specNo);
+
+      if (user.no !== userNo)
+        throw new ForbiddenException('스펙의 작성자와 현재 사용자가 다릅니다.');
     } catch (err) {
       throw err;
     }

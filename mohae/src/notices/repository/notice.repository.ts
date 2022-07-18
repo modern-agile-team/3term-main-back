@@ -24,7 +24,7 @@ export class NoticeRepository extends Repository<Notice> {
           `DATE_FORMAT(notices.createdAt,'%Y년 %m월 %d일') AS createdAt`,
         ])
         .orderBy('notices.createdAt', 'DESC')
-        .limit(+take)
+        .limit(take)
         .getRawMany();
 
       return notices;

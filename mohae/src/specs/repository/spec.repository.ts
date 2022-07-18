@@ -12,29 +12,6 @@ import { Spec } from '../entity/spec.entity';
 
 @EntityRepository(Spec)
 export class SpecRepository extends Repository<Spec> {
-  async getAllSpec(profileUserNo: number) {
-    try {
-      const specs = await this.createQueryBuilder('specs')
-        .leftJoin('specs.specPhotos', 'specPhotos')
-        .leftJoin('specs.user', 'user')
-        .select([
-          'specs.no',
-          'specs.title',
-          'specs.description',
-          'specPhotos.photo_url',
-          'user.no',
-        ])
-        .where('user.no = :profileUserNo', { profileUserNo })
-        .getMany();
-
-      return specs;
-    } catch (err) {
-      throw new InternalServerErrorException(
-        `${err}####스펙 전체 조회 관련 서버 에러입니다`,
-      );
-    }
-  }
-
   async readUserSpec(
     userNo: number,
     take: number,
@@ -77,6 +54,7 @@ export class SpecRepository extends Repository<Spec> {
           'specPhotos.photo_url',
           'specPhotos.no',
           'user.nickname',
+          'user.no',
         ])
         .where('specs.no = :specNo', { specNo })
         .getOne();
