@@ -1,12 +1,16 @@
 import {
   Body,
+  CACHE_MANAGER,
   Controller,
   HttpCode,
+  Inject,
+  InternalServerErrorException,
   Post,
   UploadedFiles,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
+import { Cache } from 'cache-manager';
 import { AuthGuard } from '@nestjs/passport';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
@@ -23,15 +27,26 @@ import { EmailService } from './email.service';
 export class EmailController {
   constructor(
     private readonly emailService: EmailService,
+
     private readonly awsService: AwsService,
   ) {}
 
   @HttpCode(HTTP_STATUS_CODE.success.ok)
   @Post('/forget/password')
   async sendEmail(@Body() sendEmailDto: SendEmailDto): Promise<object> {
-    return {
-      msg: `해당 이메일(${sendEmailDto.email})로 비밀번호 변경 링크가 전송되었습니다.`,
-    };
+    const id = String(Date.now());
+    const saveToken = await this.emailService.createToken(id);
+
+    if (saveToken) {
+      await this.emailService.sendEmail(sendEmailDto);
+      return {
+        msg: `해당 이메일(${sendEmailDto.email})로 비밀번호 변경 링크가 전송되었습니다.`,
+        response: id,
+      };
+    }
+    throw new InternalServerErrorException(
+      '이메일 전송중 발생한 알 수 없는 서버에러',
+    );
   }
 
   @Post('/question')
