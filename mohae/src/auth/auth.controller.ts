@@ -163,6 +163,7 @@ export class AuthController {
   @ApiOkResponse(authSwagger.forgetPassword.success)
   @ApiBadRequestResponse(authSwagger.forgetPassword.badRequestResponse)
   @ApiUnauthorizedResponse(authSwagger.forgetPassword.unauthorizedResponse)
+  @ApiNotFoundResponse(authSwagger.forgetPassword.notFoundResponse)
   @ApiConflictResponse(authSwagger.forgetPassword.confilctResponse)
   @ApiInternalServerErrorResponse(authSwagger.internalServerErrorResponse)
   @HttpCode(HTTP_STATUS_CODE.success.ok)

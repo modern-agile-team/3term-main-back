@@ -118,10 +118,17 @@ export const authSwagger: any = {
     ),
 
     unauthorizedResponse: apiResponse.error(
-      '존재하지 않는 이메일을 입력한 경우',
+      '유효시간이 지난 이후 비밀번호 변경 요청을 보낸경우',
       HTTP_STATUS_CODE.clientError.unauthorized,
-      '존재하지 않는 이메일 입니다.',
+      '유효시간이 만료된 토큰 입니다.',
       'Unauthorized',
+    ),
+
+    notFoundResponse: apiResponse.error(
+      '존재하지 않는 이메일을 입력했을 때',
+      HTTP_STATUS_CODE.clientError.notFound,
+      '존재하지 않는 이메일 입니다.',
+      'Not Found',
     ),
 
     confilctResponse: apiResponse.error(
