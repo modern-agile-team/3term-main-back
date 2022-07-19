@@ -168,7 +168,6 @@ export class SpecsController {
   @ApiOkResponse(specSwagger.deleteSpec.success)
   @ApiForbiddenResponse(specSwagger.deleteSpec.forbiddenResponse)
   @ApiInternalServerErrorResponse(specSwagger.internalServerErrorResponse)
-  @ApiNotFoundResponse()
   @HttpCode(HTTP_STATUS_CODE.success.ok)
   @ApiBearerAuth('access-token')
   @UseGuards(AuthGuard('jwt'))

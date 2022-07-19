@@ -291,16 +291,16 @@ export class AwsService {
   }
 
   async deleteBoardS3Object(
-    originSpecPhotoUrls: string[],
+    originBoardPhotoUrls: string[],
     callback?: (err: AWS.AWSError, data: AWS.S3.DeleteObjectOutput) => void,
   ): Promise<any> {
     try {
-      for await (const originSpecPhotoUrl of originSpecPhotoUrls) {
+      for await (const originBoardPhotoUrl of originBoardPhotoUrls) {
         await this.awsS3
           .deleteObject(
             {
               Bucket: this.S3_BUCKET_NAME,
-              Key: originSpecPhotoUrl,
+              Key: originBoardPhotoUrl,
             },
             callback,
           )
