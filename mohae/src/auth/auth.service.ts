@@ -2,35 +2,34 @@ import {
   BadRequestException,
   CACHE_MANAGER,
   ConflictException,
-  ForbiddenException,
   Inject,
   Injectable,
   InternalServerErrorException,
-  NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
-import { UserRepository } from './repository/user.repository';
-import * as bcrypt from 'bcryptjs';
+import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
-import { User } from './entity/user.entity';
+import { UserRepository } from './repository/user.repository';
 import { SchoolRepository } from 'src/schools/repository/school.repository';
 import { MajorRepository } from 'src/majors/repository/major.repository';
 import { CategoryRepository } from 'src/categories/repository/category.repository';
-import { ErrorConfirm } from 'src/common/utils/error';
-import { Category } from 'src/categories/entity/category.entity';
-import { Connection } from 'typeorm';
 import {
   TermsReporitory,
   TermsUserReporitory,
 } from 'src/terms/repository/terms.repository';
+import { User } from './entity/user.entity';
+import { School } from 'src/schools/entity/school.entity';
+import { Major } from 'src/majors/entity/major.entity';
+import { Category } from 'src/categories/entity/category.entity';
 import { SignUpDto } from './dto/sign-up.dto';
 import { SignInDto } from './dto/sign-in.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { ForgetPasswordDto } from './dto/forget-password.dto';
-import { ConfigService } from '@nestjs/config';
-import { School } from 'src/schools/entity/school.entity';
-import { Major } from 'src/majors/entity/major.entity';
+import { ErrorConfirm } from 'src/common/utils/error';
+import { Connection } from 'typeorm';
 import { Cache } from 'cache-manager';
+
+import * as bcrypt from 'bcryptjs';
 
 @Injectable()
 export class AuthService {

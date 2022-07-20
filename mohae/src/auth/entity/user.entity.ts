@@ -1,8 +1,3 @@
-import { IsOptional, Validate } from 'class-validator';
-import { Major } from 'src/majors/entity/major.entity';
-import { Review } from 'src/reviews/entity/review.entity';
-import { School } from 'src/schools/entity/school.entity';
-import { Category } from 'src/categories/entity/category.entity';
 import {
   BaseEntity,
   Column,
@@ -25,9 +20,12 @@ import { Notice } from 'src/notices/entity/notice.entity';
 import { Board } from 'src/boards/entity/board.entity';
 import { UserLike } from 'src/like/entity/user.like.entity';
 import { BoardLike } from 'src/like/entity/board.like.entity';
+import { Major } from 'src/majors/entity/major.entity';
+import { Review } from 'src/reviews/entity/review.entity';
+import { School } from 'src/schools/entity/school.entity';
+import { Category } from 'src/categories/entity/category.entity';
 import { MailboxUser } from 'src/mailbox-user/entity/mailbox-user.entity';
 import { TermsUser } from 'src/terms/entity/terms.entity';
-import { Terms } from 'src/terms/entity/terms.entity';
 import { Basket } from 'src/baskets/entity/baskets.entity';
 import { ReportedUser } from 'src/reports/entity/reported-user.entity';
 import { ReportedBoard } from 'src/reports/entity/reported-board.entity';
