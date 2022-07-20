@@ -1,5 +1,7 @@
 import { InternalServerErrorException } from '@nestjs/common';
 import { User } from 'src/auth/entity/user.entity';
+import { Spec } from '../entity/spec.entity';
+import { CreateSpecDto } from '../dto/create-spec.dto';
 import {
   DeleteResult,
   EntityRepository,
@@ -7,8 +9,6 @@ import {
   Repository,
   UpdateResult,
 } from 'typeorm';
-import { CreateSpecDto } from '../dto/create-spec.dto';
-import { Spec } from '../entity/spec.entity';
 
 @EntityRepository(Spec)
 export class SpecRepository extends Repository<Spec> {

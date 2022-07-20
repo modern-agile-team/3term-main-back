@@ -3,17 +3,17 @@ import {
   Injectable,
   InternalServerErrorException,
 } from '@nestjs/common';
+import { PickType } from '@nestjs/swagger';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/auth/entity/user.entity';
-import { UserRepository } from 'src/auth/repository/user.repository';
-import { SpecPhotoRepository } from 'src/photo/repository/photo.repository';
+import { Spec } from './entity/spec.entity';
 import { ErrorConfirm } from 'src/common/utils/error';
 import { CreateSpecDto } from './dto/create-spec.dto';
 import { UpdateSpecDto } from './dto/update-spec.dto';
-import { Spec } from './entity/spec.entity';
 import { SpecRepository } from './repository/spec.repository';
+import { UserRepository } from 'src/auth/repository/user.repository';
+import { SpecPhotoRepository } from 'src/photo/repository/photo.repository';
 import { Connection } from 'typeorm';
-import { PickType } from '@nestjs/swagger';
 
 export class OneSpec extends PickType(Spec, [
   'no',
