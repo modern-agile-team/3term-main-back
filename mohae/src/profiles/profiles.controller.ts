@@ -26,11 +26,11 @@ import { User } from '@sentry/node';
 import { AwsService } from 'src/aws/aws.service';
 import { HTTP_STATUS_CODE } from 'src/common/configs/http-status.config';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
-import { operationConfig } from 'src/common/swagger-apis/api-operation.swagger';
 import { JudgeDuplicateNicknameDto } from './dto/judge-duplicate-nickname.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { ProfilesService } from './profiles.service';
 import { profileSwagger } from './profiles.swagger';
+import { operationConfig } from 'src/common/swagger-apis/api-operation.swagger';
 
 @Controller('profile')
 @ApiTags('Profiles')

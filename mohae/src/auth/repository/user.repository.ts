@@ -1,3 +1,4 @@
+import { InternalServerErrorException } from '@nestjs/common';
 import {
   DeleteResult,
   EntityRepository,
@@ -5,7 +6,6 @@ import {
   UpdateResult,
 } from 'typeorm';
 import { User } from '../entity/user.entity';
-import { InternalServerErrorException } from '@nestjs/common';
 import { School } from 'src/schools/entity/school.entity';
 import { Major } from 'src/majors/entity/major.entity';
 import { SignUpDto } from '../dto/sign-up.dto';

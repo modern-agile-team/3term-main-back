@@ -1,17 +1,25 @@
 import {
   Body,
   Controller,
-  Delete,
+  Headers,
   HttpCode,
   Inject,
-  Param,
   Patch,
   Post,
-  UnauthorizedException,
   UseGuards,
-  UseInterceptors,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
+import { Cron } from '@nestjs/schedule';
+import { User } from './entity/user.entity';
+import { AuthService } from './auth.service';
+import { SignUpDto } from './dto/sign-up.dto';
+import { SignDownDto } from './dto/sign-down.dto';
+import { SignInDto } from './dto/sign-in.dto';
+import { ForgetPasswordDto } from './dto/forget-password.dto';
+import { ChangePasswordDto } from './dto/change-password.dto';
+import { CurrentUser } from 'src/common/decorators/current-user.decorator';
+import { HTTP_STATUS_CODE } from 'src/common/configs/http-status.config';
+import { WinstonLogger, WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import {
   ApiBadGatewayResponse,
   ApiBadRequestResponse,
@@ -25,19 +33,7 @@ import {
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
-import { AuthService } from './auth.service';
-import { ChangePasswordDto } from './dto/change-password.dto';
-import { SignUpDto } from './dto/sign-up.dto';
-import { ForgetPasswordDto } from './dto/forget-password.dto';
-import { SignInDto } from './dto/sign-in.dto';
-import { User } from './entity/user.entity';
-import { SignDownDto } from './dto/sign-down.dto';
-import { CurrentUser } from 'src/common/decorators/current-user.decorator';
-import { HTTP_STATUS_CODE } from 'src/common/configs/http-status.config';
-import { WinstonLogger, WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { Cron } from '@nestjs/schedule';
 import { operationConfig } from 'src/common/swagger-apis/api-operation.swagger';
-import { apiResponse } from 'src/common/swagger-apis/api-response.swagger';
 import { authSwagger } from './auth.swagger';
 
 @Controller('auth')
@@ -166,14 +162,17 @@ export class AuthController {
   @ApiOkResponse(authSwagger.forgetPassword.success)
   @ApiBadRequestResponse(authSwagger.forgetPassword.badRequestResponse)
   @ApiUnauthorizedResponse(authSwagger.forgetPassword.unauthorizedResponse)
+  @ApiNotFoundResponse(authSwagger.forgetPassword.notFoundResponse)
   @ApiConflictResponse(authSwagger.forgetPassword.confilctResponse)
   @ApiInternalServerErrorResponse(authSwagger.internalServerErrorResponse)
   @HttpCode(HTTP_STATUS_CODE.success.ok)
   @Patch('forget/password')
   async forgetPassword(
+    @Headers('key') key: string,
     @Body() forgetPasswordDto: ForgetPasswordDto,
   ): Promise<object> {
     try {
+      await this.authService.getTokenCacheData(key);
       await this.authService.forgetPassword(forgetPasswordDto);
 
       return {
