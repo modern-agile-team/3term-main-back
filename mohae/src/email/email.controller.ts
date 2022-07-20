@@ -1,26 +1,23 @@
 import {
   Body,
-  CACHE_MANAGER,
   Controller,
   HttpCode,
-  Inject,
   InternalServerErrorException,
   Post,
   UploadedFiles,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
-import { Cache } from 'cache-manager';
 import { AuthGuard } from '@nestjs/passport';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { User } from 'src/auth/entity/user.entity';
 import { AwsService } from 'src/aws/aws.service';
+import { EmailService } from './email.service';
 import { HTTP_STATUS_CODE } from 'src/common/configs/http-status.config';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 import { SendEmailDto } from './dto/email.dto';
 import { QuestionEmailDto } from './dto/question.email.dto';
-import { EmailService } from './email.service';
 
 @Controller('email')
 @ApiTags('Email')

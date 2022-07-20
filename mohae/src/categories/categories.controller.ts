@@ -1,16 +1,7 @@
-import {
-  Controller,
-  Get,
-  HttpCode,
-  Logger,
-  Param,
-  ParseIntPipe,
-} from '@nestjs/common';
-import { Cron } from '@nestjs/schedule';
+import { Controller, Get, HttpCode, Logger } from '@nestjs/common';
 import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { HTTP_STATUS_CODE } from 'src/common/configs/http-status.config';
 import { operationConfig } from 'src/common/swagger-apis/api-operation.swagger';
-import { apiResponse } from 'src/common/swagger-apis/api-response.swagger';
 import { CategoriesService } from './categories.service';
 import { categorySwagger } from './category.swagger';
 import { Category } from './entity/category.entity';

@@ -1,9 +1,7 @@
 import { InternalServerErrorException } from '@nestjs/common';
-import { User } from 'src/auth/entity/user.entity';
-import { Board } from 'src/boards/entity/board.entity';
-import { EntityRepository, Repository, SelectQueryBuilder } from 'typeorm';
+import { EntityRepository, Repository } from 'typeorm';
 import { Category } from '../entity/category.entity';
-import { PaginationDto } from 'src/boards/dto/pagination.dto';
+import { User } from 'src/auth/entity/user.entity';
 
 @EntityRepository(Category)
 export class CategoryRepository extends Repository<Category> {
