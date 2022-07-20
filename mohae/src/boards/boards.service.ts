@@ -1,33 +1,26 @@
 import {
   BadGatewayException,
   BadRequestException,
-  ConsoleLogger,
   Injectable,
   InternalServerErrorException,
-  NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { Connection } from 'typeorm';
+import { User } from '@sentry/node';
 import { CategoryRepository } from 'src/categories/repository/category.repository';
 import { AreasRepository } from 'src/areas/repository/area.repository';
-import { Any, Connection, DeleteResult, RelationId } from 'typeorm';
-import { CreateBoardDto } from './dto/createBoard.dto';
 import { BoardRepository } from './repository/board.repository';
-import { ErrorConfirm } from 'src/common/utils/error';
 import { UserRepository } from 'src/auth/repository/user.repository';
+import { BoardPhotoRepository } from 'src/photo/repository/photo.repository';
+import { ErrorConfirm } from 'src/common/utils/error';
 import { Board } from './entity/board.entity';
 import { Category } from 'src/categories/entity/category.entity';
 import { Area } from 'src/areas/entity/areas.entity';
-import { BoardPhotoRepository } from 'src/photo/repository/photo.repository';
-import { User } from '@sentry/node';
 import { FilterBoardDto } from './dto/filterBoard.dto';
 import { HotBoardDto } from './dto/hotBoard.dto';
 import { SearchBoardDto } from './dto/searchBoard.dto';
 import { PaginationDto } from './dto/pagination.dto';
-import {
-  BoardLikeRepository,
-  LikeRepository,
-} from 'src/like/repository/like.repository';
 
 @Injectable()
 export class BoardsService {
@@ -43,9 +36,6 @@ export class BoardsService {
 
     @InjectRepository(UserRepository)
     private readonly userRepository: UserRepository,
-
-    @InjectRepository(BoardLikeRepository)
-    private readonly boardLikeRepository: BoardLikeRepository,
 
     private readonly connection: Connection,
 
