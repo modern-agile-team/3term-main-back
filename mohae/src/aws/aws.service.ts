@@ -91,7 +91,7 @@ export class AwsService {
   async uploadSpecFileToS3(
     folder: string,
     files: Express.Multer.File[],
-  ): Promise<Array<string>> {
+  ): Promise<string[]> {
     try {
       if (files[0].originalname === 'logo.jpg') {
         return ['logo.jpg'];
@@ -129,7 +129,7 @@ export class AwsService {
   }
 
   async deleteSpecS3Object(
-    originSpecPhotoUrls: string,
+    originSpecPhotoUrls: string[],
     callback?: (err: AWS.AWSError, data: AWS.S3.DeleteObjectOutput) => void,
   ): Promise<{ success: true }> {
     try {
