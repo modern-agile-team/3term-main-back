@@ -7,6 +7,7 @@ import { ConfigService } from '@nestjs/config';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { HttpExceptionFilter } from './common/exceptions/http-exception.filter';
 import { ClientErrorInterceptor } from './common/interceptors/client-error.interceptor';
+import helmet from 'helmet';
 
 declare const module: any;
 
@@ -35,6 +36,12 @@ async function bootstrap() {
       whitelist: true,
       forbidNonWhitelisted: true,
       transform: true,
+    }),
+  );
+
+  app.use(
+    helmet({
+      crossOriginResourcePolicy: false,
     }),
   );
   app.useGlobalInterceptors(new ClientErrorInterceptor(winstonLogger));
