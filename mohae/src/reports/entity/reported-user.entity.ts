@@ -17,8 +17,8 @@ export class ReportedUser extends ReportContent {
 
   @ManyToOne(() => User, (user) => user.userReport, {
     onUpdate: 'CASCADE',
-    onDelete: 'NO ACTION',
-    nullable: false,
+    onDelete: 'SET NULL',
+    nullable: true,
   })
   @JoinColumn({
     name: 'report_user_no',

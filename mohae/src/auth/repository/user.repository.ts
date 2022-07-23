@@ -273,7 +273,10 @@ export class UserRepository extends Repository<User> {
         .delete()
         .from(User)
         .where('users.deleted_At is not null')
-        .andWhere('DATE_ADD(users.deleted_At, INTERVAL 15 DAY) >= NOW()')
+        .andWhere('DATE_ADD(users.deleted_At, INTERVAL 15 DAY) <= NOW()')
+        .andWhere(
+          'NOT EXISTS(SELECT reported_user_no FROM reported_users WHERE users.no = reported_users.reported_user_no)',
+        )
         .execute();
       return affected;
     } catch (err) {

@@ -19,7 +19,9 @@ export class ProfilePhoto extends BaseEntity {
   })
   photo_url: string;
 
-  @OneToOne(() => User, (user) => user.profilePhoto)
+  @OneToOne(() => User, (user) => user.profilePhoto, {
+    onDelete: 'CASCADE',
+  })
   @JoinColumn({ name: 'user_no' })
   user: User;
 }
