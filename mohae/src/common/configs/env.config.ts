@@ -31,5 +31,6 @@ export const envConfig: ConfigModuleOptions = {
     EMAIL_FROM_USER_NAME: Joi.string().required(),
     EMAIL_HOST: Joi.string().required(),
     EMAIL_PORT: Joi.string().required(),
+    API_ACCESS_DOMAIN: Joi.string().required(),
   }),
 };
