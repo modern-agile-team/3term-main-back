@@ -8,6 +8,7 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { HttpExceptionFilter } from './common/exceptions/http-exception.filter';
 import { ClientErrorInterceptor } from './common/interceptors/client-error.interceptor';
 import helmet from 'helmet';
+import { AccessGuard } from './common/guards/access.guard';
 
 declare const module: any;
 
@@ -44,6 +45,7 @@ async function bootstrap() {
       crossOriginResourcePolicy: false,
     }),
   );
+  app.useGlobalGuards(new AccessGuard());
   app.useGlobalInterceptors(new ClientErrorInterceptor(winstonLogger));
   app.useGlobalFilters(new HttpExceptionFilter(winstonLogger));
 
