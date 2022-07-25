@@ -7,7 +7,7 @@ import { User } from 'src/auth/entity/user.entity';
 export class CategoryRepository extends Repository<Category> {
   async findAllCategory(): Promise<Category[]> {
     try {
-      const categories = await this.createQueryBuilder('categories')
+      const categories: Category[] = await this.createQueryBuilder('categories')
         .leftJoinAndSelect('categories.boards', 'boards')
         .where('categories.no = boards.category')
         .getMany();

@@ -6,7 +6,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Connection } from 'typeorm';
+import { Connection, QueryRunner } from 'typeorm';
 import { User } from '@sentry/node';
 import { CategoryRepository } from 'src/categories/repository/category.repository';
 import { AreasRepository } from 'src/areas/repository/area.repository';
@@ -21,6 +21,7 @@ import { FilterBoardDto } from './dto/filterBoard.dto';
 import { HotBoardDto } from './dto/hotBoard.dto';
 import { SearchBoardDto } from './dto/searchBoard.dto';
 import { PaginationDto } from './dto/pagination.dto';
+import { CreateBoardDto } from './dto/createBoard.dto';
 
 @Injectable()
 export class BoardsService {
@@ -68,7 +69,7 @@ export class BoardsService {
         endTime.setDate(endTime.getDate() + +date);
       }
 
-      const boardKey: any = Object.keys(filterBoardDto);
+      const boardKey: string[] = Object.keys(filterBoardDto);
 
       const duplicateCheck: object = {};
 
@@ -123,7 +124,7 @@ export class BoardsService {
 
       this.errorConfirm.notFoundError(user.no, `해당 회원을 찾을 수 없습니다.`);
 
-      const board: any = await this.boardRepository.readOneBoardByAuth(
+      const board: Board = await this.boardRepository.readOneBoardByAuth(
         boardNo,
         userNo,
       );
@@ -256,11 +257,11 @@ export class BoardsService {
   }
 
   async createBoard(
-    createBoardDto: any,
+    createBoardDto: CreateBoardDto,
     user: User,
-    boardPhotoUrl: any,
+    boardPhotoUrl: string[],
   ): Promise<boolean> {
-    const queryRunner = this.connection.createQueryRunner();
+    const queryRunner: QueryRunner = this.connection.createQueryRunner();
 
     await queryRunner.connect();
     await queryRunner.startTransaction();
@@ -291,7 +292,7 @@ export class BoardsService {
         endTime = null;
       } else {
         endTime.setHours(endTime.getHours() + 9);
-        endTime.setDate(endTime.getDate() + deadline);
+        endTime.setDate(endTime.getDate() + +deadline);
       }
 
       const createBoard: any = await queryRunner.manager
@@ -309,7 +310,7 @@ export class BoardsService {
       if (!createdBoard) {
         throw new BadGatewayException('게시글 생성 관련 오류입니다.');
       }
-      if (boardPhotoUrl[0] !== 'logo.jpg') {
+      if (boardPhotoUrl[0] !== 'logo.png') {
         const photos: Array<object> = boardPhotoUrl.map(
           (photo: string, index: number) => {
             return {
@@ -327,7 +328,7 @@ export class BoardsService {
         }
         await queryRunner.manager
           .getCustomRepository(BoardRepository)
-          .saveCategory(categoryNo, createdBoard);
+          .saveCategory(+categoryNo, createdBoard);
       }
       await queryRunner.commitTransaction();
 
@@ -373,7 +374,7 @@ export class BoardsService {
     userNo: number,
     boardPhotoUrl: false | string[],
   ): Promise<any> {
-    const queryRunner = this.connection.createQueryRunner();
+    const queryRunner: QueryRunner = this.connection.createQueryRunner();
 
     await queryRunner.connect();
     await queryRunner.startTransaction();
@@ -405,9 +406,9 @@ export class BoardsService {
         throw new BadRequestException('다른 기간을 선택해 주십시오');
       }
 
-      const boardKey: any = Object.keys(updateBoardDto);
+      const boardKey: string[] = Object.keys(updateBoardDto);
 
-      const duplicateCheck = {};
+      const duplicateCheck: object = {};
 
       boardKey.forEach((item: any) => {
         updateBoardDto[item] !== null
@@ -444,7 +445,7 @@ export class BoardsService {
         throw new BadGatewayException('게시글 업데이트 관련 오류');
       }
       if (boardPhotoUrl) {
-        const { photos } = await this.boardRepository.findOne(boardNo, {
+        const { photos }: Board = await this.boardRepository.findOne(boardNo, {
           select: ['no', 'photos'],
           relations: ['photos'],
         });
@@ -458,7 +459,7 @@ export class BoardsService {
             throw new BadGatewayException('게시글 사진 삭제 도중 DB관련 오류');
           }
         }
-        if (boardPhotoUrl[0] !== 'logo.jpg') {
+        if (boardPhotoUrl[0] !== 'logo.png') {
           const boardPhotos: Array<object> = boardPhotoUrl.map(
             (photo, index) => {
               return {
@@ -524,7 +525,7 @@ export class BoardsService {
 
         return boards;
       }
-      const boards: any = await this.boardRepository.findOneCategory(
+      const boards: Board[] = await this.boardRepository.findOneCategory(
         no,
         paginationDto,
       );

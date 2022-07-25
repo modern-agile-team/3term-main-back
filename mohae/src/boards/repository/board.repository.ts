@@ -15,7 +15,7 @@ import { SearchBoardDto } from '../dto/searchBoard.dto';
 
 @EntityRepository(Board)
 export class BoardRepository extends Repository<Board> {
-  async readOneBoardByAuth(boardNo: number, userNo: number): Promise<any> {
+  async readOneBoardByAuth(boardNo: number, userNo: number): Promise<Board> {
     try {
       return await this.createQueryBuilder('boards')
         .leftJoin('boards.area', 'areas', 'areas.no = boards.area')
@@ -520,7 +520,7 @@ export class BoardRepository extends Repository<Board> {
   async findOneCategory(
     no: number,
     { page, take }: PaginationDto,
-  ): Promise<object> {
+  ): Promise<Board[]> {
     try {
       const findedinCategoryBoard: any = await this.createQueryBuilder('boards')
         .leftJoin('boards.category', 'category')
