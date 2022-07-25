@@ -113,7 +113,7 @@ export class SpecsController {
       throw new BadRequestException(
         '사진을 선택하지 않은 경우 기본사진을 넣어주셔야 스펙 등록이 가능 합니다.',
       );
-    const specPhotoUrls = await this.awsService.uploadSpecFileToS3(
+    const specPhotoUrls: string[] = await this.awsService.uploadSpecFileToS3(
       'spec',
       files,
     );
@@ -145,16 +145,13 @@ export class SpecsController {
   ): Promise<object> {
     await this.specsService.comfirmCertification(specNo, user.no);
 
-    const specPhotoUrls =
+    const specPhotoUrls: false | string[] =
       files.length === 0
         ? false
         : await this.awsService.uploadSpecFileToS3('spec', files);
 
-    const originSpecPhotoUrls = await this.specsService.updateSpec(
-      specNo,
-      updateSpecdto,
-      specPhotoUrls,
-    );
+    const originSpecPhotoUrls: void | string[] =
+      await this.specsService.updateSpec(specNo, updateSpecdto, specPhotoUrls);
     if (originSpecPhotoUrls) {
       await this.awsService.deleteSpecS3Object(originSpecPhotoUrls);
     }

@@ -13,7 +13,7 @@ import { UpdateSpecDto } from './dto/update-spec.dto';
 import { SpecRepository } from './repository/spec.repository';
 import { UserRepository } from 'src/auth/repository/user.repository';
 import { SpecPhotoRepository } from 'src/photo/repository/photo.repository';
-import { Connection } from 'typeorm';
+import { Connection, QueryRunner } from 'typeorm';
 
 export class OneSpec extends PickType(Spec, [
   'no',
@@ -57,10 +57,10 @@ export class SpecsService {
 
   async registSpec(
     userNo: number,
-    specPhotoUrls: any,
+    specPhotoUrls: string[],
     createSpecDto: CreateSpecDto,
   ): Promise<void> {
-    const queryRunner = this.connection.createQueryRunner();
+    const queryRunner: QueryRunner = this.connection.createQueryRunner();
 
     await queryRunner.connect();
     await queryRunner.startTransaction();
@@ -117,7 +117,7 @@ export class SpecsService {
     specNo: number,
     updateSpecDto: UpdateSpecDto,
     specPhotoUrls: false | string[],
-  ): Promise<any> {
+  ): Promise<void | string[]> {
     const queryRunner = this.connection.createQueryRunner();
 
     await queryRunner.connect();

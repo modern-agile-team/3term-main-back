@@ -68,7 +68,7 @@ export class AuthService {
     }
   }
 
-  async signUp(signUpDto: SignUpDto): Promise<object> {
+  async signUp(signUpDto: SignUpDto): Promise<Record<string, string>> {
     const queryRunner = this.connection.createQueryRunner();
 
     await queryRunner.connect();
@@ -85,12 +85,12 @@ export class AuthService {
         terms,
       }: SignUpDto = signUpDto;
 
-      const schoolRepo: School | null = school
+      const schoolNo: School | null = school
         ? await this.schoolRepository.findOne(school, {
             select: ['no'],
           })
         : null;
-      const majorRepo: Major | null = major
+      const majorNo: Major | null = major
         ? await this.majorRepository.findOne(major, {
             select: ['no'],
           })
@@ -124,7 +124,7 @@ export class AuthService {
 
       const user: User = await queryRunner.manager
         .getCustomRepository(UserRepository)
-        .createUser(signUpDto, schoolRepo, majorRepo);
+        .createUser(signUpDto, schoolNo, majorNo);
       this.errorConfirm.badGatewayError(user, 'user 생성 실패');
       const termsArr: Array<object> = terms.map((boolean, index) => {
         return {
@@ -154,15 +154,15 @@ export class AuthService {
           .getCustomRepository(CategoryRepository)
           .addUser(categoryNo.no, user);
       }
-      if (schoolRepo) {
+      if (schoolNo) {
         await queryRunner.manager
           .getCustomRepository(SchoolRepository)
-          .addUser(schoolRepo, user);
+          .addUser(schoolNo, user);
       }
-      if (majorRepo) {
+      if (majorNo) {
         await queryRunner.manager
           .getCustomRepository(MajorRepository)
-          .addUser(majorRepo, user);
+          .addUser(majorNo, user);
       }
       await queryRunner.commitTransaction();
 

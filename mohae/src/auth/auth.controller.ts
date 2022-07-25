@@ -62,7 +62,9 @@ export class AuthController {
   @Post('signup')
   async signUp(@Body() signUpDto: SignUpDto): Promise<object> {
     try {
-      const response: object = await this.authService.signUp(signUpDto);
+      const response: Record<string, string> = await this.authService.signUp(
+        signUpDto,
+      );
 
       return {
         msg: `성공적으로 회원가입이 되었습니다.`,
