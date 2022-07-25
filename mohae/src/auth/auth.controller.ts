@@ -27,6 +27,7 @@ import {
   ApiBearerAuth,
   ApiConflictResponse,
   ApiCreatedResponse,
+  ApiForbiddenResponse,
   ApiInternalServerErrorResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
@@ -165,6 +166,7 @@ export class AuthController {
   @ApiOkResponse(authSwagger.forgetPassword.success)
   @ApiBadRequestResponse(authSwagger.forgetPassword.badRequestResponse)
   @ApiUnauthorizedResponse(authSwagger.forgetPassword.unauthorizedResponse)
+  @ApiForbiddenResponse(authSwagger.forgetPassword.forbiddenResponse)
   @ApiNotFoundResponse(authSwagger.forgetPassword.notFoundResponse)
   @ApiConflictResponse(authSwagger.forgetPassword.confilctResponse)
   @ApiInternalServerErrorResponse(authSwagger.internalServerErrorResponse)
