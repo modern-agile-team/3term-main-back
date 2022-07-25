@@ -127,7 +127,7 @@ export class ProfilesService {
             .getCustomRepository(ProfilePhotoRepository)
             .deleteProfilePhoto(beforeProfile.no);
         }
-        if (profilePhotoUrl !== 'logo.jpg')
+        if (profilePhotoUrl !== 'logo.png')
           await queryRunner.manager
             .getCustomRepository(ProfilePhotoRepository)
             .saveProfilePhoto(profilePhotoUrl, userNo);

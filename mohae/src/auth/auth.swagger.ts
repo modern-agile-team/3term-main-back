@@ -124,6 +124,13 @@ export const authSwagger: any = {
       'Unauthorized',
     ),
 
+    forbiddenResponse: apiResponse.error(
+      '본인 계정이 아닌 계정의 비밀번호를 변경하려고 시도했을 때',
+      HTTP_STATUS_CODE.clientError.forbidden,
+      '가입하신 이메일로만 비밀번호 변경이 가능합니다.',
+      'forbidden',
+    ),
+
     notFoundResponse: apiResponse.error(
       '존재하지 않는 이메일을 입력했을 때',
       HTTP_STATUS_CODE.clientError.notFound,

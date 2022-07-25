@@ -93,8 +93,8 @@ export class AwsService {
     files: Express.Multer.File[],
   ): Promise<string[]> {
     try {
-      if (files[0].originalname === 'logo.jpg') {
-        return ['logo.jpg'];
+      if (files[0].originalname === 'logo.png') {
+        return ['logo.png'];
       }
 
       const uploadList: object[] = files.map((file: Express.Multer.File) => {
@@ -154,8 +154,8 @@ export class AwsService {
 
   async uploadProfileFileToS3(folder: string, file: any): Promise<string> {
     try {
-      if (file.originalname === 'logo.jpg') {
-        return 'logo.jpg';
+      if (file.originalname === 'logo.png') {
+        return 'logo.png';
       }
       const profilePhotoUrl: string = `${folder}/${Date.now()}_${path.basename(
         file.originalname,
@@ -255,8 +255,8 @@ export class AwsService {
     files: any,
   ): Promise<Array<string>> {
     try {
-      if (files[0].originalname === 'logo.jpg') {
-        return ['logo.jpg'];
+      if (files[0].originalname === 'logo.png') {
+        return ['logo.png'];
       }
 
       const uploadList: object[] = files.map((file: Express.Multer.File) => {
