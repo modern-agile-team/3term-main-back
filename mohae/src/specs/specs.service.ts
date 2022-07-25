@@ -74,7 +74,7 @@ export class SpecsService {
         .getCustomRepository(SpecRepository)
         .registSpec(createSpecDto, user);
 
-      if (specPhotoUrls[0] !== 'logo.jpg') {
+      if (specPhotoUrls[0] !== 'logo.png') {
         const specPhotos: object[] = specPhotoUrls.map(
           (photoUrl: string, index: number) => {
             return {
@@ -142,7 +142,7 @@ export class SpecsService {
             .getCustomRepository(SpecPhotoRepository)
             .deleteSpecPhoto(spec.no);
         }
-        if (specPhotoUrls[0] !== 'logo.jpg') {
+        if (specPhotoUrls[0] !== 'logo.png') {
           const newSpecPhotos: Array<object> = specPhotoUrls.map(
             (photoUrl: string, index: number) => {
               return {
