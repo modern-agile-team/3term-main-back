@@ -4,22 +4,18 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { User } from 'src/auth/entity/user.entity';
-
-import { UserRepository } from 'src/auth/repository/user.repository';
 import { Category } from 'src/categories/entity/category.entity';
+import { ProfilePhoto } from 'src/photo/entity/profile.photo.entity';
+import { UserRepository } from 'src/auth/repository/user.repository';
 import { CategoryRepository } from 'src/categories/repository/category.repository';
-import { ErrorConfirm } from 'src/common/utils/error';
 import { LikeRepository } from 'src/like/repository/like.repository';
-import { Major } from 'src/majors/entity/major.entity';
 import { MajorRepository } from 'src/majors/repository/major.repository';
 import { ProfilePhotoRepository } from 'src/photo/repository/photo.repository';
-import { School } from 'src/schools/entity/school.entity';
 import { SchoolRepository } from 'src/schools/repository/school.repository';
 import { JudgeDuplicateNicknameDto } from './dto/judge-duplicate-nickname.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
+import { ErrorConfirm } from 'src/common/utils/error';
 import { Connection } from 'typeorm';
-import { ProfilePhoto } from 'src/photo/entity/profile.photo.entity';
-import { array, boolean } from 'joi';
 
 @Injectable()
 export class ProfilesService {

@@ -1,16 +1,13 @@
 import {
   Body,
-  CACHE_MANAGER,
   Controller,
   HttpCode,
-  Inject,
   InternalServerErrorException,
   Post,
   UploadedFiles,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
-import { Cache } from 'cache-manager';
 import { AuthGuard } from '@nestjs/passport';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import {
@@ -23,11 +20,11 @@ import {
 } from '@nestjs/swagger';
 import { User } from 'src/auth/entity/user.entity';
 import { AwsService } from 'src/aws/aws.service';
+import { EmailService } from './email.service';
 import { HTTP_STATUS_CODE } from 'src/common/configs/http-status.config';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 import { SendEmailDto } from './dto/email.dto';
 import { QuestionEmailDto } from './dto/question.email.dto';
-import { EmailService } from './email.service';
 import { operationConfig } from 'src/common/swagger-apis/api-operation.swagger';
 import { emailSwagger } from './email.swagger';
 
@@ -52,15 +49,15 @@ export class EmailController {
   @HttpCode(HTTP_STATUS_CODE.success.ok)
   @Post('/forget/password')
   async sendEmail(@Body() sendEmailDto: SendEmailDto): Promise<object> {
-    const id = String(Date.now());
-    const saveToken = await this.emailService.createToken(id);
+    const key: string = String(Date.now());
+    const saveToken: string = await this.emailService.createToken(key);
 
     if (saveToken) {
       await this.emailService.sendEmail(sendEmailDto);
 
       return {
         msg: `해당 이메일(${sendEmailDto.email})로 비밀번호 변경 링크가 전송되었습니다.`,
-        response: id,
+        response: key,
       };
     }
     throw new InternalServerErrorException(

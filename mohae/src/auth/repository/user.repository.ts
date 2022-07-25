@@ -1,3 +1,4 @@
+import { InternalServerErrorException } from '@nestjs/common';
 import {
   DeleteResult,
   EntityRepository,
@@ -5,7 +6,6 @@ import {
   UpdateResult,
 } from 'typeorm';
 import { User } from '../entity/user.entity';
-import { InternalServerErrorException } from '@nestjs/common';
 import { School } from 'src/schools/entity/school.entity';
 import { Major } from 'src/majors/entity/major.entity';
 import { SignUpDto } from '../dto/sign-up.dto';
@@ -273,7 +273,10 @@ export class UserRepository extends Repository<User> {
         .delete()
         .from(User)
         .where('users.deleted_At is not null')
-        .andWhere('DATE_ADD(users.deleted_At, INTERVAL 15 DAY) >= NOW()')
+        .andWhere('DATE_ADD(users.deleted_At, INTERVAL 15 DAY) <= NOW()')
+        .andWhere(
+          'NOT EXISTS(SELECT reported_user_no FROM reported_users WHERE users.no = reported_users.reported_user_no)',
+        )
         .execute();
       return affected;
     } catch (err) {

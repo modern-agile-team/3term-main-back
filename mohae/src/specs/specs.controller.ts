@@ -26,15 +26,15 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { User } from 'src/auth/entity/user.entity';
+import { Spec } from './entity/spec.entity';
 import { AwsService } from 'src/aws/aws.service';
+import { OneSpec, SpecsService } from './specs.service';
 import { HTTP_STATUS_CODE } from 'src/common/configs/http-status.config';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
-import { operationConfig } from 'src/common/swagger-apis/api-operation.swagger';
 import { CreateSpecDto } from './dto/create-spec.dto';
 import { UpdateSpecDto } from './dto/update-spec.dto';
-import { Spec } from './entity/spec.entity';
-import { OneSpec, SpecsService } from './specs.service';
 import { specSwagger } from './specs.swagger';
+import { operationConfig } from 'src/common/swagger-apis/api-operation.swagger';
 
 @ApiTags('Specs')
 @UseGuards(AuthGuard('jwt'))
@@ -113,7 +113,7 @@ export class SpecsController {
       throw new BadRequestException(
         '사진을 선택하지 않은 경우 기본사진을 넣어주셔야 스펙 등록이 가능 합니다.',
       );
-    const specPhotoUrls = await this.awsService.uploadSpecFileToS3(
+    const specPhotoUrls: string[] = await this.awsService.uploadSpecFileToS3(
       'spec',
       files,
     );
@@ -145,16 +145,13 @@ export class SpecsController {
   ): Promise<object> {
     await this.specsService.comfirmCertification(specNo, user.no);
 
-    const specPhotoUrls =
+    const specPhotoUrls: false | string[] =
       files.length === 0
         ? false
         : await this.awsService.uploadSpecFileToS3('spec', files);
 
-    const originSpecPhotoUrls = await this.specsService.updateSpec(
-      specNo,
-      updateSpecdto,
-      specPhotoUrls,
-    );
+    const originSpecPhotoUrls: void | string[] =
+      await this.specsService.updateSpec(specNo, updateSpecdto, specPhotoUrls);
     if (originSpecPhotoUrls) {
       await this.awsService.deleteSpecS3Object(originSpecPhotoUrls);
     }

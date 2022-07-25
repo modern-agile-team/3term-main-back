@@ -115,11 +115,11 @@ export class EmailService {
     }
   }
 
-  async createToken(id: string) {
+  async createToken(key: string): Promise<string> {
     try {
       const token: string = await bcrypt.genSalt();
 
-      return await this.cacheManager.set(id, token, {
+      return await this.cacheManager.set(key, token, {
         ttl: await this.config.get('REDIS_EMAIL_TTL'),
       });
     } catch (err) {

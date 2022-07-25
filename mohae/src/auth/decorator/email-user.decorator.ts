@@ -1,5 +1,4 @@
 import { UnprocessableEntityException } from '@nestjs/common';
-import { ValidationOptions } from 'class-validator';
 
 export function EmailStatusValidationPipe(email?: string): PropertyDecorator {
   let judgeEmail = /^[A-Za-z0-9_\.\-]+@[A-Za-z0-9\-]+\.[A-Za-z0-9\-]+/;

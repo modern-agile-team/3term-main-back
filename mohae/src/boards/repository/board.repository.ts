@@ -1,5 +1,4 @@
 import { InternalServerErrorException } from '@nestjs/common';
-import { Category } from 'src/categories/entity/category.entity';
 import {
   DeleteResult,
   EntityRepository,
@@ -8,9 +7,9 @@ import {
   SelectQueryBuilder,
   UpdateResult,
 } from 'typeorm';
-import { Board } from '../entity/board.entity';
 import { User } from '@sentry/node';
-import { FilterBoardDto } from '../dto/filterBoard.dto';
+import { Board } from '../entity/board.entity';
+import { Category } from 'src/categories/entity/category.entity';
 import { PaginationDto } from '../dto/pagination.dto';
 import { SearchBoardDto } from '../dto/searchBoard.dto';
 
