@@ -227,6 +227,7 @@ export class BoardsController {
     operationConfig('카테고리 선택 조회 경로', '카테고리 선택 조회 API'),
   )
   @ApiOkResponse(boardSwagger.getByCategory.success)
+  @ApiNotFoundResponse(boardSwagger.getByCategory.notFound)
   @HttpCode(HTTP_STATUS_CODE.success.ok)
   @Get('category/:categoryNo')
   async getByCategory(
@@ -236,7 +237,7 @@ export class BoardsController {
     this.logger.verbose(
       `카테고리 선택 조회 시도. 카테고리 번호 : ${categoryNo}`,
     );
-    const response: Board[] = await this.boardService.findOneCategory(
+    const response: Board[] | Board = await this.boardService.findOneCategory(
       categoryNo,
       paginationDto,
     );
@@ -248,7 +249,7 @@ export class BoardsController {
   }
 
   @Post()
-  @ApiOperation(operationConfig('게시글 생성 경로', '게시글 생성 API'))
+  @ApiOperation(operationConfig('게시글 생성 경로', '게시글 생성 AP'))
   @ApiOkResponse(boardSwagger.create.success)
   @HttpCode(HTTP_STATUS_CODE.success.created)
   @ApiBearerAuth('access-token')

@@ -3,6 +3,7 @@ import {
   BadRequestException,
   Injectable,
   InternalServerErrorException,
+  NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -22,6 +23,11 @@ import { HotBoardDto } from './dto/hotBoard.dto';
 import { SearchBoardDto } from './dto/searchBoard.dto';
 import { PaginationDto } from './dto/pagination.dto';
 import { CreateBoardDto } from './dto/createBoard.dto';
+
+export interface CreatedBoardInfo {
+  affectedRows: number;
+  insertId: number;
+}
 
 @Injectable()
 export class BoardsService {
@@ -295,27 +301,25 @@ export class BoardsService {
         endTime.setDate(endTime.getDate() + +deadline);
       }
 
-      const createBoard: any = await queryRunner.manager
-        .getCustomRepository(BoardRepository)
-        .createBoard(category, area, user, createBoardDto, endTime);
+      const { affectedRows, insertId }: CreatedBoardInfo =
+        await queryRunner.manager
+          .getCustomRepository(BoardRepository)
+          .createBoard(category, area, user, createBoardDto, endTime);
 
-      const createdBoard: Board = await queryRunner.manager
-        .getCustomRepository(BoardRepository)
-        .createdBoard(createBoard);
+      if (!affectedRows) {
+        throw new BadGatewayException('게시글 생성 관련 오류입니다.');
+      }
 
       await queryRunner.manager
         .getCustomRepository(UserRepository)
-        .userRelation(user, createdBoard.no, 'boards');
+        .userRelation(user, insertId, 'boards');
 
-      if (!createdBoard) {
-        throw new BadGatewayException('게시글 생성 관련 오류입니다.');
-      }
       if (boardPhotoUrl[0] !== 'logo.png') {
         const photos: Array<object> = boardPhotoUrl.map(
           (photo: string, index: number) => {
             return {
               photo_url: photo,
-              board: createdBoard.no,
+              board: insertId,
               order: index + 1,
             };
           },
@@ -328,7 +332,7 @@ export class BoardsService {
         }
         await queryRunner.manager
           .getCustomRepository(BoardRepository)
-          .saveCategory(+categoryNo, createdBoard);
+          .saveCategory(+categoryNo, insertId);
       }
       await queryRunner.commitTransaction();
 
@@ -477,7 +481,7 @@ export class BoardsService {
           if (boardPhotos.length !== boardPhotoNo.length) {
             throw new BadGatewayException('게시글 사진 등록 도중 DB관련 오류');
           }
-          const originBoardPhotosUrl = photos.map((boardPhoto) => {
+          const originBoardPhotosUrl: string[] = photos.map((boardPhoto) => {
             return boardPhoto.photo_url;
           });
           await queryRunner.commitTransaction();
@@ -516,8 +520,15 @@ export class BoardsService {
   async findOneCategory(
     no: number,
     paginationDto: PaginationDto,
-  ): Promise<Board[]> {
+  ): Promise<Board[] | Board> {
     try {
+      const categoryConfirm: Category = await this.categoryRepository.findOne(
+        no,
+      );
+
+      if (!categoryConfirm) {
+        throw new NotFoundException(`${no}번의 카테고리는 존재하지 않습니다.`);
+      }
       if (no === 1) {
         const boards: Board[] = await this.boardRepository.getAllBoards(
           paginationDto,
@@ -525,10 +536,8 @@ export class BoardsService {
 
         return boards;
       }
-      const boards: Board[] = await this.boardRepository.findOneCategory(
-        no,
-        paginationDto,
-      );
+      const boards: Board[] | Board =
+        await this.boardRepository.findOneCategory(no, paginationDto);
 
       return boards;
     } catch (err) {
