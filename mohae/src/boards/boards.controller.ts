@@ -249,7 +249,7 @@ export class BoardsController {
   }
 
   @Post()
-  @ApiOperation(operationConfig('게시글 생성 경로', '게시글 생성 AP'))
+  @ApiOperation(operationConfig('게시글 생성 경로', '게시글 생성 API'))
   @ApiOkResponse(boardSwagger.create.success)
   @HttpCode(HTTP_STATUS_CODE.success.created)
   @ApiBearerAuth('access-token')
