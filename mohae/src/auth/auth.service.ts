@@ -180,26 +180,15 @@ export class AuthService {
       const isPassword: boolean = await bcrypt.compare(password, user.salt);
 
       if (isPassword) {
-        const payload: object = {
-          userNo: user.no,
-          email: user.email,
-          nickname: user.nickname,
-          photoUrl: user['photo_url'],
-          issuer: 'modern-agile',
-          manager: user.manager,
-          expiration: this.configService.get<number>('EXPIRES_IN'),
-        };
         await this.userRepository.clearLoginCount(user.no);
-
-        const accessToken: string = this.jwtService.sign(payload);
 
         if (user.deletedAt) {
           await this.userRepository.cancelSignDown(user.email);
         }
-
-        return accessToken;
+        return;
       }
       await this.userRepository.plusLoginFailCount(user);
+
       const afterUser = await this.userRepository.confirmUser(user.email);
 
       if (afterUser.loginFailCount >= 5) {
@@ -345,6 +334,52 @@ export class AuthService {
         );
       }
       throw new UnauthorizedException('존재하지 않는 이메일 입니다.');
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  async createJwtToken(user: User) {
+    try {
+      const payload: object = {
+        userNo: user.no,
+        email: user.email,
+        nickname: user.nickname,
+        photoUrl: user['photo_url'],
+        issuer: 'modern-agile',
+        manager: user.manager,
+        expiration: this.configService.get<number>('EXPIRES_IN'),
+      };
+      const accessToken: string = this.jwtService.sign(payload);
+
+      const refreshToken: string = this.jwtService.sign(
+        { email: user.email },
+        {
+          secret: this.configService.get<string>('JWT_SECRET'),
+          expiresIn: this.configService.get<number>('REFRESHTOCKEN_EXPIRES_IN'),
+        },
+      );
+      await this.cacheManager.set(
+        String(user.no),
+        { refreshToken, accessToken },
+        {
+          ttl: await this.configService.get('REFRESHTOCKEN_EXPIRES_IN'),
+        },
+      );
+
+      return { accessToken, refreshToken };
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  async deleteRefreshToken({ no }: User) {
+    try {
+      const isToken = await this.cacheManager.get<string>(String(no));
+      console.log(isToken);
+      if (isToken) {
+        await this.cacheManager.del(String(no));
+      }
     } catch (err) {
       throw err;
     }

@@ -23,7 +23,6 @@ import {
   TermsReporitory,
   TermsUserReporitory,
 } from 'src/terms/repository/terms.repository';
-import { ConfigService } from '@nestjs/config';
 import { jwtConfig } from 'src/common/configs/jwt.config';
 import { cacheModule } from 'src/common/configs/redis.config';
 

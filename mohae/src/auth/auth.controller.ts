@@ -89,14 +89,12 @@ export class AuthController {
       // id 맞는지 확인 + 패널티 시간 지나지 않았을 때 로그인 시도했을 때 알림
       const userInfo: User = await this.authService.confirmUser(signInDto);
       // 성공했을 때 + 비밀번호 틀렸을 때
-      const accessToken: string = await this.authService.passwordConfirm(
-        userInfo,
-        signInDto.password,
-      );
+      await this.authService.passwordConfirm(userInfo, signInDto.password);
+      const token = await this.authService.createJwtToken(userInfo);
 
       return {
         msg: `성공적으로 로그인이 되었습니다.`,
-        response: accessToken,
+        response: token,
       };
     } catch (err) {
       throw err;
@@ -186,6 +184,28 @@ export class AuthController {
 
       return {
         msg: '성공적으로 비밀번호가 변경되었습니다.',
+      };
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  @ApiOperation(
+    operationConfig(
+      '로그아웃 버튼 눌렀을 때 사용되는 API',
+      '유저 로그아웃시 사용되는 api입니다.',
+    ),
+  )
+  @ApiOkResponse(authSwagger.signOut.success)
+  @HttpCode(HTTP_STATUS_CODE.success.ok)
+  @ApiBearerAuth('access-token')
+  @UseGuards(AuthGuard('jwt'))
+  @Post('signout')
+  async signOut(@CurrentUser() user: User) {
+    try {
+      await this.authService.deleteRefreshToken(user);
+      return {
+        msg: '성공적으로 로그아웃이 되었습니다.',
       };
     } catch (err) {
       throw err;
