@@ -15,7 +15,7 @@ export class CategoriesController {
   @Get()
   async findAllCategories(): Promise<Category[]> {
     this.logger.verbose(`카테고리 전체 조회 시도.`);
-    const response = await this.categoryService.findAllCategories();
+    const response: Category[] = await this.categoryService.findAllCategories();
 
     return Object.assign({
       statusCode: 200,

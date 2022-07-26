@@ -12,10 +12,11 @@ import { Board } from '../entity/board.entity';
 import { Category } from 'src/categories/entity/category.entity';
 import { PaginationDto } from '../dto/pagination.dto';
 import { SearchBoardDto } from '../dto/searchBoard.dto';
+import { CreatedBoardInfo } from '../boards.service';
 
 @EntityRepository(Board)
 export class BoardRepository extends Repository<Board> {
-  async readOneBoardByAuth(boardNo: number, userNo: number): Promise<any> {
+  async readOneBoardByAuth(boardNo: number, userNo: number): Promise<Board> {
     try {
       return await this.createQueryBuilder('boards')
         .leftJoin('boards.area', 'areas', 'areas.no = boards.area')
@@ -126,9 +127,9 @@ export class BoardRepository extends Repository<Board> {
     }
   }
 
-  async cancelClosedBoard(boardNo: number) {
+  async cancelClosedBoard(boardNo: number): Promise<number> {
     try {
-      const { affected } = await this.createQueryBuilder()
+      const { affected }: UpdateResult = await this.createQueryBuilder()
         .update(Board)
         .set({ isDeadline: false })
         .where('no = :no', { no: boardNo })
@@ -144,7 +145,7 @@ export class BoardRepository extends Repository<Board> {
 
   async boardClosed(boardNo: number): Promise<number> {
     try {
-      const { affected } = await this.createQueryBuilder()
+      const { affected }: UpdateResult = await this.createQueryBuilder()
         .update(Board)
         .set({ isDeadline: true })
         .where('no = :no', { no: boardNo })
@@ -158,9 +159,9 @@ export class BoardRepository extends Repository<Board> {
     }
   }
 
-  async closingBoard() {
+  async closingBoard(): Promise<number> {
     try {
-      const { affected } = await this.createQueryBuilder()
+      const { affected }: UpdateResult = await this.createQueryBuilder()
         .update(Board)
         .set({ isDeadline: true })
         .where(`deadline is not null`)
@@ -182,7 +183,7 @@ export class BoardRepository extends Repository<Board> {
     page,
   }: SearchBoardDto): Promise<Board[]> {
     try {
-      const boards = await this.createQueryBuilder('boards')
+      const boards: Board[] = await this.createQueryBuilder('boards')
         .leftJoin('boards.area', 'areas')
         .leftJoin('boards.user', 'users')
         .leftJoin('boards.photos', 'photo')
@@ -233,8 +234,10 @@ export class BoardRepository extends Repository<Board> {
         popular,
         page,
         take,
-      }: any = duplicateCheck;
-      const boardFiltering: any = this.createQueryBuilder('boards')
+      } = duplicateCheck;
+      const boardFiltering: SelectQueryBuilder<Board> = this.createQueryBuilder(
+        'boards',
+      )
         .leftJoin('boards.area', 'areas')
         .leftJoin('boards.category', 'categories')
         .leftJoin('boards.user', 'users')
@@ -330,7 +333,7 @@ export class BoardRepository extends Repository<Board> {
     user: User,
     createBoardDto: any,
     endTime: Date,
-  ): Promise<any> {
+  ): Promise<CreatedBoardInfo> {
     try {
       const { price, title, description, summary, target } = createBoardDto;
       const board: InsertResult = await this.createQueryBuilder('boards')
@@ -351,7 +354,7 @@ export class BoardRepository extends Repository<Board> {
         ])
         .execute();
 
-      return board;
+      return board.raw;
     } catch (err) {
       throw new InternalServerErrorException(
         `${err} ### 게시판 생성: 알 수 없는 서버 에러입니다.`,
@@ -359,24 +362,9 @@ export class BoardRepository extends Repository<Board> {
     }
   }
 
-  async createdBoard(board: any): Promise<Board> {
-    try {
-      const { affectedRows, insertId }: any = board.raw;
-      if (affectedRows) {
-        return await this.createQueryBuilder('boards')
-          .leftJoinAndSelect('boards.category', 'category')
-          .leftJoinAndSelect('boards.area', 'area')
-          .where('boards.no = :no', { no: insertId })
-          .getOne();
-      }
-    } catch (err) {
-      throw err;
-    }
-  }
-
   async updateBoard(
     boardNo: number,
-    deletedNullBoardKey: any,
+    deletedNullBoardKey: object,
   ): Promise<number> {
     try {
       const { affected }: UpdateResult = await this.createQueryBuilder()
@@ -409,12 +397,12 @@ export class BoardRepository extends Repository<Board> {
     }
   }
 
-  async saveCategory(categoryNo: number, board: Board) {
+  async saveCategory(categoryNo: number, boardNo: number) {
     try {
       await this.createQueryBuilder()
         .relation(Category, 'boards')
         .of(categoryNo)
-        .add(board);
+        .add(boardNo);
     } catch (err) {
       throw new InternalServerErrorException(
         `${err} ### 카테고리 릴레이션: 릴레이션 관계 지정 서버 에러입니다.`,
@@ -520,31 +508,32 @@ export class BoardRepository extends Repository<Board> {
   async findOneCategory(
     no: number,
     { page, take }: PaginationDto,
-  ): Promise<object> {
+  ): Promise<Board[] | Board> {
     try {
-      const findedinCategoryBoard: any = await this.createQueryBuilder('boards')
-        .leftJoin('boards.category', 'category')
-        .leftJoin('boards.area', 'area')
-        .leftJoin('boards.user', 'user')
-        .leftJoin('boards.photos', 'photo')
-        .select([
-          'DATEDIFF(boards.deadline, now()) AS decimalDay',
-          'photo.photo_Url AS photoUrl',
-          'boards.no AS no',
-          'boards.title AS title',
-          'boards.isDeadline AS isDeadline',
-          'boards.price AS price',
-          'boards.target AS target',
-          'area.no AS areaNo',
-          'area.name AS areaName',
-          'user.nickname AS nickname',
-        ])
-        .groupBy('boards.no')
-        .orderBy('boards.no', 'DESC')
-        .limit(+take)
-        .offset((+page - 1) * +take)
-        .where('boards.category = :no', { no })
-        .getRawMany();
+      const findedinCategoryBoard: Board[] | Board =
+        await this.createQueryBuilder('boards')
+          .leftJoin('boards.category', 'category')
+          .leftJoin('boards.area', 'area')
+          .leftJoin('boards.user', 'user')
+          .leftJoin('boards.photos', 'photo')
+          .select([
+            'DATEDIFF(boards.deadline, now()) AS decimalDay',
+            'photo.photo_Url AS photoUrl',
+            'boards.no AS no',
+            'boards.title AS title',
+            'boards.isDeadline AS isDeadline',
+            'boards.price AS price',
+            'boards.target AS target',
+            'area.no AS areaNo',
+            'area.name AS areaName',
+            'user.nickname AS nickname',
+          ])
+          .groupBy('boards.no')
+          .orderBy('boards.no', 'DESC')
+          .limit(+take)
+          .offset((+page - 1) * +take)
+          .where('boards.category = :no', { no })
+          .getRawMany();
 
       return findedinCategoryBoard;
     } catch (err) {
