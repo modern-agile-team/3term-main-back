@@ -37,6 +37,7 @@ import {
 } from '@nestjs/swagger';
 import { operationConfig } from 'src/common/swagger-apis/api-operation.swagger';
 import { authSwagger } from './auth.swagger';
+import { JwtRefreshStrategy } from './jwt/jwt-refresh.strategy';
 
 @Controller('auth')
 @ApiTags('Auth')
@@ -200,9 +201,11 @@ export class AuthController {
   @HttpCode(HTTP_STATUS_CODE.success.ok)
   @ApiBearerAuth('access-token')
   @UseGuards(AuthGuard('jwt'))
+  @UseGuards(AuthGuard('jwt-refresh-token'))
   @Post('signout')
   async signOut(@CurrentUser() user: User) {
     try {
+      console.log('첫번째 ', user);
       await this.authService.deleteRefreshToken(user);
       return {
         msg: '성공적으로 로그아웃이 되었습니다.',

@@ -33,5 +33,6 @@ export const envConfig: ConfigModuleOptions = {
     EMAIL_PORT: Joi.string().required(),
     API_ACCESS_DOMAIN: Joi.string().required(),
     REFRESHTOCKEN_EXPIRES_IN: Joi.number().required(),
+    EXPIRES_IN: Joi.number().required(),
   }),
 };

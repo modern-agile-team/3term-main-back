@@ -31,6 +31,22 @@ import { Cache } from 'cache-manager';
 
 import * as bcrypt from 'bcryptjs';
 
+export interface UserPayload {
+  userNo: number;
+  email: string;
+  nickname: string;
+  photoUrl: string | null;
+  issuer: string;
+  manager: boolean;
+  expiration: number;
+  token: string;
+}
+
+export interface Token {
+  accessToken: string;
+  refreshToken: string;
+}
+
 @Injectable()
 export class AuthService {
   constructor(
@@ -341,7 +357,7 @@ export class AuthService {
 
   async createJwtToken(user: User) {
     try {
-      const payload: object = {
+      const payload: UserPayload = {
         userNo: user.no,
         email: user.email,
         nickname: user.nickname,
@@ -349,16 +365,20 @@ export class AuthService {
         issuer: 'modern-agile',
         manager: user.manager,
         expiration: this.configService.get<number>('EXPIRES_IN'),
+        token: 'accessToken',
       };
       const accessToken: string = this.jwtService.sign(payload);
 
-      const refreshToken: string = this.jwtService.sign(
-        { email: user.email },
-        {
-          secret: this.configService.get<string>('JWT_SECRET'),
-          expiresIn: this.configService.get<number>('REFRESHTOCKEN_EXPIRES_IN'),
-        },
+      payload.expiration = this.configService.get<number>(
+        'REFRESHTOCKEN_EXPIRES_IN',
       );
+      payload.token = 'refreshToken';
+
+      const refreshToken: string = this.jwtService.sign(payload, {
+        secret: this.configService.get<string>('JWT_SECRET'),
+        expiresIn: this.configService.get<number>('REFRESHTOCKEN_EXPIRES_IN'),
+      });
+
       await this.cacheManager.set(
         String(user.no),
         { refreshToken, accessToken },
@@ -373,10 +393,50 @@ export class AuthService {
     }
   }
 
+  async createAccessToken(payload: UserPayload) {
+    try {
+      const newPayload: UserPayload = {
+        userNo: payload.userNo,
+        email: payload.email,
+        nickname: payload.nickname,
+        photoUrl: payload['photo_url'],
+        issuer: 'modern-agile',
+        manager: payload.manager,
+        expiration: this.configService.get<number>('EXPIRES_IN'),
+        token: 'accessToken',
+      };
+      const accessToken: string = this.jwtService.sign(newPayload);
+      const token: Token = await this.cacheManager.get<Token>(
+        String(payload.userNo),
+      );
+
+      if (token) {
+        token.accessToken = accessToken;
+        await this.cacheManager.set(String(payload.userNo), token);
+        throw new UnauthorizedException(
+          `새로운 accessToken으로 다시 시도해 주세요 accessToken : ${accessToken}`,
+        );
+      } else {
+        throw new UnauthorizedException(
+          '토큰이 존재하지 않습니다. 다시 로그인 해주세요',
+        );
+      }
+    } catch (err) {
+      if (err instanceof UnauthorizedException) {
+        throw err;
+      }
+      if (err instanceof Error) {
+        throw new InternalServerErrorException(
+          '토큰 재발급중 발생한 서버에러입니다',
+        );
+      }
+    }
+  }
+
   async deleteRefreshToken({ no }: User) {
     try {
-      const isToken = await this.cacheManager.get<string>(String(no));
-      console.log(isToken);
+      const isToken = await this.cacheManager.get<Token>(String(no));
+
       if (isToken) {
         await this.cacheManager.del(String(no));
       }
