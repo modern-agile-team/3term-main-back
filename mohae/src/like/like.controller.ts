@@ -8,7 +8,6 @@ import {
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import {
-  ApiBadRequestResponse,
   ApiBearerAuth,
   ApiConflictResponse,
   ApiInternalServerErrorResponse,
@@ -22,7 +21,6 @@ import { User } from 'src/auth/entity/user.entity';
 import { HTTP_STATUS_CODE } from 'src/common/configs/http-status.config';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 import { operationConfig } from 'src/common/swagger-apis/api-operation.swagger';
-import { apiResponse } from 'src/common/swagger-apis/api-response.swagger';
 import { LikeBoardDto } from './dto/board-like.dto';
 import { LikeUserDto } from './dto/user-like.dto';
 import { LikeService } from './like.service';
@@ -78,6 +76,7 @@ export class LikeController {
   })
   @ApiBearerAuth('access-token')
   @UseGuards(AuthGuard('jwt'))
+  // @UseGuards(AuthGuard('jwt-refresh-token'))
   @HttpCode(HTTP_STATUS_CODE.success.created)
   @Post('/user')
   async likeUser(@Body() likeUserDto: LikeUserDto, @CurrentUser() user: User) {
