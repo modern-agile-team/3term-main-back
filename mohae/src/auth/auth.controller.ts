@@ -207,8 +207,8 @@ export class AuthController {
   @Post('signout')
   async signOut(@CurrentUser() user: User) {
     try {
-      console.log('첫번째 ', user);
       await this.authService.deleteRefreshToken(user);
+
       return {
         msg: '성공적으로 로그아웃이 되었습니다.',
       };
