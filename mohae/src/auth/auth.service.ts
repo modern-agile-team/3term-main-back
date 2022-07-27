@@ -40,6 +40,7 @@ export interface UserPayload {
   manager: boolean;
   expiration: number;
   token: string;
+  exp?: number;
 }
 
 export interface Token {
@@ -399,7 +400,7 @@ export class AuthService {
         userNo: payload.userNo,
         email: payload.email,
         nickname: payload.nickname,
-        photoUrl: payload['photo_url'],
+        photoUrl: payload.photoUrl,
         issuer: 'modern-agile',
         manager: payload.manager,
         expiration: this.configService.get<number>('EXPIRES_IN'),
@@ -412,10 +413,12 @@ export class AuthService {
 
       if (token) {
         token.accessToken = accessToken;
-        await this.cacheManager.set(String(payload.userNo), token);
-        throw new UnauthorizedException(
-          `새로운 accessToken으로 다시 시도해 주세요 accessToken : ${accessToken}`,
-        );
+        const newttl = payload.exp - Math.ceil(Date.now() / 1000);
+
+        await this.cacheManager.set(String(payload.userNo), token, {
+          ttl: newttl,
+        });
+        throw new UnauthorizedException(accessToken);
       } else {
         throw new UnauthorizedException(
           '토큰이 존재하지 않습니다. 다시 로그인 해주세요',

@@ -37,7 +37,6 @@ import {
 } from '@nestjs/swagger';
 import { operationConfig } from 'src/common/swagger-apis/api-operation.swagger';
 import { authSwagger } from './auth.swagger';
-import { JwtRefreshStrategy } from './jwt/jwt-refresh.strategy';
 
 @Controller('auth')
 @ApiTags('Auth')
@@ -95,7 +94,8 @@ export class AuthController {
 
       return {
         msg: `성공적으로 로그인이 되었습니다.`,
-        response: token,
+        // response: token,
+        response: token.accessToken,
       };
     } catch (err) {
       throw err;
@@ -111,6 +111,7 @@ export class AuthController {
   @HttpCode(HTTP_STATUS_CODE.success.ok)
   @ApiBearerAuth('access-token')
   @UseGuards(AuthGuard('jwt'))
+  // @UseGuards(AuthGuard('jwt-refresh-token'))
   @Patch()
   async signDown(
     @Body() { password }: SignDownDto,
@@ -141,6 +142,7 @@ export class AuthController {
   @HttpCode(HTTP_STATUS_CODE.success.ok)
   @ApiBearerAuth('access-token')
   @UseGuards(AuthGuard('jwt'))
+  // @UseGuards(AuthGuard('jwt-refresh-token'))
   @Patch('change/password')
   async changePassword(
     @Body() changePasswordDto: ChangePasswordDto,
@@ -201,7 +203,7 @@ export class AuthController {
   @HttpCode(HTTP_STATUS_CODE.success.ok)
   @ApiBearerAuth('access-token')
   @UseGuards(AuthGuard('jwt'))
-  @UseGuards(AuthGuard('jwt-refresh-token'))
+  // @UseGuards(AuthGuard('jwt-refresh-token'))
   @Post('signout')
   async signOut(@CurrentUser() user: User) {
     try {
