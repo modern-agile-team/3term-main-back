@@ -62,7 +62,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
           fields: [
             {
               title: `Request Message: ${error.message}`,
-              value: `Code: ${error.statusCode}, ${error.error}`,
+              value: `Code: ${error.statusCode}, ${error.error} ${exception.stack}`,
               short: false,
             },
           ],
@@ -73,7 +73,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
 
     webhook.send(sentryConfig);
 
-    this.logger.error(errorMsg, '알 수 없는 서버 에러입니다.');
+    this.logger.error(exception.stack, '알 수 없는 서버 에러입니다.');
 
     return response.status(status).json(errorMsg);
   }

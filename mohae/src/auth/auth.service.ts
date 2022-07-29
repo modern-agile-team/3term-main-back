@@ -2,6 +2,7 @@ import {
   BadRequestException,
   CACHE_MANAGER,
   ConflictException,
+  HttpException,
   Inject,
   Injectable,
   InternalServerErrorException,
@@ -30,6 +31,7 @@ import { Connection } from 'typeorm';
 import { Cache } from 'cache-manager';
 
 import * as bcrypt from 'bcryptjs';
+import { forbidden } from 'joi';
 
 export interface UserPayload {
   userNo: number;
@@ -380,13 +382,12 @@ export class AuthService {
         expiresIn: this.configService.get<number>('REFRESHTOCKEN_EXPIRES_IN'),
       });
 
-      await this.cacheManager.set(
-        String(user.no),
-        { refreshToken, accessToken },
-        {
-          ttl: await this.configService.get('REFRESHTOCKEN_EXPIRES_IN'),
-        },
-      );
+      await this.cacheManager.set(String(user.no) + 'access', accessToken, {
+        ttl: await this.configService.get('EXPIRES_IN'),
+      });
+      await this.cacheManager.set(String(user.no) + 'refresh', refreshToken, {
+        ttl: await this.configService.get('REFRESHTOCKEN_EXPIRES_IN'),
+      });
 
       return { accessToken, refreshToken };
     } catch (err) {
@@ -395,45 +396,43 @@ export class AuthService {
   }
 
   async createAccessToken(payload: UserPayload) {
-    try {
-      const newPayload: UserPayload = {
-        userNo: payload.userNo,
-        email: payload.email,
-        nickname: payload.nickname,
-        photoUrl: payload.photoUrl,
-        issuer: 'modern-agile',
-        manager: payload.manager,
-        expiration: this.configService.get<number>('EXPIRES_IN'),
-        token: 'accessToken',
-      };
-      const accessToken: string = this.jwtService.sign(newPayload);
-      const token: Token = await this.cacheManager.get<Token>(
-        String(payload.userNo),
+    const preAccessToken: string = await this.cacheManager.get<string>(
+      String(payload.userNo) + 'access',
+    );
+    const refreshToken: string = await this.cacheManager.get<string>(
+      String(payload.userNo) + 'refresh',
+    );
+
+    if (!!preAccessToken || !refreshToken) {
+      await this.cacheManager.del(String(payload.userNo) + 'access');
+      await this.cacheManager.del(String(payload.userNo) + 'refresh');
+      throw new HttpException(
+        'access 토큰이 만료되기 이전에는 재발급 할 수 없습니다. 다시 로그인 해주세요',
+        410,
       );
-
-      if (token) {
-        token.accessToken = accessToken;
-        const newttl = payload.exp - Math.ceil(Date.now() / 1000);
-
-        await this.cacheManager.set(String(payload.userNo), token, {
-          ttl: newttl,
-        });
-        throw new UnauthorizedException(accessToken);
-      } else {
-        throw new UnauthorizedException(
-          '토큰이 존재하지 않습니다. 다시 로그인 해주세요',
-        );
-      }
-    } catch (err) {
-      if (err instanceof UnauthorizedException) {
-        throw err;
-      }
-      if (err instanceof Error) {
-        throw new InternalServerErrorException(
-          '토큰 재발급중 발생한 서버에러입니다',
-        );
-      }
+      // 여기 이후부터는 프론트 진영에서 세션 스토리지에 있는 토큰을 날리고 로그인을 다시 하도록 유도해야 됨
     }
+
+    const newPayload: UserPayload = {
+      userNo: payload.userNo,
+      email: payload.email,
+      nickname: payload.nickname,
+      photoUrl: payload.photoUrl,
+      issuer: 'modern-agile',
+      manager: payload.manager,
+      expiration: this.configService.get<number>('EXPIRES_IN'),
+      token: 'accessToken',
+    };
+    const accessToken: string = this.jwtService.sign(newPayload);
+
+    await this.cacheManager.set(
+      String(payload.userNo) + 'access',
+      accessToken,
+      {
+        ttl: this.configService.get('EXPIRES_IN'),
+      },
+    );
+    throw new UnauthorizedException(`${accessToken}`);
   }
 
   async deleteRefreshToken({ no }: User) {
