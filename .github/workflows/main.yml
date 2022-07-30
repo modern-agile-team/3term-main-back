@@ -54,7 +54,7 @@ jobs:
         uses: docker/login-action@v1
         with:
           registry: ghcr.io
-          username: ${{ github.actor }}
+          username: ${{ github.actor }} 
           password: ${{ secrets.MOHAE_TOKEN }}
       # 3000 -> 80 포트로 수행하도록 지정
       - name: Docker run 
