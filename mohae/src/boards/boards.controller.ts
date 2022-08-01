@@ -27,25 +27,23 @@ import {
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
+import { FilesInterceptor } from '@nestjs/platform-express';
+import { ConfigService } from '@nestjs/config';
+import { JwtService } from '@nestjs/jwt';
 import { BoardsService } from './boards.service';
-
 import { AwsService } from 'src/aws/aws.service';
-import { Board } from './entity/board.entity';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 import { HTTP_STATUS_CODE } from 'src/common/configs/http-status.config';
-import { FilesInterceptor } from '@nestjs/platform-express';
-import { operationConfig } from 'src/common/swagger-apis/api-operation.swagger';
-import { apiResponse } from 'src/common/swagger-apis/api-response.swagger';
+import { Board } from './entity/board.entity';
 import { FilterBoardDto } from './dto/filterBoard.dto';
 import { HotBoardDto } from './dto/hotBoard.dto';
 import { SearchBoardDto } from './dto/searchBoard.dto';
 import { UpdateBoardDto } from './dto/updateBoard.dto';
-import { WinstonLogger, WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { PaginationDto } from './dto/pagination.dto';
-import { ConfigService } from '@nestjs/config';
-import { JwtService } from '@nestjs/jwt';
 import { CreateBoardDto } from './dto/createBoard.dto';
+import { WinstonLogger, WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { boardSwagger } from './boards.swagger';
+import { operationConfig } from 'src/common/swagger-apis/api-operation.swagger';
 
 @ApiTags('Boards')
 @Controller('boards')
@@ -229,6 +227,7 @@ export class BoardsController {
     operationConfig('카테고리 선택 조회 경로', '카테고리 선택 조회 API'),
   )
   @ApiOkResponse(boardSwagger.getByCategory.success)
+  @ApiNotFoundResponse(boardSwagger.getByCategory.notFound)
   @HttpCode(HTTP_STATUS_CODE.success.ok)
   @Get('category/:categoryNo')
   async getByCategory(
@@ -238,7 +237,7 @@ export class BoardsController {
     this.logger.verbose(
       `카테고리 선택 조회 시도. 카테고리 번호 : ${categoryNo}`,
     );
-    const response: Board[] = await this.boardService.findOneCategory(
+    const response: Board[] | Board = await this.boardService.findOneCategory(
       categoryNo,
       paginationDto,
     );

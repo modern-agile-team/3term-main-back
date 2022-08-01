@@ -31,6 +31,23 @@ import { Cache } from 'cache-manager';
 
 import * as bcrypt from 'bcryptjs';
 
+export interface UserPayload {
+  userNo: number;
+  email: string;
+  nickname: string;
+  photoUrl: string | null;
+  issuer: string;
+  manager: boolean;
+  expiration: number;
+  token: string;
+  exp?: number;
+}
+
+export interface Token {
+  accessToken: string;
+  refreshToken: string;
+}
+
 @Injectable()
 export class AuthService {
   constructor(
@@ -180,26 +197,15 @@ export class AuthService {
       const isPassword: boolean = await bcrypt.compare(password, user.salt);
 
       if (isPassword) {
-        const payload: object = {
-          userNo: user.no,
-          email: user.email,
-          nickname: user.nickname,
-          photoUrl: user['photo_url'],
-          issuer: 'modern-agile',
-          manager: user.manager,
-          expiration: this.configService.get<number>('EXPIRES_IN'),
-        };
         await this.userRepository.clearLoginCount(user.no);
-
-        const accessToken: string = this.jwtService.sign(payload);
 
         if (user.deletedAt) {
           await this.userRepository.cancelSignDown(user.email);
         }
-
-        return accessToken;
+        return;
       }
       await this.userRepository.plusLoginFailCount(user);
+
       const afterUser = await this.userRepository.confirmUser(user.email);
 
       if (afterUser.loginFailCount >= 5) {
@@ -345,6 +351,98 @@ export class AuthService {
         );
       }
       throw new UnauthorizedException('존재하지 않는 이메일 입니다.');
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  async createJwtToken(user: User) {
+    try {
+      const payload: UserPayload = {
+        userNo: user.no,
+        email: user.email,
+        nickname: user.nickname,
+        photoUrl: user['photo_url'],
+        issuer: 'modern-agile',
+        manager: user.manager,
+        expiration: this.configService.get<number>('EXPIRES_IN'),
+        token: 'accessToken',
+      };
+      const accessToken: string = this.jwtService.sign(payload);
+
+      payload.expiration = this.configService.get<number>(
+        'REFRESHTOCKEN_EXPIRES_IN',
+      );
+      payload.token = 'refreshToken';
+
+      const refreshToken: string = this.jwtService.sign(payload, {
+        secret: this.configService.get<string>('JWT_SECRET'),
+        expiresIn: this.configService.get<number>('REFRESHTOCKEN_EXPIRES_IN'),
+      });
+
+      await this.cacheManager.set(
+        String(user.no),
+        { refreshToken, accessToken },
+        {
+          ttl: await this.configService.get('REFRESHTOCKEN_EXPIRES_IN'),
+        },
+      );
+
+      return { accessToken, refreshToken };
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  async createAccessToken(payload: UserPayload) {
+    try {
+      const newPayload: UserPayload = {
+        userNo: payload.userNo,
+        email: payload.email,
+        nickname: payload.nickname,
+        photoUrl: payload.photoUrl,
+        issuer: 'modern-agile',
+        manager: payload.manager,
+        expiration: this.configService.get<number>('EXPIRES_IN'),
+        token: 'accessToken',
+      };
+      const accessToken: string = this.jwtService.sign(newPayload);
+      const token: Token = await this.cacheManager.get<Token>(
+        String(payload.userNo),
+      );
+
+      if (token) {
+        token.accessToken = accessToken;
+        const newttl = payload.exp - Math.ceil(Date.now() / 1000);
+
+        await this.cacheManager.set(String(payload.userNo), token, {
+          ttl: newttl,
+        });
+        throw new UnauthorizedException(accessToken);
+      } else {
+        throw new UnauthorizedException(
+          '토큰이 존재하지 않습니다. 다시 로그인 해주세요',
+        );
+      }
+    } catch (err) {
+      if (err instanceof UnauthorizedException) {
+        throw err;
+      }
+      if (err instanceof Error) {
+        throw new InternalServerErrorException(
+          '토큰 재발급중 발생한 서버에러입니다',
+        );
+      }
+    }
+  }
+
+  async deleteRefreshToken({ no }: User) {
+    try {
+      const isToken = await this.cacheManager.get<Token>(String(no));
+
+      if (isToken) {
+        await this.cacheManager.del(String(no));
+      }
     } catch (err) {
       throw err;
     }

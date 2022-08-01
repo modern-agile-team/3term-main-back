@@ -50,9 +50,10 @@ export class ProfilesController {
   @ApiUnauthorizedResponse(profileSwagger.readUserProfile.unauthorizedResponse)
   @ApiNotFoundResponse(profileSwagger.readUserProfile.notFoundResponse)
   @ApiInternalServerErrorResponse(profileSwagger.internalServerErrorResponse)
-  @UseGuards(AuthGuard('jwt'))
   @ApiBearerAuth('access-token')
   @HttpCode(HTTP_STATUS_CODE.success.ok)
+  @UseGuards(AuthGuard('jwt'))
+  // @UseGuards(AuthGuard('jwt-refresh-token'))
   @Get('/:profileUserNo')
   async readUserProfile(
     @Param('profileUserNo') profileUserNo: number,
@@ -102,6 +103,7 @@ export class ProfilesController {
   @HttpCode(HTTP_STATUS_CODE.success.ok)
   @ApiBearerAuth('access-token')
   @UseGuards(AuthGuard('jwt'))
+  // @UseGuards(AuthGuard('jwt-refresh-token'))
   @UseInterceptors(FileInterceptor('image'))
   @Patch()
   async updateProfile(

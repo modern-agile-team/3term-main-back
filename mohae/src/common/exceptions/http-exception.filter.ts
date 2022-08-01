@@ -4,6 +4,7 @@ import {
   ArgumentsHost,
   HttpException,
   Inject,
+  HttpStatus,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { WinstonLogger, WINSTON_MODULE_PROVIDER } from 'nest-winston';
@@ -13,7 +14,7 @@ import * as Sentry from '@sentry/minimal';
 import { HttpArgumentsHost } from '@nestjs/common/interfaces';
 import { ErrorMsg, ErrorObj } from './error.interface';
 
-@Catch(HttpException)
+@Catch()
 export class HttpExceptionFilter implements ExceptionFilter {
   constructor(
     @Inject(WINSTON_MODULE_PROVIDER)
@@ -24,8 +25,18 @@ export class HttpExceptionFilter implements ExceptionFilter {
     const ctx: HttpArgumentsHost = host.switchToHttp();
     const response: Response = ctx.getResponse<Response>();
     const request: Request = ctx.getRequest<Request>();
-    const status: number = exception.getStatus();
-    const error = exception.getResponse() as ErrorObj;
+    const status =
+      exception instanceof HttpException
+        ? exception.getStatus()
+        : HttpStatus.INTERNAL_SERVER_ERROR;
+    const error =
+      exception instanceof HttpException
+        ? (exception.getResponse() as ErrorObj)
+        : {
+            error: `${exception}`,
+            statusCode: 500,
+            message: `${request.url} 요청을 처리하는 도중 발생한 알 수 없는 서버에러입니다.`,
+          };
     const errorMsg: ErrorMsg = {
       success: false,
       timestamp: new Date().toLocaleString(),

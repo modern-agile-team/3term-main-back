@@ -5,8 +5,7 @@ import {
   Injectable,
   NestInterceptor,
 } from '@nestjs/common';
-import { catchError, map } from 'rxjs/operators';
-import { IncomingWebhook } from '@slack/client';
+import { map } from 'rxjs/operators';
 // import slackConfig from '../config/slack.config';
 import { of } from 'rxjs';
 import { WinstonLogger, WINSTON_MODULE_PROVIDER } from 'nest-winston';

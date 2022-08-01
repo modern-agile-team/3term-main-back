@@ -175,6 +175,12 @@ export const boardSwagger = {
         },
       ],
     ),
+    notFound: apiResponse.error(
+      '없는 카테고리 번호를 전송했을 때',
+      HTTP_STATUS_CODE.clientError.notFound,
+      '?번의 카테고리는 존재하지 않습니다.',
+      'Not Found',
+    ),
   },
 
   create: {
