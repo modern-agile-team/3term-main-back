@@ -145,4 +145,11 @@ export const authSwagger: any = {
       'Conflict',
     ),
   },
+  signOut: {
+    success: apiResponse.success(
+      '로그아웃이 성공적으로 이루어진 경우.',
+      HTTP_STATUS_CODE.success.ok,
+      '성공적으로 로그아웃이 되었습니다.',
+    ),
+  },
 };
