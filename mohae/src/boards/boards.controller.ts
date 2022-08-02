@@ -13,6 +13,10 @@ import {
   UploadedFiles,
   Inject,
   Req,
+  UnauthorizedException,
+  Injectable,
+  ExecutionContext,
+  CanActivate,
 } from '@nestjs/common';
 import { User } from '@sentry/node';
 import { AuthGuard } from '@nestjs/passport';
@@ -44,6 +48,7 @@ import { CreateBoardDto } from './dto/createBoard.dto';
 import { WinstonLogger, WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { boardSwagger } from './boards.swagger';
 import { operationConfig } from 'src/common/swagger-apis/api-operation.swagger';
+import { TokenExpiredError } from 'jsonwebtoken';
 
 @ApiTags('Boards')
 @Controller('boards')
@@ -196,31 +201,38 @@ export class BoardsController {
     @Param('boardNo') boardNo: number,
     @Req() token,
   ): Promise<object> {
-    const sliceToken = token.headers.authorization.substr(7);
+    try {
+      const sliceToken: string = token.headers.authorization.substr(7);
 
-    if (sliceToken === 'null') {
-      const response: object = await this.boardService.readOneBoardByUnAuth(
+      if (sliceToken === 'null') {
+        const response: object = await this.boardService.readOneBoardByUnAuth(
+          boardNo,
+        );
+
+        return {
+          msg: '게시글 상세 조회가 완료되었습니다(비회원).',
+          response,
+        };
+      }
+
+      const tokenDecode: object = this.jwtService.verify(sliceToken, {
+        secret: this.configService.get('JWT_SECRET'),
+      });
+
+      const response: object = await this.boardService.readOneBoardByAuth(
         boardNo,
+        tokenDecode['userNo'],
       );
 
       return {
-        msg: '게시글 상세 조회가 완료되었습니다(비회원).',
+        msg: '게시글 상세 조회가 완료되었습니다(회원).',
         response,
       };
+    } catch (err) {
+      if (err instanceof TokenExpiredError) {
+        throw new UnauthorizedException('로그인 다시 해주세요');
+      }
     }
-
-    const tokenDecode: object = this.jwtService.verify(sliceToken, {
-      secret: this.configService.get('JWT_SECRET'),
-    });
-    const response: object = await this.boardService.readOneBoardByAuth(
-      boardNo,
-      tokenDecode['userNo'],
-    );
-
-    return {
-      msg: '게시글 상세 조회가 완료되었습니다(회원).',
-      response,
-    };
   }
 
   @ApiOperation(
