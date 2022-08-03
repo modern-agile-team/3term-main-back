@@ -25,7 +25,8 @@ export class JwtRefreshStrategy extends PassportStrategy(
 
       if (user.token === 'accessToken') {
         return jwtFromRequest;
-      } else if (user.token === 'refreshToken') {
+      }
+      if (user.token === 'refreshToken') {
         await this.authService.createAccessToken(user);
       }
     } catch (err) {

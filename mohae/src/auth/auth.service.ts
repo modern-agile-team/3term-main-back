@@ -2,6 +2,7 @@ import {
   BadRequestException,
   CACHE_MANAGER,
   ConflictException,
+  HttpException,
   Inject,
   Injectable,
   InternalServerErrorException,
@@ -48,6 +49,12 @@ export interface Token {
   refreshToken: string;
 }
 
+interface CreatedUser {
+  user: User;
+  schoolNo: School;
+  majorNo: Major;
+}
+
 @Injectable()
 export class AuthService {
   constructor(
@@ -86,21 +93,28 @@ export class AuthService {
   }
 
   async signUp(signUpDto: SignUpDto): Promise<Record<string, string>> {
+    try {
+      const { email, nickname, categories, terms }: SignUpDto = signUpDto;
+
+      await this.duplicateCheckForSignUp(email, nickname);
+
+      const createdUser: CreatedUser = await this.createUser(signUpDto);
+
+      await this.createRelationsForSignUp(createdUser, categories, terms);
+
+      return { email, nickname };
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  async createUser(signUpDto: SignUpDto) {
     const queryRunner = this.connection.createQueryRunner();
 
     await queryRunner.connect();
     await queryRunner.startTransaction();
-
     try {
-      const {
-        school,
-        major,
-        email,
-        nickname,
-        categories,
-        password,
-        terms,
-      }: SignUpDto = signUpDto;
+      const { school, major, password }: SignUpDto = signUpDto;
 
       const schoolNo: School | null = school
         ? await this.schoolRepository.findOne(school, {
@@ -112,28 +126,6 @@ export class AuthService {
             select: ['no'],
           })
         : null;
-      const categoriesRepo: Array<Category> =
-        await this.categoriesRepository.selectCategory(categories);
-
-      const duplicateEmail: User = await this.userRepository.duplicateCheck(
-        'email',
-        email,
-      );
-      const duplicateNickname: User = await this.userRepository.duplicateCheck(
-        'nickname',
-        nickname,
-      );
-      const duplicateObj: object = {
-        이메일: duplicateEmail,
-        닉네임: duplicateNickname,
-      };
-      const duplicateKeys: Array<string> = Object.keys(duplicateObj).filter(
-        (key) => duplicateObj[key],
-      );
-
-      if (duplicateKeys.length) {
-        throw new ConflictException(`해당 ${duplicateKeys}이 이미 존재합니다.`);
-      }
 
       const salt: string = await bcrypt.genSalt();
       const hashedPassword: string = await bcrypt.hash(password, salt);
@@ -142,7 +134,42 @@ export class AuthService {
       const user: User = await queryRunner.manager
         .getCustomRepository(UserRepository)
         .createUser(signUpDto, schoolNo, majorNo);
+
       this.errorConfirm.badGatewayError(user, 'user 생성 실패');
+
+      await queryRunner.commitTransaction();
+
+      return { user, schoolNo, majorNo };
+    } catch (err) {
+      await queryRunner.rollbackTransaction();
+      throw err;
+    } finally {
+      await queryRunner.release();
+    }
+  }
+
+  async createRelationsForSignUp(
+    { user, schoolNo, majorNo }: CreatedUser,
+    categories: Category[],
+    terms: number[],
+  ) {
+    const queryRunner = this.connection.createQueryRunner();
+
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+    try {
+      const categoriesRepo: Array<Category> =
+        await this.categoriesRepository.selectCategory(categories);
+
+      const filteredCategories: Array<Category> = categoriesRepo.filter(
+        (element) => element !== undefined,
+      );
+      for (const categoryNo of filteredCategories) {
+        await queryRunner.manager
+          .getCustomRepository(CategoryRepository)
+          .addUser(categoryNo.no, user);
+      }
+
       const termsArr: Array<object> = terms.map((boolean, index) => {
         return {
           agree: boolean,
@@ -150,6 +177,7 @@ export class AuthService {
           terms: index + 1,
         };
       });
+
       const termsUserNums: Array<object> = await queryRunner.manager
         .getCustomRepository(TermsUserReporitory)
         .addTermsUser(termsArr);
@@ -163,14 +191,6 @@ export class AuthService {
           .userRelation(user, termsUserNum['no'], 'userTerms');
       });
 
-      const filteredCategories: Array<Category> = categoriesRepo.filter(
-        (element) => element !== undefined,
-      );
-      for (const categoryNo of filteredCategories) {
-        await queryRunner.manager
-          .getCustomRepository(CategoryRepository)
-          .addUser(categoryNo.no, user);
-      }
       if (schoolNo) {
         await queryRunner.manager
           .getCustomRepository(SchoolRepository)
@@ -182,13 +202,33 @@ export class AuthService {
           .addUser(majorNo, user);
       }
       await queryRunner.commitTransaction();
-
-      return { email, nickname };
     } catch (err) {
       await queryRunner.rollbackTransaction();
       throw err;
     } finally {
       await queryRunner.release();
+    }
+  }
+
+  async duplicateCheckForSignUp(email: string, nickname: string) {
+    const duplicateEmail: User = await this.userRepository.duplicateCheck(
+      'email',
+      email,
+    );
+    const duplicateNickname: User = await this.userRepository.duplicateCheck(
+      'nickname',
+      nickname,
+    );
+    const duplicateObj: object = {
+      이메일: duplicateEmail,
+      닉네임: duplicateNickname,
+    };
+    const duplicateKeys: Array<string> = Object.keys(duplicateObj).filter(
+      (key) => duplicateObj[key],
+    );
+
+    if (duplicateKeys.length) {
+      throw new ConflictException(`해당 ${duplicateKeys}이 이미 존재합니다.`);
     }
   }
 
@@ -380,13 +420,12 @@ export class AuthService {
         expiresIn: this.configService.get<number>('REFRESHTOCKEN_EXPIRES_IN'),
       });
 
-      await this.cacheManager.set(
-        String(user.no),
-        { refreshToken, accessToken },
-        {
-          ttl: await this.configService.get('REFRESHTOCKEN_EXPIRES_IN'),
-        },
-      );
+      await this.cacheManager.set(String(user.no) + 'access', accessToken, {
+        ttl: await this.configService.get('EXPIRES_IN'),
+      });
+      await this.cacheManager.set(String(user.no) + 'refresh', refreshToken, {
+        ttl: await this.configService.get('REFRESHTOCKEN_EXPIRES_IN'),
+      });
 
       return { accessToken, refreshToken };
     } catch (err) {
@@ -395,45 +434,43 @@ export class AuthService {
   }
 
   async createAccessToken(payload: UserPayload) {
-    try {
-      const newPayload: UserPayload = {
-        userNo: payload.userNo,
-        email: payload.email,
-        nickname: payload.nickname,
-        photoUrl: payload.photoUrl,
-        issuer: 'modern-agile',
-        manager: payload.manager,
-        expiration: this.configService.get<number>('EXPIRES_IN'),
-        token: 'accessToken',
-      };
-      const accessToken: string = this.jwtService.sign(newPayload);
-      const token: Token = await this.cacheManager.get<Token>(
-        String(payload.userNo),
+    const preAccessToken: string = await this.cacheManager.get<string>(
+      String(payload.userNo) + 'access',
+    );
+    const refreshToken: string = await this.cacheManager.get<string>(
+      String(payload.userNo) + 'refresh',
+    );
+
+    if (!!preAccessToken || !refreshToken) {
+      await this.cacheManager.del(String(payload.userNo) + 'access');
+      await this.cacheManager.del(String(payload.userNo) + 'refresh');
+      throw new HttpException(
+        'access 토큰이 만료되기 이전에는 재발급 할 수 없습니다. 다시 로그인 해주세요',
+        410,
       );
-
-      if (token) {
-        token.accessToken = accessToken;
-        const newttl = payload.exp - Math.ceil(Date.now() / 1000);
-
-        await this.cacheManager.set(String(payload.userNo), token, {
-          ttl: newttl,
-        });
-        throw new UnauthorizedException(accessToken);
-      } else {
-        throw new UnauthorizedException(
-          '토큰이 존재하지 않습니다. 다시 로그인 해주세요',
-        );
-      }
-    } catch (err) {
-      if (err instanceof UnauthorizedException) {
-        throw err;
-      }
-      if (err instanceof Error) {
-        throw new InternalServerErrorException(
-          '토큰 재발급중 발생한 서버에러입니다',
-        );
-      }
+      // 여기 이후부터는 프론트 진영에서 세션 스토리지에 있는 토큰을 날리고 로그인을 다시 하도록 유도해야 됨
     }
+
+    const newPayload: UserPayload = {
+      userNo: payload.userNo,
+      email: payload.email,
+      nickname: payload.nickname,
+      photoUrl: payload.photoUrl,
+      issuer: 'modern-agile',
+      manager: payload.manager,
+      expiration: this.configService.get<number>('EXPIRES_IN'),
+      token: 'accessToken',
+    };
+    const accessToken: string = this.jwtService.sign(newPayload);
+
+    await this.cacheManager.set(
+      String(payload.userNo) + 'access',
+      accessToken,
+      {
+        ttl: this.configService.get('EXPIRES_IN'),
+      },
+    );
+    throw new UnauthorizedException(`${accessToken}`);
   }
 
   async deleteRefreshToken({ no }: User) {
