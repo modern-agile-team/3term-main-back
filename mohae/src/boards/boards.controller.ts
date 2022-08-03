@@ -17,6 +17,8 @@ import {
   Injectable,
   ExecutionContext,
   CanActivate,
+  CacheKey,
+  CacheTTL,
 } from '@nestjs/common';
 import { User } from '@sentry/node';
 import { AuthGuard } from '@nestjs/passport';
@@ -73,6 +75,11 @@ export class BoardsController {
       '마감된 게시글 개수',
     );
   }
+
+  // @Cron('0 1 * * * *')
+  // async updateHit() {
+  //   // await this.boardService.updateHit()
+  // }
 
   @ApiOperation(operationConfig('게시글 필터링 경로', '게시글 필터링 API'))
   @ApiOkResponse(boardSwagger.filter.success)
@@ -235,6 +242,14 @@ export class BoardsController {
     }
   }
 
+  @Patch('hit/:boardNo')
+  async addBoardHit(@Param('boardNo') boardNo: number) {
+    const response = await this.boardService.addBoardHit(boardNo);
+    return {
+      msg: response,
+    };
+  }
+
   @ApiOperation(
     operationConfig('카테고리 선택 조회 경로', '카테고리 선택 조회 API'),
   )
@@ -275,6 +290,7 @@ export class BoardsController {
     for (const key of Object.keys(createBoardDto)) {
       createBoardDto[`${key}`] = JSON.parse(createBoardDto[`${key}`]);
     }
+
     const boardPhotoUrls: string[] = await this.awsService.uploadBoardFileToS3(
       'board',
       files,

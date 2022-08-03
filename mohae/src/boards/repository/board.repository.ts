@@ -256,7 +256,6 @@ export class BoardRepository extends Repository<Board> {
         ])
         .orderBy('boards.no', sort)
         .groupBy('boards.no')
-        .addGroupBy('boards.no = photo.board_no')
         .limit(+take)
         .offset((+page - 1) * +take);
 

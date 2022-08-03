@@ -1,6 +1,8 @@
 import {
   BadGatewayException,
   BadRequestException,
+  CACHE_MANAGER,
+  Inject,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
@@ -23,15 +25,25 @@ import { HotBoardDto } from './dto/hotBoard.dto';
 import { SearchBoardDto } from './dto/searchBoard.dto';
 import { PaginationDto } from './dto/pagination.dto';
 import { CreateBoardDto } from './dto/createBoard.dto';
+import { Cache, MultiCache } from 'cache-manager';
+import { lastValueFrom } from 'rxjs';
 
 export interface CreatedBoardInfo {
   affectedRows: number;
   insertId: number;
 }
 
+export interface BoardHit {}
+
 @Injectable()
 export class BoardsService {
   constructor(
+    @Inject(CACHE_MANAGER)
+    private readonly cacheManager: Cache,
+
+    @Inject(CACHE_MANAGER)
+    private readonly cacheManagers: MultiCache,
+
     @InjectRepository(BoardRepository)
     private readonly boardRepository: BoardRepository,
 
@@ -135,21 +147,68 @@ export class BoardsService {
         userNo,
       );
 
+      const hit = await this.getBoardHit(boardNo);
+      board.hit = hit;
+
       this.errorConfirm.notFoundError(
         board.no,
         `해당 게시글을 찾을 수 없습니다.`,
       );
 
-      const boardHit: number = await this.boardRepository.addBoardHit(board);
+      // const boardHit: number = await this.boardRepository.addBoardHit(board);
 
-      if (!boardHit) {
-        throw new InternalServerErrorException(
-          '게시글 조회 수 증가가 되지 않았습니다',
-        );
-      }
+      // if (!boardHit) {
+      //   throw new InternalServerErrorException(
+      //     '게시글 조회 수 증가가 되지 않았습니다',
+      //   );
+      // }
       board.likeCount = Number(board.likeCount);
 
       return { board, authorization: true };
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  async getBoardHit(boardNo) {
+    let boardHit: number | null = await this.cacheManager.get(
+      `${boardNo}BoardHit`,
+    );
+
+    if (!boardHit) {
+      const board: Board = await this.boardRepository.findOne(boardNo, {});
+      console.log(boardHit);
+      boardHit = board.hit;
+      await this.cacheManager.set(`${boardNo}BoardHit`, boardHit);
+    }
+    console.log(boardHit);
+
+    const cacheDailyView: number | null = await this.cacheManager.get(
+      `${boardNo}DailyView`,
+    );
+    const dailyView = cacheDailyView ? cacheDailyView : 0;
+
+    return dailyView + boardHit;
+  }
+
+  async addBoardHit(boardNo: number) {
+    try {
+      let dailyView: null | object = await this.cacheManagers.get(`dailyView`);
+
+      if (dailyView) {
+        if (dailyView[`${boardNo}`]) {
+          dailyView[`${boardNo}`] = dailyView[`${boardNo}`] + 1;
+          await this.cacheManagers.set(`dailyView`, dailyView);
+          return `조회수 ${dailyView[`${boardNo}`]}`;
+        }
+      } else {
+        dailyView = {};
+      }
+
+      dailyView[`${boardNo}`] = 1;
+      await this.cacheManagers.set(`dailyView`, dailyView);
+
+      return `조회수 ${dailyView[`${boardNo}`]}`;
     } catch (err) {
       throw err;
     }
