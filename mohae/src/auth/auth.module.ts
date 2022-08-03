@@ -7,7 +7,6 @@ import { AuthService } from './auth.service';
 import { UserRepository } from './repository/user.repository';
 import { SchoolRepository } from 'src/schools/repository/school.repository';
 import { SchoolsModule } from 'src/schools/schools.module';
-import { SchoolsService } from 'src/schools/schools.service';
 import { MajorRepository } from 'src/majors/repository/major.repository';
 import { MajorsModule } from 'src/majors/majors.module';
 import { JwtStrategy } from './jwt/jwt.strategy';

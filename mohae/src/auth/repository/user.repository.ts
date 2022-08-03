@@ -12,7 +12,6 @@ import { SignUpDto } from '../dto/sign-up.dto';
 
 @EntityRepository(User)
 export class UserRepository extends Repository<User> {
-  // 인증 관련 부분
   async createUser(
     createUserDto: SignUpDto,
     school: School,

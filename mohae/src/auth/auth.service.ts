@@ -49,6 +49,12 @@ export interface Token {
   refreshToken: string;
 }
 
+interface CreatedUser {
+  user: User;
+  schoolNo: School;
+  majorNo: Major;
+}
+
 @Injectable()
 export class AuthService {
   constructor(
@@ -87,21 +93,28 @@ export class AuthService {
   }
 
   async signUp(signUpDto: SignUpDto): Promise<Record<string, string>> {
+    try {
+      const { email, nickname, categories, terms }: SignUpDto = signUpDto;
+
+      await this.duplicateCheckForSignUp(email, nickname);
+
+      const createdUser: CreatedUser = await this.createUser(signUpDto);
+
+      await this.createRelationsForSignUp(createdUser, categories, terms);
+
+      return { email, nickname };
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  async createUser(signUpDto: SignUpDto) {
     const queryRunner = this.connection.createQueryRunner();
 
     await queryRunner.connect();
     await queryRunner.startTransaction();
-
     try {
-      const {
-        school,
-        major,
-        email,
-        nickname,
-        categories,
-        password,
-        terms,
-      }: SignUpDto = signUpDto;
+      const { school, major, password }: SignUpDto = signUpDto;
 
       const schoolNo: School | null = school
         ? await this.schoolRepository.findOne(school, {
@@ -113,28 +126,6 @@ export class AuthService {
             select: ['no'],
           })
         : null;
-      const categoriesRepo: Array<Category> =
-        await this.categoriesRepository.selectCategory(categories);
-
-      const duplicateEmail: User = await this.userRepository.duplicateCheck(
-        'email',
-        email,
-      );
-      const duplicateNickname: User = await this.userRepository.duplicateCheck(
-        'nickname',
-        nickname,
-      );
-      const duplicateObj: object = {
-        이메일: duplicateEmail,
-        닉네임: duplicateNickname,
-      };
-      const duplicateKeys: Array<string> = Object.keys(duplicateObj).filter(
-        (key) => duplicateObj[key],
-      );
-
-      if (duplicateKeys.length) {
-        throw new ConflictException(`해당 ${duplicateKeys}이 이미 존재합니다.`);
-      }
 
       const salt: string = await bcrypt.genSalt();
       const hashedPassword: string = await bcrypt.hash(password, salt);
@@ -143,7 +134,42 @@ export class AuthService {
       const user: User = await queryRunner.manager
         .getCustomRepository(UserRepository)
         .createUser(signUpDto, schoolNo, majorNo);
+
       this.errorConfirm.badGatewayError(user, 'user 생성 실패');
+
+      await queryRunner.commitTransaction();
+
+      return { user, schoolNo, majorNo };
+    } catch (err) {
+      await queryRunner.rollbackTransaction();
+      throw err;
+    } finally {
+      await queryRunner.release();
+    }
+  }
+
+  async createRelationsForSignUp(
+    { user, schoolNo, majorNo }: CreatedUser,
+    categories: Category[],
+    terms: number[],
+  ) {
+    const queryRunner = this.connection.createQueryRunner();
+
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+    try {
+      const categoriesRepo: Array<Category> =
+        await this.categoriesRepository.selectCategory(categories);
+
+      const filteredCategories: Array<Category> = categoriesRepo.filter(
+        (element) => element !== undefined,
+      );
+      for (const categoryNo of filteredCategories) {
+        await queryRunner.manager
+          .getCustomRepository(CategoryRepository)
+          .addUser(categoryNo.no, user);
+      }
+
       const termsArr: Array<object> = terms.map((boolean, index) => {
         return {
           agree: boolean,
@@ -151,6 +177,7 @@ export class AuthService {
           terms: index + 1,
         };
       });
+
       const termsUserNums: Array<object> = await queryRunner.manager
         .getCustomRepository(TermsUserReporitory)
         .addTermsUser(termsArr);
@@ -164,14 +191,6 @@ export class AuthService {
           .userRelation(user, termsUserNum['no'], 'userTerms');
       });
 
-      const filteredCategories: Array<Category> = categoriesRepo.filter(
-        (element) => element !== undefined,
-      );
-      for (const categoryNo of filteredCategories) {
-        await queryRunner.manager
-          .getCustomRepository(CategoryRepository)
-          .addUser(categoryNo.no, user);
-      }
       if (schoolNo) {
         await queryRunner.manager
           .getCustomRepository(SchoolRepository)
@@ -183,13 +202,33 @@ export class AuthService {
           .addUser(majorNo, user);
       }
       await queryRunner.commitTransaction();
-
-      return { email, nickname };
     } catch (err) {
       await queryRunner.rollbackTransaction();
       throw err;
     } finally {
       await queryRunner.release();
+    }
+  }
+
+  async duplicateCheckForSignUp(email: string, nickname: string) {
+    const duplicateEmail: User = await this.userRepository.duplicateCheck(
+      'email',
+      email,
+    );
+    const duplicateNickname: User = await this.userRepository.duplicateCheck(
+      'nickname',
+      nickname,
+    );
+    const duplicateObj: object = {
+      이메일: duplicateEmail,
+      닉네임: duplicateNickname,
+    };
+    const duplicateKeys: Array<string> = Object.keys(duplicateObj).filter(
+      (key) => duplicateObj[key],
+    );
+
+    if (duplicateKeys.length) {
+      throw new ConflictException(`해당 ${duplicateKeys}이 이미 존재합니다.`);
     }
   }
 
