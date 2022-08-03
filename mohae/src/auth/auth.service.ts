@@ -31,7 +31,6 @@ import { Connection } from 'typeorm';
 import { Cache } from 'cache-manager';
 
 import * as bcrypt from 'bcryptjs';
-import { forbidden } from 'joi';
 
 export interface UserPayload {
   userNo: number;
