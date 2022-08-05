@@ -14,11 +14,6 @@ import {
   Inject,
   Req,
   UnauthorizedException,
-  Injectable,
-  ExecutionContext,
-  CanActivate,
-  CacheKey,
-  CacheTTL,
 } from '@nestjs/common';
 import { User } from '@sentry/node';
 import { AuthGuard } from '@nestjs/passport';
@@ -76,10 +71,15 @@ export class BoardsController {
     );
   }
 
-  // @Cron('0 1 * * * *')
-  // async updateHit() {
-  //   // await this.boardService.updateHit()
-  // }
+  @Cron('0 0 0 * * *')
+  async updateBoardHit() {
+    const updatedBoardNum: number = await this.boardService.updateHit();
+
+    this.logger.verbose(
+      `게시글 ${updatedBoardNum}개 조회수 DB에 업데이트`,
+      '업데이트된 게시글 개수',
+    );
+  }
 
   @ApiOperation(operationConfig('게시글 필터링 경로', '게시글 필터링 API'))
   @ApiOkResponse(boardSwagger.filter.success)
@@ -240,14 +240,6 @@ export class BoardsController {
         throw new UnauthorizedException('로그인 다시 해주세요');
       }
     }
-  }
-
-  @Patch('hit/:boardNo')
-  async addBoardHit(@Param('boardNo') boardNo: number) {
-    const response = await this.boardService.addBoardHit(boardNo);
-    return {
-      msg: response,
-    };
   }
 
   @ApiOperation(

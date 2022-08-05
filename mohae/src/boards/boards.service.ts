@@ -9,7 +9,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Connection, QueryRunner } from 'typeorm';
+import { Connection, EntityManager, getManager, QueryRunner } from 'typeorm';
 import { User } from '@sentry/node';
 import { CategoryRepository } from 'src/categories/repository/category.repository';
 import { AreasRepository } from 'src/areas/repository/area.repository';
@@ -25,8 +25,7 @@ import { HotBoardDto } from './dto/hotBoard.dto';
 import { SearchBoardDto } from './dto/searchBoard.dto';
 import { PaginationDto } from './dto/pagination.dto';
 import { CreateBoardDto } from './dto/createBoard.dto';
-import { Cache, MultiCache } from 'cache-manager';
-import { lastValueFrom } from 'rxjs';
+import { Cache } from 'cache-manager';
 
 export interface CreatedBoardInfo {
   affectedRows: number;
@@ -40,9 +39,6 @@ export class BoardsService {
   constructor(
     @Inject(CACHE_MANAGER)
     private readonly cacheManager: Cache,
-
-    @Inject(CACHE_MANAGER)
-    private readonly cacheManagers: MultiCache,
 
     @InjectRepository(BoardRepository)
     private readonly boardRepository: BoardRepository,
@@ -147,21 +143,14 @@ export class BoardsService {
         userNo,
       );
 
-      const hit = await this.getBoardHit(boardNo);
-      board.hit = hit;
-
       this.errorConfirm.notFoundError(
         board.no,
         `해당 게시글을 찾을 수 없습니다.`,
       );
 
-      // const boardHit: number = await this.boardRepository.addBoardHit(board);
+      const hit = await this.getBoardHit(boardNo, board);
+      board.hit = hit;
 
-      // if (!boardHit) {
-      //   throw new InternalServerErrorException(
-      //     '게시글 조회 수 증가가 되지 않았습니다',
-      //   );
-      // }
       board.likeCount = Number(board.likeCount);
 
       return { board, authorization: true };
@@ -170,45 +159,58 @@ export class BoardsService {
     }
   }
 
-  async getBoardHit(boardNo) {
-    let boardHit: number | null = await this.cacheManager.get(
-      `${boardNo}BoardHit`,
-    );
-
-    if (!boardHit) {
-      const board: Board = await this.boardRepository.findOne(boardNo, {});
-      console.log(boardHit);
-      boardHit = board.hit;
-      await this.cacheManager.set(`${boardNo}BoardHit`, boardHit);
-    }
-    console.log(boardHit);
-
-    const cacheDailyView: number | null = await this.cacheManager.get(
-      `${boardNo}DailyView`,
-    );
-    const dailyView = cacheDailyView ? cacheDailyView : 0;
-
-    return dailyView + boardHit;
-  }
-
-  async addBoardHit(boardNo: number) {
+  async getBoardHit(boardNo: number, board): Promise<number> {
     try {
-      let dailyView: null | object = await this.cacheManagers.get(`dailyView`);
+      // const board: Board = await this.boardRepository.findOne(boardNo);
+
+      // this.errorConfirm.notFoundError(
+      //   board.no,
+      //   `해당 게시글을 찾을 수 없습니다.`,
+      // );
+
+      let dailyView: null | object = await this.cacheManager.get(`dailyView`);
 
       if (dailyView) {
         if (dailyView[`${boardNo}`]) {
           dailyView[`${boardNo}`] = dailyView[`${boardNo}`] + 1;
-          await this.cacheManagers.set(`dailyView`, dailyView);
-          return `조회수 ${dailyView[`${boardNo}`]}`;
+          await this.cacheManager.set(`dailyView`, dailyView);
+          return dailyView[`${boardNo}`];
         }
       } else {
         dailyView = {};
       }
 
-      dailyView[`${boardNo}`] = 1;
-      await this.cacheManagers.set(`dailyView`, dailyView);
+      dailyView[`${boardNo}`] = board.hit + 1;
+      await this.cacheManager.set(`dailyView`, dailyView);
 
-      return `조회수 ${dailyView[`${boardNo}`]}`;
+      return dailyView[`${boardNo}`];
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  async updateHit(): Promise<number> {
+    try {
+      const dailyView: null | object = await this.cacheManager.get(`dailyView`);
+
+      if (!dailyView) {
+        return 0;
+      }
+
+      const keys: string = Object.keys(dailyView).join();
+      let queryStart: string = 'update boards set hit = (case ';
+      const queryEnd: string = `end) where boards.no in (${keys});`;
+
+      for (let i in dailyView) {
+        const queryAdd: string = `when boards.no = ${i} then ${dailyView[i]} `;
+        queryStart += queryAdd;
+      }
+
+      await this.cacheManager.del('dailyView');
+      const entityManager: EntityManager = getManager();
+      const { affectedRows } = await entityManager.query(queryStart + queryEnd);
+
+      return affectedRows;
     } catch (err) {
       throw err;
     }
