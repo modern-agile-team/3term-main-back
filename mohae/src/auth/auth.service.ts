@@ -2,6 +2,7 @@ import {
   BadRequestException,
   CACHE_MANAGER,
   ConflictException,
+  HttpException,
   Inject,
   Injectable,
   InternalServerErrorException,
@@ -30,6 +31,24 @@ import { Connection } from 'typeorm';
 import { Cache } from 'cache-manager';
 
 import * as bcrypt from 'bcryptjs';
+import { forbidden } from 'joi';
+
+export interface UserPayload {
+  userNo: number;
+  email: string;
+  nickname: string;
+  photoUrl: string | null;
+  issuer: string;
+  manager: boolean;
+  expiration: number;
+  token: string;
+  exp?: number;
+}
+
+export interface Token {
+  accessToken: string;
+  refreshToken: string;
+}
 
 @Injectable()
 export class AuthService {
@@ -180,26 +199,15 @@ export class AuthService {
       const isPassword: boolean = await bcrypt.compare(password, user.salt);
 
       if (isPassword) {
-        const payload: object = {
-          userNo: user.no,
-          email: user.email,
-          nickname: user.nickname,
-          photoUrl: user['photo_url'],
-          issuer: 'modern-agile',
-          manager: user.manager,
-          expiration: this.configService.get<number>('EXPIRES_IN'),
-        };
         await this.userRepository.clearLoginCount(user.no);
-
-        const accessToken: string = this.jwtService.sign(payload);
 
         if (user.deletedAt) {
           await this.userRepository.cancelSignDown(user.email);
         }
-
-        return accessToken;
+        return;
       }
       await this.userRepository.plusLoginFailCount(user);
+
       const afterUser = await this.userRepository.confirmUser(user.email);
 
       if (afterUser.loginFailCount >= 5) {
@@ -345,6 +353,95 @@ export class AuthService {
         );
       }
       throw new UnauthorizedException('존재하지 않는 이메일 입니다.');
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  async createJwtToken(user: User) {
+    try {
+      const payload: UserPayload = {
+        userNo: user.no,
+        email: user.email,
+        nickname: user.nickname,
+        photoUrl: user['photo_url'],
+        issuer: 'modern-agile',
+        manager: user.manager,
+        expiration: this.configService.get<number>('EXPIRES_IN'),
+        token: 'accessToken',
+      };
+      const accessToken: string = this.jwtService.sign(payload);
+
+      payload.expiration = this.configService.get<number>(
+        'REFRESHTOCKEN_EXPIRES_IN',
+      );
+      payload.token = 'refreshToken';
+
+      const refreshToken: string = this.jwtService.sign(payload, {
+        secret: this.configService.get<string>('JWT_SECRET'),
+        expiresIn: this.configService.get<number>('REFRESHTOCKEN_EXPIRES_IN'),
+      });
+
+      await this.cacheManager.set(String(user.no) + 'access', accessToken, {
+        ttl: await this.configService.get('EXPIRES_IN'),
+      });
+      await this.cacheManager.set(String(user.no) + 'refresh', refreshToken, {
+        ttl: await this.configService.get('REFRESHTOCKEN_EXPIRES_IN'),
+      });
+
+      return { accessToken, refreshToken };
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  async createAccessToken(payload: UserPayload) {
+    const preAccessToken: string = await this.cacheManager.get<string>(
+      String(payload.userNo) + 'access',
+    );
+    const refreshToken: string = await this.cacheManager.get<string>(
+      String(payload.userNo) + 'refresh',
+    );
+
+    if (!!preAccessToken || !refreshToken) {
+      await this.cacheManager.del(String(payload.userNo) + 'access');
+      await this.cacheManager.del(String(payload.userNo) + 'refresh');
+      throw new HttpException(
+        'access 토큰이 만료되기 이전에는 재발급 할 수 없습니다. 다시 로그인 해주세요',
+        410,
+      );
+      // 여기 이후부터는 프론트 진영에서 세션 스토리지에 있는 토큰을 날리고 로그인을 다시 하도록 유도해야 됨
+    }
+
+    const newPayload: UserPayload = {
+      userNo: payload.userNo,
+      email: payload.email,
+      nickname: payload.nickname,
+      photoUrl: payload.photoUrl,
+      issuer: 'modern-agile',
+      manager: payload.manager,
+      expiration: this.configService.get<number>('EXPIRES_IN'),
+      token: 'accessToken',
+    };
+    const accessToken: string = this.jwtService.sign(newPayload);
+
+    await this.cacheManager.set(
+      String(payload.userNo) + 'access',
+      accessToken,
+      {
+        ttl: this.configService.get('EXPIRES_IN'),
+      },
+    );
+    throw new UnauthorizedException(`${accessToken}`);
+  }
+
+  async deleteRefreshToken({ no }: User) {
+    try {
+      const isToken = await this.cacheManager.get<Token>(String(no));
+
+      if (isToken) {
+        await this.cacheManager.del(String(no));
+      }
     } catch (err) {
       throw err;
     }

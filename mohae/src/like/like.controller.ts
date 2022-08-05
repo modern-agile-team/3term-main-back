@@ -76,6 +76,7 @@ export class LikeController {
   })
   @ApiBearerAuth('access-token')
   @UseGuards(AuthGuard('jwt'))
+  // @UseGuards(AuthGuard('jwt-refresh-token'))
   @HttpCode(HTTP_STATUS_CODE.success.created)
   @Post('/user')
   async likeUser(@Body() likeUserDto: LikeUserDto, @CurrentUser() user: User) {

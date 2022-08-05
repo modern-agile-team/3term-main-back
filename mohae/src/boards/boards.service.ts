@@ -1,13 +1,15 @@
 import {
   BadGatewayException,
   BadRequestException,
+  CACHE_MANAGER,
+  Inject,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Connection, QueryRunner } from 'typeorm';
+import { Connection, EntityManager, getManager, QueryRunner } from 'typeorm';
 import { User } from '@sentry/node';
 import { CategoryRepository } from 'src/categories/repository/category.repository';
 import { AreasRepository } from 'src/areas/repository/area.repository';
@@ -23,15 +25,21 @@ import { HotBoardDto } from './dto/hotBoard.dto';
 import { SearchBoardDto } from './dto/searchBoard.dto';
 import { PaginationDto } from './dto/pagination.dto';
 import { CreateBoardDto } from './dto/createBoard.dto';
+import { Cache } from 'cache-manager';
 
 export interface CreatedBoardInfo {
   affectedRows: number;
   insertId: number;
 }
 
+export interface BoardHit {}
+
 @Injectable()
 export class BoardsService {
   constructor(
+    @Inject(CACHE_MANAGER)
+    private readonly cacheManager: Cache,
+
     @InjectRepository(BoardRepository)
     private readonly boardRepository: BoardRepository,
 
@@ -140,16 +148,69 @@ export class BoardsService {
         `해당 게시글을 찾을 수 없습니다.`,
       );
 
-      const boardHit: number = await this.boardRepository.addBoardHit(board);
+      const hit = await this.getBoardHit(boardNo, board);
+      board.hit = hit;
 
-      if (!boardHit) {
-        throw new InternalServerErrorException(
-          '게시글 조회 수 증가가 되지 않았습니다',
-        );
-      }
       board.likeCount = Number(board.likeCount);
 
       return { board, authorization: true };
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  async getBoardHit(boardNo: number, board): Promise<number> {
+    try {
+      // const board: Board = await this.boardRepository.findOne(boardNo);
+
+      // this.errorConfirm.notFoundError(
+      //   board.no,
+      //   `해당 게시글을 찾을 수 없습니다.`,
+      // );
+
+      let dailyView: null | object = await this.cacheManager.get(`dailyView`);
+
+      if (dailyView) {
+        if (dailyView[`${boardNo}`]) {
+          dailyView[`${boardNo}`] = dailyView[`${boardNo}`] + 1;
+          await this.cacheManager.set(`dailyView`, dailyView);
+          return dailyView[`${boardNo}`];
+        }
+      } else {
+        dailyView = {};
+      }
+
+      dailyView[`${boardNo}`] = board.hit + 1;
+      await this.cacheManager.set(`dailyView`, dailyView);
+
+      return dailyView[`${boardNo}`];
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  async updateHit(): Promise<number> {
+    try {
+      const dailyView: null | object = await this.cacheManager.get(`dailyView`);
+
+      if (!dailyView) {
+        return 0;
+      }
+
+      const keys: string = Object.keys(dailyView).join();
+      let queryStart: string = 'update boards set hit = (case ';
+      const queryEnd: string = `end) where boards.no in (${keys});`;
+
+      for (let i in dailyView) {
+        const queryAdd: string = `when boards.no = ${i} then ${dailyView[i]} `;
+        queryStart += queryAdd;
+      }
+
+      await this.cacheManager.del('dailyView');
+      const entityManager: EntityManager = getManager();
+      const { affectedRows } = await entityManager.query(queryStart + queryEnd);
+
+      return affectedRows;
     } catch (err) {
       throw err;
     }

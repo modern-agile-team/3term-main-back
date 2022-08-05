@@ -23,9 +23,9 @@ import {
   TermsReporitory,
   TermsUserReporitory,
 } from 'src/terms/repository/terms.repository';
-import { ConfigService } from '@nestjs/config';
 import { jwtConfig } from 'src/common/configs/jwt.config';
 import { cacheModule } from 'src/common/configs/redis.config';
+import { JwtRefreshStrategy } from './jwt/jwt-refresh.strategy';
 
 @Module({
   imports: [
@@ -50,7 +50,13 @@ import { cacheModule } from 'src/common/configs/redis.config';
     cacheModule,
   ],
   controllers: [AuthController],
-  providers: [AuthService, JwtStrategy, ErrorConfirm, LoginProcess],
-  exports: [JwtStrategy, PassportModule],
+  providers: [
+    AuthService,
+    JwtStrategy,
+    JwtRefreshStrategy,
+    ErrorConfirm,
+    LoginProcess,
+  ],
+  exports: [JwtRefreshStrategy, JwtStrategy, PassportModule],
 })
 export class AuthModule {}
