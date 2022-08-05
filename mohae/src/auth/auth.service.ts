@@ -27,7 +27,7 @@ import { SignInDto } from './dto/sign-in.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { ForgetPasswordDto } from './dto/forget-password.dto';
 import { ErrorConfirm } from 'src/common/utils/error';
-import { Connection } from 'typeorm';
+import { Connection, QueryRunner } from 'typeorm';
 import { Cache } from 'cache-manager';
 
 import * as bcrypt from 'bcryptjs';
@@ -93,7 +93,7 @@ export class AuthService {
   }
 
   async signUp(signUpDto: SignUpDto): Promise<Record<string, string>> {
-    const queryRunner = this.connection.createQueryRunner();
+    const queryRunner: QueryRunner = this.connection.createQueryRunner();
 
     await queryRunner.connect();
     await queryRunner.startTransaction();
@@ -102,9 +102,17 @@ export class AuthService {
 
       await this.duplicateCheckForSignUp(email, nickname);
 
-      const createdUser: CreatedUser = await this.createUser(signUpDto);
+      const createdUser: CreatedUser = await this.createUser(
+        signUpDto,
+        queryRunner,
+      );
 
-      await this.createRelationsForSignUp(createdUser, categories, terms);
+      await this.createRelationsForSignUp(
+        createdUser,
+        categories,
+        terms,
+        queryRunner,
+      );
       await queryRunner.commitTransaction();
 
       return { email, nickname };
@@ -116,9 +124,7 @@ export class AuthService {
     }
   }
 
-  async createUser(signUpDto: SignUpDto) {
-    const queryRunner = this.connection.createQueryRunner();
-
+  async createUser(signUpDto: SignUpDto, queryRunner: QueryRunner) {
     try {
       const { school, major, password }: SignUpDto = signUpDto;
 
@@ -153,17 +159,18 @@ export class AuthService {
     { user, schoolNo, majorNo }: CreatedUser,
     categories: Category[],
     terms: number[],
+    queryRunner: QueryRunner,
   ) {
-    const queryRunner = this.connection.createQueryRunner();
     try {
       const categoriesRepo: Array<Category> =
         await this.categoriesRepository.selectCategory(categories);
+      const userPickCategories: number[] = categoriesRepo.map((category) => {
+        return category.no;
+      });
 
-      for (const categoryNo of categoriesRepo) {
-        await queryRunner.manager
-          .getCustomRepository(CategoryRepository)
-          .addUser(categoryNo.no, user);
-      }
+      await queryRunner.manager
+        .getCustomRepository(CategoryRepository)
+        .signUpAddUser(userPickCategories, user);
 
       const termsArr: Array<object> = terms.map((boolean, index) => {
         return {
