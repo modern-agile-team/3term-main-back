@@ -5,7 +5,6 @@ import {
   Headers,
   HttpCode,
   Inject,
-  InternalServerErrorException,
   Patch,
   Post,
   UseGuards,
