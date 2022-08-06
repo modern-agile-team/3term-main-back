@@ -27,7 +27,7 @@ import { SignInDto } from './dto/sign-in.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { ForgetPasswordDto } from './dto/forget-password.dto';
 import { ErrorConfirm } from 'src/common/utils/error';
-import { Connection } from 'typeorm';
+import { Connection, QueryRunner } from 'typeorm';
 import { Cache } from 'cache-manager';
 
 import * as bcrypt from 'bcryptjs';
@@ -93,26 +93,38 @@ export class AuthService {
   }
 
   async signUp(signUpDto: SignUpDto): Promise<Record<string, string>> {
+    const queryRunner: QueryRunner = this.connection.createQueryRunner();
+
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
     try {
       const { email, nickname, categories, terms }: SignUpDto = signUpDto;
 
       await this.duplicateCheckForSignUp(email, nickname);
 
-      const createdUser: CreatedUser = await this.createUser(signUpDto);
+      const createdUser: CreatedUser = await this.createUser(
+        signUpDto,
+        queryRunner,
+      );
 
-      await this.createRelationsForSignUp(createdUser, categories, terms);
+      await this.createRelationsForSignUp(
+        createdUser,
+        categories,
+        terms,
+        queryRunner,
+      );
+      await queryRunner.commitTransaction();
 
       return { email, nickname };
     } catch (err) {
+      await queryRunner.rollbackTransaction();
       throw err;
+    } finally {
+      await queryRunner.release();
     }
   }
 
-  async createUser(signUpDto: SignUpDto) {
-    const queryRunner = this.connection.createQueryRunner();
-
-    await queryRunner.connect();
-    await queryRunner.startTransaction();
+  async createUser(signUpDto: SignUpDto, queryRunner: QueryRunner) {
     try {
       const { school, major, password }: SignUpDto = signUpDto;
 
@@ -137,14 +149,9 @@ export class AuthService {
 
       this.errorConfirm.badGatewayError(user, 'user 생성 실패');
 
-      await queryRunner.commitTransaction();
-
       return { user, schoolNo, majorNo };
     } catch (err) {
-      await queryRunner.rollbackTransaction();
       throw err;
-    } finally {
-      await queryRunner.release();
     }
   }
 
@@ -152,23 +159,18 @@ export class AuthService {
     { user, schoolNo, majorNo }: CreatedUser,
     categories: Category[],
     terms: number[],
+    queryRunner: QueryRunner,
   ) {
-    const queryRunner = this.connection.createQueryRunner();
-
-    await queryRunner.connect();
-    await queryRunner.startTransaction();
     try {
       const categoriesRepo: Array<Category> =
         await this.categoriesRepository.selectCategory(categories);
+      const userPickCategories: number[] = categoriesRepo.map((category) => {
+        return category.no;
+      });
 
-      const filteredCategories: Array<Category> = categoriesRepo.filter(
-        (element) => element !== undefined,
-      );
-      for (const categoryNo of filteredCategories) {
-        await queryRunner.manager
-          .getCustomRepository(CategoryRepository)
-          .addUser(categoryNo.no, user);
-      }
+      await queryRunner.manager
+        .getCustomRepository(CategoryRepository)
+        .signUpAddUser(userPickCategories, user);
 
       const termsArr: Array<object> = terms.map((boolean, index) => {
         return {
@@ -201,12 +203,8 @@ export class AuthService {
           .getCustomRepository(MajorRepository)
           .addUser(majorNo, user);
       }
-      await queryRunner.commitTransaction();
     } catch (err) {
-      await queryRunner.rollbackTransaction();
       throw err;
-    } finally {
-      await queryRunner.release();
     }
   }
 
