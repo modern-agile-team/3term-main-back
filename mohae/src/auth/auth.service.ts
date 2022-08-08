@@ -230,61 +230,64 @@ export class AuthService {
     }
   }
 
+  async signIn(signInDto: SignInDto) {
+    const userInfo: User = await this.confirmUser(signInDto);
+
+    await this.passwordConfirm(userInfo, signInDto.password);
+
+    const token = await this.createJwtToken(userInfo);
+
+    return token;
+  }
+
   async passwordConfirm(user: User, password: string) {
-    try {
-      const isPassword: boolean = await bcrypt.compare(password, user.salt);
+    const isPassword: boolean = await bcrypt.compare(password, user.salt);
 
-      if (isPassword) {
-        await this.userRepository.clearLoginCount(user.no);
+    if (isPassword) {
+      await this.userRepository.clearLoginCount(user.no);
 
-        if (user.deletedAt) {
-          await this.userRepository.cancelSignDown(user.email);
-        }
-        return;
+      if (user.deletedAt) {
+        await this.userRepository.cancelSignDown(user.email);
       }
-      await this.userRepository.plusLoginFailCount(user);
-
-      const afterUser = await this.userRepository.confirmUser(user.email);
-
-      if (afterUser.loginFailCount >= 5) {
-        await this.userRepository.changeIsLock(afterUser.no, afterUser.isLock);
-      }
-      throw new UnauthorizedException(
-        `아이디 또는 비밀번호가 일치하지 않습니다. 로그인 실패 횟수: ${afterUser.loginFailCount} `,
-      );
-    } catch (err) {
-      throw err;
+      return;
     }
+    await this.userRepository.plusLoginFailCount(user);
+
+    const afterUser = await this.userRepository.confirmUser(user.email);
+
+    if (afterUser.loginFailCount >= 5) {
+      await this.userRepository.changeIsLock(afterUser.no, afterUser.isLock);
+    }
+    throw new UnauthorizedException(
+      `아이디 또는 비밀번호가 일치하지 않습니다. 로그인 실패 횟수: ${afterUser.loginFailCount} `,
+    );
   }
 
   async confirmUser(signInDto: SignInDto) {
-    try {
-      const { email }: SignInDto = signInDto;
+    const { email }: SignInDto = signInDto;
 
-      const user: User = await this.userRepository.confirmUser(email);
-      this.errorConfirm.notFoundError(
-        user,
-        '아이디 또는 비밀번호가 일치하지 않습니다.',
-      );
+    const user: User = await this.userRepository.confirmUser(email);
 
-      if (!user.isLock) {
-        return user;
-      }
-      const loginTerm: number = await this.userRepository.checkLoginTerm(
-        user.no,
-      );
-      if (loginTerm > 10) {
-        await this.userRepository.changeIsLock(user.no, user.isLock);
-        return user;
-      } else
-        throw new UnauthorizedException(
-          `로그인 실패 횟수를 모두 초과 하였습니다 ${Math.floor(
-            10 - loginTerm,
-          )}초 뒤에 다시 로그인 해주세요. 실패횟수 ${user.loginFailCount}`,
-        );
-    } catch (err) {
-      throw err;
+    this.errorConfirm.notFoundError(
+      user,
+      '아이디 또는 비밀번호가 일치하지 않습니다.',
+    );
+
+    if (!user.isLock) {
+      return user;
     }
+
+    const loginTerm: number = await this.userRepository.checkLoginTerm(user.no);
+
+    if (loginTerm > 10) {
+      await this.userRepository.changeIsLock(user.no, user.isLock);
+      return user;
+    } else
+      throw new UnauthorizedException(
+        `로그인 실패 횟수를 모두 초과 하였습니다 ${Math.floor(
+          10 - loginTerm,
+        )}초 뒤에 다시 로그인 해주세요. 실패횟수 ${user.loginFailCount}`,
+      );
   }
 
   async signDown(user: User, password: string): Promise<void> {
