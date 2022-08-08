@@ -27,9 +27,9 @@ import { PaginationDto } from './dto/pagination.dto';
 import { CreateBoardDto } from './dto/createBoard.dto';
 import { Cache } from 'cache-manager';
 
-export interface CreatedBoardInfo {
+export interface boardInfo {
   affectedRows: number;
-  insertId: number;
+  insertId?: number;
 }
 
 export interface BoardHit {}
@@ -159,31 +159,24 @@ export class BoardsService {
     }
   }
 
-  async getBoardHit(boardNo: number, board): Promise<number> {
+  async getBoardHit(boardNo: number, board: Board): Promise<number> {
     try {
-      // const board: Board = await this.boardRepository.findOne(boardNo);
+      const dailyView: object =
+        (await this.cacheManager.get(`dailyView`)) || {};
 
-      // this.errorConfirm.notFoundError(
-      //   board.no,
-      //   `해당 게시글을 찾을 수 없습니다.`,
-      // );
+      const boardNum = String(boardNo);
 
-      let dailyView: null | object = await this.cacheManager.get(`dailyView`);
+      if (dailyView && dailyView[boardNum]) {
+        dailyView[boardNum] += 1;
+        await this.cacheManager.set(`dailyView`, dailyView);
 
-      if (dailyView) {
-        if (dailyView[`${boardNo}`]) {
-          dailyView[`${boardNo}`] = dailyView[`${boardNo}`] + 1;
-          await this.cacheManager.set(`dailyView`, dailyView);
-          return dailyView[`${boardNo}`];
-        }
-      } else {
-        dailyView = {};
+        return dailyView[boardNum];
       }
 
-      dailyView[`${boardNo}`] = board.hit + 1;
+      dailyView[boardNum] = board.hit + 1;
       await this.cacheManager.set(`dailyView`, dailyView);
 
-      return dailyView[`${boardNo}`];
+      return dailyView[boardNum];
     } catch (err) {
       throw err;
     }
@@ -197,7 +190,7 @@ export class BoardsService {
         return 0;
       }
 
-      const keys: string = Object.keys(dailyView).join();
+      const keys: string = Object.keys(dailyView).join(',');
       let queryStart: string = 'update boards set hit = (case ';
       const queryEnd: string = `end) where boards.no in (${keys});`;
 
@@ -208,7 +201,9 @@ export class BoardsService {
 
       await this.cacheManager.del('dailyView');
       const entityManager: EntityManager = getManager();
-      const { affectedRows } = await entityManager.query(queryStart + queryEnd);
+      const { affectedRows }: boardInfo = await entityManager.query(
+        queryStart + queryEnd,
+      );
 
       return affectedRows;
     } catch (err) {
@@ -362,10 +357,9 @@ export class BoardsService {
         endTime.setDate(endTime.getDate() + +deadline);
       }
 
-      const { affectedRows, insertId }: CreatedBoardInfo =
-        await queryRunner.manager
-          .getCustomRepository(BoardRepository)
-          .createBoard(category, area, user, createBoardDto, endTime);
+      const { affectedRows, insertId }: boardInfo = await queryRunner.manager
+        .getCustomRepository(BoardRepository)
+        .createBoard(category, area, user, createBoardDto, endTime);
 
       if (!affectedRows) {
         throw new BadGatewayException('게시글 생성 관련 오류입니다.');
