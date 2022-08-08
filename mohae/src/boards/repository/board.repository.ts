@@ -40,6 +40,7 @@ export class BoardRepository extends Repository<Board> {
           'boards.no AS no',
           'REPLACE(GROUP_CONCAT(photo.photo_url), ",", ", ") AS boardPhotoUrls',
           'DATEDIFF(boards.deadline, now()) * -1 AS decimalDay',
+          'IF(DATEDIFF(boards.deadline, boards.createdAt), DATEDIFF(boards.deadline, boards.createdAt) -1, 0) AS deadline',
           'boards.title AS title',
           'boards.description AS description',
           'boards.isDeadline AS isDeadline',
@@ -61,7 +62,9 @@ export class BoardRepository extends Repository<Board> {
         .where('boards.no = :no', { no: boardNo })
         .getRawOne();
     } catch (err) {
-      `${err} ### 게시판 상세 조회 : 알 수 없는 서버 에러입니다.`;
+      throw new InternalServerErrorException(
+        `${err} ### 게시판 상세 조회(회원) : 알 수 없는 서버 에러입니다.`,
+      );
     }
   }
 
@@ -107,22 +110,8 @@ export class BoardRepository extends Repository<Board> {
         .where('boards.no = :no', { no: boardNo })
         .getRawOne();
     } catch (err) {
-      `${err} ### 게시판 상세 조회 : 알 수 없는 서버 에러입니다.`;
-    }
-  }
-
-  async addBoardHit({ no, hit }): Promise<number> {
-    try {
-      const { affected } = await this.createQueryBuilder()
-        .update(Board)
-        .set({ hit: hit + 1 })
-        .where('no = :no', { no })
-        .execute();
-
-      return affected;
-    } catch (e) {
       throw new InternalServerErrorException(
-        `${e} ### 게시판 조회수 증가 : 알 수 없는 서버 에러입니다.`,
+        `${err} ### 게시판 상세 조회(비회원) : 알 수 없는 서버 에러입니다.`,
       );
     }
   }

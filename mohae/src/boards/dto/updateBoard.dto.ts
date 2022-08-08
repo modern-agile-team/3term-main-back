@@ -1,6 +1,9 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { Transform } from 'class-transformer';
 import {
+  IsBoolean,
   IsNotEmpty,
+  IsNumber,
   IsOptional,
   IsString,
   MaxLength,
@@ -14,8 +17,9 @@ export class UpdateBoardDto {
     required: true,
   })
   @IsOptional()
-  @IsString()
-  price?: string;
+  @Transform(({ value }) => JSON.parse(value))
+  @IsNumber()
+  price?: number;
 
   @ApiProperty({
     example: 'test',
@@ -23,10 +27,11 @@ export class UpdateBoardDto {
     required: true,
   })
   @IsOptional()
+  @Transform(({ value }) => JSON.parse(value))
   @IsString()
   @IsNotEmpty()
-  @MinLength(3)
-  @MaxLength(15)
+  @MinLength(2)
+  @MaxLength(16)
   title?: string;
 
   @ApiProperty({
@@ -35,6 +40,7 @@ export class UpdateBoardDto {
     required: true,
   })
   @IsOptional()
+  @Transform(({ value }) => JSON.parse(value))
   @IsString()
   @IsNotEmpty()
   @MaxLength(1000)
@@ -46,6 +52,7 @@ export class UpdateBoardDto {
     required: true,
   })
   @IsOptional()
+  @Transform(({ value }) => JSON.parse(value))
   @IsString()
   @MaxLength(100)
   summary?: string;
@@ -56,8 +63,9 @@ export class UpdateBoardDto {
     required: true,
   })
   @IsOptional()
-  @IsString()
-  target?: string;
+  @Transform(({ value }) => JSON.parse(value))
+  @IsBoolean()
+  target?: boolean;
 
   @ApiProperty({
     example: '2',
@@ -65,8 +73,9 @@ export class UpdateBoardDto {
     required: true,
   })
   @IsOptional()
-  @IsString()
-  categoryNo?: string;
+  @Transform(({ value }) => JSON.parse(value))
+  @IsNumber()
+  categoryNo?: number;
 
   @ApiProperty({
     example: '3',
@@ -74,8 +83,9 @@ export class UpdateBoardDto {
     required: true,
   })
   @IsOptional()
-  @IsString()
-  areaNo?: string;
+  @Transform(({ value }) => JSON.parse(value))
+  @IsNumber()
+  areaNo?: number;
 
   // @IsOptional()
   // @IsString()
@@ -99,6 +109,7 @@ export class UpdateBoardDto {
     required: true,
   })
   @IsOptional()
-  @IsString()
-  deadline?: any;
+  @Transform(({ value }) => JSON.parse(value))
+  @IsNumber()
+  deadline?: number;
 }
