@@ -5,7 +5,6 @@ import {
   Headers,
   HttpCode,
   Inject,
-  InternalServerErrorException,
   Patch,
   Post,
   UseGuards,
@@ -86,11 +85,7 @@ export class AuthController {
   @HttpCode(HTTP_STATUS_CODE.success.ok)
   @Post('signin')
   async signIn(@Body() signInDto: SignInDto): Promise<object> {
-    // id 맞는지 확인 + 패널티 시간 지나지 않았을 때 로그인 시도했을 때 알림
-    const userInfo: User = await this.authService.confirmUser(signInDto);
-    // 성공했을 때 + 비밀번호 틀렸을 때
-    await this.authService.passwordConfirm(userInfo, signInDto.password);
-    const token = await this.authService.createJwtToken(userInfo);
+    const token = await this.authService.signIn(signInDto);
 
     return {
       msg: `성공적으로 로그인이 되었습니다.`,
