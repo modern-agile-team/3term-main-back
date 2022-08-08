@@ -40,6 +40,7 @@ export class BoardRepository extends Repository<Board> {
           'boards.no AS no',
           'REPLACE(GROUP_CONCAT(photo.photo_url), ",", ", ") AS boardPhotoUrls',
           'DATEDIFF(boards.deadline, now()) * -1 AS decimalDay',
+          'DATEDIFF(boards.deadline, boards.createdAt) -1 AS deadline',
           'boards.title AS title',
           'boards.description AS description',
           'boards.isDeadline AS isDeadline',
