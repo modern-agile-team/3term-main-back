@@ -112,7 +112,7 @@ export const authSwagger: any = {
 
     badRequestResponse: apiResponse.error(
       '새비밀번호와 새비밀번호 확인이 일치하지 않는 경우',
-      HTTP_STATUS_CODE.serverError.badGateway,
+      HTTP_STATUS_CODE.clientError.badRequest,
       '새비밀번호와 새비밀번호 확인이 일치하지 않습니다',
       'Bad Request',
     ),

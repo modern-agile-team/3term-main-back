@@ -13,12 +13,11 @@ import { Faq } from '../entity/faq.entity';
 
 @EntityRepository(Faq)
 export class FaqRepository extends Repository<Faq> {
-  async readAllFaqs(take = 5): Promise<Faq | Faq[]> {
+  async readAllFaqs(): Promise<Faq | Faq[]> {
     try {
       const faqs: Faq | Faq[] = await this.createQueryBuilder('faqs')
         .select(['faqs.no', 'faqs.title', 'faqs.description'])
         .orderBy('faqs.createdAt', 'DESC')
-        .limit(+take)
         .getMany();
 
       return faqs;

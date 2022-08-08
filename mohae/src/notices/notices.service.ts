@@ -20,10 +20,10 @@ export class NoticesService {
     private readonly errorConfirm: ErrorConfirm,
   ) {}
 
-  async readAllNotices(take: number): Promise<Notice | Notice[]> {
+  async readAllNotices(): Promise<Notice | Notice[]> {
     try {
       const notices: Notice | Notice[] =
-        await this.noticeRepository.readAllNotices(take);
+        await this.noticeRepository.readAllNotices();
 
       this.errorConfirm.notFoundError(notices, '공지사항이 없습니다.');
 
