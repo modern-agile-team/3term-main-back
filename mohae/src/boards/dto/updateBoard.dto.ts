@@ -66,7 +66,7 @@ export class UpdateBoardDto {
   })
   @IsOptional()
   @IsString()
-  category?: string;
+  categoryNo?: string;
 
   @ApiProperty({
     example: '3',
@@ -75,7 +75,7 @@ export class UpdateBoardDto {
   })
   @IsOptional()
   @IsString()
-  area?: string;
+  areaNo?: string;
 
   // @IsOptional()
   // @IsString()

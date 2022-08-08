@@ -12,7 +12,7 @@ import { Board } from '../entity/board.entity';
 import { Category } from 'src/categories/entity/category.entity';
 import { PaginationDto } from '../dto/pagination.dto';
 import { SearchBoardDto } from '../dto/searchBoard.dto';
-import { CreatedBoardInfo } from '../boards.service';
+import { boardInfo } from '../boards.service';
 
 @EntityRepository(Board)
 export class BoardRepository extends Repository<Board> {
@@ -256,7 +256,6 @@ export class BoardRepository extends Repository<Board> {
         ])
         .orderBy('boards.no', sort)
         .groupBy('boards.no')
-        .addGroupBy('boards.no = photo.board_no')
         .limit(+take)
         .offset((+page - 1) * +take);
 
@@ -333,7 +332,7 @@ export class BoardRepository extends Repository<Board> {
     user: User,
     createBoardDto: any,
     endTime: Date,
-  ): Promise<CreatedBoardInfo> {
+  ): Promise<boardInfo> {
     try {
       const { price, title, description, summary, target } = createBoardDto;
       const board: InsertResult = await this.createQueryBuilder('boards')
@@ -517,7 +516,7 @@ export class BoardRepository extends Repository<Board> {
           .leftJoin('boards.user', 'user')
           .leftJoin('boards.photos', 'photo')
           .select([
-            'DATEDIFF(boards.deadline, now()) AS decimalDay',
+            'DATEDIFF(boards.deadline, now()) * -1 AS decimalDay',
             'photo.photo_Url AS photoUrl',
             'boards.no AS no',
             'boards.title AS title',

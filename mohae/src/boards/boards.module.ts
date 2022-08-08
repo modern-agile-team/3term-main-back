@@ -20,6 +20,7 @@ import { AwsService } from 'src/aws/aws.service';
 import { BoardLikeRepository } from 'src/like/repository/like.repository';
 import { JwtModule } from '@nestjs/jwt';
 import { jwtConfig } from 'src/common/configs/jwt.config';
+import { cacheModule } from 'src/common/configs/redis.config';
 
 @Module({
   imports: [
@@ -38,6 +39,7 @@ import { jwtConfig } from 'src/common/configs/jwt.config';
     CategoriesModule,
     AreasModule,
     AuthModule,
+    cacheModule,
   ],
   controllers: [BoardsController],
   providers: [
