@@ -239,6 +239,7 @@ export class BoardsController {
       if (err instanceof TokenExpiredError) {
         throw new UnauthorizedException('로그인 다시 해주세요');
       }
+      throw err;
     }
   }
 
@@ -290,6 +291,7 @@ export class BoardsController {
       msg: '게시글 생성이 완료 되었습니다.',
     };
   }
+
   @ApiOperation(operationConfig('게시글 삭제 경로', '게시글 삭제 API'))
   @ApiOkResponse(boardSwagger.delete.success)
   @ApiNotFoundResponse(boardSwagger.delete.notFound)
