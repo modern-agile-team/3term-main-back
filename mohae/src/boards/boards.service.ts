@@ -155,7 +155,6 @@ export class BoardsService {
 
       return { board, authorization: true };
     } catch (err) {
-      console.log(err);
       throw err;
     }
   }
