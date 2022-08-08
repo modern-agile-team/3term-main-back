@@ -111,10 +111,6 @@ export class ProfilesController {
     @Body() updateProfileDto: UpdateProfileDto,
     @CurrentUser() user: User,
   ): Promise<object> {
-    for (const key in updateProfileDto) {
-      updateProfileDto[`${key}`] = JSON.parse(updateProfileDto[`${key}`]);
-    }
-
     const profilePhotoUrl: boolean | string = !file
       ? false
       : await this.awsService.uploadProfileFileToS3('profile', file);
