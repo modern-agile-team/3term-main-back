@@ -239,6 +239,7 @@ export class BoardsController {
       if (err instanceof TokenExpiredError) {
         throw new UnauthorizedException('로그인 다시 해주세요');
       }
+      throw err;
     }
   }
 
@@ -279,10 +280,6 @@ export class BoardsController {
     @Body() createBoardDto: CreateBoardDto,
     @CurrentUser() user: User,
   ): Promise<object> {
-    for (const key of Object.keys(createBoardDto)) {
-      createBoardDto[`${key}`] = JSON.parse(createBoardDto[`${key}`]);
-    }
-
     const boardPhotoUrls: string[] = await this.awsService.uploadBoardFileToS3(
       'board',
       files,
@@ -294,6 +291,7 @@ export class BoardsController {
       msg: '게시글 생성이 완료 되었습니다.',
     };
   }
+
   @ApiOperation(operationConfig('게시글 삭제 경로', '게시글 삭제 API'))
   @ApiOkResponse(boardSwagger.delete.success)
   @ApiNotFoundResponse(boardSwagger.delete.notFound)
@@ -328,9 +326,6 @@ export class BoardsController {
     @Body() updateBoardDto: UpdateBoardDto,
     @CurrentUser() user: User,
   ): Promise<object> {
-    for (const key of Object.keys(updateBoardDto)) {
-      updateBoardDto[`${key}`] = JSON.parse(updateBoardDto[`${key}`]);
-    }
     const boardPhotoUrls: false | string[] =
       files.length === 0
         ? false

@@ -148,7 +148,7 @@ export class BoardsService {
         `해당 게시글을 찾을 수 없습니다.`,
       );
 
-      const hit = await this.getBoardHit(boardNo, board);
+      const hit: number = await this.getBoardHit(boardNo, board);
       board.hit = hit;
 
       board.likeCount = Number(board.likeCount);
@@ -164,7 +164,7 @@ export class BoardsService {
       const dailyView: object =
         (await this.cacheManager.get(`dailyView`)) || {};
 
-      const boardNum = String(boardNo);
+      const boardNum: string = String(boardNo);
 
       if (dailyView && dailyView[boardNum]) {
         dailyView[boardNum] += 1;
@@ -194,8 +194,8 @@ export class BoardsService {
       let queryStart: string = 'update boards set hit = (case ';
       const queryEnd: string = `end) where boards.no in (${keys});`;
 
-      for (let i in dailyView) {
-        const queryAdd: string = `when boards.no = ${i} then ${dailyView[i]} `;
+      for (let boardNo in dailyView) {
+        const queryAdd: string = `when boards.no = ${boardNo} then ${dailyView[boardNo]} `;
         queryStart += queryAdd;
       }
 
@@ -207,7 +207,9 @@ export class BoardsService {
 
       return affectedRows;
     } catch (err) {
-      throw err;
+      throw new InternalServerErrorException(
+        `${err}: 게시글 조회수 업데이트: 알 수 없는 서버 에러입니다.`,
+      );
     }
   }
 
