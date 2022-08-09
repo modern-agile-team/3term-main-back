@@ -12,7 +12,7 @@ import {
 import { AuthGuard } from '@nestjs/passport';
 import { Cron } from '@nestjs/schedule';
 import { User } from './entity/user.entity';
-import { AuthService } from './auth.service';
+import { AuthService, Token } from './auth.service';
 import { SignUpDto } from './dto/sign-up.dto';
 import { SignDownDto } from './dto/sign-down.dto';
 import { SignInDto } from './dto/sign-in.dto';
@@ -85,7 +85,7 @@ export class AuthController {
   @HttpCode(HTTP_STATUS_CODE.success.ok)
   @Post('signin')
   async signIn(@Body() signInDto: SignInDto): Promise<object> {
-    const token = await this.authService.signIn(signInDto);
+    const token: Token = await this.authService.signIn(signInDto);
 
     return {
       msg: `성공적으로 로그인이 되었습니다.`,
