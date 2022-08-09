@@ -230,12 +230,12 @@ export class AuthService {
     }
   }
 
-  async signIn(signInDto: SignInDto) {
+  async signIn(signInDto: SignInDto): Promise<Token> {
     const userInfo: User = await this.confirmUser(signInDto);
 
     await this.passwordConfirm(userInfo, signInDto.password);
 
-    const token = await this.createJwtToken(userInfo);
+    const token: Token = await this.createJwtToken(userInfo);
 
     return token;
   }
@@ -253,7 +253,7 @@ export class AuthService {
     }
     await this.userRepository.plusLoginFailCount(user);
 
-    const afterUser = await this.userRepository.confirmUser(user.email);
+    const afterUser: User = await this.userRepository.confirmUser(user.email);
 
     if (afterUser.loginFailCount >= 5) {
       await this.userRepository.changeIsLock(afterUser.no, afterUser.isLock);
@@ -263,7 +263,7 @@ export class AuthService {
     );
   }
 
-  async confirmUser(signInDto: SignInDto) {
+  async confirmUser(signInDto: SignInDto): Promise<User> {
     const { email }: SignInDto = signInDto;
 
     const user: User = await this.userRepository.confirmUser(email);

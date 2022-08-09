@@ -53,7 +53,7 @@ export class ProfilesController {
   @ApiBearerAuth('access-token')
   @HttpCode(HTTP_STATUS_CODE.success.ok)
   @UseGuards(AuthGuard('jwt'))
-  // @UseGuards(AuthGuard('jwt-refresh-token'))
+  @UseGuards(AuthGuard('jwt-refresh-token'))
   @Get('/:profileUserNo')
   async readUserProfile(
     @Param('profileUserNo') profileUserNo: number,
