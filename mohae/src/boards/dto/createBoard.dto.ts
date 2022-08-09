@@ -60,8 +60,8 @@ export class CreateBoardDto {
     required: true,
   })
   @Transform(({ value }) => JSON.parse(value))
-  @IsBoolean()
-  target: boolean;
+  @IsNumber()
+  target: number;
 
   @ApiProperty({
     example: 3,
