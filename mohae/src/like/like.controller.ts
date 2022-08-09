@@ -26,6 +26,8 @@ import { LikeUserDto } from './dto/user-like.dto';
 import { LikeService } from './like.service';
 import { boardLike } from './like.swagger';
 
+@UseGuards(AuthGuard('jwt'))
+@ApiBearerAuth('access-token')
 @Controller('like')
 @ApiTags('like')
 export class LikeController {
@@ -97,8 +99,6 @@ export class LikeController {
   @ApiUnauthorizedResponse(boardLike.like.unauthorized)
   @ApiConflictResponse(boardLike.like.conflict)
   @ApiNotFoundResponse(boardLike.like.notFound)
-  @UseGuards(AuthGuard('jwt'))
-  @ApiBearerAuth('access-token')
   @HttpCode(HTTP_STATUS_CODE.success.ok)
   @Post('/board/:boardNo')
   async likeBoard(
