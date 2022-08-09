@@ -440,7 +440,12 @@ export class BoardsService {
     await queryRunner.connect();
     await queryRunner.startTransaction();
     try {
-      const { category, area, deadline } = updateBoardDto;
+      const { categoryNo, areaNo, deadline } = updateBoardDto;
+
+      updateBoardDto.category = updateBoardDto.categoryNo;
+      updateBoardDto.area = updateBoardDto.areaNo;
+      delete updateBoardDto.categoryNo;
+      delete updateBoardDto.areaNo;
 
       const board: Board = await this.boardRepository.readOneBoardByAuth(
         boardNo,
@@ -481,22 +486,23 @@ export class BoardsService {
         endTime = null;
         duplicateCheck['deadline'] = endTime;
       }
-      const categoryNo: Category = await this.categoryRepository.findOne(
-        category,
+
+      const categoryNum: Category = await this.categoryRepository.findOne(
+        categoryNo,
         {
           relations: ['boards'],
         },
       );
       this.errorConfirm.notFoundError(
-        categoryNo,
+        categoryNum,
         `해당 카테고리를 찾을 수 없습니다.`,
       );
 
-      const areaNo: Area = await this.areaRepository.findOne(area, {
+      const areaNum: Area = await this.areaRepository.findOne(areaNo, {
         relations: ['boards'],
       });
 
-      this.errorConfirm.notFoundError(areaNo, `해당 지역을 찾을 수 없습니다.`);
+      this.errorConfirm.notFoundError(areaNum, `해당 지역을 찾을 수 없습니다.`);
 
       const updatedBoard = await queryRunner.manager
         .getCustomRepository(BoardRepository)
