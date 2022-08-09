@@ -3,7 +3,7 @@ import { IsEmail, IsNotEmpty, IsString } from 'class-validator';
 
 export class SignInDto {
   @ApiProperty({
-    example: 'estarg1@hanmail.net',
+    example: 'abc4@naver.com',
     description: '가입시 입력했던 이메일',
     required: true,
   })
