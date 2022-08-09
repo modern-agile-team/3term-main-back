@@ -64,8 +64,8 @@ export class UpdateBoardDto {
   })
   @IsOptional()
   @Transform(({ value }) => JSON.parse(value))
-  @IsBoolean()
-  target?: boolean;
+  @IsNumber()
+  target?: number;
 
   @ApiProperty({
     example: '2',
