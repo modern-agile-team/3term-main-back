@@ -94,6 +94,23 @@ export class AuthController {
     };
   }
 
+  @ApiOperation(operationConfig('로그인 API', '로그인 기능을 하는 api입니다.'))
+  @ApiOkResponse(authSwagger.signIn.success)
+  @ApiUnauthorizedResponse(authSwagger.signIn.unauthorizedResponse)
+  @ApiNotFoundResponse(authSwagger.signIn.notFoundResponse)
+  @ApiInternalServerErrorResponse(authSwagger.internalServerErrorResponse)
+  @HttpCode(HTTP_STATUS_CODE.success.ok)
+  @Post('signin/test')
+  async tokenTestSignIn(@Body() signInDto: SignInDto): Promise<object> {
+    const token: Token = await this.authService.signIn(signInDto);
+
+    return {
+      msg: `성공적으로 로그인이 되었습니다.`,
+      response: token,
+      // response: token.accessToken,
+    };
+  }
+
   @ApiOperation(
     operationConfig('회원 탈퇴 API', '회원 탈퇴 기능을 하는 api입니다.'),
   )
