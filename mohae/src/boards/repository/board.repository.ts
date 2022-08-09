@@ -40,7 +40,7 @@ export class BoardRepository extends Repository<Board> {
           'boards.no AS no',
           'REPLACE(GROUP_CONCAT(photo.photo_url), ",", ", ") AS boardPhotoUrls',
           'DATEDIFF(boards.deadline, now()) * -1 AS decimalDay',
-          'IF(DATEDIFF(boards.deadline, boards.createdAt), DATEDIFF(boards.deadline, boards.createdAt) -1, 0) AS deadline',
+          'ifnull(DATEDIFF(boards.deadline, boards.createdAt), 0) AS deadline',
           'boards.title AS title',
           'boards.description AS description',
           'boards.isDeadline AS isDeadline',
@@ -324,6 +324,7 @@ export class BoardRepository extends Repository<Board> {
   ): Promise<boardInfo> {
     try {
       const { price, title, description, summary, target } = createBoardDto;
+
       const board: InsertResult = await this.createQueryBuilder('boards')
         .insert()
         .into(Board)
