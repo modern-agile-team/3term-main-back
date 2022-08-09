@@ -124,6 +124,7 @@ export const boardSwagger = {
           no: 15,
           boardPhotoUrls: 'seungBum.jpg, 11222.jpg, 1.png, 2.jpeg',
           decimalDay: -6,
+          deadline: 30,
           title: '게시글 검색',
           description: '생성',
           isDeadline: 0,
