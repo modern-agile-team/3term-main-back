@@ -39,7 +39,8 @@ export class ProfilesService {
         profileUserNo,
         userNo,
       );
-      if (!profile) {
+
+      if (!profile.userNo) {
         throw new NotFoundException(
           `No: ${profileUserNo}에 해당하는 회원을 찾을 수 없습니다.`,
         );
