@@ -79,7 +79,7 @@ export class NoticesController {
   @ApiBearerAuth('access-token')
   @Role(true)
   @UseGuards(RolesGuard)
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(AuthGuard('jwt-refresh-token'))
   @HttpCode(HTTP_STATUS_CODE.success.created)
   @Post()
   async createNotice(
@@ -106,7 +106,7 @@ export class NoticesController {
   @ApiBearerAuth('access-token')
   @Role(true)
   @UseGuards(RolesGuard)
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(AuthGuard('jwt-refresh-token'))
   @HttpCode(HTTP_STATUS_CODE.success.ok)
   @Put('/:noticeNo')
   async updateNotice(
@@ -134,7 +134,7 @@ export class NoticesController {
   @ApiBearerAuth('access-token')
   @Role(true)
   @UseGuards(RolesGuard)
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(AuthGuard('jwt-refresh-token'))
   @HttpCode(HTTP_STATUS_CODE.success.ok)
   @Delete('/:noticeNo')
   async deleteNotice(@Param('noticeNo') noticeNo: number): Promise<object> {

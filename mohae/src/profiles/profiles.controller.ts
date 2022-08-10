@@ -52,7 +52,6 @@ export class ProfilesController {
   @ApiInternalServerErrorResponse(profileSwagger.internalServerErrorResponse)
   @ApiBearerAuth('access-token')
   @HttpCode(HTTP_STATUS_CODE.success.ok)
-  // @UseGuards(AuthGuard('jwt'))
   @UseGuards(AuthGuard('jwt-refresh-token'))
   @Get('/:profileUserNo')
   async readUserProfile(
@@ -102,8 +101,7 @@ export class ProfilesController {
   @ApiInternalServerErrorResponse(profileSwagger.internalServerErrorResponse)
   @HttpCode(HTTP_STATUS_CODE.success.ok)
   @ApiBearerAuth('access-token')
-  @UseGuards(AuthGuard('jwt'))
-  // @UseGuards(AuthGuard('jwt-refresh-token'))
+  @UseGuards(AuthGuard('jwt-refresh-token'))
   @UseInterceptors(FileInterceptor('image'))
   @Patch()
   async updateProfile(

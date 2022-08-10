@@ -3,7 +3,7 @@ import { AuthGuard } from '@nestjs/passport';
 import { ApiTags } from '@nestjs/swagger';
 import { ReportCheckboxesService } from './report-checkboxes.service';
 
-@UseGuards(AuthGuard('jwt'))
+@UseGuards(AuthGuard('jwt-refresh-token'))
 @ApiTags('Report-Checkboxes')
 @Controller('report-checkboxes')
 export class ReportCheckboxesController {

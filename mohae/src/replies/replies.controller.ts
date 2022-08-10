@@ -26,7 +26,7 @@ import { CreateReplyDto } from './dto/create-reply.dto';
 import { UpdateReplyDto } from './dto/update-reply.dto';
 import { RepliesService } from './replies.service';
 
-@UseGuards(AuthGuard('jwt'))
+@UseGuards(AuthGuard('jwt-refresh-token'))
 @ApiTags('Replies')
 @Controller('comments/:commentNo/replies')
 export class RepliesController {
