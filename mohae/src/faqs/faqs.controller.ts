@@ -87,7 +87,7 @@ export class FaqsController {
   @ApiBearerAuth('access-token')
   @Role(true)
   @UseGuards(RolesGuard)
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(AuthGuard('jwt-refresh-token'))
   @HttpCode(HTTP_STATUS_CODE.success.created)
   @Post()
   async createFaq(
@@ -112,7 +112,7 @@ export class FaqsController {
   @ApiBearerAuth('access-token')
   @Role(true)
   @UseGuards(RolesGuard)
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(AuthGuard('jwt-refresh-token'))
   @HttpCode(HTTP_STATUS_CODE.success.ok)
   @Patch(':faqNo')
   async updateFaq(
@@ -138,7 +138,7 @@ export class FaqsController {
   @ApiBearerAuth('access-token')
   @Role(true)
   @UseGuards(RolesGuard)
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(AuthGuard('jwt-refresh-token'))
   @HttpCode(HTTP_STATUS_CODE.success.ok)
   @Delete(':faqNo')
   async deleteFaq(@Param('faqNo') faqNo: number): Promise<object> {
