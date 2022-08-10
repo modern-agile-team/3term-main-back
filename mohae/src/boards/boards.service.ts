@@ -1,13 +1,15 @@
 import {
   BadGatewayException,
   BadRequestException,
+  CACHE_MANAGER,
+  Inject,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Connection, QueryRunner } from 'typeorm';
+import { Connection, EntityManager, getManager, QueryRunner } from 'typeorm';
 import { User } from '@sentry/node';
 import { CategoryRepository } from 'src/categories/repository/category.repository';
 import { AreasRepository } from 'src/areas/repository/area.repository';
@@ -23,15 +25,21 @@ import { HotBoardDto } from './dto/hotBoard.dto';
 import { SearchBoardDto } from './dto/searchBoard.dto';
 import { PaginationDto } from './dto/pagination.dto';
 import { CreateBoardDto } from './dto/createBoard.dto';
+import { Cache } from 'cache-manager';
 
-export interface CreatedBoardInfo {
+export interface boardInfo {
   affectedRows: number;
-  insertId: number;
+  insertId?: number;
 }
+
+export interface BoardHit {}
 
 @Injectable()
 export class BoardsService {
   constructor(
+    @Inject(CACHE_MANAGER)
+    private readonly cacheManager: Cache,
+
     @InjectRepository(BoardRepository)
     private readonly boardRepository: BoardRepository,
 
@@ -140,18 +148,68 @@ export class BoardsService {
         `해당 게시글을 찾을 수 없습니다.`,
       );
 
-      const boardHit: number = await this.boardRepository.addBoardHit(board);
+      const hit: number = await this.getBoardHit(boardNo, board);
+      board.hit = hit;
 
-      if (!boardHit) {
-        throw new InternalServerErrorException(
-          '게시글 조회 수 증가가 되지 않았습니다',
-        );
-      }
       board.likeCount = Number(board.likeCount);
 
       return { board, authorization: true };
     } catch (err) {
       throw err;
+    }
+  }
+
+  async getBoardHit(boardNo: number, board: Board): Promise<number> {
+    try {
+      const dailyView: object =
+        (await this.cacheManager.get(`dailyView`)) || {};
+
+      const boardNum: string = String(boardNo);
+
+      if (dailyView && dailyView[boardNum]) {
+        dailyView[boardNum] += 1;
+        await this.cacheManager.set(`dailyView`, dailyView);
+
+        return dailyView[boardNum];
+      }
+
+      dailyView[boardNum] = board.hit + 1;
+      await this.cacheManager.set(`dailyView`, dailyView);
+
+      return dailyView[boardNum];
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  async updateHit(): Promise<number> {
+    try {
+      const dailyView: null | object = await this.cacheManager.get(`dailyView`);
+
+      if (!dailyView) {
+        return 0;
+      }
+
+      const keys: string = Object.keys(dailyView).join(',');
+      let queryStart: string = 'update boards set hit = (case ';
+      const queryEnd: string = `end) where boards.no in (${keys});`;
+
+      for (let boardNo in dailyView) {
+        const queryAdd: string = `when boards.no = ${boardNo} then ${dailyView[boardNo]} `;
+        queryStart += queryAdd;
+      }
+
+      await this.cacheManager.del('dailyView');
+      const entityManager: EntityManager = getManager();
+      const { affectedRows }: boardInfo = await entityManager.query(
+        queryStart + queryEnd,
+      );
+
+      return affectedRows;
+    } catch (err) {
+      throw new InternalServerErrorException(
+        `${err}: 게시글 조회수 업데이트: 알 수 없는 서버 에러입니다.`,
+      );
     }
   }
 
@@ -301,10 +359,9 @@ export class BoardsService {
         endTime.setDate(endTime.getDate() + +deadline);
       }
 
-      const { affectedRows, insertId }: CreatedBoardInfo =
-        await queryRunner.manager
-          .getCustomRepository(BoardRepository)
-          .createBoard(category, area, user, createBoardDto, endTime);
+      const { affectedRows, insertId }: boardInfo = await queryRunner.manager
+        .getCustomRepository(BoardRepository)
+        .createBoard(category, area, user, createBoardDto, endTime);
 
       if (!affectedRows) {
         throw new BadGatewayException('게시글 생성 관련 오류입니다.');

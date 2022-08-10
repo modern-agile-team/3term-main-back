@@ -1,6 +1,9 @@
 import { ApiProperty, PickType } from '@nestjs/swagger';
+import { Transform } from 'class-transformer';
 import {
+  IsBoolean,
   IsNotEmpty,
+  IsNumber,
   IsOptional,
   IsString,
   MaxLength,
@@ -13,14 +16,16 @@ export class CreateBoardDto {
     description: 'Example price입니다.',
     required: true,
   })
-  @IsString()
-  price: string;
+  @Transform(({ value }) => JSON.parse(value))
+  @IsNumber()
+  price: number;
 
   @ApiProperty({
     example: '제목 입력',
     description: 'Example title입니다.',
     required: true,
   })
+  @Transform(({ value }) => JSON.parse(value))
   @IsString()
   @IsNotEmpty()
   @MinLength(2)
@@ -32,6 +37,7 @@ export class CreateBoardDto {
     description: 'Example Description입니다.',
     required: true,
   })
+  @Transform(({ value }) => JSON.parse(value))
   @IsString()
   @IsNotEmpty()
   @MaxLength(1000)
@@ -43,6 +49,7 @@ export class CreateBoardDto {
     required: false,
   })
   @IsOptional()
+  @Transform(({ value }) => JSON.parse(value))
   @IsString()
   @MaxLength(100)
   summary?: string;
@@ -52,32 +59,36 @@ export class CreateBoardDto {
     description: 'Example false = 해주는 사람, true = 구하는 사람.',
     required: true,
   })
-  @IsString()
-  target: string;
+  @Transform(({ value }) => JSON.parse(value))
+  @IsNumber()
+  target: number;
 
   @ApiProperty({
     example: 3,
     description: 'Example 카테고리.',
     required: true,
   })
-  @IsString()
-  categoryNo: string;
+  @Transform(({ value }) => JSON.parse(value))
+  @IsNumber()
+  categoryNo: number;
 
   @ApiProperty({
     example: 1,
     description: 'Example 지역.',
     required: true,
   })
-  @IsString()
-  areaNo: string;
+  @Transform(({ value }) => JSON.parse(value))
+  @IsNumber()
+  areaNo: number;
 
   @ApiProperty({
     example: 0,
     description: 'Example 마감일 0 = 상시, 7 = 일주일, 30 = 1개월, 60 = 3개월',
     required: true,
   })
-  @IsString()
-  deadline: string;
+  @Transform(({ value }) => JSON.parse(value))
+  @IsNumber()
+  deadline: number;
 
   // @ApiProperty({
   //   example: '첫번째 상세조건',

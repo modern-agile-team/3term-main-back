@@ -12,7 +12,7 @@ import { Board } from '../entity/board.entity';
 import { Category } from 'src/categories/entity/category.entity';
 import { PaginationDto } from '../dto/pagination.dto';
 import { SearchBoardDto } from '../dto/searchBoard.dto';
-import { CreatedBoardInfo } from '../boards.service';
+import { boardInfo } from '../boards.service';
 
 @EntityRepository(Board)
 export class BoardRepository extends Repository<Board> {
@@ -40,6 +40,7 @@ export class BoardRepository extends Repository<Board> {
           'boards.no AS no',
           'REPLACE(GROUP_CONCAT(photo.photo_url), ",", ", ") AS boardPhotoUrls',
           'DATEDIFF(boards.deadline, now()) * -1 AS decimalDay',
+          'ifnull(DATEDIFF(boards.deadline, boards.createdAt), 0) AS deadline',
           'boards.title AS title',
           'boards.description AS description',
           'boards.isDeadline AS isDeadline',
@@ -61,7 +62,9 @@ export class BoardRepository extends Repository<Board> {
         .where('boards.no = :no', { no: boardNo })
         .getRawOne();
     } catch (err) {
-      `${err} ### 게시판 상세 조회 : 알 수 없는 서버 에러입니다.`;
+      throw new InternalServerErrorException(
+        `${err} ### 게시판 상세 조회(회원) : 알 수 없는 서버 에러입니다.`,
+      );
     }
   }
 
@@ -107,22 +110,8 @@ export class BoardRepository extends Repository<Board> {
         .where('boards.no = :no', { no: boardNo })
         .getRawOne();
     } catch (err) {
-      `${err} ### 게시판 상세 조회 : 알 수 없는 서버 에러입니다.`;
-    }
-  }
-
-  async addBoardHit({ no, hit }): Promise<number> {
-    try {
-      const { affected } = await this.createQueryBuilder()
-        .update(Board)
-        .set({ hit: hit + 1 })
-        .where('no = :no', { no })
-        .execute();
-
-      return affected;
-    } catch (e) {
       throw new InternalServerErrorException(
-        `${e} ### 게시판 조회수 증가 : 알 수 없는 서버 에러입니다.`,
+        `${err} ### 게시판 상세 조회(비회원) : 알 수 없는 서버 에러입니다.`,
       );
     }
   }
@@ -256,7 +245,6 @@ export class BoardRepository extends Repository<Board> {
         ])
         .orderBy('boards.no', sort)
         .groupBy('boards.no')
-        .addGroupBy('boards.no = photo.board_no')
         .limit(+take)
         .offset((+page - 1) * +take);
 
@@ -333,9 +321,10 @@ export class BoardRepository extends Repository<Board> {
     user: User,
     createBoardDto: any,
     endTime: Date,
-  ): Promise<CreatedBoardInfo> {
+  ): Promise<boardInfo> {
     try {
       const { price, title, description, summary, target } = createBoardDto;
+
       const board: InsertResult = await this.createQueryBuilder('boards')
         .insert()
         .into(Board)
@@ -517,7 +506,7 @@ export class BoardRepository extends Repository<Board> {
           .leftJoin('boards.user', 'user')
           .leftJoin('boards.photos', 'photo')
           .select([
-            'DATEDIFF(boards.deadline, now()) AS decimalDay',
+            'DATEDIFF(boards.deadline, now()) * -1 AS decimalDay',
             'photo.photo_Url AS photoUrl',
             'boards.no AS no',
             'boards.title AS title',
