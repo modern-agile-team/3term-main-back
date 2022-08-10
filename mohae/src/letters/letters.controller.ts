@@ -19,7 +19,7 @@ import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 import { SendLetterDto } from './dto/letter.dto';
 import { LettersService } from './letters.service';
 
-@UseGuards(AuthGuard('jwt'))
+@UseGuards(AuthGuard('jwt-refresh-token'))
 @ApiTags('Letters')
 @Controller('letters')
 export class LettersController {

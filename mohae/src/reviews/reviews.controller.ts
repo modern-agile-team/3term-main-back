@@ -17,7 +17,7 @@ import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 import { CreateReviewDto } from './dto/create-review.dto';
 import { ReviewsService } from './reviews.service';
 
-@UseGuards(AuthGuard('jwt'))
+@UseGuards(AuthGuard('jwt-refresh-token'))
 @ApiTags('Reviews')
 @Controller('reviews')
 export class ReviewsController {

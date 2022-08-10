@@ -16,7 +16,7 @@ import { Mailbox } from './entity/mailbox.entity';
 import { MailboxesService } from './mailboxes.service';
 
 @ApiTags('Mailboxes')
-@UseGuards(AuthGuard('jwt'))
+@UseGuards(AuthGuard('jwt-refresh-token'))
 @Controller('mailboxes')
 export class MailboxesController {
   constructor(private mailboxesService: MailboxesService) {}

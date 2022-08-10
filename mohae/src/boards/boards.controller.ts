@@ -136,7 +136,7 @@ export class BoardsController {
   @ApiOkResponse(boardSwagger.closedCancel.success)
   @ApiBadRequestResponse(boardSwagger.closedCancel.badRequest)
   @ApiUnauthorizedResponse(boardSwagger.closedCancel.unauthorized)
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(AuthGuard('jwt-refresh-token'))
   @ApiBearerAuth('access-token')
   @Patch('cancel/:boardNo')
   @HttpCode(HTTP_STATUS_CODE.success.ok)
@@ -156,7 +156,7 @@ export class BoardsController {
   @ApiInternalServerErrorResponse(boardSwagger.closed.badRequest)
   @ApiUnauthorizedResponse(boardSwagger.closed.unauthorized)
   @ApiBearerAuth('access-token')
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(AuthGuard('jwt-refresh-token'))
   @Patch('close/:boardNo')
   @HttpCode(HTTP_STATUS_CODE.success.ok)
   async boardClosed(
@@ -273,7 +273,7 @@ export class BoardsController {
   @ApiOkResponse(boardSwagger.create.success)
   @HttpCode(HTTP_STATUS_CODE.success.created)
   @ApiBearerAuth('access-token')
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(AuthGuard('jwt-refresh-token'))
   @UseInterceptors(FilesInterceptor('image', 5))
   async createBoard(
     @UploadedFiles() files: Express.Multer.File[],
@@ -296,7 +296,7 @@ export class BoardsController {
   @ApiOkResponse(boardSwagger.delete.success)
   @ApiNotFoundResponse(boardSwagger.delete.notFound)
   @ApiUnauthorizedResponse(boardSwagger.delete.unauthorized)
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(AuthGuard('jwt-refresh-token'))
   @ApiBearerAuth('access-token')
   @Delete(':boardNo')
   @HttpCode(HTTP_STATUS_CODE.success.ok)
@@ -317,7 +317,7 @@ export class BoardsController {
   @ApiUnauthorizedResponse(boardSwagger.update.unauthorized)
   @HttpCode(HTTP_STATUS_CODE.success.created)
   @ApiBearerAuth('access-token')
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(AuthGuard('jwt-refresh-token'))
   @UseInterceptors(FilesInterceptor('image', 5))
   @Patch(':boardNo')
   async updateBoard(

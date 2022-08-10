@@ -37,7 +37,7 @@ import { specSwagger } from './specs.swagger';
 import { operationConfig } from 'src/common/swagger-apis/api-operation.swagger';
 
 @ApiTags('Specs')
-@UseGuards(AuthGuard('jwt'))
+@UseGuards(AuthGuard('jwt-refresh-token'))
 @Controller('specs')
 export class SpecsController {
   constructor(
@@ -53,8 +53,7 @@ export class SpecsController {
   @ApiInternalServerErrorResponse(specSwagger.internalServerErrorResponse)
   @HttpCode(HTTP_STATUS_CODE.success.ok)
   @ApiBearerAuth('access-token')
-  @UseGuards(AuthGuard('jwt'))
-  // @UseGuards(AuthGuard('jwt-refresh-token'))
+  @UseGuards(AuthGuard('jwt-refresh-token'))
   @Get('spec/:specNo')
   async getOneSpec(@Param('specNo') specNo: number): Promise<object> {
     const response: OneSpec = await this.specsService.getOneSpec(specNo);
@@ -75,8 +74,7 @@ export class SpecsController {
   @ApiInternalServerErrorResponse(specSwagger.internalServerErrorResponse)
   @HttpCode(HTTP_STATUS_CODE.success.ok)
   @ApiBearerAuth('access-token')
-  @UseGuards(AuthGuard('jwt'))
-  // @UseGuards(AuthGuard('jwt-refresh-token'))
+  @UseGuards(AuthGuard('jwt-refresh-token'))
   @Get('profile')
   async readUserSpec(
     @Query('user') user: number,
@@ -103,8 +101,7 @@ export class SpecsController {
   @ApiInternalServerErrorResponse(specSwagger.internalServerErrorResponse)
   @HttpCode(HTTP_STATUS_CODE.success.created)
   @ApiBearerAuth('access-token')
-  @UseGuards(AuthGuard('jwt'))
-  // @UseGuards(AuthGuard('jwt-refresh-token'))
+  @UseGuards(AuthGuard('jwt-refresh-token'))
   @UseInterceptors(FilesInterceptor('image', 10))
   @Post('regist')
   async registSpec(
@@ -137,8 +134,7 @@ export class SpecsController {
   @ApiInternalServerErrorResponse(specSwagger.internalServerErrorResponse)
   @HttpCode(HTTP_STATUS_CODE.success.ok)
   @ApiBearerAuth('access-token')
-  @UseGuards(AuthGuard('jwt'))
-  // @UseGuards(AuthGuard('jwt-refresh-token'))
+  @UseGuards(AuthGuard('jwt-refresh-token'))
   @UseInterceptors(FilesInterceptor('image', 10))
   @Patch(':specNo')
   async updateSpec(
@@ -171,8 +167,7 @@ export class SpecsController {
   @ApiInternalServerErrorResponse(specSwagger.internalServerErrorResponse)
   @HttpCode(HTTP_STATUS_CODE.success.ok)
   @ApiBearerAuth('access-token')
-  @UseGuards(AuthGuard('jwt'))
-  // @UseGuards(AuthGuard('jwt-refresh-token'))
+  @UseGuards(AuthGuard('jwt-refresh-token'))
   @Delete(':specNo')
   async deleteSpec(
     @Param('specNo') specNo: number,
