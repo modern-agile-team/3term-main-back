@@ -8,24 +8,35 @@ import { Category } from 'src/categories/entity/category.entity';
 import { ProfilePhoto } from 'src/photo/entity/profile.photo.entity';
 import { UserRepository } from 'src/auth/repository/user.repository';
 import { CategoryRepository } from 'src/categories/repository/category.repository';
-import { LikeRepository } from 'src/like/repository/like.repository';
-import { MajorRepository } from 'src/majors/repository/major.repository';
 import { ProfilePhotoRepository } from 'src/photo/repository/photo.repository';
-import { SchoolRepository } from 'src/schools/repository/school.repository';
 import { JudgeDuplicateNicknameDto } from './dto/judge-duplicate-nickname.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
-import { ErrorConfirm } from 'src/common/utils/error';
 import { Connection } from 'typeorm';
+
+export interface Profile {
+  userNo: number | null;
+  email: string | null;
+  nickname: string | null;
+  phone: string | null;
+  createdAt: string | null;
+  name: string | null;
+  photo_url: string | null;
+  boardNum: string;
+  likedUserNum: string;
+  isLike: boolean;
+  schoolNo: number | null;
+  schoolName: string | null;
+  majorNo: number | null;
+  majorName: string | null;
+  categoryNo?: string | null;
+  categories?: object[];
+}
 
 @Injectable()
 export class ProfilesService {
   constructor(
     private readonly userRepository: UserRepository,
-    private readonly schoolRepository: SchoolRepository,
-    private readonly majorRepository: MajorRepository,
     private readonly categoriesRepository: CategoryRepository,
-    private readonly likeRepository: LikeRepository,
-    private readonly errorConfirm: ErrorConfirm,
     private readonly profilePhotoRepository: ProfilePhotoRepository,
     private readonly connection: Connection,
   ) {}
@@ -33,13 +44,12 @@ export class ProfilesService {
   async readUserProfile(
     profileUserNo: number,
     userNo: number,
-  ): Promise<object> {
+  ): Promise<Profile> {
     try {
-      const profile: any = await this.userRepository.readUserProfile(
+      const profile: Profile = await this.userRepository.readUserProfile(
         profileUserNo,
         userNo,
       );
-
       if (!profile.userNo) {
         throw new NotFoundException(
           `No: ${profileUserNo}에 해당하는 회원을 찾을 수 없습니다.`,
@@ -73,7 +83,7 @@ export class ProfilesService {
     try {
       const { no, nickname }: JudgeDuplicateNicknameDto =
         judgeDuplicateNicknameDto;
-
+      console.log(judgeDuplicateNicknameDto);
       if (no) {
         const user: User = await this.userRepository.findOne(no, {
           select: ['no', 'nickname'],

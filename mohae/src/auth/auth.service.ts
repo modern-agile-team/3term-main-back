@@ -2,6 +2,7 @@ import {
   BadRequestException,
   CACHE_MANAGER,
   ConflictException,
+  ForbiddenException,
   HttpException,
   Inject,
   Injectable,
@@ -358,7 +359,16 @@ export class AuthService {
     );
   }
 
-  async forgetPassword(forgetPasswordDto: ForgetPasswordDto): Promise<void> {
+  async forgetPassword(
+    forgetPasswordDto: ForgetPasswordDto,
+    key: string,
+  ): Promise<void> {
+    if (key !== forgetPasswordDto.email)
+      throw new ForbiddenException(
+        '가입하신 이메일로만 비밀번호 변경이 가능합니다.',
+      );
+    await this.getTokenCacheData(key);
+
     const { email, changePassword, confirmChangePassword }: ForgetPasswordDto =
       forgetPasswordDto;
     const user: User = await this.userRepository.signIn(email);

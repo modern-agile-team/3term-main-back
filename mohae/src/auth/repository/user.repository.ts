@@ -9,6 +9,7 @@ import { User } from '../entity/user.entity';
 import { School } from 'src/schools/entity/school.entity';
 import { Major } from 'src/majors/entity/major.entity';
 import { SignUpDto } from '../dto/sign-up.dto';
+import { Profile } from 'src/profiles/profiles.service';
 
 @EntityRepository(User)
 export class UserRepository extends Repository<User> {
@@ -202,9 +203,12 @@ export class UserRepository extends Repository<User> {
     }
   }
 
-  async readUserProfile(profileUserNo: number, userNo: number): Promise<User> {
+  async readUserProfile(
+    profileUserNo: number,
+    userNo: number,
+  ): Promise<Profile> {
     try {
-      const profile: User = await this.createQueryBuilder('users')
+      const profile: Profile = await this.createQueryBuilder('users')
         .leftJoin('users.school', 'school')
         .leftJoin('users.major', 'major')
         .leftJoin('users.categories', 'categories')
