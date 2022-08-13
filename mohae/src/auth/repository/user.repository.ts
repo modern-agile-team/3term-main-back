@@ -89,7 +89,7 @@ export class UserRepository extends Repository<User> {
           'users.deletedAt AS deletedAt',
         ])
         .withDeleted()
-        .where('users.email = :email', { email })
+        .where('users.email COLLATE utf8_bin = :email', { email })
         .getRawOne();
       return user;
     } catch (err) {

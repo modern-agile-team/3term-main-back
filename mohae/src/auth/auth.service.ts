@@ -127,7 +127,6 @@ export class AuthService {
   async createUser(signUpDto: SignUpDto, queryRunner: QueryRunner) {
     try {
       const { school, major, password }: SignUpDto = signUpDto;
-
       const schoolNo: School | null = school
         ? await this.schoolRepository.findOne(school, {
             select: ['no'],
@@ -138,9 +137,9 @@ export class AuthService {
             select: ['no'],
           })
         : null;
-
       const salt: string = await bcrypt.genSalt();
       const hashedPassword: string = await bcrypt.hash(password, salt);
+
       signUpDto.password = hashedPassword;
 
       const user: User = await queryRunner.manager
@@ -265,7 +264,6 @@ export class AuthService {
 
   async confirmUser(signInDto: SignInDto): Promise<User> {
     const { email }: SignInDto = signInDto;
-
     const user: User = await this.userRepository.confirmUser(email);
 
     this.errorConfirm.notFoundError(
