@@ -11,7 +11,7 @@ import { CategoryRepository } from 'src/categories/repository/category.repositor
 import { ProfilePhotoRepository } from 'src/photo/repository/photo.repository';
 import { JudgeDuplicateNicknameDto } from './dto/judge-duplicate-nickname.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
-import { Connection } from 'typeorm';
+import { Connection, QueryRunner } from 'typeorm';
 
 export interface Profile {
   userNo: number | null;
@@ -110,9 +110,9 @@ export class ProfilesService {
   async updateProfile(
     userNo: User,
     updateProfileDto: UpdateProfileDto,
-    profilePhotoUrl: any,
+    profilePhotoUrl: false | string,
   ): Promise<string> {
-    const queryRunner = this.connection.createQueryRunner();
+    const queryRunner: QueryRunner = this.connection.createQueryRunner();
 
     await queryRunner.connect();
     await queryRunner.startTransaction();
@@ -132,34 +132,20 @@ export class ProfilesService {
       const beforeProfile: ProfilePhoto =
         await this.profilePhotoRepository.readProfilePhoto(userNo);
 
-      if (profilePhotoUrl) {
-        if (beforeProfile) {
-          await queryRunner.manager
-            .getCustomRepository(ProfilePhotoRepository)
-            .deleteProfilePhoto(beforeProfile.no);
-        }
-        if (profilePhotoUrl !== 'logo.png')
-          await queryRunner.manager
-            .getCustomRepository(ProfilePhotoRepository)
-            .saveProfilePhoto(profilePhotoUrl, userNo);
-      }
-      if (categories && categories.length) {
-        const categoriesNo: Category[] =
-          await this.categoriesRepository.selectCategory(categories);
-        const filteredCategories: Category[] = categoriesNo.filter(
-          (category: Category) => category !== undefined,
-        );
+      await this.changeProfilePhoto(
+        userNo,
+        profilePhotoUrl,
+        beforeProfile,
+        queryRunner,
+      );
 
-        for (const categoryNo of profile.categories) {
-          await queryRunner.manager
-            .getCustomRepository(CategoryRepository)
-            .deleteUser(categoryNo, userNo);
-        }
-        for (const categoryNo of filteredCategories)
-          await queryRunner.manager
-            .getCustomRepository(CategoryRepository)
-            .addUser(categoryNo.no, userNo);
-      }
+      await this.changeProfileCategories(
+        userNo,
+        profile,
+        categories,
+        queryRunner,
+      );
+
       await queryRunner.commitTransaction();
 
       return beforeProfile && profilePhotoUrl
@@ -171,5 +157,49 @@ export class ProfilesService {
     } finally {
       await queryRunner.release();
     }
+  }
+
+  async changeProfilePhoto(
+    userNo: User,
+    profilePhotoUrl: false | string,
+    beforeProfile: ProfilePhoto,
+    queryRunner: QueryRunner,
+  ) {
+    if (profilePhotoUrl) {
+      if (beforeProfile) {
+        await queryRunner.manager
+          .getCustomRepository(ProfilePhotoRepository)
+          .deleteProfilePhoto(beforeProfile.no);
+      }
+      if (profilePhotoUrl !== 'logo.png')
+        await queryRunner.manager
+          .getCustomRepository(ProfilePhotoRepository)
+          .saveProfilePhoto(profilePhotoUrl, userNo);
+    }
+  }
+
+  async changeProfileCategories(
+    userNo: User,
+    profile: User,
+    categories: [],
+    queryRunner: QueryRunner,
+  ) {
+    const categoriesNo: Category[] =
+      await this.categoriesRepository.selectCategory(categories);
+    const afterCategories: number[] = categoriesNo.map((category) => {
+      return category.no;
+    });
+    const beforeCategories: number[] = profile.categories.map((category) => {
+      return category.no;
+    });
+
+    if (beforeCategories.length) {
+      await queryRunner.manager
+        .getCustomRepository(CategoryRepository)
+        .deleteUser(beforeCategories, userNo);
+    }
+    await queryRunner.manager
+      .getCustomRepository(CategoryRepository)
+      .AddUser(afterCategories, userNo);
   }
 }

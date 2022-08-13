@@ -256,11 +256,11 @@ export class UserRepository extends Repository<User> {
     }
   }
 
-  async updateProfile(userNo: User, deletedNullprofile: object): Promise<void> {
+  async updateProfile(userNo: User, updateProfileDto: object): Promise<void> {
     try {
       await this.createQueryBuilder('users')
         .update(User)
-        .set(deletedNullprofile)
+        .set(updateProfileDto)
         .where('no = :userNo', { userNo })
         .execute();
     } catch (err) {

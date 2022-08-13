@@ -108,9 +108,10 @@ export class ProfilesController {
     @Body() updateProfileDto: UpdateProfileDto,
     @CurrentUser() user: User,
   ): Promise<object> {
-    const profilePhotoUrl: boolean | string = !file
+    const profilePhotoUrl: false | string = !file
       ? false
       : await this.awsService.uploadProfileFileToS3('profile', file);
+
     const beforeProfileUrl: string | undefined =
       await this.profileService.updateProfile(
         user.no,

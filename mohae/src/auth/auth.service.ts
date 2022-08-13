@@ -162,7 +162,7 @@ export class AuthService {
     queryRunner: QueryRunner,
   ) {
     try {
-      const categoriesRepo: Array<Category> =
+      const categoriesRepo: Category[] =
         await this.categoriesRepository.selectCategory(categories);
       const userPickCategories: number[] = categoriesRepo.map((category) => {
         return category.no;
@@ -170,9 +170,9 @@ export class AuthService {
 
       await queryRunner.manager
         .getCustomRepository(CategoryRepository)
-        .signUpAddUser(userPickCategories, user);
+        .AddUser(userPickCategories, user);
 
-      const termsArr: Array<object> = terms.map((boolean, index) => {
+      const termsArr: object[] = terms.map((boolean, index) => {
         return {
           agree: boolean,
           user: user,
@@ -180,7 +180,7 @@ export class AuthService {
         };
       });
 
-      const termsUserNums: Array<object> = await queryRunner.manager
+      const termsUserNums: object[] = await queryRunner.manager
         .getCustomRepository(TermsUserReporitory)
         .addTermsUser(termsArr);
 
