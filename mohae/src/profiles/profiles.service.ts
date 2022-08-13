@@ -83,13 +83,13 @@ export class ProfilesService {
     try {
       const { no, nickname }: JudgeDuplicateNicknameDto =
         judgeDuplicateNicknameDto;
-      console.log(judgeDuplicateNicknameDto);
+
       if (no) {
         const user: User = await this.userRepository.findOne(no, {
           select: ['no', 'nickname'],
         });
 
-        if (user.nickname === nickname) {
+        if (user?.nickname === nickname) {
           throw new ConflictException('현재 닉네임입니다.');
         }
       }
