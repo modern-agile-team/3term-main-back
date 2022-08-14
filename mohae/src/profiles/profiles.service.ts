@@ -12,6 +12,7 @@ import { ProfilePhotoRepository } from 'src/photo/repository/photo.repository';
 import { JudgeDuplicateNicknameDto } from './dto/judge-duplicate-nickname.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { Connection, QueryRunner } from 'typeorm';
+import { AwsService } from 'src/aws/aws.service';
 
 export interface Profile {
   userNo: number | null;
@@ -39,6 +40,7 @@ export class ProfilesService {
     private readonly categoriesRepository: CategoryRepository,
     private readonly profilePhotoRepository: ProfilePhotoRepository,
     private readonly connection: Connection,
+    private readonly awsService: AwsService,
   ) {}
 
   async readUserProfile(
@@ -110,14 +112,18 @@ export class ProfilesService {
   async updateProfile(
     userNo: User,
     updateProfileDto: UpdateProfileDto,
-    profilePhotoUrl: false | string,
-  ): Promise<string> {
+    file: Express.Multer.File,
+  ): Promise<void> {
     const queryRunner: QueryRunner = this.connection.createQueryRunner();
 
     await queryRunner.connect();
     await queryRunner.startTransaction();
 
     try {
+      const profilePhotoUrl: false | string = !file
+        ? false
+        : await this.awsService.uploadProfileFileToS3('profile', file);
+
       const profile: User = await this.userRepository.findOne(userNo, {
         relations: ['categories'],
       });
@@ -138,19 +144,16 @@ export class ProfilesService {
         beforeProfile,
         queryRunner,
       );
-
       await this.changeProfileCategories(
         userNo,
         profile,
         categories,
         queryRunner,
       );
-
+      if (beforeProfile && profilePhotoUrl) {
+        await this.awsService.deleteProfileS3Object(beforeProfile.photo_url);
+      }
       await queryRunner.commitTransaction();
-
-      return beforeProfile && profilePhotoUrl
-        ? beforeProfile.photo_url
-        : undefined;
     } catch (err) {
       await queryRunner.rollbackTransaction();
       throw err;

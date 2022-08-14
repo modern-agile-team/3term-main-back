@@ -108,20 +108,7 @@ export class ProfilesController {
     @Body() updateProfileDto: UpdateProfileDto,
     @CurrentUser() user: User,
   ): Promise<object> {
-    const profilePhotoUrl: false | string = !file
-      ? false
-      : await this.awsService.uploadProfileFileToS3('profile', file);
-
-    const beforeProfileUrl: string | undefined =
-      await this.profileService.updateProfile(
-        user.no,
-        updateProfileDto,
-        profilePhotoUrl,
-      );
-
-    if (beforeProfileUrl) {
-      await this.awsService.deleteProfileS3Object(beforeProfileUrl);
-    }
+    await this.profileService.updateProfile(user.no, updateProfileDto, file);
 
     return {
       msg: '프로필 정보 수정이 완료되었습니다.',
