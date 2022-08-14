@@ -135,13 +135,13 @@ export class ProfilesService {
         .getCustomRepository(UserRepository)
         .updateProfile(userNo, updateProfileDto);
 
-      const beforeProfile: ProfilePhoto =
+      const beforeProfilePhotoUrl: ProfilePhoto =
         await this.profilePhotoRepository.readProfilePhoto(userNo);
 
       await this.changeProfilePhoto(
         userNo,
         profilePhotoUrl,
-        beforeProfile,
+        beforeProfilePhotoUrl,
         queryRunner,
       );
       await this.changeProfileCategories(
@@ -150,8 +150,10 @@ export class ProfilesService {
         categories,
         queryRunner,
       );
-      if (beforeProfile && profilePhotoUrl) {
-        await this.awsService.deleteProfileS3Object(beforeProfile.photo_url);
+      if (beforeProfilePhotoUrl && profilePhotoUrl) {
+        await this.awsService.deleteProfileS3Object(
+          beforeProfilePhotoUrl.photo_url,
+        );
       }
       await queryRunner.commitTransaction();
     } catch (err) {

@@ -178,7 +178,7 @@ export class AwsService {
   }
 
   async deleteProfileS3Object(
-    originProfilePhotoUrl: string,
+    beforeProfilePhotoUrl: string,
     callback?: (err: AWS.AWSError, data: AWS.S3.DeleteObjectOutput) => void,
   ): Promise<{ success: true }> {
     try {
@@ -186,7 +186,7 @@ export class AwsService {
         .deleteObject(
           {
             Bucket: this.S3_BUCKET_NAME,
-            Key: originProfilePhotoUrl,
+            Key: beforeProfilePhotoUrl,
           },
           callback,
         )
