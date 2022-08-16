@@ -167,12 +167,7 @@ export class AuthController {
     @Body() forgetPasswordDto: ForgetPasswordDto,
   ): Promise<object> {
     try {
-      if (key !== forgetPasswordDto.email)
-        throw new ForbiddenException(
-          '가입하신 이메일로만 비밀번호 변경이 가능합니다.',
-        );
-      await this.authService.getTokenCacheData(key);
-      await this.authService.forgetPassword(forgetPasswordDto);
+      await this.authService.forgetPassword(forgetPasswordDto, key);
 
       return {
         msg: '성공적으로 비밀번호가 변경되었습니다.',

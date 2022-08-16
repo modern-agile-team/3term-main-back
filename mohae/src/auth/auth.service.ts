@@ -2,6 +2,7 @@ import {
   BadRequestException,
   CACHE_MANAGER,
   ConflictException,
+  ForbiddenException,
   HttpException,
   Inject,
   Injectable,
@@ -127,7 +128,6 @@ export class AuthService {
   async createUser(signUpDto: SignUpDto, queryRunner: QueryRunner) {
     try {
       const { school, major, password }: SignUpDto = signUpDto;
-
       const schoolNo: School | null = school
         ? await this.schoolRepository.findOne(school, {
             select: ['no'],
@@ -138,9 +138,9 @@ export class AuthService {
             select: ['no'],
           })
         : null;
-
       const salt: string = await bcrypt.genSalt();
       const hashedPassword: string = await bcrypt.hash(password, salt);
+
       signUpDto.password = hashedPassword;
 
       const user: User = await queryRunner.manager
@@ -162,7 +162,7 @@ export class AuthService {
     queryRunner: QueryRunner,
   ) {
     try {
-      const categoriesRepo: Array<Category> =
+      const categoriesRepo: Category[] =
         await this.categoriesRepository.selectCategory(categories);
       const userPickCategories: number[] = categoriesRepo.map((category) => {
         return category.no;
@@ -170,9 +170,9 @@ export class AuthService {
 
       await queryRunner.manager
         .getCustomRepository(CategoryRepository)
-        .signUpAddUser(userPickCategories, user);
+        .addUser(userPickCategories, user);
 
-      const termsArr: Array<object> = terms.map((boolean, index) => {
+      const termsArr: object[] = terms.map((boolean, index) => {
         return {
           agree: boolean,
           user: user,
@@ -180,7 +180,7 @@ export class AuthService {
         };
       });
 
-      const termsUserNums: Array<object> = await queryRunner.manager
+      const termsUserNums: object[] = await queryRunner.manager
         .getCustomRepository(TermsUserReporitory)
         .addTermsUser(termsArr);
 
@@ -265,7 +265,6 @@ export class AuthService {
 
   async confirmUser(signInDto: SignInDto): Promise<User> {
     const { email }: SignInDto = signInDto;
-
     const user: User = await this.userRepository.confirmUser(email);
 
     this.errorConfirm.notFoundError(
@@ -360,7 +359,16 @@ export class AuthService {
     );
   }
 
-  async forgetPassword(forgetPasswordDto: ForgetPasswordDto): Promise<void> {
+  async forgetPassword(
+    forgetPasswordDto: ForgetPasswordDto,
+    key: string,
+  ): Promise<void> {
+    if (key !== forgetPasswordDto.email)
+      throw new ForbiddenException(
+        '가입하신 이메일로만 비밀번호 변경이 가능합니다.',
+      );
+    await this.getTokenCacheData(key);
+
     const { email, changePassword, confirmChangePassword }: ForgetPasswordDto =
       forgetPasswordDto;
     const user: User = await this.userRepository.signIn(email);

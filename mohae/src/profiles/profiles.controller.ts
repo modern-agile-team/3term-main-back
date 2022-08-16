@@ -28,7 +28,7 @@ import { HTTP_STATUS_CODE } from 'src/common/configs/http-status.config';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 import { JudgeDuplicateNicknameDto } from './dto/judge-duplicate-nickname.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
-import { ProfilesService } from './profiles.service';
+import { Profile, ProfilesService } from './profiles.service';
 import { profileSwagger } from './profiles.swagger';
 import { operationConfig } from 'src/common/swagger-apis/api-operation.swagger';
 
@@ -58,7 +58,7 @@ export class ProfilesController {
     @Param('profileUserNo') profileUserNo: number,
     @CurrentUser() user: User,
   ): Promise<object> {
-    const response: object = await this.profileService.readUserProfile(
+    const response: Profile = await this.profileService.readUserProfile(
       profileUserNo,
       user.no,
     );
@@ -78,7 +78,6 @@ export class ProfilesController {
   @ApiConflictResponse(profileSwagger.judgeDuplicateNickname.confilctResponse)
   @ApiInternalServerErrorResponse(profileSwagger.internalServerErrorResponse)
   @HttpCode(HTTP_STATUS_CODE.success.ok)
-  @ApiBearerAuth('access-token')
   @Post('/check-nickname')
   async judgeDuplicateNickname(
     @Body() judgeDuplicateNicknameDto: JudgeDuplicateNicknameDto,
@@ -109,19 +108,7 @@ export class ProfilesController {
     @Body() updateProfileDto: UpdateProfileDto,
     @CurrentUser() user: User,
   ): Promise<object> {
-    const profilePhotoUrl: boolean | string = !file
-      ? false
-      : await this.awsService.uploadProfileFileToS3('profile', file);
-    const beforeProfileUrl: string | undefined =
-      await this.profileService.updateProfile(
-        user.no,
-        updateProfileDto,
-        profilePhotoUrl,
-      );
-
-    if (beforeProfileUrl) {
-      await this.awsService.deleteProfileS3Object(beforeProfileUrl);
-    }
+    await this.profileService.updateProfile(user.no, updateProfileDto, file);
 
     return {
       msg: '프로필 정보 수정이 완료되었습니다.',
