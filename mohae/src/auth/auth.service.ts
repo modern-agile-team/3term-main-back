@@ -170,7 +170,7 @@ export class AuthService {
 
       await queryRunner.manager
         .getCustomRepository(CategoryRepository)
-        .AddUser(userPickCategories, user);
+        .addUser(userPickCategories, user);
 
       const termsArr: object[] = terms.map((boolean, index) => {
         return {

@@ -205,6 +205,6 @@ export class ProfilesService {
     }
     await queryRunner.manager
       .getCustomRepository(CategoryRepository)
-      .AddUser(afterCategories, userNo);
+      .addUser(afterCategories, userNo);
   }
 }

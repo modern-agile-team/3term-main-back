@@ -31,7 +31,7 @@ export class CategoryRepository extends Repository<Category> {
     }
   }
 
-  async AddUser(categoryNo: number[], user: User): Promise<void> {
+  async addUser(categoryNo: number[], user: User): Promise<void> {
     try {
       await this.createQueryBuilder()
         .relation(Category, 'users')
