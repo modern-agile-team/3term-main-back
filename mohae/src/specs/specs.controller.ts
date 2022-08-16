@@ -164,16 +164,7 @@ export class SpecsController {
     @Param('specNo') specNo: number,
     @CurrentUser() user: User,
   ): Promise<object> {
-    await this.specsService.comfirmCertification(specNo, user.no);
-
-    const originSpecPhotoUrls = await this.specsService.deleteSpec(
-      specNo,
-      user.no,
-    );
-
-    if (originSpecPhotoUrls) {
-      await this.awsService.deleteSpecS3Object(originSpecPhotoUrls);
-    }
+    await this.specsService.deleteSpec(specNo, user.no);
 
     return {
       msg: '성공적으로 스펙을 삭제하였습니다.',

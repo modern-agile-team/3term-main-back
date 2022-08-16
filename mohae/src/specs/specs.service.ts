@@ -63,7 +63,6 @@ export class SpecsService {
 
   async registSpec(
     userNo: number,
-
     createSpecDto: CreateSpecDto,
     files: Express.Multer.File[],
   ): Promise<void> {
@@ -195,34 +194,26 @@ export class SpecsService {
     await queryRunner.connect();
     await queryRunner.startTransaction();
     try {
-      const isSpec = await this.specRepository.findOne(specNo, {
-        select: ['no', 'user', 'deletedAt'],
-        relations: ['user'],
-      });
-      this.errorConfirm.notFoundError(
-        isSpec,
-        '스펙 삭제를 중복으로 할 수 없습니다.',
-      );
+      await this.comfirmCertification(specNo, userNo);
 
       const { specPhotos }: Spec = await this.specRepository.findOne(specNo, {
         select: ['no', 'specPhotos'],
         relations: ['specPhotos'],
       });
-
-      await queryRunner.manager
-        .getCustomRepository(SpecRepository)
-        .deleteSpec(specNo, userNo);
-
-      const originSpecPhotosUrl: string[] = specPhotos.map((specPhoto) => {
+      const originSpecPhotoUrls: string[] = specPhotos.map((specPhoto) => {
         return specPhoto.photo_url;
       });
 
       await queryRunner.manager
+        .getCustomRepository(SpecRepository)
+        .deleteSpec(specNo, userNo);
+      await queryRunner.manager
         .getCustomRepository(SpecPhotoRepository)
         .deleteSpecPhoto(specNo);
-
+      if (originSpecPhotoUrls) {
+        await this.awsService.deleteSpecS3Object(originSpecPhotoUrls);
+      }
       await queryRunner.commitTransaction();
-      return originSpecPhotosUrl;
     } catch (err) {
       throw err;
     }
@@ -248,9 +239,10 @@ export class SpecsService {
 
   async comfirmCertification(specNo: number, userNo: number) {
     try {
-      const { user }: Spec = await this.specRepository.getOneSpec(specNo);
+      const spec: Spec = await this.specRepository.getOneSpec(specNo);
+      this.errorConfirm.notFoundError(spec, '존재하지 않는 스펙입니다.');
 
-      if (user.no !== userNo)
+      if (spec.user.no !== userNo)
         throw new ForbiddenException('스펙의 작성자와 현재 사용자가 다릅니다.');
     } catch (err) {
       throw err;
