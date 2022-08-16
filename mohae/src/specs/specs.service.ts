@@ -2,7 +2,6 @@ import {
   BadRequestException,
   ForbiddenException,
   Injectable,
-  InternalServerErrorException,
 } from '@nestjs/common';
 import { PickType } from '@nestjs/swagger';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -194,7 +193,7 @@ export class SpecsService {
         .getCustomRepository(SpecPhotoRepository)
         .saveSpecPhoto(newSpecPhotos);
     }
-    const originSpecPhotoUrls = specPhotos.map((specPhoto) => {
+    const originSpecPhotoUrls: string[] = specPhotos.map((specPhoto) => {
       return specPhoto.photo_url;
     });
     return originSpecPhotoUrls;

@@ -11,7 +11,6 @@ import {
   UseInterceptors,
   Query,
   HttpCode,
-  BadRequestException,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { FilesInterceptor } from '@nestjs/platform-express';
@@ -40,10 +39,7 @@ import { operationConfig } from 'src/common/swagger-apis/api-operation.swagger';
 @UseGuards(AuthGuard('jwt-refresh-token'))
 @Controller('specs')
 export class SpecsController {
-  constructor(
-    private readonly specsService: SpecsService,
-    private readonly awsService: AwsService,
-  ) {}
+  constructor(private readonly specsService: SpecsService) {}
 
   @ApiOperation(
     operationConfig('스펙 상세조회 API', '하나의 스펙을 불러와 줍니다.'),
