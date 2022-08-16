@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ForbiddenException,
   Injectable,
   InternalServerErrorException,
@@ -14,6 +15,7 @@ import { SpecRepository } from './repository/spec.repository';
 import { UserRepository } from 'src/auth/repository/user.repository';
 import { SpecPhotoRepository } from 'src/photo/repository/photo.repository';
 import { Connection, QueryRunner } from 'typeorm';
+import { AwsService } from 'src/aws/aws.service';
 
 export class OneSpec extends PickType(Spec, [
   'no',
@@ -38,6 +40,7 @@ export class SpecsService {
 
     private readonly connection: Connection,
     private readonly errorConfirm: ErrorConfirm,
+    private readonly awsService: AwsService,
   ) {}
 
   async getOneSpec(specNo: number): Promise<OneSpec> {
@@ -60,8 +63,9 @@ export class SpecsService {
 
   async registSpec(
     userNo: number,
-    specPhotoUrls: string[],
+
     createSpecDto: CreateSpecDto,
+    files: Express.Multer.File[],
   ): Promise<void> {
     const queryRunner: QueryRunner = this.connection.createQueryRunner();
 
@@ -69,44 +73,29 @@ export class SpecsService {
     await queryRunner.startTransaction();
 
     try {
+      if (!files.length)
+        throw new BadRequestException(
+          '사진을 선택하지 않은 경우 기본사진을 넣어주셔야 스펙 등록이 가능 합니다.',
+        );
+
+      const specPhotoUrls: string[] = await this.awsService.uploadSpecFileToS3(
+        'spec',
+        files,
+      );
       const user: User = await this.userRepository.findOne(userNo, {
         relations: ['specs'],
       });
-
       const specNo: Spec = await queryRunner.manager
         .getCustomRepository(SpecRepository)
         .registSpec(createSpecDto, user);
 
       if (specPhotoUrls[0] !== 'logo.png') {
-        const specPhotos: object[] = specPhotoUrls.map(
-          (photoUrl: string, index: number) => {
-            return {
-              photo_url: photoUrl,
-              spec: specNo,
-              order: index + 1,
-            };
-          },
-        );
-        const savedSpecPhotos: object[] = await queryRunner.manager
-          .getCustomRepository(SpecPhotoRepository)
-          .saveSpecPhoto(specPhotos);
-
-        if (specPhotos.length !== savedSpecPhotos.length) {
-          throw new InternalServerErrorException(
-            '스펙 사진 등록 도중 DB관련 오류',
-          );
-        }
-
-        await queryRunner.manager
-          .getCustomRepository(SpecRepository)
-          .addSpecPhoto(specNo, savedSpecPhotos);
-
-        if (specNo) {
-          await queryRunner.manager
-            .getCustomRepository(UserRepository)
-            .userRelation(userNo, specNo, 'specs');
-        }
+        await this.registSpecPhotos(specNo, specPhotoUrls, queryRunner);
       }
+      await queryRunner.manager
+        .getCustomRepository(UserRepository)
+        .userRelation(userNo, specNo, 'specs');
+
       await queryRunner.commitTransaction();
     } catch (err) {
       await queryRunner.rollbackTransaction();
@@ -114,6 +103,29 @@ export class SpecsService {
     } finally {
       await queryRunner.release();
     }
+  }
+
+  async registSpecPhotos(
+    specNo: Spec,
+    specPhotoUrls: string[],
+    queryRunner: QueryRunner,
+  ) {
+    const specPhotos: object[] = specPhotoUrls.map(
+      (photoUrl: string, index: number) => {
+        return {
+          photo_url: photoUrl,
+          spec: specNo,
+          order: index + 1,
+        };
+      },
+    );
+    const savedSpecPhotos: object[] = await queryRunner.manager
+      .getCustomRepository(SpecPhotoRepository)
+      .saveSpecPhoto(specPhotos);
+
+    await queryRunner.manager
+      .getCustomRepository(SpecRepository)
+      .addSpecPhoto(specNo, savedSpecPhotos);
   }
 
   async updateSpec(

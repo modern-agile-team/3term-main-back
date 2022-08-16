@@ -109,16 +109,7 @@ export class SpecsController {
     @Body() createSpecDto: CreateSpecDto,
     @CurrentUser() user: User,
   ): Promise<object> {
-    if (!files.length)
-      throw new BadRequestException(
-        '사진을 선택하지 않은 경우 기본사진을 넣어주셔야 스펙 등록이 가능 합니다.',
-      );
-    const specPhotoUrls: string[] = await this.awsService.uploadSpecFileToS3(
-      'spec',
-      files,
-    );
-
-    await this.specsService.registSpec(user.no, specPhotoUrls, createSpecDto);
+    await this.specsService.registSpec(user.no, createSpecDto, files);
 
     return {
       msg: '성공적으로 스펙등록이 되었습니다.',
