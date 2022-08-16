@@ -42,12 +42,15 @@ export class SpecsService {
 
   async getOneSpec(specNo: number): Promise<OneSpec> {
     try {
-      const { user, ...spec }: Spec = await this.specRepository.getOneSpec(
-        specNo,
-      );
+      const spec: Spec = await this.specRepository.getOneSpec(specNo);
+
+      this.errorConfirm.notFoundError(spec, '해당 스펙이 존재하지 않습니다.');
+
+      const { user } = spec;
+
+      delete spec.user;
       spec['userNo'] = user.no;
       spec['nickname'] = user.nickname;
-      this.errorConfirm.notFoundError(spec, '해당 스펙이 존재하지 않습니다.');
 
       return spec;
     } catch (err) {
