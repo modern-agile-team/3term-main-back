@@ -134,18 +134,7 @@ export class SpecsController {
     @Body() updateSpecdto: UpdateSpecDto,
     @CurrentUser() user: User,
   ): Promise<object> {
-    await this.specsService.comfirmCertification(specNo, user.no);
-
-    const specPhotoUrls: false | string[] =
-      files.length === 0
-        ? false
-        : await this.awsService.uploadSpecFileToS3('spec', files);
-
-    const originSpecPhotoUrls: void | string[] =
-      await this.specsService.updateSpec(specNo, updateSpecdto, specPhotoUrls);
-    if (originSpecPhotoUrls) {
-      await this.awsService.deleteSpecS3Object(originSpecPhotoUrls);
-    }
+    await this.specsService.updateSpec(user.no, specNo, updateSpecdto, files);
 
     return {
       msg: '성공적으로 스펙이 수정되었습니다.',

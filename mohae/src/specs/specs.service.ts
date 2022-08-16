@@ -128,55 +128,36 @@ export class SpecsService {
   }
 
   async updateSpec(
+    userNo: number,
     specNo: number,
     updateSpecDto: UpdateSpecDto,
-    specPhotoUrls: false | string[],
+    files: Express.Multer.File[],
   ): Promise<void | string[]> {
-    const queryRunner = this.connection.createQueryRunner();
+    const queryRunner: QueryRunner = this.connection.createQueryRunner();
 
     await queryRunner.connect();
     await queryRunner.startTransaction();
 
     try {
-      const spec: Spec = await this.specRepository.getOneSpec(specNo);
-
-      this.errorConfirm.notFoundError(spec, '해당 스펙이 존재하지 않습니다.');
+      const spec: Spec = await this.comfirmCertification(specNo, userNo);
 
       await queryRunner.manager
         .getCustomRepository(SpecRepository)
         .updateSpec(specNo, updateSpecDto);
 
+      const specPhotoUrls: false | string[] =
+        files.length === 0
+          ? false
+          : await this.awsService.uploadSpecFileToS3('spec', files);
+
       if (specPhotoUrls) {
-        const { specPhotos }: Spec = await this.specRepository.findOne(specNo, {
-          select: ['no', 'specPhotos'],
-          relations: ['specPhotos'],
-        });
-        if (specPhotos.length) {
-          await queryRunner.manager
-            .getCustomRepository(SpecPhotoRepository)
-            .deleteSpecPhoto(spec.no);
-        }
-        if (specPhotoUrls[0] !== 'logo.png') {
-          const newSpecPhotos: Array<object> = specPhotoUrls.map(
-            (photoUrl: string, index: number) => {
-              return {
-                photo_url: photoUrl,
-                spec: specNo,
-                order: index + 1,
-              };
-            },
-          );
-          await queryRunner.manager
-            .getCustomRepository(SpecPhotoRepository)
-            .saveSpecPhoto(newSpecPhotos);
+        const originSpecPhotoUrls = await this.updateSpecPhotos(
+          spec,
+          specPhotoUrls,
+          queryRunner,
+        );
 
-          const originSpecPhotosUrl = specPhotos.map((specPhoto) => {
-            return specPhoto.photo_url;
-          });
-
-          await queryRunner.commitTransaction();
-          return originSpecPhotosUrl;
-        }
+        await this.awsService.deleteSpecS3Object(originSpecPhotoUrls);
       }
 
       await queryRunner.commitTransaction();
@@ -188,18 +169,45 @@ export class SpecsService {
     }
   }
 
+  async updateSpecPhotos(
+    spec: Spec,
+    specPhotoUrls: string[],
+    queryRunner: QueryRunner,
+  ) {
+    const { specPhotos } = spec;
+    if (specPhotos.length) {
+      await queryRunner.manager
+        .getCustomRepository(SpecPhotoRepository)
+        .deleteSpecPhoto(spec.no);
+    }
+    if (specPhotoUrls[0] !== 'logo.png') {
+      const newSpecPhotos: Array<object> = specPhotoUrls.map(
+        (photoUrl: string, index: number) => {
+          return {
+            photo_url: photoUrl,
+            spec: spec.no,
+            order: index + 1,
+          };
+        },
+      );
+      await queryRunner.manager
+        .getCustomRepository(SpecPhotoRepository)
+        .saveSpecPhoto(newSpecPhotos);
+    }
+    const originSpecPhotoUrls = specPhotos.map((specPhoto) => {
+      return specPhoto.photo_url;
+    });
+    return originSpecPhotoUrls;
+  }
+
   async deleteSpec(specNo: number, userNo: number): Promise<any> {
     const queryRunner = this.connection.createQueryRunner();
 
     await queryRunner.connect();
     await queryRunner.startTransaction();
     try {
-      await this.comfirmCertification(specNo, userNo);
+      const { specPhotos } = await this.comfirmCertification(specNo, userNo);
 
-      const { specPhotos }: Spec = await this.specRepository.findOne(specNo, {
-        select: ['no', 'specPhotos'],
-        relations: ['specPhotos'],
-      });
       const originSpecPhotoUrls: string[] = specPhotos.map((specPhoto) => {
         return specPhoto.photo_url;
       });
@@ -237,13 +245,15 @@ export class SpecsService {
     }
   }
 
-  async comfirmCertification(specNo: number, userNo: number) {
+  async comfirmCertification(specNo: number, userNo: number): Promise<Spec> {
     try {
       const spec: Spec = await this.specRepository.getOneSpec(specNo);
       this.errorConfirm.notFoundError(spec, '존재하지 않는 스펙입니다.');
 
       if (spec.user.no !== userNo)
         throw new ForbiddenException('스펙의 작성자와 현재 사용자가 다릅니다.');
+
+      return spec;
     } catch (err) {
       throw err;
     }
