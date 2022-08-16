@@ -31,18 +31,7 @@ export class CategoryRepository extends Repository<Category> {
     }
   }
 
-  async addUser(categoryNo: number, user: User): Promise<void> {
-    try {
-      await this.createQueryBuilder()
-        .relation(Category, 'users')
-        .of(categoryNo)
-        .add(user);
-    } catch (err) {
-      throw new InternalServerErrorException(`
-        ${err} ### 유저 회원 가입도중 카테고리정보 저장 관련 알 수없는 서버에러입니다. `);
-    }
-  }
-  async signUpAddUser(categoryNo: number[], user: User): Promise<void> {
+  async addUser(categoryNo: number[], user: User): Promise<void> {
     try {
       await this.createQueryBuilder()
         .relation(Category, 'users')
@@ -54,7 +43,7 @@ export class CategoryRepository extends Repository<Category> {
     }
   }
 
-  async deleteUser(categoryNo: Category, user: User): Promise<void> {
+  async deleteUser(categoryNo: number[], user: User): Promise<void> {
     try {
       await this.createQueryBuilder()
         .relation(Category, 'users')
