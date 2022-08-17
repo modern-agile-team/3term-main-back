@@ -23,7 +23,6 @@ import {
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { User } from '@sentry/node';
-import { AwsService } from 'src/aws/aws.service';
 import { HTTP_STATUS_CODE } from 'src/common/configs/http-status.config';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 import { JudgeDuplicateNicknameDto } from './dto/judge-duplicate-nickname.dto';
@@ -35,10 +34,7 @@ import { operationConfig } from 'src/common/swagger-apis/api-operation.swagger';
 @Controller('profile')
 @ApiTags('Profiles')
 export class ProfilesController {
-  constructor(
-    private readonly profileService: ProfilesService,
-    private readonly awsService: AwsService,
-  ) {}
+  constructor(private readonly profileService: ProfilesService) {}
 
   @ApiOperation(
     operationConfig(
