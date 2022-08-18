@@ -71,7 +71,7 @@ export class EmailController {
   )
   @ApiOkResponse(emailSwagger.question.success)
   @ApiUnauthorizedResponse(emailSwagger.question.unauthorized)
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(AuthGuard('jwt-refresh-token'))
   @ApiBearerAuth('access-token')
   @UseInterceptors(FilesInterceptor('image'))
   async questionEmail(

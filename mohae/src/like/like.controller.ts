@@ -26,7 +26,7 @@ import { LikeUserDto } from './dto/user-like.dto';
 import { LikeService } from './like.service';
 import { boardLike } from './like.swagger';
 
-@UseGuards(AuthGuard('jwt'))
+@UseGuards(AuthGuard('jwt-refresh-token'))
 @ApiBearerAuth('access-token')
 @Controller('like')
 @ApiTags('like')
@@ -77,8 +77,7 @@ export class LikeController {
     },
   })
   @ApiBearerAuth('access-token')
-  @UseGuards(AuthGuard('jwt'))
-  // @UseGuards(AuthGuard('jwt-refresh-token'))
+  @UseGuards(AuthGuard('jwt-refresh-token'))
   @HttpCode(HTTP_STATUS_CODE.success.created)
   @Post('/user')
   async likeUser(@Body() likeUserDto: LikeUserDto, @CurrentUser() user: User) {

@@ -89,25 +89,7 @@ export class AuthController {
 
     return {
       msg: `성공적으로 로그인이 되었습니다.`,
-      // response: token,
-      response: token.accessToken,
-    };
-  }
-
-  @ApiOperation(operationConfig('로그인 API', '로그인 기능을 하는 api입니다.'))
-  @ApiOkResponse(authSwagger.signIn.success)
-  @ApiUnauthorizedResponse(authSwagger.signIn.unauthorizedResponse)
-  @ApiNotFoundResponse(authSwagger.signIn.notFoundResponse)
-  @ApiInternalServerErrorResponse(authSwagger.internalServerErrorResponse)
-  @HttpCode(HTTP_STATUS_CODE.success.ok)
-  @Post('signin/test')
-  async tokenTestSignIn(@Body() signInDto: SignInDto): Promise<object> {
-    const token: Token = await this.authService.signIn(signInDto);
-
-    return {
-      msg: `성공적으로 로그인이 되었습니다.`,
       response: token,
-      // response: token.accessToken,
     };
   }
 
@@ -119,8 +101,7 @@ export class AuthController {
   @ApiInternalServerErrorResponse(authSwagger.internalServerErrorResponse)
   @HttpCode(HTTP_STATUS_CODE.success.ok)
   @ApiBearerAuth('access-token')
-  @UseGuards(AuthGuard('jwt'))
-  // @UseGuards(AuthGuard('jwt-refresh-token'))
+  @UseGuards(AuthGuard('jwt-refresh-token'))
   @Patch()
   async signDown(
     @Body() { password }: SignDownDto,
@@ -150,8 +131,7 @@ export class AuthController {
   @ApiInternalServerErrorResponse(authSwagger.internalServerErrorResponse)
   @HttpCode(HTTP_STATUS_CODE.success.ok)
   @ApiBearerAuth('access-token')
-  @UseGuards(AuthGuard('jwt'))
-  // @UseGuards(AuthGuard('jwt-refresh-token'))
+  @UseGuards(AuthGuard('jwt-refresh-token'))
   @Patch('change/password')
   async changePassword(
     @Body() changePasswordDto: ChangePasswordDto,
@@ -187,12 +167,7 @@ export class AuthController {
     @Body() forgetPasswordDto: ForgetPasswordDto,
   ): Promise<object> {
     try {
-      if (key !== forgetPasswordDto.email)
-        throw new ForbiddenException(
-          '가입하신 이메일로만 비밀번호 변경이 가능합니다.',
-        );
-      await this.authService.getTokenCacheData(key);
-      await this.authService.forgetPassword(forgetPasswordDto);
+      await this.authService.forgetPassword(forgetPasswordDto, key);
 
       return {
         msg: '성공적으로 비밀번호가 변경되었습니다.',
@@ -211,8 +186,7 @@ export class AuthController {
   @ApiOkResponse(authSwagger.signOut.success)
   @HttpCode(HTTP_STATUS_CODE.success.ok)
   @ApiBearerAuth('access-token')
-  @UseGuards(AuthGuard('jwt'))
-  // @UseGuards(AuthGuard('jwt-refresh-token'))
+  @UseGuards(AuthGuard('jwt-refresh-token'))
   @Post('signout')
   async signOut(@CurrentUser() user: User) {
     try {

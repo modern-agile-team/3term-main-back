@@ -11,7 +11,6 @@ import {
   UseInterceptors,
   Query,
   HttpCode,
-  BadRequestException,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { FilesInterceptor } from '@nestjs/platform-express';
@@ -37,13 +36,10 @@ import { specSwagger } from './specs.swagger';
 import { operationConfig } from 'src/common/swagger-apis/api-operation.swagger';
 
 @ApiTags('Specs')
-@UseGuards(AuthGuard('jwt'))
+@UseGuards(AuthGuard('jwt-refresh-token'))
 @Controller('specs')
 export class SpecsController {
-  constructor(
-    private readonly specsService: SpecsService,
-    private readonly awsService: AwsService,
-  ) {}
+  constructor(private readonly specsService: SpecsService) {}
 
   @ApiOperation(
     operationConfig('스펙 상세조회 API', '하나의 스펙을 불러와 줍니다.'),
@@ -53,8 +49,7 @@ export class SpecsController {
   @ApiInternalServerErrorResponse(specSwagger.internalServerErrorResponse)
   @HttpCode(HTTP_STATUS_CODE.success.ok)
   @ApiBearerAuth('access-token')
-  @UseGuards(AuthGuard('jwt'))
-  // @UseGuards(AuthGuard('jwt-refresh-token'))
+  @UseGuards(AuthGuard('jwt-refresh-token'))
   @Get('spec/:specNo')
   async getOneSpec(@Param('specNo') specNo: number): Promise<object> {
     const response: OneSpec = await this.specsService.getOneSpec(specNo);
@@ -75,8 +70,7 @@ export class SpecsController {
   @ApiInternalServerErrorResponse(specSwagger.internalServerErrorResponse)
   @HttpCode(HTTP_STATUS_CODE.success.ok)
   @ApiBearerAuth('access-token')
-  @UseGuards(AuthGuard('jwt'))
-  // @UseGuards(AuthGuard('jwt-refresh-token'))
+  @UseGuards(AuthGuard('jwt-refresh-token'))
   @Get('profile')
   async readUserSpec(
     @Query('user') user: number,
@@ -103,8 +97,7 @@ export class SpecsController {
   @ApiInternalServerErrorResponse(specSwagger.internalServerErrorResponse)
   @HttpCode(HTTP_STATUS_CODE.success.created)
   @ApiBearerAuth('access-token')
-  @UseGuards(AuthGuard('jwt'))
-  // @UseGuards(AuthGuard('jwt-refresh-token'))
+  @UseGuards(AuthGuard('jwt-refresh-token'))
   @UseInterceptors(FilesInterceptor('image', 10))
   @Post('regist')
   async registSpec(
@@ -112,16 +105,7 @@ export class SpecsController {
     @Body() createSpecDto: CreateSpecDto,
     @CurrentUser() user: User,
   ): Promise<object> {
-    if (!files.length)
-      throw new BadRequestException(
-        '사진을 선택하지 않은 경우 기본사진을 넣어주셔야 스펙 등록이 가능 합니다.',
-      );
-    const specPhotoUrls: string[] = await this.awsService.uploadSpecFileToS3(
-      'spec',
-      files,
-    );
-
-    await this.specsService.registSpec(user.no, specPhotoUrls, createSpecDto);
+    await this.specsService.registSpec(user.no, createSpecDto, files);
 
     return {
       msg: '성공적으로 스펙등록이 되었습니다.',
@@ -137,8 +121,7 @@ export class SpecsController {
   @ApiInternalServerErrorResponse(specSwagger.internalServerErrorResponse)
   @HttpCode(HTTP_STATUS_CODE.success.ok)
   @ApiBearerAuth('access-token')
-  @UseGuards(AuthGuard('jwt'))
-  // @UseGuards(AuthGuard('jwt-refresh-token'))
+  @UseGuards(AuthGuard('jwt-refresh-token'))
   @UseInterceptors(FilesInterceptor('image', 10))
   @Patch(':specNo')
   async updateSpec(
@@ -147,18 +130,7 @@ export class SpecsController {
     @Body() updateSpecdto: UpdateSpecDto,
     @CurrentUser() user: User,
   ): Promise<object> {
-    await this.specsService.comfirmCertification(specNo, user.no);
-
-    const specPhotoUrls: false | string[] =
-      files.length === 0
-        ? false
-        : await this.awsService.uploadSpecFileToS3('spec', files);
-
-    const originSpecPhotoUrls: void | string[] =
-      await this.specsService.updateSpec(specNo, updateSpecdto, specPhotoUrls);
-    if (originSpecPhotoUrls) {
-      await this.awsService.deleteSpecS3Object(originSpecPhotoUrls);
-    }
+    await this.specsService.updateSpec(user.no, specNo, updateSpecdto, files);
 
     return {
       msg: '성공적으로 스펙이 수정되었습니다.',
@@ -171,23 +143,13 @@ export class SpecsController {
   @ApiInternalServerErrorResponse(specSwagger.internalServerErrorResponse)
   @HttpCode(HTTP_STATUS_CODE.success.ok)
   @ApiBearerAuth('access-token')
-  @UseGuards(AuthGuard('jwt'))
-  // @UseGuards(AuthGuard('jwt-refresh-token'))
+  @UseGuards(AuthGuard('jwt-refresh-token'))
   @Delete(':specNo')
   async deleteSpec(
     @Param('specNo') specNo: number,
     @CurrentUser() user: User,
   ): Promise<object> {
-    await this.specsService.comfirmCertification(specNo, user.no);
-
-    const originSpecPhotoUrls = await this.specsService.deleteSpec(
-      specNo,
-      user.no,
-    );
-
-    if (originSpecPhotoUrls) {
-      await this.awsService.deleteSpecS3Object(originSpecPhotoUrls);
-    }
+    await this.specsService.deleteSpec(specNo, user.no);
 
     return {
       msg: '성공적으로 스펙을 삭제하였습니다.',

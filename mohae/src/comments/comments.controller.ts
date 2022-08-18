@@ -28,7 +28,7 @@ import { CommentsService } from './comments.service';
 import { CreateCommentDto } from './dto/create-comment.dto';
 import { UpdateCommentDto } from './dto/update-comment.dto';
 
-@UseGuards(AuthGuard('jwt'))
+@UseGuards(AuthGuard('jwt-refresh-token'))
 @ApiTags('Comments')
 @Controller('board/:boardNo/comments')
 export class CommentsController {

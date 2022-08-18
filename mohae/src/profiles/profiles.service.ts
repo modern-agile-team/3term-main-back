@@ -8,38 +8,51 @@ import { Category } from 'src/categories/entity/category.entity';
 import { ProfilePhoto } from 'src/photo/entity/profile.photo.entity';
 import { UserRepository } from 'src/auth/repository/user.repository';
 import { CategoryRepository } from 'src/categories/repository/category.repository';
-import { LikeRepository } from 'src/like/repository/like.repository';
-import { MajorRepository } from 'src/majors/repository/major.repository';
 import { ProfilePhotoRepository } from 'src/photo/repository/photo.repository';
-import { SchoolRepository } from 'src/schools/repository/school.repository';
 import { JudgeDuplicateNicknameDto } from './dto/judge-duplicate-nickname.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
-import { ErrorConfirm } from 'src/common/utils/error';
-import { Connection } from 'typeorm';
+import { Connection, QueryRunner } from 'typeorm';
+import { AwsService } from 'src/aws/aws.service';
+
+export interface Profile {
+  userNo: number | null;
+  email: string | null;
+  nickname: string | null;
+  phone: string | null;
+  createdAt: string | null;
+  name: string | null;
+  photo_url: string | null;
+  boardNum: string;
+  likedUserNum: string;
+  isLike: boolean;
+  schoolNo: number | null;
+  schoolName: string | null;
+  majorNo: number | null;
+  majorName: string | null;
+  categoryNo?: string | null;
+  categories?: object[];
+}
 
 @Injectable()
 export class ProfilesService {
   constructor(
     private readonly userRepository: UserRepository,
-    private readonly schoolRepository: SchoolRepository,
-    private readonly majorRepository: MajorRepository,
     private readonly categoriesRepository: CategoryRepository,
-    private readonly likeRepository: LikeRepository,
-    private readonly errorConfirm: ErrorConfirm,
     private readonly profilePhotoRepository: ProfilePhotoRepository,
     private readonly connection: Connection,
+    private readonly awsService: AwsService,
   ) {}
 
   async readUserProfile(
     profileUserNo: number,
     userNo: number,
-  ): Promise<object> {
+  ): Promise<Profile> {
     try {
-      const profile: any = await this.userRepository.readUserProfile(
+      const profile: Profile = await this.userRepository.readUserProfile(
         profileUserNo,
         userNo,
       );
-      if (!profile) {
+      if (!profile.userNo) {
         throw new NotFoundException(
           `No: ${profileUserNo}에 해당하는 회원을 찾을 수 없습니다.`,
         );
@@ -78,7 +91,7 @@ export class ProfilesService {
           select: ['no', 'nickname'],
         });
 
-        if (user.nickname === nickname) {
+        if (user?.nickname === nickname) {
           throw new ConflictException('현재 닉네임입니다.');
         }
       }
@@ -99,14 +112,18 @@ export class ProfilesService {
   async updateProfile(
     userNo: User,
     updateProfileDto: UpdateProfileDto,
-    profilePhotoUrl: any,
-  ): Promise<string> {
-    const queryRunner = this.connection.createQueryRunner();
+    file: Express.Multer.File,
+  ): Promise<void> {
+    const queryRunner: QueryRunner = this.connection.createQueryRunner();
 
     await queryRunner.connect();
     await queryRunner.startTransaction();
 
     try {
+      const profilePhotoUrl: false | string = !file
+        ? false
+        : await this.awsService.uploadProfileFileToS3('profile', file);
+
       const profile: User = await this.userRepository.findOne(userNo, {
         relations: ['categories'],
       });
@@ -118,47 +135,76 @@ export class ProfilesService {
         .getCustomRepository(UserRepository)
         .updateProfile(userNo, updateProfileDto);
 
-      const beforeProfile: ProfilePhoto =
+      const beforeProfilePhotoUrl: ProfilePhoto =
         await this.profilePhotoRepository.readProfilePhoto(userNo);
 
-      if (profilePhotoUrl) {
-        if (beforeProfile) {
-          await queryRunner.manager
-            .getCustomRepository(ProfilePhotoRepository)
-            .deleteProfilePhoto(beforeProfile.no);
-        }
-        if (profilePhotoUrl !== 'logo.png')
-          await queryRunner.manager
-            .getCustomRepository(ProfilePhotoRepository)
-            .saveProfilePhoto(profilePhotoUrl, userNo);
-      }
-      if (categories && categories.length) {
-        const categoriesNo: Category[] =
-          await this.categoriesRepository.selectCategory(categories);
-        const filteredCategories: Category[] = categoriesNo.filter(
-          (category: Category) => category !== undefined,
+      await this.changeProfilePhoto(
+        userNo,
+        profilePhotoUrl,
+        beforeProfilePhotoUrl,
+        queryRunner,
+      );
+      await this.changeProfileCategories(
+        userNo,
+        profile,
+        categories,
+        queryRunner,
+      );
+      if (beforeProfilePhotoUrl && profilePhotoUrl) {
+        await this.awsService.deleteProfileS3Object(
+          beforeProfilePhotoUrl.photo_url,
         );
-
-        for (const categoryNo of profile.categories) {
-          await queryRunner.manager
-            .getCustomRepository(CategoryRepository)
-            .deleteUser(categoryNo, userNo);
-        }
-        for (const categoryNo of filteredCategories)
-          await queryRunner.manager
-            .getCustomRepository(CategoryRepository)
-            .addUser(categoryNo.no, userNo);
       }
       await queryRunner.commitTransaction();
-
-      return beforeProfile && profilePhotoUrl
-        ? beforeProfile.photo_url
-        : undefined;
     } catch (err) {
       await queryRunner.rollbackTransaction();
       throw err;
     } finally {
       await queryRunner.release();
     }
+  }
+
+  async changeProfilePhoto(
+    userNo: User,
+    profilePhotoUrl: false | string,
+    beforeProfile: ProfilePhoto,
+    queryRunner: QueryRunner,
+  ) {
+    if (profilePhotoUrl) {
+      if (beforeProfile) {
+        await queryRunner.manager
+          .getCustomRepository(ProfilePhotoRepository)
+          .deleteProfilePhoto(beforeProfile.no);
+      }
+      if (profilePhotoUrl !== 'logo.png')
+        await queryRunner.manager
+          .getCustomRepository(ProfilePhotoRepository)
+          .saveProfilePhoto(profilePhotoUrl, userNo);
+    }
+  }
+
+  async changeProfileCategories(
+    userNo: User,
+    profile: User,
+    categories: [],
+    queryRunner: QueryRunner,
+  ) {
+    const categoriesNo: Category[] =
+      await this.categoriesRepository.selectCategory(categories);
+    const afterCategories: number[] = categoriesNo.map((category) => {
+      return category.no;
+    });
+    const beforeCategories: number[] = profile.categories.map((category) => {
+      return category.no;
+    });
+
+    if (beforeCategories.length) {
+      await queryRunner.manager
+        .getCustomRepository(CategoryRepository)
+        .deleteUser(beforeCategories, userNo);
+    }
+    await queryRunner.manager
+      .getCustomRepository(CategoryRepository)
+      .addUser(afterCategories, userNo);
   }
 }

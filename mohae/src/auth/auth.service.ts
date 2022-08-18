@@ -2,6 +2,7 @@ import {
   BadRequestException,
   CACHE_MANAGER,
   ConflictException,
+  ForbiddenException,
   HttpException,
   Inject,
   Injectable,
@@ -127,7 +128,6 @@ export class AuthService {
   async createUser(signUpDto: SignUpDto, queryRunner: QueryRunner) {
     try {
       const { school, major, password }: SignUpDto = signUpDto;
-
       const schoolNo: School | null = school
         ? await this.schoolRepository.findOne(school, {
             select: ['no'],
@@ -138,9 +138,9 @@ export class AuthService {
             select: ['no'],
           })
         : null;
-
       const salt: string = await bcrypt.genSalt();
       const hashedPassword: string = await bcrypt.hash(password, salt);
+
       signUpDto.password = hashedPassword;
 
       const user: User = await queryRunner.manager
@@ -162,7 +162,7 @@ export class AuthService {
     queryRunner: QueryRunner,
   ) {
     try {
-      const categoriesRepo: Array<Category> =
+      const categoriesRepo: Category[] =
         await this.categoriesRepository.selectCategory(categories);
       const userPickCategories: number[] = categoriesRepo.map((category) => {
         return category.no;
@@ -170,9 +170,9 @@ export class AuthService {
 
       await queryRunner.manager
         .getCustomRepository(CategoryRepository)
-        .signUpAddUser(userPickCategories, user);
+        .addUser(userPickCategories, user);
 
-      const termsArr: Array<object> = terms.map((boolean, index) => {
+      const termsArr: object[] = terms.map((boolean, index) => {
         return {
           agree: boolean,
           user: user,
@@ -180,7 +180,7 @@ export class AuthService {
         };
       });
 
-      const termsUserNums: Array<object> = await queryRunner.manager
+      const termsUserNums: object[] = await queryRunner.manager
         .getCustomRepository(TermsUserReporitory)
         .addTermsUser(termsArr);
 
@@ -265,7 +265,6 @@ export class AuthService {
 
   async confirmUser(signInDto: SignInDto): Promise<User> {
     const { email }: SignInDto = signInDto;
-
     const user: User = await this.userRepository.confirmUser(email);
 
     this.errorConfirm.notFoundError(
@@ -291,110 +290,99 @@ export class AuthService {
   }
 
   async signDown(user: User, password: string): Promise<void> {
-    try {
-      const { email, no }: User = user;
-      const { salt }: User = await this.userRepository.confirmUser(email);
-      const isPassword: boolean = await bcrypt.compare(password, salt);
+    const { email, no }: User = user;
+    const { salt }: User = await this.userRepository.confirmUser(email);
+    const isPassword: boolean = await bcrypt.compare(password, salt);
 
-      if (isPassword) {
-        const affected: number = await this.userRepository.signDown(no);
+    if (isPassword) {
+      const affected: number = await this.userRepository.signDown(no);
 
-        if (!affected) {
-          throw new InternalServerErrorException(
-            `${no} 회원님의 회원탈퇴가 정상적으로 이루어 지지 않았습니다.`,
-          );
-        }
-      } else {
-        throw new UnauthorizedException('비밀번호가 일치하지 않습니다.');
+      if (!affected) {
+        throw new InternalServerErrorException(
+          `${no} 회원님의 회원탈퇴가 정상적으로 이루어 지지 않았습니다.`,
+        );
       }
-    } catch (err) {
-      throw err;
+    } else {
+      throw new UnauthorizedException('비밀번호가 일치하지 않습니다.');
     }
   }
 
-  async changePassword(changePasswordDto: ChangePasswordDto): Promise<number> {
-    try {
-      const {
-        email,
-        nowPassword,
-        changePassword,
-        confirmChangePassword,
-      }: ChangePasswordDto = changePasswordDto;
-
-      if (changePassword !== confirmChangePassword) {
-        throw new BadRequestException(
-          '새비밀번호와 새비밀번호 확인이 일치하지 않습니다',
-        );
-      }
-      const user: User = await this.userRepository.signIn(email);
-      const isPassword: boolean = await bcrypt.compare(nowPassword, user.salt);
-      if (user && isPassword) {
-        if (nowPassword === changePassword) {
-          throw new ConflictException(
-            '이전의 비밀번호로는 변경하실 수 없습니다.',
-          );
-        }
-        const salt: string = await bcrypt.genSalt();
-        const hashedPassword: string = await bcrypt.hash(changePassword, salt);
-        const affected: number = await this.userRepository.changePassword(
-          email,
-          hashedPassword,
-        );
-        if (affected) return affected;
-
-        throw new InternalServerErrorException(
-          '비밀번호 변경중 알 수 없는 오류입니다.',
-        );
-      }
-      throw new UnauthorizedException(
-        '아이디 또는 비밀번호가 일치하지 않습니다.',
+  async modifyPassword(
+    email: string,
+    changePassword: string,
+    confirmChangePassword: string,
+    user: User,
+  ): Promise<number> {
+    if (changePassword !== confirmChangePassword) {
+      throw new BadRequestException(
+        '새비밀번호와 새비밀번호 확인이 일치하지 않습니다',
       );
-    } catch (err) {
-      throw err;
     }
-  }
-  async forgetPassword(forgetPasswordDto: ForgetPasswordDto): Promise<number> {
-    try {
-      const {
+
+    if (user) {
+      const salt: string = await bcrypt.genSalt();
+      const hashedPassword: string = await bcrypt.hash(changePassword, salt);
+      const affected: number = await this.userRepository.changePassword(
         email,
-        changePassword,
-        confirmChangePassword,
-      }: ForgetPasswordDto = forgetPasswordDto;
+        hashedPassword,
+      );
+      if (affected) return affected;
 
-      if (changePassword !== confirmChangePassword) {
-        throw new BadRequestException(
-          '새비밀번호와 새비밀번호 확인이 일치하지 않습니다',
-        );
-      }
-      const user: User = await this.userRepository.signIn(email);
-
-      if (user) {
-        const isPassword: boolean = await bcrypt.compare(
-          changePassword,
-          user.salt,
-        );
-
-        if (isPassword) {
-          throw new ConflictException(
-            '이전 비밀번호로는 변경하실 수 없습니다.',
-          );
-        }
-        const salt: string = await bcrypt.genSalt();
-        const hashedPassword: string = await bcrypt.hash(changePassword, salt);
-        const affected: number = await this.userRepository.changePassword(
-          email,
-          hashedPassword,
-        );
-        if (affected) return affected;
-
-        throw new InternalServerErrorException(
-          '비밀번호 변경중 알 수 없는 오류입니다.',
-        );
-      }
-      throw new UnauthorizedException('존재하지 않는 이메일 입니다.');
-    } catch (err) {
-      throw err;
+      throw new InternalServerErrorException(
+        '비밀번호 변경중 알 수 없는 오류입니다.',
+      );
     }
+    throw new UnauthorizedException('존재하지 않는 이메일 입니다.');
+  }
+
+  async changePassword(changePasswordDto: ChangePasswordDto): Promise<void> {
+    const {
+      email,
+      nowPassword,
+      changePassword,
+      confirmChangePassword,
+    }: ChangePasswordDto = changePasswordDto;
+    const user: User = await this.userRepository.signIn(email);
+    const isPassword: boolean = await bcrypt.compare(nowPassword, user.salt);
+
+    if (!isPassword) {
+      throw new UnauthorizedException('비밀번호가 일치하지 않습니다.');
+    }
+    if (nowPassword === changePassword) {
+      throw new ConflictException('이전의 비밀번호로는 변경하실 수 없습니다.');
+    }
+    await this.modifyPassword(
+      email,
+      changePassword,
+      confirmChangePassword,
+      user,
+    );
+  }
+
+  async forgetPassword(
+    forgetPasswordDto: ForgetPasswordDto,
+    key: string,
+  ): Promise<void> {
+    if (key !== forgetPasswordDto.email)
+      throw new ForbiddenException(
+        '가입하신 이메일로만 비밀번호 변경이 가능합니다.',
+      );
+    await this.getTokenCacheData(key);
+
+    const { email, changePassword, confirmChangePassword }: ForgetPasswordDto =
+      forgetPasswordDto;
+    const user: User = await this.userRepository.signIn(email);
+    const isPassword: boolean = await bcrypt.compare(changePassword, user.salt);
+
+    if (isPassword) {
+      throw new ConflictException('이전 비밀번호로는 변경하실 수 없습니다.');
+    }
+    await this.modifyPassword(
+      email,
+      changePassword,
+      confirmChangePassword,
+      user,
+    );
   }
 
   async createJwtToken(user: User) {
@@ -434,6 +422,20 @@ export class AuthService {
     }
   }
 
+  async validateAccessToken(jwtFromRequest: UserPayload): Promise<any> {
+    const { email, userNo } = jwtFromRequest;
+    const { salt, ...user }: User = await this.userRepository.signIn(email);
+    const accessToken: string = await this.cacheManager.get<string>(
+      String(userNo) + 'access',
+    );
+
+    if (!user || !accessToken) {
+      throw new UnauthorizedException();
+    }
+
+    return user;
+  }
+
   async createAccessToken(payload: UserPayload) {
     const preAccessToken: string = await this.cacheManager.get<string>(
       String(payload.userNo) + 'access',
@@ -445,11 +447,17 @@ export class AuthService {
     if (!!preAccessToken || !refreshToken) {
       await this.cacheManager.del(String(payload.userNo) + 'access');
       await this.cacheManager.del(String(payload.userNo) + 'refresh');
+
+      if (!!preAccessToken) {
+        throw new HttpException(
+          'access 토큰이 만료되기 이전에는 재발급 할 수 없습니다. 다시 로그인 해주세요',
+          410,
+        );
+      }
       throw new HttpException(
-        'access 토큰이 만료되기 이전에는 재발급 할 수 없습니다. 다시 로그인 해주세요',
+        '모든 토큰이 만료 되었습니다. 다시 로그인 해주세요',
         410,
       );
-      // 여기 이후부터는 프론트 진영에서 세션 스토리지에 있는 토큰을 날리고 로그인을 다시 하도록 유도해야 됨
     }
 
     const newPayload: UserPayload = {
