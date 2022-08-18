@@ -44,6 +44,7 @@ export class BoardRepository extends Repository<Board> {
           'boards.title AS title',
           'boards.description AS description',
           'boards.isDeadline AS isDeadline',
+          'boards.createdAt AS createdAt',
           'boards.hit AS hit',
           'boards.price AS price',
           'boards.summary AS summary',
