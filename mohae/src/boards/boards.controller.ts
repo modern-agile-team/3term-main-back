@@ -14,6 +14,7 @@ import {
   Inject,
   Req,
   UnauthorizedException,
+  BadRequestException,
 } from '@nestjs/common';
 import { User } from '@sentry/node';
 import { AuthGuard } from '@nestjs/passport';
@@ -280,10 +281,10 @@ export class BoardsController {
     @Body() createBoardDto: CreateBoardDto,
     @CurrentUser() user: User,
   ): Promise<object> {
-    const boardPhotoUrls: string[] = await this.awsService.uploadBoardFileToS3(
-      'board',
-      files,
-    );
+    const boardPhotoUrls: false | string[] =
+      files.length === 0
+        ? false
+        : await this.awsService.uploadBoardFileToS3('board', files);
 
     await this.boardService.createBoard(createBoardDto, user, boardPhotoUrls);
 
