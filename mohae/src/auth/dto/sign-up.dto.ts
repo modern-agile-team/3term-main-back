@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import {
+  ArrayNotEmpty,
   IsArray,
   IsBoolean,
   IsEmail,
@@ -89,6 +90,7 @@ export class SignUpDto {
   })
   @IsOptional()
   @IsArray()
+  @ArrayNotEmpty()
   categories?: [];
 
   @ApiProperty({
@@ -98,5 +100,6 @@ export class SignUpDto {
   })
   @IsArray()
   @IsNotEmpty()
+  @ArrayNotEmpty()
   terms: [];
 }
