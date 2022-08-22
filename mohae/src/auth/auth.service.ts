@@ -400,20 +400,20 @@ export class AuthService {
       const accessToken: string = this.jwtService.sign(payload);
 
       payload.expiration = this.configService.get<number>(
-        'REFRESHTOCKEN_EXPIRES_IN',
+        'REFRESH_TOKEN_EXPIRES_IN',
       );
       payload.token = 'refreshToken';
 
       const refreshToken: string = this.jwtService.sign(payload, {
         secret: this.configService.get<string>('JWT_SECRET'),
-        expiresIn: this.configService.get<number>('REFRESHTOCKEN_EXPIRES_IN'),
+        expiresIn: this.configService.get<number>('REFRESH_TOKEN_EXPIRES_IN'),
       });
 
       await this.cacheManager.set(String(user.no) + 'access', accessToken, {
         ttl: await this.configService.get('EXPIRES_IN'),
       });
       await this.cacheManager.set(String(user.no) + 'refresh', refreshToken, {
-        ttl: await this.configService.get('REFRESHTOCKEN_EXPIRES_IN'),
+        ttl: await this.configService.get('REFRESH_TOKEN_EXPIRES_IN'),
       });
 
       return { accessToken, refreshToken };
