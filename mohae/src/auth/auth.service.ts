@@ -162,12 +162,16 @@ export class AuthService {
     queryRunner: QueryRunner,
   ) {
     try {
+      if (!categories.length)
+        throw new BadRequestException(
+          '관심사 미선택시 초기값으로 null을 넣어주어야 합니다.',
+        );
+
       const categoriesRepo: Category[] =
         await this.categoriesRepository.selectCategory(categories);
       const userPickCategories: number[] = categoriesRepo.map((category) => {
         return category.no;
       });
-
       await queryRunner.manager
         .getCustomRepository(CategoryRepository)
         .addUser(userPickCategories, user);
