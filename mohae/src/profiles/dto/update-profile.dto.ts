@@ -2,6 +2,8 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
 
 import { IsArray, IsNumber, IsOptional, IsString } from 'class-validator';
+import { Major } from 'src/majors/entity/major.entity';
+import { School } from 'src/schools/entity/school.entity';
 
 export class UpdateProfileDto {
   @ApiProperty({
@@ -32,7 +34,7 @@ export class UpdateProfileDto {
   @IsOptional()
   @IsNumber()
   @Transform(({ value }) => JSON.parse(value))
-  school: number;
+  school: School;
 
   @ApiProperty({
     example: 1 || null,
@@ -42,7 +44,7 @@ export class UpdateProfileDto {
   @IsOptional()
   @Transform(({ value }) => JSON.parse(value))
   @IsNumber()
-  major: number;
+  major: Major;
 
   @ApiProperty({
     example: [1, 2, 3] || null,

@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ConflictException,
   Injectable,
   NotFoundException,
@@ -13,6 +14,8 @@ import { JudgeDuplicateNicknameDto } from './dto/judge-duplicate-nickname.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { Connection, QueryRunner } from 'typeorm';
 import { AwsService } from 'src/aws/aws.service';
+import { SchoolRepository } from 'src/schools/repository/school.repository';
+import { MajorRepository } from 'src/majors/repository/major.repository';
 
 export interface Profile {
   userNo: number | null;
@@ -39,6 +42,8 @@ export class ProfilesService {
     private readonly userRepository: UserRepository,
     private readonly categoriesRepository: CategoryRepository,
     private readonly profilePhotoRepository: ProfilePhotoRepository,
+    private schoolRepository: SchoolRepository,
+    private majorRepository: MajorRepository,
     private readonly connection: Connection,
     private readonly awsService: AwsService,
   ) {}
@@ -131,6 +136,17 @@ export class ProfilesService {
       const { categories }: UpdateProfileDto = updateProfileDto;
       delete updateProfileDto.categories;
 
+      updateProfileDto.school = updateProfileDto.school
+        ? await this.schoolRepository.findOne(updateProfileDto.school, {
+            select: ['no'],
+          })
+        : null;
+      updateProfileDto.major = updateProfileDto.major
+        ? await this.majorRepository.findOne(updateProfileDto.major, {
+            select: ['no'],
+          })
+        : null;
+
       await queryRunner.manager
         .getCustomRepository(UserRepository)
         .updateProfile(userNo, updateProfileDto);
@@ -189,6 +205,11 @@ export class ProfilesService {
     categories: [],
     queryRunner: QueryRunner,
   ) {
+    if (!categories.length)
+      throw new BadRequestException(
+        '관심사 미선택시 초기값으로 null을 넣어주어야 합니다.',
+      );
+
     const categoriesNo: Category[] =
       await this.categoriesRepository.selectCategory(categories);
     const afterCategories: number[] = categoriesNo.map((category) => {
