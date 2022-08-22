@@ -133,11 +133,22 @@ export class AuthService {
             select: ['no'],
           })
         : null;
+      if (schoolNo === undefined) {
+        throw new BadRequestException(
+          `${school}에 해당하는 학교는 존재하지 않습니다.`,
+        );
+      }
       const majorNo: Major | null = major
         ? await this.majorRepository.findOne(major, {
             select: ['no'],
           })
         : null;
+      if (majorNo === undefined) {
+        throw new BadRequestException(
+          `${major}에 해당하는 전공은 존재하지 않습니다.`,
+        );
+      }
+
       const salt: string = await bcrypt.genSalt();
       const hashedPassword: string = await bcrypt.hash(password, salt);
 

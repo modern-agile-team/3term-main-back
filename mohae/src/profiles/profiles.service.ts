@@ -16,6 +16,8 @@ import { Connection, QueryRunner } from 'typeorm';
 import { AwsService } from 'src/aws/aws.service';
 import { SchoolRepository } from 'src/schools/repository/school.repository';
 import { MajorRepository } from 'src/majors/repository/major.repository';
+import { School } from 'src/schools/entity/school.entity';
+import { Major } from 'src/majors/entity/major.entity';
 
 export interface Profile {
   userNo: number | null;
@@ -133,19 +135,10 @@ export class ProfilesService {
         relations: ['categories'],
       });
 
-      const { categories }: UpdateProfileDto = updateProfileDto;
+      const { categories, school, major }: UpdateProfileDto = updateProfileDto;
       delete updateProfileDto.categories;
 
-      updateProfileDto.school = updateProfileDto.school
-        ? await this.schoolRepository.findOne(updateProfileDto.school, {
-            select: ['no'],
-          })
-        : null;
-      updateProfileDto.major = updateProfileDto.major
-        ? await this.majorRepository.findOne(updateProfileDto.major, {
-            select: ['no'],
-          })
-        : null;
+      await this.changeSchoolAndMajorVerified(updateProfileDto, school, major);
 
       await queryRunner.manager
         .getCustomRepository(UserRepository)
@@ -177,6 +170,35 @@ export class ProfilesService {
       throw err;
     } finally {
       await queryRunner.release();
+    }
+  }
+
+  async changeSchoolAndMajorVerified(
+    updateProfileDto: UpdateProfileDto,
+    school: School,
+    major: Major,
+  ) {
+    updateProfileDto.school = school
+      ? await this.schoolRepository.findOne(school, {
+          select: ['no'],
+        })
+      : null;
+    if (updateProfileDto.school === undefined) {
+      throw new BadRequestException(
+        `${school}에 해당하는 학교는 존재하지 않습니다.`,
+      );
+    }
+
+    updateProfileDto.major = major
+      ? await this.majorRepository.findOne(major, {
+          select: ['no'],
+        })
+      : null;
+
+    if (updateProfileDto.major === undefined) {
+      throw new BadRequestException(
+        `${major}에 해당하는 전공은 존재하지 않습니다.`,
+      );
     }
   }
 
