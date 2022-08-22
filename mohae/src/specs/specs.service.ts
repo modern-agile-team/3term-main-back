@@ -1,19 +1,20 @@
 import {
+  BadRequestException,
   ForbiddenException,
   Injectable,
-  InternalServerErrorException,
 } from '@nestjs/common';
+import { PickType } from '@nestjs/swagger';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/auth/entity/user.entity';
-import { UserRepository } from 'src/auth/repository/user.repository';
-import { SpecPhotoRepository } from 'src/photo/repository/photo.repository';
+import { Spec } from './entity/spec.entity';
 import { ErrorConfirm } from 'src/common/utils/error';
 import { CreateSpecDto } from './dto/create-spec.dto';
 import { UpdateSpecDto } from './dto/update-spec.dto';
-import { Spec } from './entity/spec.entity';
 import { SpecRepository } from './repository/spec.repository';
-import { Connection } from 'typeorm';
-import { PickType } from '@nestjs/swagger';
+import { UserRepository } from 'src/auth/repository/user.repository';
+import { SpecPhotoRepository } from 'src/photo/repository/photo.repository';
+import { Connection, QueryRunner } from 'typeorm';
+import { AwsService } from 'src/aws/aws.service';
 
 export class OneSpec extends PickType(Spec, [
   'no',
@@ -38,30 +39,20 @@ export class SpecsService {
 
     private readonly connection: Connection,
     private readonly errorConfirm: ErrorConfirm,
+    private readonly awsService: AwsService,
   ) {}
-  async getAllSpec(profileUserNo: number): Promise<any> {
-    try {
-      const specs: Array<Spec> = await this.specRepository.getAllSpec(
-        profileUserNo,
-      );
-
-      if (!specs.length) {
-        return '현재 등록된 스펙이 없습니다.';
-      }
-      return specs;
-    } catch (err) {
-      throw err;
-    }
-  }
 
   async getOneSpec(specNo: number): Promise<OneSpec> {
     try {
-      const { user, ...spec }: Spec = await this.specRepository.getOneSpec(
-        specNo,
-      );
+      const spec: Spec = await this.specRepository.getOneSpec(specNo);
 
-      spec['nickname'] = user.nickname;
       this.errorConfirm.notFoundError(spec, '해당 스펙이 존재하지 않습니다.');
+
+      const { user } = spec;
+
+      delete spec.user;
+      spec['userNo'] = user.no;
+      spec['nickname'] = user.nickname;
 
       return spec;
     } catch (err) {
@@ -71,53 +62,38 @@ export class SpecsService {
 
   async registSpec(
     userNo: number,
-    specPhotoUrls: any,
     createSpecDto: CreateSpecDto,
+    files: Express.Multer.File[],
   ): Promise<void> {
-    const queryRunner = this.connection.createQueryRunner();
+    const queryRunner: QueryRunner = this.connection.createQueryRunner();
 
     await queryRunner.connect();
     await queryRunner.startTransaction();
 
     try {
+      if (!files.length)
+        throw new BadRequestException(
+          '사진을 선택하지 않은 경우 기본사진을 넣어주셔야 스펙 등록이 가능 합니다.',
+        );
+
+      const specPhotoUrls: string[] = await this.awsService.uploadSpecFileToS3(
+        'spec',
+        files,
+      );
       const user: User = await this.userRepository.findOne(userNo, {
         relations: ['specs'],
       });
-
       const specNo: Spec = await queryRunner.manager
         .getCustomRepository(SpecRepository)
         .registSpec(createSpecDto, user);
 
-      if (specPhotoUrls[0] !== 'logo.jpg') {
-        const specPhotos: object[] = specPhotoUrls.map(
-          (photoUrl: string, index: number) => {
-            return {
-              photo_url: photoUrl,
-              spec: specNo,
-              order: index + 1,
-            };
-          },
-        );
-        const savedSpecPhotos: object[] = await queryRunner.manager
-          .getCustomRepository(SpecPhotoRepository)
-          .saveSpecPhoto(specPhotos);
-
-        if (specPhotos.length !== savedSpecPhotos.length) {
-          throw new InternalServerErrorException(
-            '스펙 사진 등록 도중 DB관련 오류',
-          );
-        }
-
-        await queryRunner.manager
-          .getCustomRepository(SpecRepository)
-          .addSpecPhoto(specNo, savedSpecPhotos);
-
-        if (specNo) {
-          await queryRunner.manager
-            .getCustomRepository(UserRepository)
-            .userRelation(userNo, specNo, 'specs');
-        }
+      if (specPhotoUrls[0] !== 'logo.png') {
+        await this.registSpecPhotos(specNo, specPhotoUrls, queryRunner);
       }
+      await queryRunner.manager
+        .getCustomRepository(UserRepository)
+        .userRelation(userNo, specNo, 'specs');
+
       await queryRunner.commitTransaction();
     } catch (err) {
       await queryRunner.rollbackTransaction();
@@ -127,56 +103,60 @@ export class SpecsService {
     }
   }
 
+  async registSpecPhotos(
+    specNo: Spec,
+    specPhotoUrls: string[],
+    queryRunner: QueryRunner,
+  ) {
+    const specPhotos: object[] = specPhotoUrls.map(
+      (photoUrl: string, index: number) => {
+        return {
+          photo_url: photoUrl,
+          spec: specNo,
+          order: index + 1,
+        };
+      },
+    );
+    const savedSpecPhotos: object[] = await queryRunner.manager
+      .getCustomRepository(SpecPhotoRepository)
+      .saveSpecPhoto(specPhotos);
+
+    await queryRunner.manager
+      .getCustomRepository(SpecRepository)
+      .addSpecPhoto(specNo, savedSpecPhotos);
+  }
+
   async updateSpec(
+    userNo: number,
     specNo: number,
     updateSpecDto: UpdateSpecDto,
-    specPhotoUrls: false | string[],
-  ): Promise<any> {
-    const queryRunner = this.connection.createQueryRunner();
+    files: Express.Multer.File[],
+  ): Promise<void | string[]> {
+    const queryRunner: QueryRunner = this.connection.createQueryRunner();
 
     await queryRunner.connect();
     await queryRunner.startTransaction();
 
     try {
-      const spec: Spec = await this.specRepository.getOneSpec(specNo);
-
-      this.errorConfirm.notFoundError(spec, '해당 스펙이 존재하지 않습니다.');
+      const spec: Spec = await this.confirmCertification(specNo, userNo);
 
       await queryRunner.manager
         .getCustomRepository(SpecRepository)
         .updateSpec(specNo, updateSpecDto);
 
+      const specPhotoUrls: false | string[] =
+        files.length === 0
+          ? false
+          : await this.awsService.uploadSpecFileToS3('spec', files);
+
       if (specPhotoUrls) {
-        const { specPhotos }: Spec = await this.specRepository.findOne(specNo, {
-          select: ['no', 'specPhotos'],
-          relations: ['specPhotos'],
-        });
-        if (specPhotos.length) {
-          await queryRunner.manager
-            .getCustomRepository(SpecPhotoRepository)
-            .deleteSpecPhoto(spec.no);
-        }
-        if (specPhotoUrls[0] !== 'logo.jpg') {
-          const newSpecPhotos: Array<object> = specPhotoUrls.map(
-            (photoUrl: string, index: number) => {
-              return {
-                photo_url: photoUrl,
-                spec: specNo,
-                order: index + 1,
-              };
-            },
-          );
-          await queryRunner.manager
-            .getCustomRepository(SpecPhotoRepository)
-            .saveSpecPhoto(newSpecPhotos);
+        const originSpecPhotoUrls: string[] = await this.updateSpecPhotos(
+          spec,
+          specPhotoUrls,
+          queryRunner,
+        );
 
-          const originSpecPhotosUrl = specPhotos.map((specPhoto) => {
-            return specPhoto.photo_url;
-          });
-
-          await queryRunner.commitTransaction();
-          return originSpecPhotosUrl;
-        }
+        await this.awsService.deleteSpecS3Object(originSpecPhotoUrls);
       }
 
       await queryRunner.commitTransaction();
@@ -186,6 +166,37 @@ export class SpecsService {
     } finally {
       await queryRunner.release();
     }
+  }
+
+  async updateSpecPhotos(
+    spec: Spec,
+    specPhotoUrls: string[],
+    queryRunner: QueryRunner,
+  ): Promise<string[]> {
+    const { specPhotos } = spec;
+    if (specPhotos.length) {
+      await queryRunner.manager
+        .getCustomRepository(SpecPhotoRepository)
+        .deleteSpecPhoto(spec.no);
+    }
+    if (specPhotoUrls[0] !== 'logo.png') {
+      const newSpecPhotos: object[] = specPhotoUrls.map(
+        (photoUrl: string, index: number) => {
+          return {
+            photo_url: photoUrl,
+            spec: spec.no,
+            order: index + 1,
+          };
+        },
+      );
+      await queryRunner.manager
+        .getCustomRepository(SpecPhotoRepository)
+        .saveSpecPhoto(newSpecPhotos);
+    }
+    const originSpecPhotoUrls: string[] = specPhotos.map((specPhoto) => {
+      return specPhoto.photo_url;
+    });
+    return originSpecPhotoUrls;
   }
 
   async deleteSpec(specNo: number, userNo: number): Promise<any> {
@@ -194,39 +205,21 @@ export class SpecsService {
     await queryRunner.connect();
     await queryRunner.startTransaction();
     try {
-      const isSpec = await this.specRepository.findOne(specNo, {
-        select: ['no', 'user', 'deletedAt'],
-        relations: ['user'],
-      });
-      this.errorConfirm.notFoundError(
-        isSpec,
-        '스펙 삭제를 중복으로 할 수 없습니다.',
-      );
-
-      const { specPhotos }: Spec = await this.specRepository.findOne(specNo, {
-        select: ['no', 'specPhotos'],
-        relations: ['specPhotos'],
-      });
-
-      const isSpecDelete: number = await queryRunner.manager
-        .getCustomRepository(SpecRepository)
-        .deleteSpec(specNo, userNo);
-
-      if (!isSpecDelete) {
-        throw new ForbiddenException(
-          '스펙의 작성자 만이 스펙을 삭제할 수 있습니다.',
-        );
-      }
-      const originSpecPhotosUrl: string[] = specPhotos.map((specPhoto) => {
+      const { specPhotos } = await this.confirmCertification(specNo, userNo);
+      const originSpecPhotoUrls: string[] = specPhotos.map((specPhoto) => {
         return specPhoto.photo_url;
       });
 
       await queryRunner.manager
+        .getCustomRepository(SpecRepository)
+        .deleteSpec(specNo, userNo);
+      await queryRunner.manager
         .getCustomRepository(SpecPhotoRepository)
         .deleteSpecPhoto(specNo);
-
+      if (originSpecPhotoUrls.length) {
+        await this.awsService.deleteSpecS3Object(originSpecPhotoUrls);
+      }
       await queryRunner.commitTransaction();
-      return originSpecPhotosUrl;
     } catch (err) {
       throw err;
     }
@@ -245,6 +238,20 @@ export class SpecsService {
       );
 
       return profileSpecs;
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  async confirmCertification(specNo: number, userNo: number): Promise<Spec> {
+    try {
+      const spec: Spec = await this.specRepository.getOneSpec(specNo);
+      this.errorConfirm.notFoundError(spec, '존재하지 않는 스펙입니다.');
+
+      if (spec.user?.no !== userNo)
+        throw new ForbiddenException('스펙의 작성자와 현재 사용자가 다릅니다.');
+
+      return spec;
     } catch (err) {
       throw err;
     }

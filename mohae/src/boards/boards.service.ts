@@ -1,37 +1,43 @@
 import {
   BadGatewayException,
   BadRequestException,
-  ConsoleLogger,
+  CACHE_MANAGER,
+  Inject,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { Connection, EntityManager, getManager, QueryRunner } from 'typeorm';
+import { User } from '@sentry/node';
 import { CategoryRepository } from 'src/categories/repository/category.repository';
 import { AreasRepository } from 'src/areas/repository/area.repository';
-import { Any, Connection, DeleteResult, RelationId } from 'typeorm';
-import { CreateBoardDto } from './dto/createBoard.dto';
 import { BoardRepository } from './repository/board.repository';
-import { ErrorConfirm } from 'src/common/utils/error';
 import { UserRepository } from 'src/auth/repository/user.repository';
+import { BoardPhotoRepository } from 'src/photo/repository/photo.repository';
+import { ErrorConfirm } from 'src/common/utils/error';
 import { Board } from './entity/board.entity';
 import { Category } from 'src/categories/entity/category.entity';
 import { Area } from 'src/areas/entity/areas.entity';
-import { BoardPhotoRepository } from 'src/photo/repository/photo.repository';
-import { User } from '@sentry/node';
 import { FilterBoardDto } from './dto/filterBoard.dto';
 import { HotBoardDto } from './dto/hotBoard.dto';
 import { SearchBoardDto } from './dto/searchBoard.dto';
 import { PaginationDto } from './dto/pagination.dto';
-import {
-  BoardLikeRepository,
-  LikeRepository,
-} from 'src/like/repository/like.repository';
+import { CreateBoardDto } from './dto/createBoard.dto';
+import { Cache } from 'cache-manager';
+
+export interface boardInfo {
+  affectedRows: number;
+  insertId?: number;
+}
 
 @Injectable()
 export class BoardsService {
   constructor(
+    @Inject(CACHE_MANAGER)
+    private readonly cacheManager: Cache,
+
     @InjectRepository(BoardRepository)
     private readonly boardRepository: BoardRepository,
 
@@ -43,9 +49,6 @@ export class BoardsService {
 
     @InjectRepository(UserRepository)
     private readonly userRepository: UserRepository,
-
-    @InjectRepository(BoardLikeRepository)
-    private readonly boardLikeRepository: BoardLikeRepository,
 
     private readonly connection: Connection,
 
@@ -78,7 +81,7 @@ export class BoardsService {
         endTime.setDate(endTime.getDate() + +date);
       }
 
-      const boardKey: any = Object.keys(filterBoardDto);
+      const boardKey: string[] = Object.keys(filterBoardDto);
 
       const duplicateCheck: object = {};
 
@@ -133,7 +136,7 @@ export class BoardsService {
 
       this.errorConfirm.notFoundError(user.no, `해당 회원을 찾을 수 없습니다.`);
 
-      const board: any = await this.boardRepository.readOneBoardByAuth(
+      const board: Board = await this.boardRepository.readOneBoardByAuth(
         boardNo,
         userNo,
       );
@@ -143,18 +146,69 @@ export class BoardsService {
         `해당 게시글을 찾을 수 없습니다.`,
       );
 
-      const boardHit: number = await this.boardRepository.addBoardHit(board);
+      const hit: number = await this.getBoardHit(boardNo, board);
+      board.hit = hit;
 
-      if (!boardHit) {
-        throw new InternalServerErrorException(
-          '게시글 조회 수 증가가 되지 않았습니다',
-        );
-      }
       board.likeCount = Number(board.likeCount);
 
       return { board, authorization: true };
     } catch (err) {
       throw err;
+    }
+  }
+
+  async getBoardHit(boardNo: number, board: Board): Promise<number> {
+    try {
+      const dailyView: object =
+        (await this.cacheManager.get(`dailyView`)) || {};
+
+      const boardNum: string = String(boardNo);
+
+      if (dailyView && dailyView[boardNum]) {
+        dailyView[boardNum] += 1;
+        await this.cacheManager.set(`dailyView`, dailyView);
+
+        return dailyView[boardNum];
+      }
+
+      dailyView[boardNum] = board.hit + 1;
+      await this.cacheManager.set(`dailyView`, dailyView);
+
+      return dailyView[boardNum];
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  async updateHit(): Promise<number> {
+    try {
+      const dailyView: null | object = await this.cacheManager.get(`dailyView`);
+
+      if (!dailyView) {
+        return 0;
+      }
+
+      const keys: string = Object.keys(dailyView).join(',');
+      let queryStart: string = 'update boards set hit = (case ';
+      const queryEnd: string = `end) where boards.no in (${keys});`;
+
+      for (let boardNo in dailyView) {
+        const queryAdd: string = `when boards.no = ${boardNo} then ${dailyView[boardNo]} `;
+        queryStart += queryAdd;
+      }
+
+      await this.cacheManager.del('dailyView');
+
+      const entityManager: EntityManager = getManager();
+      const { affectedRows }: boardInfo = await entityManager.query(
+        queryStart + queryEnd,
+      );
+
+      return affectedRows;
+    } catch (err) {
+      throw new InternalServerErrorException(
+        `${err}: 게시글 조회수 업데이트: 알 수 없는 서버 에러입니다.`,
+      );
     }
   }
 
@@ -223,12 +277,10 @@ export class BoardsService {
       const currentTime: Date = new Date();
       currentTime.setHours(currentTime.getHours() + 9);
 
-      if (board.deadline !== null) {
-        if (board.deadline <= currentTime) {
-          throw new InternalServerErrorException(
-            '시간이 지나 마감된 게시글 입니다.',
-          );
-        }
+      if (board.deadline !== null && board.deadline <= currentTime) {
+        throw new InternalServerErrorException(
+          '시간이 지나 마감된 게시글 입니다.',
+        );
       }
 
       if (!board.isDeadline) {
@@ -253,11 +305,12 @@ export class BoardsService {
 
   async searchAllBoards(searchBoardDto: SearchBoardDto): Promise<object> {
     try {
-      const { title }: SearchBoardDto = searchBoardDto;
       const boards: Board[] = await this.boardRepository.searchAllBoards(
         searchBoardDto,
       );
       this.errorConfirm.notFoundError(boards, '게시글을 찾을 수 없습니다.');
+
+      const { title }: SearchBoardDto = searchBoardDto;
 
       return { search: title, boards };
     } catch (err) {
@@ -266,15 +319,19 @@ export class BoardsService {
   }
 
   async createBoard(
-    createBoardDto: any,
+    createBoardDto: CreateBoardDto,
     user: User,
-    boardPhotoUrl: any,
+    boardPhotoUrl: false | string[],
   ): Promise<boolean> {
-    const queryRunner = this.connection.createQueryRunner();
+    const queryRunner: QueryRunner = this.connection.createQueryRunner();
 
     await queryRunner.connect();
     await queryRunner.startTransaction();
     try {
+      if (!boardPhotoUrl) {
+        throw new BadRequestException('기본 이미지를 넣어 주세요');
+      }
+
       const { categoryNo, areaNo, deadline } = createBoardDto;
 
       const category: Category = await this.categoryRepository.findOne(
@@ -301,44 +358,28 @@ export class BoardsService {
         endTime = null;
       } else {
         endTime.setHours(endTime.getHours() + 9);
-        endTime.setDate(endTime.getDate() + deadline);
+        endTime.setDate(endTime.getDate() + +deadline);
       }
 
-      const createBoard: any = await queryRunner.manager
+      const { affectedRows, insertId }: boardInfo = await queryRunner.manager
         .getCustomRepository(BoardRepository)
         .createBoard(category, area, user, createBoardDto, endTime);
 
-      const createdBoard: Board = await queryRunner.manager
-        .getCustomRepository(BoardRepository)
-        .createdBoard(createBoard);
+      if (!affectedRows) {
+        throw new BadGatewayException('게시글 생성 관련 오류입니다.');
+      }
 
       await queryRunner.manager
         .getCustomRepository(UserRepository)
-        .userRelation(user, createdBoard.no, 'boards');
+        .userRelation(user, insertId, 'boards');
 
-      if (!createdBoard) {
-        throw new BadGatewayException('게시글 생성 관련 오류입니다.');
+      if (boardPhotoUrl[0] !== 'logo.png') {
+        await this.registBoardPhotos(boardPhotoUrl, queryRunner, insertId);
       }
-      if (boardPhotoUrl[0] !== 'logo.jpg') {
-        const photos: Array<object> = boardPhotoUrl.map(
-          (photo: string, index: number) => {
-            return {
-              photo_url: photo,
-              board: createdBoard.no,
-              order: index + 1,
-            };
-          },
-        );
-        const boardPhotoNo: Array<object> = await queryRunner.manager
-          .getCustomRepository(BoardPhotoRepository)
-          .createBoardPhoto(photos);
-        if (photos.length !== boardPhotoNo.length) {
-          throw new BadGatewayException('게시글 사진 등록 도중 DB관련 오류');
-        }
-        await queryRunner.manager
-          .getCustomRepository(BoardRepository)
-          .saveCategory(categoryNo, createdBoard);
-      }
+      await queryRunner.manager
+        .getCustomRepository(BoardRepository)
+        .saveCategory(categoryNo, insertId);
+
       await queryRunner.commitTransaction();
 
       return true;
@@ -347,6 +388,30 @@ export class BoardsService {
       throw err;
     } finally {
       await queryRunner.release();
+    }
+  }
+
+  async registBoardPhotos(
+    boardPhotoUrl: string[],
+    queryRunner: QueryRunner,
+    insertId: number,
+  ): Promise<void> {
+    const boardPhotos: object[] = boardPhotoUrl.map(
+      (photo: string, index: number) => {
+        return {
+          photo_url: photo,
+          board: insertId,
+          order: index + 1,
+        };
+      },
+    );
+
+    const boardPhotoNo: object[] = await queryRunner.manager
+      .getCustomRepository(BoardPhotoRepository)
+      .createBoardPhoto(boardPhotos);
+
+    if (boardPhotos.length !== boardPhotoNo.length) {
+      throw new BadGatewayException('게시글 사진 등록 도중 DB관련 오류');
     }
   }
 
@@ -383,12 +448,21 @@ export class BoardsService {
     userNo: number,
     boardPhotoUrl: false | string[],
   ): Promise<any> {
-    const queryRunner = this.connection.createQueryRunner();
+    const queryRunner: QueryRunner = this.connection.createQueryRunner();
 
     await queryRunner.connect();
     await queryRunner.startTransaction();
     try {
-      const { category, area, deadline } = updateBoardDto;
+      if (!boardPhotoUrl) {
+        throw new NotFoundException('기본 이미지를 넣어 주세요');
+      }
+
+      const { categoryNo, areaNo, deadline } = updateBoardDto;
+
+      updateBoardDto.category = updateBoardDto.categoryNo;
+      updateBoardDto.area = updateBoardDto.areaNo;
+      delete updateBoardDto.categoryNo;
+      delete updateBoardDto.areaNo;
 
       const board: Board = await this.boardRepository.readOneBoardByAuth(
         boardNo,
@@ -415,9 +489,9 @@ export class BoardsService {
         throw new BadRequestException('다른 기간을 선택해 주십시오');
       }
 
-      const boardKey: any = Object.keys(updateBoardDto);
+      const boardKey: string[] = Object.keys(updateBoardDto);
 
-      const duplicateCheck = {};
+      const duplicateCheck: object = {};
 
       boardKey.forEach((item: any) => {
         updateBoardDto[item] !== null
@@ -429,78 +503,78 @@ export class BoardsService {
         endTime = null;
         duplicateCheck['deadline'] = endTime;
       }
-      const categoryNo: Category = await this.categoryRepository.findOne(
-        category,
+
+      const categoryNum: Category = await this.categoryRepository.findOne(
+        categoryNo,
         {
           relations: ['boards'],
         },
       );
       this.errorConfirm.notFoundError(
-        categoryNo,
+        categoryNum,
         `해당 카테고리를 찾을 수 없습니다.`,
       );
 
-      const areaNo: Area = await this.areaRepository.findOne(area, {
+      const areaNum: Area = await this.areaRepository.findOne(areaNo, {
         relations: ['boards'],
       });
 
-      this.errorConfirm.notFoundError(areaNo, `해당 지역을 찾을 수 없습니다.`);
+      this.errorConfirm.notFoundError(areaNum, `해당 지역을 찾을 수 없습니다.`);
 
-      const updatedBoard = await queryRunner.manager
+      const updatedBoard: number = await queryRunner.manager
         .getCustomRepository(BoardRepository)
         .updateBoard(boardNo, duplicateCheck);
 
       if (!updatedBoard) {
         throw new BadGatewayException('게시글 업데이트 관련 오류');
       }
-      if (boardPhotoUrl) {
-        const { photos } = await this.boardRepository.findOne(boardNo, {
-          select: ['no', 'photos'],
-          relations: ['photos'],
-        });
 
-        if (photos.length) {
-          const deleteBoardPhoto: number = await queryRunner.manager
-            .getCustomRepository(BoardPhotoRepository)
-            .deleteBoardPhoto(boardNo);
-
-          if (!deleteBoardPhoto) {
-            throw new BadGatewayException('게시글 사진 삭제 도중 DB관련 오류');
-          }
-        }
-        if (boardPhotoUrl[0] !== 'logo.jpg') {
-          const boardPhotos: Array<object> = boardPhotoUrl.map(
-            (photo, index) => {
-              return {
-                photo_url: photo,
-                board: board.no,
-                order: index + 1,
-              };
-            },
-          );
-
-          const boardPhotoNo: Array<object> = await queryRunner.manager
-            .getCustomRepository(BoardPhotoRepository)
-            .createBoardPhoto(boardPhotos);
-
-          if (boardPhotos.length !== boardPhotoNo.length) {
-            throw new BadGatewayException('게시글 사진 등록 도중 DB관련 오류');
-          }
-          const originBoardPhotosUrl = photos.map((boardPhoto) => {
-            return boardPhoto.photo_url;
-          });
-          await queryRunner.commitTransaction();
-          return originBoardPhotosUrl;
-        }
-      }
-
-      await queryRunner.commitTransaction();
+      return await this.updateBoardPhoto(
+        boardNo,
+        queryRunner,
+        board,
+        boardPhotoUrl,
+      );
     } catch (err) {
       await queryRunner.rollbackTransaction();
       throw err;
     } finally {
       await queryRunner.release();
     }
+  }
+
+  async updateBoardPhoto(
+    boardNo: number,
+    queryRunner: QueryRunner,
+    board: Board,
+    boardPhotoUrl: string[],
+  ): Promise<string[]> {
+    const { photos }: Board = await this.boardRepository.findOne(boardNo, {
+      select: ['no', 'photos'],
+      relations: ['photos'],
+    });
+
+    if (photos.length) {
+      const deleteBoardPhoto: number = await queryRunner.manager
+        .getCustomRepository(BoardPhotoRepository)
+        .deleteBoardPhoto(boardNo);
+
+      if (!deleteBoardPhoto) {
+        throw new BadGatewayException('게시글 사진 삭제 도중 DB관련 오류');
+      }
+    }
+
+    if (boardPhotoUrl[0] !== 'logo.png') {
+      await this.registBoardPhotos(boardPhotoUrl, queryRunner, board.no);
+
+      const originBoardPhotosUrl: string[] = photos.map((boardPhoto) => {
+        return boardPhoto.photo_url;
+      });
+      await queryRunner.commitTransaction();
+
+      return originBoardPhotosUrl;
+    }
+    await queryRunner.commitTransaction();
   }
 
   async readUserBoard(
@@ -525,8 +599,15 @@ export class BoardsService {
   async findOneCategory(
     no: number,
     paginationDto: PaginationDto,
-  ): Promise<Board[]> {
+  ): Promise<Board[] | Board> {
     try {
+      const categoryConfirm: Category = await this.categoryRepository.findOne(
+        no,
+      );
+
+      if (!categoryConfirm) {
+        throw new NotFoundException(`${no}번의 카테고리는 존재하지 않습니다.`);
+      }
       if (no === 1) {
         const boards: Board[] = await this.boardRepository.getAllBoards(
           paginationDto,
@@ -534,10 +615,8 @@ export class BoardsService {
 
         return boards;
       }
-      const boards: any = await this.boardRepository.findOneCategory(
-        no,
-        paginationDto,
-      );
+      const boards: Board[] | Board =
+        await this.boardRepository.findOneCategory(no, paginationDto);
 
       return boards;
     } catch (err) {

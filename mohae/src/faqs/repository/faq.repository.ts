@@ -22,7 +22,9 @@ export class FaqRepository extends Repository<Faq> {
 
       return faqs;
     } catch (err) {
-      throw new InternalServerErrorException(err.message);
+      throw new InternalServerErrorException(
+        `${err.message} ### FAQ 전체조회 : 알 수 없는 서버 에러입니다.`,
+      );
     }
   }
 
@@ -46,7 +48,9 @@ export class FaqRepository extends Repository<Faq> {
 
       return raw;
     } catch (err) {
-      throw new InternalServerErrorException(err.message);
+      throw new InternalServerErrorException(
+        `${err.message} ### FAQ 생성 : 알 수 없는 서버 에러입니다.`,
+      );
     }
   }
 
@@ -70,7 +74,9 @@ export class FaqRepository extends Repository<Faq> {
 
       return affected;
     } catch (err) {
-      throw new InternalServerErrorException(err.message);
+      throw new InternalServerErrorException(
+        `${err.message} ### FAQ 업데이트 : 알 수 없는 서버 에러입니다.`,
+      );
     }
   }
 
@@ -84,7 +90,9 @@ export class FaqRepository extends Repository<Faq> {
 
       return affected;
     } catch (err) {
-      throw new InternalServerErrorException(err.message);
+      throw new InternalServerErrorException(
+        `${err.message} ### FAQ 삭제 : 알 수 없는 서버 에러입니다.`,
+      );
     }
   }
 
@@ -104,7 +112,9 @@ export class FaqRepository extends Repository<Faq> {
 
       return searchedFaqs;
     } catch (err) {
-      throw new InternalServerErrorException(err.message);
+      throw new InternalServerErrorException(
+        `${err.message} ### FAQ 검색 : 알 수 없는 서버 에러입니다.`,
+      );
     }
   }
 }

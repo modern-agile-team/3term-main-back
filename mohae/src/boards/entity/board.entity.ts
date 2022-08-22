@@ -13,13 +13,9 @@ import {
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
-  InsertQueryBuilder,
-  JoinTable,
-  ManyToMany,
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
-  Timestamp,
   UpdateDateColumn,
 } from 'typeorm';
 

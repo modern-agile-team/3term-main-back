@@ -7,7 +7,6 @@ import { AuthService } from './auth.service';
 import { UserRepository } from './repository/user.repository';
 import { SchoolRepository } from 'src/schools/repository/school.repository';
 import { SchoolsModule } from 'src/schools/schools.module';
-import { SchoolsService } from 'src/schools/schools.service';
 import { MajorRepository } from 'src/majors/repository/major.repository';
 import { MajorsModule } from 'src/majors/majors.module';
 import { JwtStrategy } from './jwt/jwt.strategy';
@@ -23,8 +22,9 @@ import {
   TermsReporitory,
   TermsUserReporitory,
 } from 'src/terms/repository/terms.repository';
-import { ConfigService } from '@nestjs/config';
 import { jwtConfig } from 'src/common/configs/jwt.config';
+import { cacheModule } from 'src/common/configs/redis.config';
+import { JwtRefreshStrategy } from './jwt/jwt-refresh.strategy';
 
 @Module({
   imports: [
@@ -46,9 +46,16 @@ import { jwtConfig } from 'src/common/configs/jwt.config';
     MajorsModule,
     CategoriesModule,
     TermsModule,
+    cacheModule,
   ],
   controllers: [AuthController],
-  providers: [AuthService, JwtStrategy, ErrorConfirm, LoginProcess],
-  exports: [JwtStrategy, PassportModule],
+  providers: [
+    AuthService,
+    JwtStrategy,
+    JwtRefreshStrategy,
+    ErrorConfirm,
+    LoginProcess,
+  ],
+  exports: [JwtRefreshStrategy, JwtStrategy, PassportModule],
 })
 export class AuthModule {}

@@ -28,7 +28,9 @@ export class NoticeRepository extends Repository<Notice> {
 
       return notices;
     } catch (err) {
-      throw new InternalServerErrorException(err.message);
+      throw new InternalServerErrorException(
+        `${err.message} ### 공지사항 전체조회 : 알 수 없는 서버 에러입니다.`,
+      );
     }
   }
 
@@ -52,7 +54,9 @@ export class NoticeRepository extends Repository<Notice> {
 
       return raw;
     } catch (err) {
-      throw new InternalServerErrorException(err.message);
+      throw new InternalServerErrorException(
+        `${err.message} ### 공지사항 생성 : 알 수 없는 서버 에러입니다.`,
+      );
     }
   }
 
@@ -76,7 +80,9 @@ export class NoticeRepository extends Repository<Notice> {
 
       return affected;
     } catch (err) {
-      throw new InternalServerErrorException(err.message);
+      throw new InternalServerErrorException(
+        `${err.message} ### 공지사항 업데이트 : 알 수 없는 서버 에러입니다.`,
+      );
     }
   }
 
@@ -90,7 +96,9 @@ export class NoticeRepository extends Repository<Notice> {
 
       return affected;
     } catch (err) {
-      throw new InternalServerErrorException(err.message);
+      throw new InternalServerErrorException(
+        `${err.message} ### 공지사항 수정 : 알 수 없는 서버 에러입니다.`,
+      );
     }
   }
 
@@ -113,7 +121,9 @@ export class NoticeRepository extends Repository<Notice> {
 
       return searchedNotices;
     } catch (err) {
-      throw new InternalServerErrorException(err.message);
+      throw new InternalServerErrorException(
+        `${err.message} ### 공지사항 검색 : 알 수 없는 서버 에러입니다.`,
+      );
     }
   }
 }

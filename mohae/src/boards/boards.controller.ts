@@ -13,6 +13,8 @@ import {
   UploadedFiles,
   Inject,
   Req,
+  UnauthorizedException,
+  BadRequestException,
 } from '@nestjs/common';
 import { User } from '@sentry/node';
 import { AuthGuard } from '@nestjs/passport';
@@ -27,24 +29,24 @@ import {
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
+import { FilesInterceptor } from '@nestjs/platform-express';
+import { ConfigService } from '@nestjs/config';
+import { JwtService } from '@nestjs/jwt';
 import { BoardsService } from './boards.service';
-
 import { AwsService } from 'src/aws/aws.service';
-import { Board } from './entity/board.entity';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 import { HTTP_STATUS_CODE } from 'src/common/configs/http-status.config';
-import { FilesInterceptor } from '@nestjs/platform-express';
-import { operationConfig } from 'src/common/swagger-apis/api-operation.swagger';
-import { apiResponse } from 'src/common/swagger-apis/api-response.swagger';
+import { Board } from './entity/board.entity';
 import { FilterBoardDto } from './dto/filterBoard.dto';
 import { HotBoardDto } from './dto/hotBoard.dto';
 import { SearchBoardDto } from './dto/searchBoard.dto';
 import { UpdateBoardDto } from './dto/updateBoard.dto';
-import { WinstonLogger, WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { PaginationDto } from './dto/pagination.dto';
-import { ConfigService } from '@nestjs/config';
-import { JwtService } from '@nestjs/jwt';
 import { CreateBoardDto } from './dto/createBoard.dto';
+import { WinstonLogger, WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { boardSwagger } from './boards.swagger';
+import { operationConfig } from 'src/common/swagger-apis/api-operation.swagger';
+import { TokenExpiredError } from 'jsonwebtoken';
 
 @ApiTags('Boards')
 @Controller('boards')
@@ -70,28 +72,18 @@ export class BoardsController {
     );
   }
 
+  @Cron('0 0 0 * * *')
+  async updateBoardHit() {
+    const updatedBoardNum: number = await this.boardService.updateHit();
+
+    this.logger.verbose(
+      `게시글 ${updatedBoardNum}개 조회수 DB에 업데이트`,
+      '업데이트된 게시글 개수',
+    );
+  }
+
   @ApiOperation(operationConfig('게시글 필터링 경로', '게시글 필터링 API'))
-  @ApiOkResponse(
-    apiResponse.success(
-      '성공여부',
-      HTTP_STATUS_CODE.success.ok,
-      '게시글 필터링이 완료되었습니다.',
-      [
-        {
-          no: 75,
-          photoUrl:
-            'https://mohaeproj.s3.amazonaws.com/board/1655961063222_dsn.jpg',
-          decimalDay: -10,
-          title: 'board test',
-          isDeadline: 0,
-          price: 0,
-          target: 0,
-          area: '서울 특별시',
-          nickName: 'hheeddjsjde',
-        },
-      ],
-    ),
-  )
+  @ApiOkResponse(boardSwagger.filter.success)
   @HttpCode(HTTP_STATUS_CODE.success.ok)
   @Get('filter')
   async filteredBoards(
@@ -108,27 +100,7 @@ export class BoardsController {
   }
 
   @ApiOperation(operationConfig('인기게시글 경로', '인기게시글 API'))
-  @ApiOkResponse(
-    apiResponse.success(
-      '성공여부',
-      HTTP_STATUS_CODE.success.ok,
-      '인기 게시글 조회 완료',
-      [
-        {
-          no: 8,
-          decimalDay: 5,
-          photoUrl: null,
-          title: '123-5',
-          isDeadline: 1,
-          price: 1000,
-          target: 1,
-          area: '서울특별시',
-          userNo: 2,
-          nickname: 'hneeddjsjde',
-        },
-      ],
-    ),
-  )
+  @ApiOkResponse(boardSwagger.popular.success)
   @HttpCode(HTTP_STATUS_CODE.success.ok)
   @Get('hot')
   async readHotBoards(@Query() hotBoardDto: HotBoardDto): Promise<object> {
@@ -143,29 +115,7 @@ export class BoardsController {
   }
 
   @ApiOperation(operationConfig('게시글 검색 경로', '게시글 검색 API'))
-  @ApiOkResponse(
-    apiResponse.success(
-      '성공여부',
-      HTTP_STATUS_CODE.success.ok,
-      '게시글 검색 완료',
-      {
-        search: '게시글',
-        boards: [
-          {
-            no: 19,
-            photo: '백승범.jpg',
-            decimalDay: null,
-            title: '게시글 생성 test 3',
-            isDeadline: 0,
-            price: 1000,
-            target: 1,
-            area: '서울특별시',
-            nickname: 'hneeddjsjde',
-          },
-        ],
-      },
-    ),
-  )
+  @ApiOkResponse(boardSwagger.search.success)
   @HttpCode(HTTP_STATUS_CODE.success.ok)
   @Get('search')
   async searchAllBoards(
@@ -184,30 +134,10 @@ export class BoardsController {
   @ApiOperation(
     operationConfig('게시글 마감 취소 경로', '게시글 마감 취소 API'),
   )
-  @ApiOkResponse(
-    apiResponse.success(
-      '성공여부',
-      HTTP_STATUS_CODE.success.ok,
-      '게시글 마감 취소 완료',
-    ),
-  )
-  @ApiBadRequestResponse(
-    apiResponse.error(
-      '마감이 안된 게시글을 마감취소를 하려고 하였을 때',
-      HTTP_STATUS_CODE.clientError.badRequest,
-      '활성화된 게시글 입니다.',
-      'Bad Request',
-    ),
-  )
-  @ApiUnauthorizedResponse(
-    apiResponse.error(
-      '게시글을 작성한 회원이 아닐 경우',
-      HTTP_STATUS_CODE.clientError.unauthorized,
-      '게시글을 작성한 유저가 아닙니다.',
-      'Unauthorized',
-    ),
-  )
-  @UseGuards(AuthGuard('jwt'))
+  @ApiOkResponse(boardSwagger.closedCancel.success)
+  @ApiBadRequestResponse(boardSwagger.closedCancel.badRequest)
+  @ApiUnauthorizedResponse(boardSwagger.closedCancel.unauthorized)
+  @UseGuards(AuthGuard('jwt-refresh-token'))
   @ApiBearerAuth('access-token')
   @Patch('cancel/:boardNo')
   @HttpCode(HTTP_STATUS_CODE.success.ok)
@@ -221,32 +151,13 @@ export class BoardsController {
       msg: '게시글 마감 취소가 완료되었습니다.',
     };
   }
+
   @ApiOperation(operationConfig('게시글 마감 경로', '게시글 마감 API'))
-  @ApiOkResponse(
-    apiResponse.success(
-      '성공여부',
-      HTTP_STATUS_CODE.success.ok,
-      '게시글 마감이 완료되었습니다.',
-    ),
-  )
-  @ApiInternalServerErrorResponse(
-    apiResponse.error(
-      '이미 마감된 게시글을 마감하려고 했을 때',
-      HTTP_STATUS_CODE.clientError.badRequest,
-      '이미 마감된 게시글 입니다.',
-      'Bad Request',
-    ),
-  )
-  @ApiUnauthorizedResponse(
-    apiResponse.error(
-      '게시글을 작성한 회원이 아닐 경우',
-      HTTP_STATUS_CODE.clientError.unauthorized,
-      '게시글을 작성한 유저가 아닙니다.',
-      'Unauthorized',
-    ),
-  )
+  @ApiOkResponse(boardSwagger.closed.success)
+  @ApiInternalServerErrorResponse(boardSwagger.closed.badRequest)
+  @ApiUnauthorizedResponse(boardSwagger.closed.unauthorized)
   @ApiBearerAuth('access-token')
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(AuthGuard('jwt-refresh-token'))
   @Patch('close/:boardNo')
   @HttpCode(HTTP_STATUS_CODE.success.ok)
   async boardClosed(
@@ -289,47 +200,8 @@ export class BoardsController {
   }
 
   @ApiOperation(operationConfig('게시글 상세조회 경로', '게시글 상세조회 API'))
-  @ApiOkResponse(
-    apiResponse.success(
-      '성공여부',
-      HTTP_STATUS_CODE.success.ok,
-      '게시글 상세조회가 완료되었습니다.',
-      {
-        board: {
-          no: 15,
-          boardPhotoUrls: 'seungBum.jpg, 11222.jpg, 1.png, 2.jpeg',
-          decimalDay: -6,
-          title: '게시글 검색',
-          description: '생성',
-          isDeadline: 0,
-          hit: 17,
-          price: 1000,
-          summary: '',
-          target: 1,
-          likeCount: 3,
-          isLike: 1,
-          areaNo: 1,
-          areaName: '서울특별시',
-          categoryNo: 2,
-          categoryName: '디자인',
-          userPhotoUrl: 'profile/1655184234165_test.jpg',
-          userNo: 2,
-          nickname: 'hneeddjsjde',
-          schoolName: '인덕대학교',
-          majorName: '컴퓨터',
-        },
-        authorization: true,
-      },
-    ),
-  )
-  @ApiNotFoundResponse(
-    apiResponse.error(
-      '없는 게시글을 조회 하려고 했을 때',
-      HTTP_STATUS_CODE.clientError.notFound,
-      '해당 게시글을 찾을 수 없습니다.',
-      'Not Found',
-    ),
-  )
+  @ApiOkResponse(boardSwagger.getOne.success)
+  @ApiNotFoundResponse(boardSwagger.getOne.notFound)
   @HttpCode(HTTP_STATUS_CODE.success.ok)
   @ApiBearerAuth('access-token')
   @Get(':boardNo')
@@ -337,57 +209,46 @@ export class BoardsController {
     @Param('boardNo') boardNo: number,
     @Req() token,
   ): Promise<object> {
-    const sliceToken = token.headers.authorization.substr(7);
+    try {
+      const sliceToken: string = token.headers.authorization.substr(7);
 
-    if (sliceToken === 'null') {
-      const response: object = await this.boardService.readOneBoardByUnAuth(
+      if (sliceToken === 'null') {
+        const response: object = await this.boardService.readOneBoardByUnAuth(
+          boardNo,
+        );
+
+        return {
+          msg: '게시글 상세 조회가 완료되었습니다(비회원).',
+          response,
+        };
+      }
+
+      const tokenDecode: object = this.jwtService.verify(sliceToken, {
+        secret: this.configService.get('JWT_SECRET'),
+      });
+
+      const response: object = await this.boardService.readOneBoardByAuth(
         boardNo,
+        tokenDecode['userNo'],
       );
 
       return {
-        msg: '게시글 상세 조회가 완료되었습니다(비회원).',
+        msg: '게시글 상세 조회가 완료되었습니다(회원).',
         response,
       };
+    } catch (err) {
+      if (err instanceof TokenExpiredError) {
+        throw new UnauthorizedException('로그인 다시 해주세요');
+      }
+      throw err;
     }
-
-    const tokenDecode: object = this.jwtService.verify(sliceToken, {
-      secret: this.configService.get('JWT_SECRET'),
-    });
-    const response: object = await this.boardService.readOneBoardByAuth(
-      boardNo,
-      tokenDecode['userNo'],
-    );
-
-    return {
-      msg: '게시글 상세 조회가 완료되었습니다(회원).',
-      response,
-    };
   }
 
   @ApiOperation(
     operationConfig('카테고리 선택 조회 경로', '카테고리 선택 조회 API'),
   )
-  @ApiOkResponse(
-    apiResponse.success(
-      '성공여부',
-      HTTP_STATUS_CODE.success.ok,
-      '카테고리 선택 조회가 완료되었습니다.',
-      [
-        {
-          decimalDay: -1,
-          photoUrl: '백승범.jpg',
-          no: 15,
-          title: '게시글 검색',
-          isDeadline: 0,
-          price: 1000,
-          target: 1,
-          areaNo: 1,
-          areaName: '서울특별시',
-          nickname: 'hneeddjsjde',
-        },
-      ],
-    ),
-  )
+  @ApiOkResponse(boardSwagger.getByCategory.success)
+  @ApiNotFoundResponse(boardSwagger.getByCategory.notFound)
   @HttpCode(HTTP_STATUS_CODE.success.ok)
   @Get('category/:categoryNo')
   async getByCategory(
@@ -397,7 +258,7 @@ export class BoardsController {
     this.logger.verbose(
       `카테고리 선택 조회 시도. 카테고리 번호 : ${categoryNo}`,
     );
-    const response: Board[] = await this.boardService.findOneCategory(
+    const response: Board[] | Board = await this.boardService.findOneCategory(
       categoryNo,
       paginationDto,
     );
@@ -410,30 +271,20 @@ export class BoardsController {
 
   @Post()
   @ApiOperation(operationConfig('게시글 생성 경로', '게시글 생성 API'))
-  @ApiOkResponse(
-    apiResponse.success(
-      '성공여부',
-      HTTP_STATUS_CODE.success.created,
-      '게시글 생성이 완료되었습니다.',
-    ),
-  )
+  @ApiOkResponse(boardSwagger.create.success)
   @HttpCode(HTTP_STATUS_CODE.success.created)
   @ApiBearerAuth('access-token')
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(AuthGuard('jwt-refresh-token'))
   @UseInterceptors(FilesInterceptor('image', 5))
   async createBoard(
     @UploadedFiles() files: Express.Multer.File[],
     @Body() createBoardDto: CreateBoardDto,
     @CurrentUser() user: User,
   ): Promise<object> {
-    for (const key of Object.keys(createBoardDto)) {
-      createBoardDto[`${key}`] = JSON.parse(createBoardDto[`${key}`]);
-    }
-
-    const boardPhotoUrls: string[] = await this.awsService.uploadBoardFileToS3(
-      'board',
-      files,
-    );
+    const boardPhotoUrls: false | string[] =
+      files.length === 0
+        ? false
+        : await this.awsService.uploadBoardFileToS3('board', files);
 
     await this.boardService.createBoard(createBoardDto, user, boardPhotoUrls);
 
@@ -441,31 +292,12 @@ export class BoardsController {
       msg: '게시글 생성이 완료 되었습니다.',
     };
   }
+
   @ApiOperation(operationConfig('게시글 삭제 경로', '게시글 삭제 API'))
-  @ApiOkResponse(
-    apiResponse.success(
-      '성공여부',
-      HTTP_STATUS_CODE.success.ok,
-      '게시글 삭제가 완료되었습니다.',
-    ),
-  )
-  @ApiNotFoundResponse(
-    apiResponse.error(
-      '없는 게시글을 삭제 하려고 했을 때',
-      HTTP_STATUS_CODE.clientError.notFound,
-      '해당 게시글을 찾을 수 없습니다.',
-      'Not Found',
-    ),
-  )
-  @ApiUnauthorizedResponse(
-    apiResponse.error(
-      '게시글을 작성한 회원이 아닐 경우',
-      HTTP_STATUS_CODE.clientError.unauthorized,
-      '게시글을 작성한 유저가 아닙니다.',
-      'Unauthorized',
-    ),
-  )
-  @UseGuards(AuthGuard('jwt'))
+  @ApiOkResponse(boardSwagger.delete.success)
+  @ApiNotFoundResponse(boardSwagger.delete.notFound)
+  @ApiUnauthorizedResponse(boardSwagger.delete.unauthorized)
+  @UseGuards(AuthGuard('jwt-refresh-token'))
   @ApiBearerAuth('access-token')
   @Delete(':boardNo')
   @HttpCode(HTTP_STATUS_CODE.success.ok)
@@ -481,32 +313,12 @@ export class BoardsController {
   }
 
   @ApiOperation(operationConfig('게시글 수정 경로', '게시글 수정 API'))
-  @ApiOkResponse(
-    apiResponse.success(
-      '성공여부',
-      HTTP_STATUS_CODE.success.created,
-      '게시글 수정이 완료되었습니다.',
-    ),
-  )
-  @ApiNotFoundResponse(
-    apiResponse.error(
-      '없는 게시글을 수정 하려고 했을 때',
-      HTTP_STATUS_CODE.clientError.notFound,
-      '해당 게시글을 찾을 수 없습니다.',
-      'Not Found',
-    ),
-  )
-  @ApiUnauthorizedResponse(
-    apiResponse.error(
-      '게시글을 작성한 회원이 아닐 경우',
-      HTTP_STATUS_CODE.clientError.unauthorized,
-      '게시글을 작성한 유저가 아닙니다.',
-      'Unauthorized',
-    ),
-  )
+  @ApiOkResponse(boardSwagger.update.success)
+  @ApiNotFoundResponse(boardSwagger.update.notFound)
+  @ApiUnauthorizedResponse(boardSwagger.update.unauthorized)
   @HttpCode(HTTP_STATUS_CODE.success.created)
   @ApiBearerAuth('access-token')
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(AuthGuard('jwt-refresh-token'))
   @UseInterceptors(FilesInterceptor('image', 5))
   @Patch(':boardNo')
   async updateBoard(
@@ -515,9 +327,6 @@ export class BoardsController {
     @Body() updateBoardDto: UpdateBoardDto,
     @CurrentUser() user: User,
   ): Promise<object> {
-    for (const key of Object.keys(updateBoardDto)) {
-      updateBoardDto[`${key}`] = JSON.parse(updateBoardDto[`${key}`]);
-    }
     const boardPhotoUrls: false | string[] =
       files.length === 0
         ? false

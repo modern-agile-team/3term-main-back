@@ -1,3 +1,4 @@
+import { InternalServerErrorException } from '@nestjs/common';
 import {
   DeleteResult,
   EntityRepository,
@@ -5,14 +6,13 @@ import {
   UpdateResult,
 } from 'typeorm';
 import { User } from '../entity/user.entity';
-import { InternalServerErrorException } from '@nestjs/common';
 import { School } from 'src/schools/entity/school.entity';
 import { Major } from 'src/majors/entity/major.entity';
 import { SignUpDto } from '../dto/sign-up.dto';
+import { Profile } from 'src/profiles/profiles.service';
 
 @EntityRepository(User)
 export class UserRepository extends Repository<User> {
-  // 인증 관련 부분
   async createUser(
     createUserDto: SignUpDto,
     school: School,
@@ -84,12 +84,13 @@ export class UserRepository extends Repository<User> {
           'users.isLock AS isLock',
           'users.latestLogin AS latestLogin',
           'users.loginFailCount AS loginFailCount',
+          'users.manager AS manager',
           'users.nickname AS nickname',
           'profilePhoto.photo_url AS photo_url',
           'users.deletedAt AS deletedAt',
         ])
         .withDeleted()
-        .where('users.email = :email', { email })
+        .where('users.email COLLATE utf8_bin = :email', { email })
         .getRawOne();
       return user;
     } catch (err) {
@@ -202,9 +203,12 @@ export class UserRepository extends Repository<User> {
     }
   }
 
-  async readUserProfile(profileUserNo: number, userNo: number): Promise<User> {
+  async readUserProfile(
+    profileUserNo: number,
+    userNo: number,
+  ): Promise<Profile> {
     try {
-      const profile: User = await this.createQueryBuilder('users')
+      const profile: Profile = await this.createQueryBuilder('users')
         .leftJoin('users.school', 'school')
         .leftJoin('users.major', 'major')
         .leftJoin('users.categories', 'categories')
@@ -215,6 +219,7 @@ export class UserRepository extends Repository<User> {
           'users.no AS userNo',
           'users.email AS email',
           'users.nickname AS nickname',
+          'users.phone AS phone',
           `DATE_FORMAT(users.createdAt, '%Y.%m.%d') AS createdAt`,
           'users.name AS name',
           'profilePhoto.photo_url AS photo_url',
@@ -251,11 +256,11 @@ export class UserRepository extends Repository<User> {
     }
   }
 
-  async updateProfile(userNo: User, deletedNullprofile: object): Promise<void> {
+  async updateProfile(userNo: User, updateProfileDto: object): Promise<void> {
     try {
       await this.createQueryBuilder('users')
         .update(User)
-        .set(deletedNullprofile)
+        .set(updateProfileDto)
         .where('no = :userNo', { userNo })
         .execute();
     } catch (err) {
@@ -271,7 +276,10 @@ export class UserRepository extends Repository<User> {
         .delete()
         .from(User)
         .where('users.deleted_At is not null')
-        .andWhere('DATE_ADD(users.deleted_At, INTERVAL 15 DAY) >= NOW()')
+        .andWhere('DATE_ADD(users.deleted_At, INTERVAL 15 DAY) <= NOW()')
+        .andWhere(
+          'NOT EXISTS(SELECT reported_user_no FROM reported_users WHERE users.no = reported_users.reported_user_no)',
+        )
         .execute();
       return affected;
     } catch (err) {

@@ -1,5 +1,15 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsArray, IsNumber, IsOptional, IsString } from 'class-validator';
+import { Transform } from 'class-transformer';
+
+import {
+  ArrayNotEmpty,
+  IsArray,
+  IsNumber,
+  IsOptional,
+  IsString,
+} from 'class-validator';
+import { Major } from 'src/majors/entity/major.entity';
+import { School } from 'src/schools/entity/school.entity';
 
 export class UpdateProfileDto {
   @ApiProperty({
@@ -7,6 +17,7 @@ export class UpdateProfileDto {
     description: '변경된 phone 넘버',
     required: false,
   })
+  @Transform(({ value }) => JSON.parse(value))
   @IsOptional()
   @IsString()
   phone: string;
@@ -17,6 +28,7 @@ export class UpdateProfileDto {
     required: false,
   })
   @IsOptional()
+  @Transform(({ value }) => JSON.parse(value))
   @IsString()
   nickname: string;
 
@@ -26,10 +38,9 @@ export class UpdateProfileDto {
     required: false,
   })
   @IsOptional()
-  // @IsNumber()
-  @IsString()
-  // school: number;
-  school: string | number;
+  @IsNumber()
+  @Transform(({ value }) => JSON.parse(value))
+  school: School;
 
   @ApiProperty({
     example: 1 || null,
@@ -37,10 +48,9 @@ export class UpdateProfileDto {
     required: false,
   })
   @IsOptional()
-  @IsString()
-  // @IsNumber()
-  // major: number;
-  major: string | number;
+  @Transform(({ value }) => JSON.parse(value))
+  @IsNumber()
+  major: Major;
 
   @ApiProperty({
     example: [1, 2, 3] || null,
@@ -48,8 +58,8 @@ export class UpdateProfileDto {
     required: false,
   })
   @IsOptional()
-  // @IsArray()
-  @IsString()
-  // categories: [];
-  categories: any;
+  @Transform(({ value }) => JSON.parse(value))
+  @IsArray()
+  @ArrayNotEmpty()
+  categories: [];
 }

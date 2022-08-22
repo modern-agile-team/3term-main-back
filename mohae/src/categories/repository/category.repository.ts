@@ -1,15 +1,13 @@
 import { InternalServerErrorException } from '@nestjs/common';
-import { User } from 'src/auth/entity/user.entity';
-import { Board } from 'src/boards/entity/board.entity';
-import { EntityRepository, Repository, SelectQueryBuilder } from 'typeorm';
+import { EntityRepository, Repository } from 'typeorm';
 import { Category } from '../entity/category.entity';
-import { PaginationDto } from 'src/boards/dto/pagination.dto';
+import { User } from 'src/auth/entity/user.entity';
 
 @EntityRepository(Category)
 export class CategoryRepository extends Repository<Category> {
   async findAllCategory(): Promise<Category[]> {
     try {
-      const categories = await this.createQueryBuilder('categories')
+      const categories: Category[] = await this.createQueryBuilder('categories')
         .leftJoinAndSelect('categories.boards', 'boards')
         .where('categories.no = boards.category')
         .getMany();
@@ -19,22 +17,13 @@ export class CategoryRepository extends Repository<Category> {
     }
   }
 
-  async selectCategory(categories: Category[]): Promise<Category[]> {
+  async selectCategory(categories: Category[]): Promise<any> {
     try {
-      return [
-        await this.createQueryBuilder('categories')
-          .select()
-          .where('categories.no = :no', { no: categories[0] })
-          .getOne(),
-        await this.createQueryBuilder('categories')
-          .select()
-          .where('categories.no = :no', { no: categories[1] })
-          .getOne(),
-        await this.createQueryBuilder('categories')
-          .select()
-          .where('categories.no = :no', { no: categories[2] })
-          .getOne(),
-      ];
+      const response = await this.createQueryBuilder('categories')
+        .select()
+        .where('no In (:no)', { no: [...categories] })
+        .getMany();
+      return response;
     } catch (err) {
       throw new InternalServerErrorException(
         `${err} selectCategory 메소드 관련 서버에러`,
@@ -42,7 +31,7 @@ export class CategoryRepository extends Repository<Category> {
     }
   }
 
-  async addUser(categoryNo: number, user: User): Promise<void> {
+  async addUser(categoryNo: number[], user: User): Promise<void> {
     try {
       await this.createQueryBuilder()
         .relation(Category, 'users')
@@ -53,7 +42,8 @@ export class CategoryRepository extends Repository<Category> {
         ${err} ### 유저 회원 가입도중 카테고리정보 저장 관련 알 수없는 서버에러입니다. `);
     }
   }
-  async deleteUser(categoryNo: Category, user: User): Promise<void> {
+
+  async deleteUser(categoryNo: number[], user: User): Promise<void> {
     try {
       await this.createQueryBuilder()
         .relation(Category, 'users')
