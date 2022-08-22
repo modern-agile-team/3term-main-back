@@ -138,7 +138,7 @@ export class SpecsService {
     await queryRunner.startTransaction();
 
     try {
-      const spec: Spec = await this.comfirmCertification(specNo, userNo);
+      const spec: Spec = await this.confirmCertification(specNo, userNo);
 
       await queryRunner.manager
         .getCustomRepository(SpecRepository)
@@ -150,7 +150,7 @@ export class SpecsService {
           : await this.awsService.uploadSpecFileToS3('spec', files);
 
       if (specPhotoUrls) {
-        const originSpecPhotoUrls = await this.updateSpecPhotos(
+        const originSpecPhotoUrls: string[] = await this.updateSpecPhotos(
           spec,
           specPhotoUrls,
           queryRunner,
@@ -172,7 +172,7 @@ export class SpecsService {
     spec: Spec,
     specPhotoUrls: string[],
     queryRunner: QueryRunner,
-  ) {
+  ): Promise<string[]> {
     const { specPhotos } = spec;
     if (specPhotos.length) {
       await queryRunner.manager
@@ -180,7 +180,7 @@ export class SpecsService {
         .deleteSpecPhoto(spec.no);
     }
     if (specPhotoUrls[0] !== 'logo.png') {
-      const newSpecPhotos: Array<object> = specPhotoUrls.map(
+      const newSpecPhotos: object[] = specPhotoUrls.map(
         (photoUrl: string, index: number) => {
           return {
             photo_url: photoUrl,
@@ -205,8 +205,7 @@ export class SpecsService {
     await queryRunner.connect();
     await queryRunner.startTransaction();
     try {
-      const { specPhotos } = await this.comfirmCertification(specNo, userNo);
-
+      const { specPhotos } = await this.confirmCertification(specNo, userNo);
       const originSpecPhotoUrls: string[] = specPhotos.map((specPhoto) => {
         return specPhoto.photo_url;
       });
@@ -217,7 +216,7 @@ export class SpecsService {
       await queryRunner.manager
         .getCustomRepository(SpecPhotoRepository)
         .deleteSpecPhoto(specNo);
-      if (originSpecPhotoUrls) {
+      if (originSpecPhotoUrls.length) {
         await this.awsService.deleteSpecS3Object(originSpecPhotoUrls);
       }
       await queryRunner.commitTransaction();
@@ -244,12 +243,12 @@ export class SpecsService {
     }
   }
 
-  async comfirmCertification(specNo: number, userNo: number): Promise<Spec> {
+  async confirmCertification(specNo: number, userNo: number): Promise<Spec> {
     try {
       const spec: Spec = await this.specRepository.getOneSpec(specNo);
       this.errorConfirm.notFoundError(spec, '존재하지 않는 스펙입니다.');
 
-      if (spec.user.no !== userNo)
+      if (spec.user?.no !== userNo)
         throw new ForbiddenException('스펙의 작성자와 현재 사용자가 다릅니다.');
 
       return spec;
