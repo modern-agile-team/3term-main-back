@@ -32,8 +32,6 @@ export interface boardInfo {
   insertId?: number;
 }
 
-export interface BoardHit {}
-
 @Injectable()
 export class BoardsService {
   constructor(
@@ -200,6 +198,7 @@ export class BoardsService {
       }
 
       await this.cacheManager.del('dailyView');
+
       const entityManager: EntityManager = getManager();
       const { affectedRows }: boardInfo = await entityManager.query(
         queryStart + queryEnd,
@@ -278,12 +277,10 @@ export class BoardsService {
       const currentTime: Date = new Date();
       currentTime.setHours(currentTime.getHours() + 9);
 
-      if (board.deadline !== null) {
-        if (board.deadline <= currentTime) {
-          throw new InternalServerErrorException(
-            '시간이 지나 마감된 게시글 입니다.',
-          );
-        }
+      if (board.deadline !== null && board.deadline <= currentTime) {
+        throw new InternalServerErrorException(
+          '시간이 지나 마감된 게시글 입니다.',
+        );
       }
 
       if (!board.isDeadline) {
@@ -308,11 +305,12 @@ export class BoardsService {
 
   async searchAllBoards(searchBoardDto: SearchBoardDto): Promise<object> {
     try {
-      const { title }: SearchBoardDto = searchBoardDto;
       const boards: Board[] = await this.boardRepository.searchAllBoards(
         searchBoardDto,
       );
       this.errorConfirm.notFoundError(boards, '게시글을 찾을 수 없습니다.');
+
+      const { title }: SearchBoardDto = searchBoardDto;
 
       return { search: title, boards };
     } catch (err) {
@@ -323,13 +321,17 @@ export class BoardsService {
   async createBoard(
     createBoardDto: CreateBoardDto,
     user: User,
-    boardPhotoUrl: string[],
+    boardPhotoUrl: false | string[],
   ): Promise<boolean> {
     const queryRunner: QueryRunner = this.connection.createQueryRunner();
 
     await queryRunner.connect();
     await queryRunner.startTransaction();
     try {
+      if (!boardPhotoUrl) {
+        throw new BadRequestException('기본 이미지를 넣어 주세요');
+      }
+
       const { categoryNo, areaNo, deadline } = createBoardDto;
 
       const category: Category = await this.categoryRepository.findOne(
@@ -372,25 +374,12 @@ export class BoardsService {
         .userRelation(user, insertId, 'boards');
 
       if (boardPhotoUrl[0] !== 'logo.png') {
-        const photos: Array<object> = boardPhotoUrl.map(
-          (photo: string, index: number) => {
-            return {
-              photo_url: photo,
-              board: insertId,
-              order: index + 1,
-            };
-          },
-        );
-        const boardPhotoNo: Array<object> = await queryRunner.manager
-          .getCustomRepository(BoardPhotoRepository)
-          .createBoardPhoto(photos);
-        if (photos.length !== boardPhotoNo.length) {
-          throw new BadGatewayException('게시글 사진 등록 도중 DB관련 오류');
-        }
-        await queryRunner.manager
-          .getCustomRepository(BoardRepository)
-          .saveCategory(+categoryNo, insertId);
+        await this.registBoardPhotos(boardPhotoUrl, queryRunner, insertId);
       }
+      await queryRunner.manager
+        .getCustomRepository(BoardRepository)
+        .saveCategory(categoryNo, insertId);
+
       await queryRunner.commitTransaction();
 
       return true;
@@ -399,6 +388,30 @@ export class BoardsService {
       throw err;
     } finally {
       await queryRunner.release();
+    }
+  }
+
+  async registBoardPhotos(
+    boardPhotoUrl: string[],
+    queryRunner: QueryRunner,
+    insertId: number,
+  ): Promise<void> {
+    const boardPhotos: object[] = boardPhotoUrl.map(
+      (photo: string, index: number) => {
+        return {
+          photo_url: photo,
+          board: insertId,
+          order: index + 1,
+        };
+      },
+    );
+
+    const boardPhotoNo: object[] = await queryRunner.manager
+      .getCustomRepository(BoardPhotoRepository)
+      .createBoardPhoto(boardPhotos);
+
+    if (boardPhotos.length !== boardPhotoNo.length) {
+      throw new BadGatewayException('게시글 사진 등록 도중 DB관련 오류');
     }
   }
 
@@ -440,7 +453,16 @@ export class BoardsService {
     await queryRunner.connect();
     await queryRunner.startTransaction();
     try {
-      const { category, area, deadline } = updateBoardDto;
+      if (!boardPhotoUrl) {
+        throw new NotFoundException('기본 이미지를 넣어 주세요');
+      }
+
+      const { categoryNo, areaNo, deadline } = updateBoardDto;
+
+      updateBoardDto.category = updateBoardDto.categoryNo;
+      updateBoardDto.area = updateBoardDto.areaNo;
+      delete updateBoardDto.categoryNo;
+      delete updateBoardDto.areaNo;
 
       const board: Board = await this.boardRepository.readOneBoardByAuth(
         boardNo,
@@ -481,78 +503,78 @@ export class BoardsService {
         endTime = null;
         duplicateCheck['deadline'] = endTime;
       }
-      const categoryNo: Category = await this.categoryRepository.findOne(
-        category,
+
+      const categoryNum: Category = await this.categoryRepository.findOne(
+        categoryNo,
         {
           relations: ['boards'],
         },
       );
       this.errorConfirm.notFoundError(
-        categoryNo,
+        categoryNum,
         `해당 카테고리를 찾을 수 없습니다.`,
       );
 
-      const areaNo: Area = await this.areaRepository.findOne(area, {
+      const areaNum: Area = await this.areaRepository.findOne(areaNo, {
         relations: ['boards'],
       });
 
-      this.errorConfirm.notFoundError(areaNo, `해당 지역을 찾을 수 없습니다.`);
+      this.errorConfirm.notFoundError(areaNum, `해당 지역을 찾을 수 없습니다.`);
 
-      const updatedBoard = await queryRunner.manager
+      const updatedBoard: number = await queryRunner.manager
         .getCustomRepository(BoardRepository)
         .updateBoard(boardNo, duplicateCheck);
 
       if (!updatedBoard) {
         throw new BadGatewayException('게시글 업데이트 관련 오류');
       }
-      if (boardPhotoUrl) {
-        const { photos }: Board = await this.boardRepository.findOne(boardNo, {
-          select: ['no', 'photos'],
-          relations: ['photos'],
-        });
 
-        if (photos.length) {
-          const deleteBoardPhoto: number = await queryRunner.manager
-            .getCustomRepository(BoardPhotoRepository)
-            .deleteBoardPhoto(boardNo);
-
-          if (!deleteBoardPhoto) {
-            throw new BadGatewayException('게시글 사진 삭제 도중 DB관련 오류');
-          }
-        }
-        if (boardPhotoUrl[0] !== 'logo.png') {
-          const boardPhotos: Array<object> = boardPhotoUrl.map(
-            (photo, index) => {
-              return {
-                photo_url: photo,
-                board: board.no,
-                order: index + 1,
-              };
-            },
-          );
-
-          const boardPhotoNo: Array<object> = await queryRunner.manager
-            .getCustomRepository(BoardPhotoRepository)
-            .createBoardPhoto(boardPhotos);
-
-          if (boardPhotos.length !== boardPhotoNo.length) {
-            throw new BadGatewayException('게시글 사진 등록 도중 DB관련 오류');
-          }
-          const originBoardPhotosUrl: string[] = photos.map((boardPhoto) => {
-            return boardPhoto.photo_url;
-          });
-          await queryRunner.commitTransaction();
-          return originBoardPhotosUrl;
-        }
-      }
-
-      await queryRunner.commitTransaction();
+      return await this.updateBoardPhoto(
+        boardNo,
+        queryRunner,
+        board,
+        boardPhotoUrl,
+      );
     } catch (err) {
       await queryRunner.rollbackTransaction();
       throw err;
     } finally {
       await queryRunner.release();
     }
+  }
+
+  async updateBoardPhoto(
+    boardNo: number,
+    queryRunner: QueryRunner,
+    board: Board,
+    boardPhotoUrl: string[],
+  ): Promise<string[]> {
+    const { photos }: Board = await this.boardRepository.findOne(boardNo, {
+      select: ['no', 'photos'],
+      relations: ['photos'],
+    });
+
+    if (photos.length) {
+      const deleteBoardPhoto: number = await queryRunner.manager
+        .getCustomRepository(BoardPhotoRepository)
+        .deleteBoardPhoto(boardNo);
+
+      if (!deleteBoardPhoto) {
+        throw new BadGatewayException('게시글 사진 삭제 도중 DB관련 오류');
+      }
+    }
+
+    if (boardPhotoUrl[0] !== 'logo.png') {
+      await this.registBoardPhotos(boardPhotoUrl, queryRunner, board.no);
+
+      const originBoardPhotosUrl: string[] = photos.map((boardPhoto) => {
+        return boardPhoto.photo_url;
+      });
+      await queryRunner.commitTransaction();
+
+      return originBoardPhotosUrl;
+    }
+    await queryRunner.commitTransaction();
   }
 
   async readUserBoard(
