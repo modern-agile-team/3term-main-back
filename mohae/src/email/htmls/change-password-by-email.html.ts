@@ -31,7 +31,7 @@ export const CHANGE_PASSWORD_BY_EMAIL = `<body style="box-sizing: border-box; wi
                                 <p style="margin: 0 0 8px 0; font-size: 14px">
                                     아래 버튼을 누르시면 비밀번호 변경 화면으로 넘어갑니다.
                                 </p>
-                                <a href="" style="
+                                <a href="localhost:3000/users/password/forget" style="
                                     background: #ff445e;
                                     border-radius: 6px;
                                     padding: 12px 24px;
