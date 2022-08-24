@@ -32,6 +32,10 @@ export interface boardInfo {
   insertId?: number;
 }
 
+export interface BoardData extends Board {
+  likeCount?: number;
+}
+
 @Injectable()
 export class BoardsService {
   constructor(
@@ -119,10 +123,12 @@ export class BoardsService {
       const filteredHotBoards: Board[] =
         await this.boardRepository.readHotBoards(+select, year, month);
 
-      this.errorConfirm.notFoundError(
-        filteredHotBoards,
-        '인기게시글이 존재하지 얺습니다.',
-      );
+      if (!filteredHotBoards.length) {
+        const replaceReadHotBoards: Board[] =
+          await this.boardRepository.replaceReadHotBoards(+select);
+
+        return replaceReadHotBoards;
+      }
 
       return filteredHotBoards;
     } catch (err) {
@@ -136,7 +142,7 @@ export class BoardsService {
 
       this.errorConfirm.notFoundError(user.no, `해당 회원을 찾을 수 없습니다.`);
 
-      const board: Board = await this.boardRepository.readOneBoardByAuth(
+      const board: BoardData = await this.boardRepository.readOneBoardByAuth(
         boardNo,
         userNo,
       );
@@ -214,7 +220,7 @@ export class BoardsService {
 
   async readOneBoardByUnAuth(boardNo: number): Promise<object> {
     try {
-      const board: Board = await this.boardRepository.readOneBoardByUnAuth(
+      const board: BoardData = await this.boardRepository.readOneBoardByUnAuth(
         boardNo,
       );
 
