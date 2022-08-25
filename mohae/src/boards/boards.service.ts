@@ -284,9 +284,7 @@ export class BoardsService {
       currentTime.setHours(currentTime.getHours() + 9);
 
       if (board.deadline !== null && board.deadline <= currentTime) {
-        throw new InternalServerErrorException(
-          '시간이 지나 마감된 게시글 입니다.',
-        );
+        throw new BadRequestException('시간이 지나 마감된 게시글 입니다.');
       }
 
       if (!board.isDeadline) {
