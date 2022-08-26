@@ -33,6 +33,7 @@ export interface boardInfo {
 }
 
 export interface BoardData extends Board {
+  endDate?: Date;
   likeCount?: number;
 }
 
@@ -267,7 +268,7 @@ export class BoardsService {
 
   async cancelClosedBoard(boardNo: number, userNo: number): Promise<boolean> {
     try {
-      const board: Board = await this.boardRepository.readOneBoardByAuth(
+      const board: BoardData = await this.boardRepository.readOneBoardByAuth(
         boardNo,
         userNo,
       );
@@ -282,8 +283,7 @@ export class BoardsService {
 
       const currentTime: Date = new Date();
       currentTime.setHours(currentTime.getHours() + 9);
-
-      if (board.deadline !== null && board.deadline <= currentTime) {
+      if (board.endDate !== null && board.endDate <= currentTime) {
         throw new BadRequestException('시간이 지나 마감된 게시글 입니다.');
       }
 
