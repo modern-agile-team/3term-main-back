@@ -4,9 +4,11 @@ import * as Joi from 'joi';
 export const envConfig: ConfigModuleOptions = {
   isGlobal: true,
   envFilePath: [
-    process.env.NODE_ENV === 'development' ? '.env.development' : '.env.test',
+    process.env.NODE_ENV === 'development'
+      ? '.env.development'
+      : '.env.production',
   ],
-  ignoreEnvFile: process.env.NODE_ENV === 'production',
+  // ignoreEnvFile: process.env.NODE_ENV === 'production',
   validationSchema: Joi.object({
     NODE_ENV: Joi.string().valid('development', 'production').required(),
     DB_PORT: Joi.number().required(),
