@@ -45,9 +45,10 @@ async function bootstrap() {
       crossOriginResourcePolicy: false,
     }),
   );
-  app.useGlobalGuards(new AccessGuard());
+
   app.useGlobalInterceptors(new ClientErrorInterceptor(winstonLogger));
   app.useGlobalFilters(new HttpExceptionFilter(winstonLogger));
+  app.useGlobalGuards(new AccessGuard());
 
   //Swagger 환경설정 연결
   setupSwagger(app);
