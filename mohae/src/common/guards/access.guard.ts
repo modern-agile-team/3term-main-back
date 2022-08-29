@@ -1,9 +1,11 @@
 import {
   CanActivate,
   ExecutionContext,
+  Header,
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
+import { string } from 'joi';
 import { Observable } from 'rxjs';
 
 @Injectable()
@@ -17,8 +19,9 @@ export class AccessGuard implements CanActivate {
 
     const request = context.switchToHttp().getRequest();
     const DOMAIN = process.env.API_ACCESS_DOMAIN;
-    console.log(DOMAIN);
-    if (request.get('host') !== `${DOMAIN}`) {
+
+    const token = request.headers['api-key'];
+    if (token !== `${DOMAIN}`) {
       throw new UnauthorizedException(
         `허가받지 못한 사이트는 해당 API를 사용할 수 없습니다.${
           (request.get('host'), request)
