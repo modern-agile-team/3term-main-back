@@ -32,6 +32,11 @@ export interface boardInfo {
   insertId?: number;
 }
 
+export interface BoardData extends Board {
+  endDate?: Date;
+  likeCount?: number;
+}
+
 @Injectable()
 export class BoardsService {
   constructor(
@@ -119,10 +124,12 @@ export class BoardsService {
       const filteredHotBoards: Board[] =
         await this.boardRepository.readHotBoards(+select, year, month);
 
-      this.errorConfirm.notFoundError(
-        filteredHotBoards,
-        '인기게시글이 존재하지 얺습니다.',
-      );
+      if (!filteredHotBoards.length) {
+        const replaceReadHotBoards: Board[] =
+          await this.boardRepository.replaceReadHotBoards(+select);
+
+        return replaceReadHotBoards;
+      }
 
       return filteredHotBoards;
     } catch (err) {
@@ -136,7 +143,7 @@ export class BoardsService {
 
       this.errorConfirm.notFoundError(user.no, `해당 회원을 찾을 수 없습니다.`);
 
-      const board: Board = await this.boardRepository.readOneBoardByAuth(
+      const board: BoardData = await this.boardRepository.readOneBoardByAuth(
         boardNo,
         userNo,
       );
@@ -214,7 +221,7 @@ export class BoardsService {
 
   async readOneBoardByUnAuth(boardNo: number): Promise<object> {
     try {
-      const board: Board = await this.boardRepository.readOneBoardByUnAuth(
+      const board: BoardData = await this.boardRepository.readOneBoardByUnAuth(
         boardNo,
       );
 
@@ -261,7 +268,7 @@ export class BoardsService {
 
   async cancelClosedBoard(boardNo: number, userNo: number): Promise<boolean> {
     try {
-      const board: Board = await this.boardRepository.readOneBoardByAuth(
+      const board: BoardData = await this.boardRepository.readOneBoardByAuth(
         boardNo,
         userNo,
       );
@@ -276,11 +283,8 @@ export class BoardsService {
 
       const currentTime: Date = new Date();
       currentTime.setHours(currentTime.getHours() + 9);
-
-      if (board.deadline !== null && board.deadline <= currentTime) {
-        throw new InternalServerErrorException(
-          '시간이 지나 마감된 게시글 입니다.',
-        );
+      if (board.endDate !== null && board.endDate <= currentTime) {
+        throw new BadRequestException('시간이 지나 마감된 게시글 입니다.');
       }
 
       if (!board.isDeadline) {
