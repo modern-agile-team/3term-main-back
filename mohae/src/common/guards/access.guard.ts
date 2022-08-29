@@ -16,9 +16,10 @@ export class AccessGuard implements CanActivate {
     }
 
     const request = context.switchToHttp().getRequest();
+    console.log(request);
     const DOMAIN = process.env.API_ACCESS_DOMAIN;
 
-    if (request.get('user-agent') !== DOMAIN) {
+    if (request.get('host') !== DOMAIN) {
       throw new UnauthorizedException(
         '허가받지 못한 사이트는 해당 API를 사용할 수 없습니다.',
       );
