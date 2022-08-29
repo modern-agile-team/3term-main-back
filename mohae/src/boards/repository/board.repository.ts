@@ -41,6 +41,7 @@ export class BoardRepository extends Repository<Board> {
           'REPLACE(GROUP_CONCAT(photo.photo_url), ",", ", ") AS boardPhotoUrls',
           'DATEDIFF(boards.deadline, now()) * -1 AS decimalDay',
           'ifnull(DATEDIFF(boards.deadline, boards.createdAt), 0) AS deadline',
+          'boards.deadline AS endDate',
           'boards.title AS title',
           'boards.description AS description',
           'boards.isDeadline AS isDeadline',
@@ -427,6 +428,49 @@ export class BoardRepository extends Repository<Board> {
         ])
         .where('Year(boards.createdAt) <= :year', { year })
         .andWhere('Month(boards.createdAt) <= :month', { month })
+        .groupBy('likedUsers.likedBoardNo')
+        .orderBy(
+          '(boards.hit + COUNT(likedUsers.likedBoardNo)) / DATEDIFF(now(), boards.createdAt)',
+          'DESC',
+        )
+        .limit(3);
+
+      if (select === 1) {
+        hotBoards.andWhere('boards.isDeadline = false');
+      }
+
+      if (select === 2) {
+        hotBoards.andWhere('boards.isDeadline = true');
+      }
+      const filteredHotBoards: Board[] = await hotBoards.getRawMany();
+
+      return filteredHotBoards;
+    } catch (err) {
+      `${err} ### 인기 게시판 조회 : 알 수 없는 서버 에러입니다.`;
+    }
+  }
+
+  async replaceReadHotBoards(select: number): Promise<Board[]> {
+    try {
+      const hotBoards: SelectQueryBuilder<Board> = this.createQueryBuilder(
+        'boards',
+      )
+        .leftJoin('boards.area', 'areas')
+        .leftJoin('boards.user', 'users')
+        .leftJoin('boards.photos', 'photo')
+        .leftJoin('boards.likedUser', 'likedUsers')
+        .select([
+          'boards.no AS no',
+          'DATEDIFF(boards.deadline, now()) * -1 AS decimalDay',
+          'photo.photo_url AS photoUrl',
+          'boards.title AS title',
+          'boards.isDeadline AS isDeadline',
+          'boards.price AS price',
+          'boards.target AS target',
+          'areas.name AS area',
+          'users.no AS userNo',
+          'users.nickname AS nickname',
+        ])
         .groupBy('likedUsers.likedBoardNo')
         .orderBy(
           '(boards.hit + COUNT(likedUsers.likedBoardNo)) / DATEDIFF(now(), boards.createdAt)',
