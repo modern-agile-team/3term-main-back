@@ -20,9 +20,9 @@ export class AccessGuard implements CanActivate {
     console.log(DOMAIN);
     if (request.get('host') !== `${DOMAIN}`) {
       throw new UnauthorizedException(
-        `허가받지 못한 사이트는 해당 API를 사용할 수 없습니다.${request.get(
-          'host',
-        )}`,
+        `허가받지 못한 사이트는 해당 API를 사용할 수 없습니다.${
+          (request.get('host'), request)
+        }`,
       );
     }
 
