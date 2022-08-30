@@ -21,7 +21,14 @@ async function bootstrap() {
   const winstonLogger = app.get(WINSTON_MODULE_NEST_PROVIDER);
 
   // Cors 적용
-  app.enableCors();
+  const corsInfo = {
+    origin: configService.get('ORIGIN'),
+    methods: configService.get('METHODS'),
+    preflightContinue: configService.get('PREFLIGHTCONTINUE'),
+    optionsSuccessStatus: configService.get('OPTIONSSUCCESSSTATUS'),
+  };
+
+  app.enableCors(corsInfo);
 
   app.use(
     ['/mohae-api-docs'],
@@ -45,9 +52,10 @@ async function bootstrap() {
       crossOriginResourcePolicy: false,
     }),
   );
-  // app.useGlobalGuards(new AccessGuard());
+
   app.useGlobalInterceptors(new ClientErrorInterceptor(winstonLogger));
   app.useGlobalFilters(new HttpExceptionFilter(winstonLogger));
+  // app.useGlobalGuards(new AccessGuard());
 
   //Swagger 환경설정 연결
   setupSwagger(app);
