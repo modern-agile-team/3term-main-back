@@ -21,7 +21,14 @@ async function bootstrap() {
   const winstonLogger = app.get(WINSTON_MODULE_NEST_PROVIDER);
 
   // Cors 적용
-  app.enableCors();
+  const corsInfo = {
+    origin: configService.get('ORIGIN'),
+    methods: configService.get('METHODS'),
+    preflightContinue: configService.get('PREFLIGHTCONTINUE'),
+    optionsSuccessStatus: configService.get('OPTIONSSUCCESSSTATUS'),
+  };
+
+  app.enableCors(corsInfo);
 
   app.use(
     ['/mohae-api-docs'],
