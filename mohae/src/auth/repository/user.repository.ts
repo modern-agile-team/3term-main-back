@@ -220,6 +220,7 @@ export class UserRepository extends Repository<User> {
           'users.email AS email',
           'users.nickname AS nickname',
           'users.phone AS phone',
+          'users.manager AS manager',
           `DATE_FORMAT(users.createdAt, '%Y.%m.%d') AS createdAt`,
           'users.name AS name',
           'profilePhoto.photo_url AS photo_url',
