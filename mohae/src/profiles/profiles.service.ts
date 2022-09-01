@@ -24,6 +24,7 @@ export interface Profile {
   email: string | null;
   nickname: string | null;
   phone: string | null;
+  manager: boolean;
   createdAt: string | null;
   name: string | null;
   photo_url: string | null;
