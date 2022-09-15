@@ -467,8 +467,7 @@ export class BoardRepository extends Repository<Board> {
           'boards.isDeadline AS isDeadline',
           'boards.price AS price',
           'boards.target AS target',
-          'areas.name AS area',
-          'users.no AS userNo',
+          'areas.name AS areaName',
           'users.nickname AS nickname',
         ])
         .groupBy('likedUsers.likedBoardNo')
