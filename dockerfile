@@ -10,7 +10,7 @@ WORKDIR /home/app
 COPY ./mohae .
 
 RUN npm ci
-RUN npm i -g @nestjs/cli@8.2.5
+RUN npm i -g @nestjs/cli@8.2.6
 RUN npm run build
 
 CMD ["npm", "run", "start:prod"]
