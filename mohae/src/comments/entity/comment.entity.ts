@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNumber, IsString } from 'class-validator';
+import { IsNotEmpty, IsNumber, IsString, Length } from 'class-validator';
 import { User } from 'src/auth/entity/user.entity';
 import { Board } from 'src/boards/entity/board.entity';
 import { Reply } from 'src/replies/entity/reply.entity';
@@ -28,7 +28,9 @@ export class Comment extends BaseEntity {
     description: '댓글 내용 입력',
     required: true,
   })
+  @IsNotEmpty()
   @IsString()
+  @Length(1, 500)
   @Column()
   content: string;
 

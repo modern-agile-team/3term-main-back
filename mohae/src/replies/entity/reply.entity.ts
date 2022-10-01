@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsString } from 'class-validator';
+import { IsNotEmpty, IsString, Length } from 'class-validator';
 import { User } from 'src/auth/entity/user.entity';
 import { Comment } from 'src/comments/entity/comment.entity';
 import {
@@ -26,6 +26,7 @@ export class Reply extends BaseEntity {
   })
   @IsNotEmpty()
   @IsString()
+  @Length(1, 500)
   @Column()
   content: string;
 
